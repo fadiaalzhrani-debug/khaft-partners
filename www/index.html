@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>شركاء خافِت</title>
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#141414" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23141414'/><text y='.9em' x='18' font-size='58'>🤝</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" /></noscript>
+<style>
+  :root{
+    --gold:#F5C518; --gold-strong:#E7B70B; --gold-soft:#FDF3CE;
+    --ink:#141414;
+    --bg:#0F1115; --panel:#171A20; --card:#1C2027; --line:#2A2F38;
+    --text:#EDEEF0; --muted:#9AA0AA;
+    --r:20px; --shadow:0 14px 34px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Cairo','Segoe UI',Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-tap-highlight-color:transparent;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .safe-top{height:env(safe-area-inset-top)}
+  .wrap{max-width:560px;margin:0 auto;padding:0 18px 40px}
+
+  /* شعار علوي */
+  .head{text-align:center;padding:26px 0 10px}
+  .logo{width:92px;height:92px;border-radius:26px;margin:0 auto 14px;background:var(--gold);display:grid;place-items:center;box-shadow:0 10px 30px rgba(245,197,24,.28);overflow:hidden}
+  .logo img{width:74px;height:74px;object-fit:contain}
+  .head h1{font-size:1.55rem;font-weight:900;letter-spacing:.3px}
+  .head p{color:var(--muted);font-size:.98rem;font-weight:700;margin-top:3px}
+  .head .biz{display:inline-block;margin-top:12px;background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.35);color:var(--gold);font-weight:800;font-size:.85rem;padding:6px 16px;border-radius:999px}
+
+  /* بطاقات الأدوار */
+  .cards{margin-top:24px;display:grid;gap:14px}
+  .card{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 18px;box-shadow:var(--shadow);transition:.15s;cursor:pointer;position:relative;overflow:hidden}
+  .card:active{transform:scale(.98)}
+  .card .ic{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;font-size:1.9rem;flex-shrink:0;background:rgba(245,197,24,.12)}
+  .card .tx{flex:1;min-width:0}
+  .card .tx h3{font-size:1.22rem;font-weight:900;display:flex;align-items:center;gap:8px}
+  .card .tx p{color:var(--muted);font-size:.9rem;font-weight:600;margin-top:2px}
+  .card .arrow{color:var(--muted);font-size:1.5rem;font-weight:900;flex-shrink:0}
+  .card.tech .ic{background:rgba(245,197,24,.14)}
+  .card.prov .ic{background:rgba(56,132,255,.14)}
+  .card.admin{border-color:rgba(245,197,24,.28)}
+  .card.admin .ic{background:rgba(245,197,24,.14)}
+
+  /* شارة قريباً */
+  .soon{margin-top:22px;background:var(--panel);border:1px dashed var(--line);border-radius:var(--r);padding:18px;text-align:center}
+  .soon .em{font-size:1.7rem}
+  .soon h4{font-weight:900;margin-top:6px;font-size:1.05rem}
+  .soon p{color:var(--muted);font-size:.85rem;font-weight:600;margin-top:2px}
+
+  .foot{text-align:center;color:var(--muted);font-size:.78rem;font-weight:700;margin-top:26px;opacity:.8}
+</style>
+</head>
+<body>
+  <div class="safe-top"></div>
+  <div class="wrap">
+
+    <div class="head">
+      <div class="logo"><img src="logo.png" alt="خافِت" /></div>
+      <h1>شركاء خافِت</h1>
+      <p>منصّة الفنيين والمزوّدين</p>
+      <span class="biz">بوابة العمل — للفريق فقط</span>
+    </div>
+
+    <div class="cards">
+
+      <a class="card tech" href="fanyeen.html">
+        <div class="ic">🔧</div>
+        <div class="tx">
+          <h3>الفنيّون</h3>
+          <p>استقبل الطلبات، سجّل وصولك، وأنجز أعمالك</p>
+        </div>
+        <div class="arrow">‹</div>
+      </a>
+
+      <a class="card prov" href="provider.html">
+        <div class="ic">🧰</div>
+        <div class="tx">
+          <h3>المزوّدون</h3>
+          <p>تابع طلبات خدماتك وأدِرها بسهولة</p>
+        </div>
+        <div class="arrow">‹</div>
+      </a>
+
+      <a class="card admin" href="admin.html">
+        <div class="ic">🛠️</div>
+        <div class="tx">
+          <h3>لوحة الإدارة</h3>
+          <p>الطلبات، الأسعار، المخزون — للمالك</p>
+        </div>
+        <div class="arrow">‹</div>
+      </a>
+
+    </div>
+
+    <div class="soon">
+      <div class="em">🍲</div>
+      <h4>قريباً — شركاء سُفرة</h4>
+      <p>الأسر المنتجة تنضم لنفس المنصّة</p>
+    </div>
+
+    <div class="foot">خافِت © 2026 — كل الحقوق محفوظة</div>
+
+  </div>
+</body>
+</html>

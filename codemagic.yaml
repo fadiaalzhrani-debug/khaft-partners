@@ -1,0 +1,89 @@
+# إعدادات بناء تطبيق «شركاء خافِت» على Codemagic (iOS)
+# نفس آلية توقيع تطبيق العملاء المجرّبة — Bundle ID مستقل، فلا يؤثر على مراجعة خافِت.
+# (نسخة v1 بدون إشعارات فورية لضمان بناء نظيف؛ الإشعارات تُضاف لاحقاً)
+workflows:
+  ios-partners:
+    name: شركاء خافِت iOS
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      groups:
+        - appstore
+      vars:
+        BUNDLE_ID: "com.khafet.partners"
+      node: 20.19.0
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: تثبيت الحزم
+        script: npm install
+      - name: تجهيز منصة iOS
+        script: |
+          npx cap add ios || true
+          npx cap sync ios
+      - name: أيقونة التطبيق وشاشة البداية
+        script: |
+          # يولّد كل مقاسات الأيقونة من assets/icon.png داخل مشروع iOS
+          npx capacitor-assets generate --ios
+          echo "— الأيقونات المولّدة —"
+          ls ios/App/App/Assets.xcassets/AppIcon.appiconset/ | head -20
+      - name: أذونات الجهاز ورقم الإصدار
+        script: |
+          PLIST="ios/App/App/Info.plist"
+          setkey() {
+            plutil -insert "$1" -string "$2" "$PLIST" 2>/dev/null || plutil -replace "$1" -string "$2" "$PLIST"
+          }
+          setkey NSCameraUsageDescription "لتصوير حالة العمل أو المشكلة وإرفاقها مع الطلب"
+          setkey NSPhotoLibraryUsageDescription "لاختيار صورة من المعرض توضّح حالة العمل"
+          setkey NSPhotoLibraryAddUsageDescription "لحفظ صور العمل في معرض صورك"
+          setkey NSMicrophoneUsageDescription "لتسجيل مقطع فيديو يوضّح حالة العمل عند الحاجة"
+          setkey CFBundleVersion "$BUILD_NUMBER"
+          setkey CFBundleDisplayName "شركاء خافِت"
+          # آيفون فقط — التطبيق مصمّم للجوال
+          ruby -e "require 'xcodeproj'; \
+            p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); \
+            t = p.targets.find { |x| x.name == 'App' }; \
+            t.build_configurations.each { |c| c.build_settings['TARGETED_DEVICE_FAMILY'] = '1' }; \
+            p.save; puts '✅ التطبيق صار آيفون فقط'"
+          # HTTPS القياسي فقط = تشفير معفى، فلا تسأل آبل كل مرة
+          plutil -insert ITSAppUsesNonExemptEncryption -bool false "$PLIST" 2>/dev/null || \
+            plutil -replace ITSAppUsesNonExemptEncryption -bool false "$PLIST"
+          echo "— الأذونات بعد التعديل —"
+          plutil -p "$PLIST" | grep -i -e usagedescription -e CFBundleVersion -e CFBundleDisplayName
+      - name: تجهيز مفتاح آبل
+        script: |
+          echo "$APP_STORE_CONNECT_KEY_B64" | base64 --decode > /tmp/AuthKey.p8
+          echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 --decode > /tmp/cert_key.pem
+          echo "تم تجهيز المفاتيح:"
+          head -1 /tmp/AuthKey.p8
+          head -1 /tmp/cert_key.pem
+      - name: إنشاء وإعداد شهادات التوقيع
+        script: |
+          keychain initialize
+          # --create يُنشئ App ID وملف توقيع جديدَين للـ Bundle ID تلقائياً
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key @file:/tmp/AuthKey.p8 \
+            --certificate-key @file:/tmp/cert_key.pem \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: بناء ملف IPA
+        script: |
+          cd ios/App
+          xcode-project build-ipa --workspace "App.xcworkspace" --scheme "App"
+      - name: رفع للـ App Store Connect
+        script: |
+          IPA=$(find "$CM_BUILD_DIR" -name '*.ipa' | head -1)
+          echo "الملف: $IPA"
+          app-store-connect publish \
+            --path "$IPA" \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key @file:/tmp/AuthKey.p8
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
