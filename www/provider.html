@@ -103,6 +103,17 @@
   #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--gold);color:var(--ink);padding:14px 24px;border-radius:14px;font-weight:800;z-index:80;opacity:0;transition:.3s;box-shadow:var(--shadow);max-width:90%;text-align:center;pointer-events:none}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* الطلب المنجز منصفط: سطر واحد يفتح بالضغط */
+  .tjob-mini{width:100%;display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-right:3px solid var(--ok,#22C55E);border-radius:12px;padding:12px 14px;margin-bottom:10px;cursor:pointer;font-family:inherit;text-align:right;color:inherit}
+  .tjob-mini:active{transform:scale(.99)}
+  .tm-ic{font-size:1.05rem;flex-shrink:0;color:#22C55E}
+  .tm-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;text-align:start}
+  .tm-tx b{font-size:.95rem;font-weight:800}
+  .tm-tx small{color:var(--muted);font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tm-badge{background:rgba(34,197,94,.15);color:#6ee7a0;font-size:.72rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap;flex-shrink:0}
+  .tm-arrow{color:var(--muted);font-size:.85rem;flex-shrink:0}
+  .tbtn.fold{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--muted);font-size:1rem;padding:14px 16px}
+
   /* زر الرجوع للرئيسية */
   .home-link{display:inline-flex;align-items:center;gap:5px;background:var(--gold);color:var(--ink);font-weight:800;font-size:.85rem;padding:7px 12px;border-radius:10px;text-decoration:none;white-space:nowrap;flex-shrink:0}
   /* أي نص طويل (عنوان/رابط) ينكسر بدل ما يطلع برا الشاشة */
@@ -171,6 +182,9 @@ const SERVICES=[
 function svc(id){ return SERVICES.find(s=>s.id===id); }
 
 let me=null, ORDERS=[], tab='available';
+/* الطلبات المنجزة تنصفط في سطر واحد، تفتح بالضغط (زي الفنيّين) */
+let doneOpen={};
+function toggleDone(id){ doneOpen[id]=!doneOpen[id]; render(); }
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
 function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
 function money(n){ return ar(n)+' ر.س'; }
@@ -336,6 +350,15 @@ function showLogin(msg, wait){
 function sameCity(o){ return (o.address&&o.address.city||'').trim() === (me.city||'').trim(); }
 function jobCard(o, mode){
   const a=o.address||{};
+  // المنجز (في طلباتي) ينصفط بسطر واحد أخضر — يفتح بالضغط
+  if(mode==='mine' && o.status==='done' && !doneOpen[o.id]){
+    const work=(o.items||[]).map(i=>i.ico+' '+i.name).join('، ');
+    return `<button class="tjob-mini" onclick="toggleDone('${o.id}')">
+      <span class="tm-ic">✅</span>
+      <span class="tm-tx"><b>${fmtTime(o.startMin)} · ${dayLabel(o.date)}</b><small>${esc(o.customer.name||work||'')}</small></span>
+      <span class="tm-badge">مكتمل</span><span class="tm-arrow">▾</span>
+    </button>`;
+  }
   const work=o.quick?`<div class="quick-tag">⚡ طلب سريع (معاينة)</div>`:`<div class="tj-row"><span class="tj-k">🔧 المطلوب</span><span class="tj-v">${(o.items||[]).map(i=>i.ico+' '+i.name+(i.qty>1?' ×'+ar(i.qty):'')).join('، ')}</span></div>`;
   const mapUrl=a.mapUrl||('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')));
   let acts='';
@@ -343,7 +366,7 @@ function jobCard(o, mode){
   else { // mine
     if(o.status==='confirmed') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','progress')">🔧 بدء العمل</button>`;
     else if(o.status==='progress') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
-    else if(o.status==='done') acts=`<div class="tbtn donelbl">✓ مكتمل</div>`;
+    else if(o.status==='done') acts=`<div class="tbtn donelbl">✓ مكتمل</div><button class="tbtn fold" onclick="toggleDone('${o.id}')">▴</button>`;
     acts+=`<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?'✓ الفاتورة':'🧾 فاتورة'}</button>`;
   }
   return `<div class="tjob">
