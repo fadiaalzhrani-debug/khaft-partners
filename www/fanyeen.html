@@ -174,6 +174,31 @@
   .login .btn:hover{background:var(--gold-strong)}
   .login .lgerr{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#fca5a5;border-radius:12px;padding:12px;margin-top:12px;font-weight:600;font-size:.9rem}
 
+  /* ===== الشريط السفلي: أربعة أقسام ===== */
+  body{padding-bottom:calc(66px + env(safe-area-inset-bottom))}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:rgba(23,26,32,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  .tb{flex:1;padding:8px 3px 7px;background:none;border:none;color:var(--muted);font-family:inherit;cursor:pointer;position:relative}
+  .tb i{display:block;font-size:1.15rem;font-style:normal;line-height:1.3}
+  .tb span{display:block;font-size:.6rem;font-weight:800;margin-top:1px}
+  .tb.on{color:var(--gold)}
+  .tb.on::before{content:"";position:absolute;top:0;right:24%;left:24%;height:2px;background:var(--gold);border-radius:0 0 3px 3px}
+  .tb .tdot{position:absolute;top:6px;left:27%;width:7px;height:7px;border-radius:50%;background:var(--gold);border:1.5px solid #171a20}
+
+  /* ===== قسم: حجز لعميل ===== */
+  .bookf{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px;display:flex;flex-direction:column;gap:11px}
+
+  /* ===== قسم: الفواتير ===== */
+  .iv-sum{display:flex;justify-content:space-between;gap:10px;background:var(--card);border:1px solid rgba(245,197,24,.3);border-radius:14px;padding:14px 16px;margin-top:14px}
+  .iv-sum span{display:block;color:var(--muted);font-size:.72rem;font-weight:700}
+  .iv-sum b{display:block;font-size:1.25rem;font-weight:900;color:var(--gold);margin-top:2px}
+  .ivrow{width:100%;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;font-family:inherit;color:inherit;text-align:start;cursor:pointer}
+  .ivrow:active{transform:scale(.99)}
+  .iv-m{flex:1;min-width:0}
+  .iv-m b{display:block;font-size:.9rem;font-weight:800}
+  .iv-m span{color:var(--muted);font-size:.74rem;font-weight:600}
+  .iv-amt{font-size:1rem;font-weight:900;color:var(--gold);flex-shrink:0}
+  .iv-ch{color:var(--muted);font-size:1.1rem;flex-shrink:0}
+
   /* ===== الطلب المنجز منصفط: سطر واحد يفتح بالضغط ===== */
   .tjob-mini{width:100%;display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-right:3px solid var(--ok);border-radius:12px;padding:12px 14px;margin-bottom:9px;cursor:pointer;font-family:inherit;text-align:right;color:inherit}
   .tjob-mini:active{transform:scale(.99)}
@@ -789,6 +814,90 @@ function renderCalendar(){
   </div>`;
 }
 
+/* ===================== الأقسام الأربعة (شريط سفلي) ===================== */
+let tab='orders';                       // orders | inv | book | invoices
+function setTab(k){ tab=k; try{window.scrollTo(0,0);}catch(e){} render(); }
+const TABL={
+  ar:['الطلبات','المستودع','حجز لعميل','الفواتير'],
+  en:['Jobs','Stock','Book','Invoices'],
+  ne:['कामहरू','स्टक','बुकिङ','बिलहरू'],
+  hi:['काम','स्टॉक','बुकिंग','बिल'],
+  ur:['کام','اسٹاک','بکنگ','بل']
+};
+function tl(i){ return (TABL[lang]||TABL.ar)[i]; }
+/* نقطة تنبيه على المستودع لو فيه صنف قارب ينفد */
+function invLow(){ return (INV||[]).some(i=>(+i.qty||0) <= 2); }
+function renderTabs(){
+  const K=[['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];
+  return `<nav class="tabbar">${K.map(([k,ic],i)=>
+    `<button class="tb ${tab===k?'on':''}" onclick="setTab('${k}')"><i>${ic}</i><span>${tl(i)}</span>${(k==='inv'&&invLow())?'<em class="tdot"></em>':''}</button>`
+  ).join('')}</nav>`;
+}
+/* ---- قسم المستودع ---- */
+function renderInvTab(){
+  return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>${renderInvPanel()}`;
+}
+/* ---- قسم: حجز لعميل ---- */
+function renderBookTab(){
+  const minDate=dateISO(new Date());
+  const A=lang==='ar';
+  return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل وأنت بالموقع':'Book an appointment on the spot'}</p></div>
+  <div class="bookf">
+    <div class="fu-field"><label>${A?'اسم العميل':'Customer name'}</label><input id="bk_name" placeholder="${A?'الاسم':'Name'}" /></div>
+    <div class="fu-field"><label>${A?'الجوال':'Phone'}</label><input id="bk_phone" inputmode="tel" placeholder="05xxxxxxxx" /></div>
+    <div class="fu-field"><label>${A?'الخدمة المطلوبة':'Service'}</label><input id="bk_svc" placeholder="${A?'مثال: تسليك مجاري':'e.g. Drain cleaning'}" /></div>
+    <div class="fu-field"><label>${A?'اليوم':'Date'}</label><input type="date" id="bk_date" value="${minDate}" min="${minDate}" /></div>
+    <div class="fu-field"><label>${A?'الوقت':'Time'}</label><input type="time" id="bk_time" value="10:00" /></div>
+    <div class="fu-field"><label>${A?'العنوان':'Address'}</label><textarea id="bk_addr" rows="2" placeholder="${A?'حي · شارع · رقم المبنى':'District · street'}"></textarea></div>
+    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">📅 ${A?'احجز الموعد':'Book appointment'}</button>
+  </div>`;
+}
+async function createBooking(){
+  const A=lang==='ar';
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const name=g('bk_name'), phone=g('bk_phone'), svc=g('bk_svc'), date=g('bk_date'), time=g('bk_time'), addr=g('bk_addr');
+  if(!name||!phone||!date||!time){ toast('⚠️ '+(A?'عبّي الاسم والجوال والموعد':'Fill name, phone, date & time')); return; }
+  const [hh,mm]=time.split(':').map(Number); const startMin=hh*60+(mm||0), duration=60;
+  const payload={ customer_name:name, customer_phone:phone, address:{ street:addr },
+    items:[{id:'custom',name:svc||(A?'خدمة':'Service'),ico:'🔧',qty:1,price:0,custom:true}],
+    service_date:date, start_min:startMin, duration:duration, end_min:startMin+duration,
+    price:0, final_price:0, free:false, status:'confirmed', rating:0, reminded:false,
+    quick:true, note:(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
+  const btn=document.getElementById('bk_go'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  if(cloudReady){
+    try{ const r=await sb.from('khafet_orders').insert(payload).select().single(); if(r.error) throw r.error; }
+    catch(e){ toast('⚠️ '+(e.message||'')); if(btn){ btn.disabled=false; btn.textContent='📅'; } return; }
+  }
+  toast('✅ '+(A?'تم الحجز':'Booked'));
+  tab='orders'; calFilter=date;
+  if(cloudReady) loadOrders(); else render();
+}
+/* ---- قسم الفواتير ---- */
+function invTotal(o){
+  const iv=o.invoice; if(!iv) return 0;
+  if(typeof iv.total==='number') return iv.total;
+  return (iv.items||[]).reduce((s,it)=>s+((+it.price||0)*(+it.qty||1)),0);
+}
+function renderInvoicesTab(){
+  const A=lang==='ar';
+  const list=ORDERS.filter(o=>o.invoice).sort((a,b)=>
+    (b.date+String(b.startMin).padStart(4,'0')).localeCompare(a.date+String(a.startMin).padStart(4,'0')));
+  const total=list.reduce((s,o)=>s+invTotal(o),0);
+  const rows = list.length ? list.map(o=>`
+    <button class="ivrow" onclick="openInvoice('${o.id}')">
+      <span class="iv-m"><b>${esc((o.customer&&o.customer.name)||'')}</b><span>${jobDate(o.date)} · ${jobTime(o.startMin)}</span></span>
+      <span class="iv-amt">${ar(Math.round(invTotal(o)))}</span>
+      <span class="iv-ch">›</span>
+    </button>`).join('')
+    : `<div class="empty"><div class="ico">🧾</div><h3>${A?'ما فيه فواتير بعد':'No invoices yet'}</h3></div>`;
+  return `<div class="hero"><h1>🧾 ${tl(3)}</h1></div>
+    <div class="iv-sum">
+      <div><span>${A?'الإجمالي':'Total'}</span><b>${ar(Math.round(total))} ${A?'ر.س':'SAR'}</b></div>
+      <div style="text-align:end"><span>${A?'عدد الفواتير':'Invoices'}</span><b>${ar(list.length)}</b></div>
+    </div>
+    <div class="jobs">${rows}</div>`;
+}
+
 /* ---- العرض ---- */
 function setLang(l){ lang=l; localStorage.setItem('khafet_techlang',l); if(invEditing) renderInvoice(); render(); }
 function render(){
@@ -884,7 +993,8 @@ function render(){
     </div>`;
   }).join(''); }
 
-  document.getElementById('app').innerHTML=`
+  // قسم الطلبات (الافتراضي)
+  const ordersView=`
     <div class="hero">
       <h1>${t('title')}</h1>
       <p>${t('sub')}</p>
@@ -895,9 +1005,16 @@ function render(){
       ${!usingCloud?`<div class="offline">⚠️ ${t('offline')}</div>`:''}
     </div>
     ${renderCalendar()}
-    <div class="jobs">${cards}</div>
-    <button class="inv-toggle" onclick="toggleInv()">${t('invTitle')} <span>${showInv?'▲':'▼'}</span></button>
-    ${showInv?renderInvPanel():''}`;
+    <div class="jobs">${cards}</div>`;
+
+  // اختيار القسم حسب الشريط السفلي
+  let view;
+  if(tab==='inv')           view=renderInvTab();
+  else if(tab==='book')     view=renderBookTab();
+  else if(tab==='invoices') view=renderInvoicesTab();
+  else                      view=ordersView;
+
+  document.getElementById('app').innerHTML = view + renderTabs();
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),1800); }
 
