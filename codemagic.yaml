@@ -6,6 +6,14 @@ workflows:
     name: رزق iOS
     instance_type: mac_mini_m2
     max_build_duration: 60
+    # بناء تلقائي: أي رفع (push) على main يبدأ البناء بنفسه — بدون ضغط زر
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+      cancel_previous_builds: true
     environment:
       groups:
         - appstore
