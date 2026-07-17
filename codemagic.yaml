@@ -96,3 +96,5 @@ workflows:
       - ios/App/build/ios/ipa/*.ipa
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+
+# اختبار البناء التلقائي عند الرفع
