@@ -184,6 +184,52 @@
   .tb.on::before{content:"";position:absolute;top:0;right:24%;left:24%;height:2px;background:var(--gold);border-radius:0 0 3px 3px}
   .tb .tdot{position:absolute;top:6px;left:27%;width:7px;height:7px;border-radius:50%;background:var(--gold);border:1.5px solid #171a20}
 
+  /* ===== المستودع الاحترافي ===== */
+  :root{ --amber:#FBBF24; --red:#F87171; }
+  .worth{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(245,197,24,.04));border:1px solid rgba(245,197,24,.32);border-radius:14px;padding:14px 15px;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+  .worth .w-lbl{color:var(--muted);font-size:.7rem;font-weight:700;margin-bottom:3px}
+  .worth .w-big{font-size:1.65rem;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;line-height:1}
+  .worth .w-big span{font-size:.85rem}
+  .worth .w-side{text-align:end;display:flex;flex-direction:column;gap:6px}
+  .worth .w-side b{font-size:.85rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .w-chip{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:99px}
+  .w-chip.a{background:rgba(251,191,36,.14);color:var(--amber)} .w-chip.r{background:rgba(248,113,113,.14);color:var(--red)} .w-chip.g{background:rgba(74,222,128,.13);color:#6ee7a0}
+
+  .inv-add-toggle{width:100%;margin-top:11px;background:var(--card);border:1px dashed var(--gold-line, rgba(245,197,24,.32));color:var(--gold);border-radius:12px;padding:12px;font-weight:800;font-size:.92rem;cursor:pointer;font-family:inherit}
+  .isearch{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:2px 12px;margin-top:11px}
+  .isearch i{color:var(--muted);font-style:normal}
+  .isearch input{flex:1;background:none;border:none;color:var(--text);font-family:inherit;font-size:.9rem;font-weight:600;padding:11px 0;outline:none}
+  .ifilters{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:2px}
+  .ifl{flex:0 0 auto;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:.74rem;font-weight:800;color:var(--muted);white-space:nowrap;cursor:pointer;font-family:inherit;font-variant-numeric:tabular-nums}
+  .ifl.on{background:var(--gold);border-color:var(--gold);color:#141414}
+  .ilist{display:flex;flex-direction:column;gap:9px;margin-top:11px}
+
+  .iitem{background:var(--card);border:1px solid var(--line);border-right:3px solid var(--line);border-radius:13px;padding:12px 13px}
+  .iitem.ok{border-right-color:var(--ok, #22C55E)} .iitem.low{border-right-color:var(--amber)} .iitem.out{border-right-color:var(--red)}
+  .ii-top{display:flex;align-items:flex-start;gap:10px}
+  .ii-name{flex:1;min-width:0}
+  .ii-name b{font-size:.96rem;font-weight:800}
+  .ii-min{display:block;color:var(--muted);font-size:.68rem;font-weight:600;margin-top:1px}
+  .ii-min em{font-style:normal;color:var(--amber);font-weight:700}
+  .iitem.out .ii-min em{color:var(--red)}
+  .ii-qty{text-align:end;flex-shrink:0}
+  .ii-num{font-size:1.4rem;font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+  .ii-num.ok{color:#6ee7a0} .ii-num.low{color:var(--amber)} .ii-num.out{color:var(--red)}
+  .ii-u{color:var(--muted);font-size:.6rem;font-weight:700}
+  .ii-badge{display:inline-block;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:99px;margin-top:3px;white-space:nowrap}
+  .ii-badge.ok{background:rgba(74,222,128,.13);color:#6ee7a0} .ii-badge.low{background:rgba(251,191,36,.14);color:var(--amber)} .ii-badge.out{background:rgba(248,113,113,.14);color:var(--red)}
+  .ii-mid{display:flex;gap:8px;margin-top:10px}
+  .iprice{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
+  .iprice small{display:block;color:var(--muted);font-size:.6rem;font-weight:800}
+  .iprice b{font-size:.9rem;font-weight:800;font-variant-numeric:tabular-nums}
+  .iprice.sell b{color:var(--gold)}
+  .imar{color:#6ee7a0;font-size:.62rem;font-weight:700}
+  .ii-acts{display:flex;gap:6px;margin-top:10px;align-items:center}
+  .ii-acts .inv-amt{width:62px;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:inherit;font-weight:800;text-align:center}
+  .ib{flex:1;padding:9px 4px;border-radius:9px;border:none;font-family:inherit;font-size:.8rem;font-weight:800;cursor:pointer}
+  .ib.in{background:rgba(74,222,128,.14);color:#6ee7a0} .ib.out{background:rgba(248,113,113,.14);color:#fca5a5} .ib.out:disabled{opacity:.35}
+  .ib.edit{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:9px 11px}
+
   /* ===== سجل حركة المستودع ===== */
   .sl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 2px 10px;font-weight:900;font-size:1.02rem;color:var(--gold)}
   .sl-head span{color:var(--muted);font-weight:600;font-size:.76rem}
@@ -509,6 +555,11 @@ async function loadPrices(){
 }
 /* ---- المخزن (يشترك مع لوحة المؤسسة) ---- */
 let INV=[], showInv=false;
+/* المستودع الاحترافي: بحث + فلترة بالحالة */
+let invSearch='', invFilter='all';   // all | ok | low | out
+function invStatus(it){ const q=+it.qty||0, mn=+it.min_qty||0; if(q<=0) return 'out'; if(q<=mn) return 'low'; return 'ok'; }
+function setInvSearch(v){ invSearch=(v||'').trim(); render(); }
+function setInvFilter(f){ invFilter=f; render(); }
 async function loadInv(){ if(!cloudReady) return; try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); INV=iv.data||[]; if(loggedIn) render(); }catch(e){} }
 function toggleInv(){ showInv=!showInv; render(); }
 async function invSaveQty(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
@@ -886,12 +937,86 @@ function renderTabs(){
   ).join('')}</nav>`;
 }
 /* ---- قسم المستودع ---- */
+function invMoney(n){ return ar(Math.round(+n||0)); }
 function renderInvTab(){
   const A=lang==='ar';
+  // القيمة الإجمالية + العدّادات
+  let valSell=0, valBuy=0, nLow=0, nOut=0;
+  INV.forEach(it=>{ const q=+it.qty||0; valSell+=q*(+it.sell_price||0); valBuy+=q*(+it.buy_price||0);
+    const s=invStatus(it); if(s==='low')nLow++; if(s==='out')nOut++; });
+  const profit=valSell-valBuy;
+  const worth=`<div class="worth">
+    <div><div class="w-lbl">${A?'قيمة المخزون (بسعر البيع)':'Stock value (sell)'}</div><div class="w-big">${invMoney(valSell)} <span>${A?'ر.س':'SAR'}</span></div></div>
+    <div class="w-side">
+      <b>${A?'ربح متوقّع':'Est. profit'}: ${invMoney(profit)}</b>
+      <div>${nLow?`<span class="w-chip a">${ar(nLow)} ${A?'قاربت':'low'}</span>`:''}${nOut?`<span class="w-chip r">${ar(nOut)} ${A?'نفد':'out'}</span>`:''}${(!nLow&&!nOut)?`<span class="w-chip g">${A?'الكل متوفّر':'all in stock'}</span>`:''}</div>
+    </div></div>`;
+
+  // بحث
+  const search=`<div class="isearch"><i>🔍</i><input id="inv_search" placeholder="${A?'ابحث عن صنف…':'Search item…'}" value="${esc(invSearch)}" oninput="setInvSearch(this.value)" /></div>`;
+
+  // فلاتر بالحالة
+  const counts={all:INV.length, ok:INV.filter(i=>invStatus(i)==='ok').length, low:nLow, out:nOut};
+  const F=[['all',A?'الكل':'All',''],['ok','🟢 '+(A?'متوفّر':'In'),''],['low','🟡 '+(A?'قارب':'Low'),''],['out','🔴 '+(A?'نفد':'Out'),'']];
+  const filters=`<div class="ifilters">${F.map(([k,lb])=>`<button class="ifl ${invFilter===k?'on':''}" onclick="setInvFilter('${k}')">${lb} ${ar(counts[k])}</button>`).join('')}</div>`;
+
+  // القائمة (مفلترة)
+  let items=INV.filter(it=>invFilter==='all'||invStatus(it)===invFilter);
+  if(invSearch){ const q=invSearch.toLowerCase(); items=items.filter(it=>(it.name||'').toLowerCase().includes(q)); }
+  const list = items.length ? items.map(it=>{
+    const q=+it.qty||0, st=invStatus(it), bp=+it.buy_price||0, sp=+it.sell_price||0;
+    const mar=bp>0?Math.round((sp-bp)/bp*100):0;
+    const stTx={ok:'🟢 '+(A?'متوفّر':'In'),low:'🟡 '+(A?'قارب':'Low'),out:'🔴 '+(A?'نفد':'Out')}[st];
+    return `<div class="iitem ${st}">
+      <div class="ii-top">
+        <div class="ii-name"><b>${esc(it.name)}</b>${(+it.min_qty)?`<span class="ii-min">${A?'الحد الأدنى':'Min'}: ${ar(+it.min_qty)}${st!=='ok'?` · <em>${st==='out'?(A?'نفد — اطلب!':'Out — reorder'):(A?'أقل من الحد':'below min')}</em>`:''}</span>`:''}</div>
+        <div class="ii-qty"><div class="ii-num ${st}">${ar(q)}</div><div class="ii-u">${esc(it.unit||'')}</div><span class="ii-badge ${st}">${stTx}</span></div>
+      </div>
+      <div class="ii-mid">
+        <div class="iprice"><small>${A?'شراء':'Buy'}</small><b>${invMoney(bp)}</b></div>
+        <div class="iprice sell"><small>${A?'بيع':'Sell'}</small><b>${invMoney(sp)}${mar>0?` <span class="imar">+${ar(mar)}٪</span>`:''}</b></div>
+      </div>
+      <div class="ii-acts">
+        <input type="number" class="inv-amt" inputmode="numeric" placeholder="${A?'كمية':'qty'}" />
+        <button class="ib in" onclick="invAdd('${it.id}',this)">＋ ${A?'إدخال':'In'}</button>
+        <button class="ib out" ${q<=0?'disabled':''} onclick="invGive('${it.id}',this)">− ${A?'صرف':'Out'}</button>
+        <button class="ib edit" onclick="invEdit('${it.id}')">✎</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="sl-empty">${invSearch?(A?'ما فيه صنف بهالاسم':'No match'):(A?'ما فيه أصناف بهالحالة':'None in this state')}</div>`;
+
   return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>
-    ${renderInvPanel()}
+    ${worth}
+    <button class="inv-add-toggle" onclick="invAddPrompt()">＋ ${A?'صنف جديد':'New item'}</button>
+    ${search}${filters}
+    <div class="ilist">${list}</div>
     <div class="sl-head">📋 ${A?'سجل الحركة':'Movement log'}<span>${A?'كل زيادة ونقص باسم صاحبه':'Every change, logged'}</span></div>
     <div class="sl-list">${renderStockLog()}</div>`;
+}
+/* إضافة صنف جديد (باسم + وحدة + كمية + أسعار + حد أدنى) */
+async function invAddPrompt(){
+  const A=lang==='ar';
+  const name=prompt(A?'اسم الصنف:':'Item name:'); if(!name||!name.trim()) return;
+  const unit=prompt(A?'الوحدة (حبة/متر/كرتون):':'Unit:','حبة')||'حبة';
+  const qty=Math.abs(+prompt(A?'الكمية الحالية:':'Current qty:','0')||0);
+  const buy=Math.abs(+prompt(A?'سعر الشراء (ر.س):':'Buy price:','0')||0);
+  const sell=Math.abs(+prompt(A?'سعر البيع (ر.س):':'Sell price:','0')||0);
+  const mn=Math.abs(+prompt(A?'الحد الأدنى للتنبيه:':'Min alert qty:','3')||3);
+  const data={ name:name.trim(), unit, qty, buy_price:buy, sell_price:sell, min_qty:mn };
+  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').insert(data).select().single();
+    if(!r.error&&r.data){ INV.unshift(r.data); if(qty>0) await logStock(r.data,qty,A?'رصيد افتتاحي':'opening'); } }catch(e){ toast('⚠️ '+(e.message||'')); return; } }
+  toast('✅ '+(A?'انضاف':'Added')); render();
+}
+/* تعديل صنف (الأسعار/الحد الأدنى/الوحدة) */
+async function invEdit(id){
+  const A=lang==='ar'; const it=INV.find(x=>x.id===id); if(!it) return;
+  const buy=prompt(A?('سعر شراء «'+it.name+'»:'):'Buy price:', it.buy_price||0); if(buy===null) return;
+  const sell=prompt(A?'سعر البيع:':'Sell price:', it.sell_price||0); if(sell===null) return;
+  const mn=prompt(A?'الحد الأدنى للتنبيه:':'Min alert:', it.min_qty||3); if(mn===null) return;
+  const patch={ buy_price:Math.abs(+buy||0), sell_price:Math.abs(+sell||0), min_qty:Math.abs(+mn||0) };
+  Object.assign(it, patch);
+  if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update(patch).eq('id',it.id); }catch(e){} }
+  toast('✅ '+(A?'تعدّل':'Updated')); render();
 }
 /* ---- قسم: حجز لعميل ---- */
 function renderBookTab(){
