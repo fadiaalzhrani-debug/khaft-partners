@@ -125,6 +125,8 @@
   .delay-ctl .dc-btns .dc-reset{background:var(--card);border-color:var(--line);color:var(--muted)}
   .tbtn.arrive{background:#25D366;color:#04210f}
   .tbtn.arrivedlbl{background:rgba(37,211,102,.15);color:#5ee68f}
+  .tbtn.onway{background:#3884ff;color:#fff}
+  .tbtn.onwaylbl{background:rgba(56,132,255,.15);color:#7fb0ff}
   .tj-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .status.arrived-b{background:rgba(37,211,102,.18);color:#5ee68f;border-color:transparent}
   .twa{display:inline-flex;align-items:center;gap:4px;background:rgba(37,211,102,.14);color:#5ee68f !important;padding:3px 10px;border-radius:999px;font-weight:800;white-space:nowrap}
@@ -632,7 +634,7 @@ function rowToOrder(r){
   return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[],
     customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
-    free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0 };
+    free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0 };
 }
 function loadLocal(){
   try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); ORDERS=(s&&s.orders)||[]; }catch(e){ ORDERS=[]; }
@@ -662,6 +664,7 @@ async function setJobStatus(id, st){
 /* ---- واتساب + وصول الفني ---- */
 // رسالة الوصول تصل للعميل (عربي دائماً لأن العميل عربي)
 const ARRIVE_MSG = 'السلام عليكم ورحمة الله 👋 معكم فني خافِت — وصلت إلى الموقع، نرجو التكرّم باستقبالنا. شكراً لكم 🌟';
+const ONWAY_MSG  = 'السلام عليكم ورحمة الله 👋 معكم فني خافِت — أنا في الطريق إليك الآن، نرجو الاستعداد لاستقبالنا. شكراً لكم 🚗';
 function waLink(phone, msg){
   let p=String(phone||'').replace(/[^0-9]/g,'');
   if(p.startsWith('00')) p=p.slice(2);
@@ -669,6 +672,15 @@ function waLink(phone, msg){
   else if(p.startsWith('0')) p='966'+p.slice(1);
   else if(p.length===9) p='966'+p;
   return 'https://wa.me/'+p+(msg?('?text='+encodeURIComponent(msg)):'');
+}
+async function markOnWay(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  o.onTheWay=true;
+  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({on_the_way:true}).eq('id',o.dbId); }catch(e){} }
+  else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.onTheWay=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
+  toast(lang==='ar'?'🚗 أُبلغ العميل إنك في الطريق':'🚗 Customer notified you are on the way'); render();
+  // رسالة واتساب للعميل
+  try{ window.open(waLink(o.customer.phone, ONWAY_MSG), '_blank'); }catch(e){}
 }
 async function markArrived(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
@@ -1127,8 +1139,11 @@ function render(){
     if(o.status==='done'){
       acts=`<div class="tbtn donelbl">${t('doneLbl')}</div><button class="tbtn fold" onclick="toggleDone('${o.id}')">▴</button>`;
     } else if(!o.arrived){
-      // الخطوة الأولى دائماً: وصلت الموقع (يبلّغ العميل قبل أي شي)
-      acts=`<button class="tbtn arrive" onclick="markArrived('${o.id}')">${t('arrived')}</button>`;
+      // التسلسل: (في الطريق اختياري) → وصلت الموقع → بدء → إنهاء
+      const onway = o.onTheWay
+        ? `<div class="tbtn onwaylbl">${lang==='ar'?'🚗 في الطريق — أُبلغ العميل':'🚗 On the way — notified'}</div>`
+        : `<button class="tbtn onway" onclick="markOnWay('${o.id}')">${lang==='ar'?'🚗 أنا في الطريق':'🚗 On my way'}</button>`;
+      acts=onway+`<button class="tbtn arrive" onclick="markArrived('${o.id}')">${t('arrived')}</button>`;
     } else if(o.status==='new'||o.status==='confirmed'){
       acts=`<div class="tbtn arrivedlbl">${t('arrivedDone')}</div><button class="tbtn start" onclick="setJobStatus('${o.id}','progress')">${t('start')}</button>`;
     } else if(o.status==='progress'){
