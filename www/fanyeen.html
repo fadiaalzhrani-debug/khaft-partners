@@ -764,9 +764,11 @@ function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(
 function openInvoice(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   invEditing=id;
-  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',name:it.name,qty:+it.qty||1,price:+it.price||0})) : [];
+  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0})) : [];
   renderInvoice();
 }
+/* قطعة من المستودع: تدخل الفاتورة بسعر البيع، وتنخصم عند الحفظ */
+function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:+it.sell_price||0,deducted:0}); } renderInvoice(); }
 function closeInvoice(){ invEditing=null; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
 function captureInvPrices(){
   document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; });
@@ -783,7 +785,20 @@ function invNet(){ const p=invPct(); return Math.round(invTotal()*(1-p/100)); }
 async function saveInvoice(){
   captureInvPrices();
   const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
-  const invoice={ items:invItems.map(it=>({name:it.name,qty:+it.qty||1,price:+it.price||0})), subtotal:invTotal(), discountPct:invPct(), total:invNet(), createdAt:Date.now() };
+  // خصم قطع المستودع من المخزون — الفرق فقط (يمنع الخصم المزدوج عند إعادة الحفظ/التعديل)
+  for(const it of invItems){
+    if(it.id==='stock' && it.stockId){
+      const inv=INV.find(x=>x.id===it.stockId); if(!inv) continue;
+      const want=+it.qty||1, done=+it.deducted||0, delta=want-done;
+      if(delta!==0){
+        inv.qty=Math.max(0,(+inv.qty||0)-delta);
+        await invSaveQty(inv);
+        await logStock(inv, -delta, (lang==='ar'?'صرف — فاتورة ':'invoice — ')+o.id);
+        it.deducted=want;
+      }
+    }
+  }
+  const invoice={ items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0})), subtotal:invTotal(), discountPct:invPct(), total:invNet(), createdAt:Date.now() };
   o.invoice=invoice;
   if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({invoice:invoice}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===o.id); if(tt){ tt.invoice=invoice; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
@@ -815,12 +830,14 @@ function printInvoiceDoc(o){
 function renderInvoice(){
   const m=document.getElementById('invModal');
   if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
+  const A=lang==='ar';
   const opts=SERVICES.map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} — ${ar(s.price)}</option>`).join('');
+  const invOpts=(INV||[]).map(it=>`<option value="${it.id}">${esc(it.name)} — ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
   const rows = invItems.length ? invItems.map((it,i)=>{
     const editable=(it.id==='part'||it.id==='custom');
     const nameCell = editable
       ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
-      : `<span class="ir-name">${esc(itemDisplay(it))}</span>`;
+      : `<span class="ir-name">${it.id==='stock'?'📦 ':''}${esc(itemDisplay(it))}</span>`;
     return `<div class="inv-row">
       ${nameCell}
       <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
@@ -832,6 +849,7 @@ function renderInvoice(){
     <div class="inv-head"><b>🧾 ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
     <div class="inv-add">
       <select onchange="addInvItem(this.value);this.value=''"><option value="">${t('addService')}</option>${opts}</select>
+      ${invOpts?`<select class="stock-sel" onchange="addStockPart(this.value);this.value=''"><option value="">📦 ${A?'قطعة من المستودع':'From stock'}</option>${invOpts}</select>`:''}
       <button class="cust" onclick="addPart()">${t('addPart')}</button>
       <button class="cust" onclick="addCustomItem()">${t('customItem')}</button>
     </div>
@@ -1054,7 +1072,7 @@ async function createBooking(){
   if(cloudReady) loadOrders(); else render();
 }
 /* ---- قسم الفواتير ---- */
-function invTotal(o){
+function invOrderTotal(o){
   const iv=o.invoice; if(!iv) return 0;
   if(typeof iv.total==='number') return iv.total;
   return (iv.items||[]).reduce((s,it)=>s+((+it.price||0)*(+it.qty||1)),0);
@@ -1063,11 +1081,11 @@ function renderInvoicesTab(){
   const A=lang==='ar';
   const list=ORDERS.filter(o=>o.invoice).sort((a,b)=>
     (b.date+String(b.startMin).padStart(4,'0')).localeCompare(a.date+String(a.startMin).padStart(4,'0')));
-  const total=list.reduce((s,o)=>s+invTotal(o),0);
+  const total=list.reduce((s,o)=>s+invOrderTotal(o),0);
   const rows = list.length ? list.map(o=>`
     <button class="ivrow" onclick="openInvoice('${o.id}')">
       <span class="iv-m"><b>${esc((o.customer&&o.customer.name)||'')}</b><span>${jobDate(o.date)} · ${jobTime(o.startMin)}</span></span>
-      <span class="iv-amt">${ar(Math.round(invTotal(o)))}</span>
+      <span class="iv-amt">${ar(Math.round(invOrderTotal(o)))}</span>
       <span class="iv-ch">›</span>
     </button>`).join('')
     : `<div class="empty"><div class="ico">🧾</div><h3>${A?'ما فيه فواتير بعد':'No invoices yet'}</h3></div>`;
