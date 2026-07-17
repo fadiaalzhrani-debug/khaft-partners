@@ -60,13 +60,14 @@ workflows:
       - name: إنشاء وإعداد شهادات التوقيع
         script: |
           keychain initialize
-          # --create يُنشئ App ID وملف توقيع جديدَين للـ Bundle ID تلقائياً
+          # المفاتيح متعددة الأسطر تُمرَّر عبر متغيّرات البيئة (الطريقة الموصى بها من Codemagic)
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
+          export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key.pem)"
+          # --create يُنشئ الشهادة وملف التوقيع تلقائياً؛ المفاتيح تُقرأ من متغيّرات البيئة
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key "$(cat /tmp/AuthKey.p8)" \
-            --certificate-key "$(cat /tmp/cert_key.pem)" \
             --create
           keychain add-certificates
           xcode-project use-profiles
@@ -78,11 +79,11 @@ workflows:
         script: |
           IPA=$(find "$CM_BUILD_DIR" -name '*.ipa' | head -1)
           echo "الملف: $IPA"
+          export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
           app-store-connect publish \
             --path "$IPA" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key "$(cat /tmp/AuthKey.p8)"
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER"
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
       - build/ios/ipa/*.ipa
