@@ -65,8 +65,8 @@ workflows:
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key @file:/tmp/AuthKey.p8 \
-            --certificate-key @file:/tmp/cert_key.pem \
+            --private-key "$(cat /tmp/AuthKey.p8)" \
+            --certificate-key "$(cat /tmp/cert_key.pem)" \
             --create
           keychain add-certificates
           xcode-project use-profiles
@@ -82,7 +82,7 @@ workflows:
             --path "$IPA" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key @file:/tmp/AuthKey.p8
+            --private-key "$(cat /tmp/AuthKey.p8)"
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
       - build/ios/ipa/*.ipa
