@@ -184,6 +184,20 @@
   .tb.on::before{content:"";position:absolute;top:0;right:24%;left:24%;height:2px;background:var(--gold);border-radius:0 0 3px 3px}
   .tb .tdot{position:absolute;top:6px;left:27%;width:7px;height:7px;border-radius:50%;background:var(--gold);border:1.5px solid #171a20}
 
+  /* ===== سجل حركة المستودع ===== */
+  .sl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 2px 10px;font-weight:900;font-size:1.02rem;color:var(--gold)}
+  .sl-head span{color:var(--muted);font-weight:600;font-size:.76rem}
+  .sl-list{display:flex;flex-direction:column;gap:7px}
+  .sl-empty{color:var(--muted);text-align:center;padding:18px;font-size:.9rem;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .slog{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+  .sl-d{font-weight:900;font-size:.95rem;font-variant-numeric:tabular-nums;min-width:44px;text-align:center;padding:5px 6px;border-radius:8px;flex-shrink:0}
+  .sl-d.in{color:#6ee7a0;background:rgba(34,197,94,.12)}
+  .sl-d.out{color:#fca5a5;background:rgba(248,113,113,.12)}
+  .sl-m{flex:1;min-width:0}
+  .sl-m b{display:block;font-size:.86rem;font-weight:800}
+  .sl-m span{color:var(--muted);font-size:.72rem;font-weight:600}
+  .sl-t{color:var(--muted);font-size:.68rem;font-weight:600;text-align:end;flex-shrink:0;white-space:nowrap}
+
   /* ===== قسم: حجز لعميل ===== */
   .bookf{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px;display:flex;flex-direction:column;gap:11px}
 
@@ -483,7 +497,7 @@ async function initCloud(){
         const { data:role }=await sb.rpc('staff_role');
         if(role) loggedIn=true; else { try{ await sb.auth.signOut(); }catch(e){} }
       }
-      loadPrices(); loadInv(); loadOrders(); subscribe();
+      loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe();
       return;
     }
   }catch(e){}
@@ -498,10 +512,48 @@ let INV=[], showInv=false;
 async function loadInv(){ if(!cloudReady) return; try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); INV=iv.data||[]; if(loggedIn) render(); }catch(e){} }
 function toggleInv(){ showInv=!showInv; render(); }
 async function invSaveQty(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
-async function logStock(it, delta, reason){ const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:'الفني' }; if(cloudReady){ try{ await sb.from('khafet_stock_log').insert(entry); }catch(e){} } }
+async function logStock(it, delta, reason){ const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:'الفني' }; if(cloudReady){ try{ await sb.from('khafet_stock_log').insert(entry); }catch(e){} } loadStockLog(); }
+/* ---- سجل حركة المستودع: كل زيادة ونقص مسجّل باسم صاحبه — يشوفه الفني والمدير ---- */
+let STOCKLOG=[];
+async function loadStockLog(){
+  if(!cloudReady) return;
+  try{
+    const r=await sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(60);
+    STOCKLOG=r.data||[];
+    if(loggedIn && tab==='inv') render();
+  }catch(e){}
+}
+function renderStockLog(){
+  const A=lang==='ar';
+  if(!STOCKLOG.length) return `<div class="sl-empty">${A?'ما فيه حركة مسجّلة بعد':'No movements yet'}</div>`;
+  return STOCKLOG.map(e=>{
+    const dv=+e.delta||0, plus=dv>0;
+    const d=new Date(e.created_at||Date.now());
+    const when=jobDate(dateISO(d))+' · '+jobTime(d.getHours()*60+d.getMinutes());
+    return `<div class="slog">
+      <span class="sl-d ${plus?'in':'out'}">${plus?'+':'−'}${ar(Math.abs(dv))}</span>
+      <span class="sl-m"><b>${esc(e.item_name||'')}</b><span>${esc(e.reason||'')} · 👤 ${esc(e.actor||'')}</span></span>
+      <span class="sl-t">${when}</span>
+    </div>`;
+  }).join('');
+}
 function invAmt(btn){ const inp=btn.parentElement.querySelector('.inv-amt'); return {inp, v:Math.abs(+((inp||{}).value)||0)}; }
 async function invAdd(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invAmt(btn); if(!v){ toast('⚠️'); return; } it.qty=(+it.qty||0)+v; if(inp) inp.value=''; await invSaveQty(it); await logStock(it,v,'شراء'); toast(t('invSaved')); render(); }
-async function invGive(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invAmt(btn); if(!v){ toast('⚠️'); return; } it.qty=Math.max(0,(+it.qty||0)-v); if(inp) inp.value=''; await invSaveQty(it); await logStock(it,-v,'صرف'); toast(t('invSaved')); render(); }
+async function invGive(id,btn){
+  const it=INV.find(x=>x.id===id); if(!it) return;
+  const {inp,v}=invAmt(btn); if(!v){ toast('⚠️'); return; }
+  if(v>(+it.qty||0)){ toast('⚠️ '+(lang==='ar'?'الكمية أكثر من المتوفّر':'More than in stock')); return; }
+  // منع التلاعب: كل صرف لازم له سبب (اسم العميل / رقم الطلب) — ينحفظ بالسجل باسم الفني
+  const why=prompt(lang==='ar'?('صرف '+ar(v)+' '+(it.unit||'')+' من «'+it.name+'»\n\nاكتب السبب (اسم العميل أو رقم الطلب):'):('Reason for issuing '+v+' × '+it.name+' (customer / job #):'));
+  if(why===null) return;                       // ألغى
+  const reason=(why||'').trim();
+  if(!reason){ toast('⚠️ '+(lang==='ar'?'لازم تكتب السبب':'Reason required')); return; }
+  it.qty=Math.max(0,(+it.qty||0)-v); if(inp) inp.value='';
+  await invSaveQty(it);
+  await logStock(it,-v,(lang==='ar'?'صرف — ':'issue — ')+reason);
+  toast('✅ '+(lang==='ar'?'انصرف وانسجّل':'Issued & logged'));
+  render();
+}
 async function invAddItem(){
   const g=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
   const name=g('inv_new_name'); if(!name){ toast('⚠️'); return; }
@@ -835,7 +887,11 @@ function renderTabs(){
 }
 /* ---- قسم المستودع ---- */
 function renderInvTab(){
-  return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>${renderInvPanel()}`;
+  const A=lang==='ar';
+  return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>
+    ${renderInvPanel()}
+    <div class="sl-head">📋 ${A?'سجل الحركة':'Movement log'}<span>${A?'كل زيادة ونقص باسم صاحبه':'Every change, logged'}</span></div>
+    <div class="sl-list">${renderStockLog()}</div>`;
 }
 /* ---- قسم: حجز لعميل ---- */
 function renderBookTab(){
