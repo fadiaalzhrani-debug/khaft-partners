@@ -260,8 +260,7 @@ async function loadOrders(){
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(me) loadOrders(); }).subscribe(); }catch(e){} }
 
 /* ---- الدخول ---- */
-/* الدخول بالجوال + رمز SMS (بدون كلمة مرور) */
-let otpPhone='', otpSent=false;
+/* الدخول برقم الجوال + كلمة المرور (بلا رسائل = بلا تكلفة على كل دخول) */
 function normPhone(v){
   let d=String(v||'').replace(/[^0-9]/g,'');
   if(d.startsWith('00')) d=d.slice(2);
@@ -269,32 +268,23 @@ function normPhone(v){
   if(!d.startsWith('966')) d='966'+d;
   return d;
 }
-function resetOtp(){ otpSent=false; otpPhone=''; showLogin(); }
-async function sendProviderOtp(){
+async function login(){
   const d=normPhone((document.getElementById('lg_phone')||{}).value||'');
+  const pass=((document.getElementById('lg_pass')||{}).value||'').trim();
   if(d.length<12){ showLogin('❌ رقم الجوال غير صحيح.'); return; }
+  if(!pass){ showLogin('اكتب كلمة المرور.'); return; }
   if(!cloudReady){ showLogin('لا يوجد اتصال بالخادم'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
-    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ channel:'sms' } });
-    if(error) throw error;
-    otpPhone='+'+d; otpSent=true; showLogin();
-  }catch(e){ otpSent=false; showLogin('تعذّر إرسال الرمز — تأكد من الرقم.'); }
-}
-async function verifyProviderOtp(){
-  const code=((document.getElementById('lg_code')||{}).value||'').trim();
-  if(code.length<4){ showLogin('أدخل الرمز.'); return; }
-  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
-  try{
-    const { error }=await sb.auth.verifyOtp({ phone:otpPhone, token:code, type:'sms' });
-    if(error){ showLogin('❌ الرمز غير صحيح.'); return; }
-    const d=otpPhone.replace('+',''); const local05='0'+d.slice(3);
-    const { data } = await sb.from('khafet_providers').select('*').in('phone',[local05, d, otpPhone]);
+    const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:pass });
+    if(error){ showLogin('❌ الرقم أو كلمة المرور غير صحيحة.'); return; }
+    const local05='0'+d.slice(3);
+    const { data } = await sb.from('khafet_providers').select('*').in('phone',[local05, d, '+'+d]);
     const p=(data||[])[0];
-    if(!p){ try{ await sb.auth.signOut(); }catch(e2){} otpSent=false; showLogin('❌ الرقم غير مسجّل كمزوّد — سجّل من الموقع أو راجع الإدارة.'); return; }
-    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} otpSent=false; showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
-    me=p; otpSent=false; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush();
-  }catch(e){ otpSent=false; showLogin('تعذّر الاتصال، حاول مرة ثانية.'); }
+    if(!p){ try{ await sb.auth.signOut(); }catch(e2){} showLogin('❌ الرقم غير مسجّل كمزوّد — سجّل من الموقع أو راجع الإدارة.'); return; }
+    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
+    me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush();
+  }catch(e){ showLogin('تعذّر الاتصال، حاول مرة ثانية.'); }
 }
 async function autoLogin(){
   const saved=localStorage.getItem('khafet_provider_phone');
@@ -381,14 +371,10 @@ function showLogin(msg, wait){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">🤝</div><h1>بوابة المزوّد</h1>
-    <p>${otpSent?('أدخل الرمز المُرسل إلى '+otpPhone):'ادخل برقمك المسجّل — يوصلك رمز برسالة لاستقبال طلبات منطقتك.'}</p>
-    ${otpSent?`
-    <input id="lg_code" inputmode="numeric" maxlength="6" placeholder="رمز التحقق" style="letter-spacing:.4em;text-align:center;font-weight:900" onkeydown="if(event.key==='Enter')verifyProviderOtp()" />
-    <button class="btn" onclick="verifyProviderOtp()">تأكيد ودخول</button>
-    <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.25);margin-top:8px" onclick="resetOtp()">تغيير الرقم</button>`
-    :`
-    <input id="lg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" onkeydown="if(event.key==='Enter')sendProviderOtp()" />
-    <button class="btn" onclick="sendProviderOtp()">أرسل الرمز</button>`}
+    <p>ادخل برقمك المسجّل وكلمة المرور لاستقبال طلبات منطقتك.</p>
+    <input id="lg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
+    <input id="lg_pass" type="password" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
+    <button class="btn" onclick="login()">دخول</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <a class="reg" href="https://khaft1.netlify.app/" target="_blank" rel="noopener">لست مسجّلاً؟ سجّل كمزوّد صيانة عبر الموقع</a>
     <a class="reg2" href="fanyeen.html">🧑‍🔧 هل أنت فني؟ دخول الفنيين</a>
