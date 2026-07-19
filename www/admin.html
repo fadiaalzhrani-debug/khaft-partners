@@ -198,7 +198,7 @@ const BRAND='خافِت'; const COMMISSION=3;
 const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط — ليس سرّاً
 let loggedIn=false;                     // تُحدَّد من جلسة Supabase
 
-let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], adminFilter='all';
+let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all';
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
 function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
 function money(n){ return ar(n)+' ر.س'; }
@@ -351,8 +351,60 @@ async function loadAll(){
   try{ const s=await sb.from('khafet_subscriptions').select('*').order('created_at',{ascending:false}); SUBS=s.data||[]; }catch(e){}
   try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); INV=iv.data||[]; }catch(e){}
   try{ const lg=await sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000); LOG=lg.data||[]; }catch(e){}
+  try{ const st=await sb.from('khafet_staff').select('*'); STAFF=st.data||[]; }catch(e){}
   render();
 }
+/* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
+async function callStaffAdmin(body){
+  try{
+    const { data:{ session } }=await sb.auth.getSession();
+    if(!session) return { error:'انتهت الجلسة — سجّل دخول' };
+    const r=await fetch(SUPABASE_URL+'/functions/v1/staff-admin',{ method:'POST',
+      headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' },
+      body:JSON.stringify(body) });
+    return await r.json();
+  }catch(e){ return { error:String(e.message||e) }; }
+}
+function renderTechs(){
+  const techs=STAFF.filter(s=>s.role==='tech');
+  const rows=techs.length? techs.map(t=>{
+    const off=t.active===false;
+    return `<div class="rline">
+      <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?'⛔ موقوف':'✅ فعّال'} · دخول: <code>${esc(t.login||'—')}</code>${t.phone?' · '+esc(t.phone):''}</small></div>
+      <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
+      <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
+    </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
+  return `${rows}
+    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
+      <b style="display:block;margin-bottom:10px">➕ إضافة فني</b>
+      <div class="field"><input id="nt_name" placeholder="الاسم (مثال: أحمد علي)" /></div>
+      <div class="field"><input id="nt_user" placeholder="اسم الدخول (إنجليزي بلا مسافات، مثال: ahmad)" inputmode="latin" /></div>
+      <div class="field"><input id="nt_phone" placeholder="الجوال (اختياري)" inputmode="tel" /></div>
+      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٦ خانات فأكثر)" /></div>
+      <button class="sbtn ok" style="width:100%;margin-top:6px" onclick="addTech()">إنشاء حساب الفني</button>
+    </div>`;
+}
+async function addTech(){
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const name=g('nt_name'), login=g('nt_user'), phone=g('nt_phone'), password=g('nt_pass');
+  if(!name||!login||password.length<6){ toast('عبّي الاسم واسم الدخول وكلمة مرور ٦+'); return; }
+  toast('⏳ جارٍ إنشاء الحساب...');
+  const d=await callStaffAdmin({ action:'create', login, name, phone, password, role:'tech' });
+  if(d&&d.ok){ toast('✅ تم — اسم دخول الفني: '+d.login); await loadStaff(); }
+  else toast('⚠️ '+((d&&d.error)||'تعذّر الإنشاء'));
+}
+async function toggleTechActive(uid, makeActive){
+  const d=await callStaffAdmin({ action:'set_active', user_id:uid, active:!!makeActive });
+  if(d&&d.ok){ toast(makeActive?'✅ فُعّل الفني':'⛔ أُوقف الفني'); await loadStaff(); }
+  else toast('⚠️ '+((d&&d.error)||'تعذّر'));
+}
+async function resetTechPass(uid){
+  const p=prompt('كلمة المرور الجديدة (٦ خانات على الأقل):'); if(p==null) return;
+  if(p.trim().length<6){ toast('٦ خانات على الأقل'); return; }
+  const d=await callStaffAdmin({ action:'set_password', user_id:uid, password:p.trim() });
+  toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
+}
+async function loadStaff(){ if(!cloudReady) return; try{ const { data }=await sb.from('khafet_staff').select('*'); STAFF=data||[]; if(loggedIn) render(); }catch(e){} }
 async function logStock(it, delta, reason, actor){
   const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:actor||'المؤسسة' };
   if(cloudReady){ try{ const r=await sb.from('khafet_stock_log').insert(entry).select().single(); if(!r.error&&r.data){ LOG.unshift(r.data); return; } }catch(e){} }
@@ -631,6 +683,7 @@ function render(){
     <div class="fbar">${fbar}</div>
     ${orderCards}
     <div style="height:26px"></div>
+    ${panel('techs', `🧑‍🔧 الفنيّون (${ar(STAFF.filter(s=>s.role==='tech').length)})`,   ()=>renderTechs())}
     ${panel('rem',   `📩 تذكيرات المواعيد القريبة`,                        ()=>remHtml)}
     ${panel('comm',  `💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`, ()=>renderCommission())}
     ${panel('prov',  `🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,          ()=>renderProviders())}

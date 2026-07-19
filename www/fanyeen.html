@@ -543,7 +543,7 @@ async function initCloud(){
       const { data:{ session } }=await sb.auth.getSession();
       if(session){
         const { data:role }=await sb.rpc('staff_role');
-        if(role) loggedIn=true; else { try{ await sb.auth.signOut(); }catch(e){} }
+        if(role){ loggedIn=true; await loadMyName(); } else { try{ await sb.auth.signOut(); }catch(e){} }
       }
       loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn) initPush();
       return;
@@ -577,6 +577,13 @@ async function initPush(){
     if(perm.receive==='granted') await PN.register();
   }catch(e){ console.warn('initPush', e); }
 }
+/* اسم الفني الحالي — لنسب الإجراءات إليه */
+let myName='';
+async function loadMyName(){
+  try{ const { data:{ user } }=await sb.auth.getUser();
+    if(user){ const { data }=await sb.from('khafet_staff').select('name').eq('user_id',user.id).maybeSingle(); myName=(data&&data.name)||''; } }
+  catch(e){ myName=''; }
+}
 async function loadPrices(){
   if(!cloudReady) return;
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); if(invEditing) renderInvoice(); } }catch(e){}
@@ -591,7 +598,7 @@ function setInvFilter(f){ invFilter=f; render(); }
 async function loadInv(){ if(!cloudReady) return; try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); INV=iv.data||[]; if(loggedIn) render(); }catch(e){} }
 function toggleInv(){ showInv=!showInv; render(); }
 async function invSaveQty(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
-async function logStock(it, delta, reason){ const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:'الفني' }; if(cloudReady){ try{ await sb.from('khafet_stock_log').insert(entry); }catch(e){} } loadStockLog(); }
+async function logStock(it, delta, reason){ const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(cloudReady){ try{ await sb.from('khafet_stock_log').insert(entry); }catch(e){} } loadStockLog(); }
 /* ---- سجل حركة المستودع: كل زيادة ونقص مسجّل باسم صاحبه — يشوفه الفني والمدير ---- */
 let STOCKLOG=[];
 async function loadStockLog(){
@@ -682,7 +689,7 @@ function subscribe(){
 async function setJobStatus(id, st){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.status=st;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({status:st}).eq('id',o.dbId); }catch(e){} }
+  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({status:st, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.status=st; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   toast('✓'); render();
 }
@@ -702,7 +709,7 @@ function waLink(phone, msg){
 async function markOnWay(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.onTheWay=true;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({on_the_way:true}).eq('id',o.dbId); }catch(e){} }
+  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({on_the_way:true, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.onTheWay=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   toast(lang==='ar'?'🚗 أُبلغ العميل إنك في الطريق':'🚗 Customer notified you are on the way'); render();
   // رسالة واتساب للعميل
@@ -711,7 +718,7 @@ async function markOnWay(id){
 async function markArrived(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.arrived=true;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({arrived:true}).eq('id',o.dbId); }catch(e){} }
+  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({arrived:true, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.arrived=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   toast(t('arrivedToast')); render();
   // افتح واتساب للعميل برسالة الوصول
@@ -925,11 +932,13 @@ async function doLogin(){
   if(!cloudReady){ fail(); return; }
   if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
-    // التحقق يصير في الخادم (Supabase) — مو في المتصفح
-    const { error }=await sb.auth.signInWithPassword({ email: u.includes('@')?u:WORKER_EMAIL, password:p });
+    // اسم مستخدم بدون @ → حساب الفني الفردي؛ إيميل كامل يُقبل كما هو (توافق/أدمن)
+    const email = u.includes('@') ? u : (u.toLowerCase().replace(/\s+/g,'') + '@tech.khafet.app');
+    const { error }=await sb.auth.signInWithPassword({ email, password:p });
     if(error) throw error;
     const { data:role }=await sb.rpc('staff_role');
-    if(!role){ await sb.auth.signOut(); throw new Error('لا توجد صلاحية'); }
+    if(!role){ await sb.auth.signOut(); throw new Error('لا توجد صلاحية أو الحساب موقوف'); }
+    await loadMyName();
     loggedIn=true; render(); loadOrders(); initPush();
   }catch(e){ fail(); }
 }
