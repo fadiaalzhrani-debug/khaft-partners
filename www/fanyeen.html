@@ -910,37 +910,61 @@ function renderInvoice(){
 }
 
 /* ---- تسجيل الدخول ---- */
+/* ===== الدخول بالجوال + رمز SMS (بدون كلمات مرور) ===== */
+let otpPhone='', otpSent=false;
+function normPhone(v){
+  let d=String(v||'').replace(/[^0-9]/g,'');
+  if(d.startsWith('00')) d=d.slice(2);
+  if(d.startsWith('0'))  d='966'+d.slice(1);
+  if(!d.startsWith('966')) d='966'+d;
+  return d;
+}
+function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textContent=msg||'تعذّر الدخول · Sign-in failed'; e.style.display='block'; } }
+function resetOtp(){ otpSent=false; otpPhone=''; showLogin(); }
 function showLogin(){
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   document.getElementById('app').innerHTML=`
     <div class="login">
       <div class="ic">🧑‍🔧</div><h1>دخول الفنيين</h1>
-      <p>سجّل دخولك للوصول إلى الطلبات · Sign in</p>
-      <input id="wu" placeholder="اسم المستخدم · Username" autocomplete="username" />
-      <input id="wp" type="password" placeholder="كلمة المرور · Password" autocomplete="current-password" />
-      <button class="btn" onclick="doLogin()">دخول · Login</button>
-      <div id="lgerr" class="lgerr" style="display:none">بيانات الدخول غير صحيحة · Wrong credentials</div>
+      <p>${otpSent?('أدخل الرمز المُرسل إلى '+otpPhone):'ادخل برقم جوالك — يوصلك رمز برسالة · Sign in with your phone'}</p>
+      ${otpSent?`
+      <input id="wc" inputmode="numeric" maxlength="6" placeholder="رمز التحقق · Code" style="letter-spacing:.4em;text-align:center;font-weight:900" />
+      <button class="btn" onclick="verifyStaffOtp()">تأكيد ودخول · Verify</button>
+      <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.25);margin-top:8px" onclick="resetOtp()">تغيير الرقم</button>`
+      :`
+      <input id="wu" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
+      <button class="btn" onclick="sendStaffOtp()">أرسل الرمز · Send code</button>`}
+      <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول · Sign-in failed</div>
     </div>`;
-  const wp=document.getElementById('wp'); if(wp) wp.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+  const f=document.getElementById(otpSent?'wc':'wu');
+  if(f) f.addEventListener('keydown',e=>{ if(e.key==='Enter'){ otpSent?verifyStaffOtp():sendStaffOtp(); } });
 }
-async function doLogin(){
-  const u=(document.getElementById('wu')||{}).value ? document.getElementById('wu').value.trim() : '';
-  const p=(document.getElementById('wp')||{}).value || '';
-  const btn=document.querySelector('.login .btn');
-  const fail=()=>{ const e=document.getElementById('lgerr'); if(e) e.style.display='block';
-    if(btn){ btn.disabled=false; btn.textContent='دخول · Login'; } };
-  if(!cloudReady){ fail(); return; }
-  if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
+async function sendStaffOtp(){
+  const d=normPhone((document.getElementById('wu')||{}).value||'');
+  if(d.length<12){ lgFail('رقم الجوال غير صحيح'); return; }
+  if(!cloudReady){ lgFail('لا يوجد اتصال بالخادم'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
-    // اسم مستخدم بدون @ → حساب الفني الفردي؛ إيميل كامل يُقبل كما هو (توافق/أدمن)
-    const email = u.includes('@') ? u : (u.toLowerCase().replace(/\s+/g,'') + '@tech.khafet.app');
-    const { error }=await sb.auth.signInWithPassword({ email, password:p });
+    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ channel:'sms' } });
+    if(error) throw error;
+    otpPhone='+'+d; otpSent=true; showLogin();
+  }catch(e){ if(btn){ btn.disabled=false; btn.textContent='أرسل الرمز · Send code'; } lgFail('تعذّر إرسال الرمز — تأكد من الرقم'); }
+}
+async function verifyStaffOtp(){
+  const code=((document.getElementById('wc')||{}).value||'').trim();
+  if(code.length<4){ lgFail('أدخل الرمز'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
+  try{
+    const { error }=await sb.auth.verifyOtp({ phone:otpPhone, token:code, type:'sms' });
     if(error) throw error;
     const { data:role }=await sb.rpc('staff_role');
-    if(!role){ await sb.auth.signOut(); throw new Error('لا توجد صلاحية أو الحساب موقوف'); }
+    if(!role){ await sb.auth.signOut(); throw new Error('no-role'); }
     await loadMyName();
-    loggedIn=true; render(); loadOrders(); initPush();
-  }catch(e){ fail(); }
+    otpSent=false; loggedIn=true; render(); loadOrders(); initPush();
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.textContent='تأكيد ودخول · Verify'; }
+    lgFail((e&&e.message==='no-role') ? 'هذا الرقم غير مسجّل كفني — راجع الإدارة' : 'الرمز غير صحيح');
+  }
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); render(); }
 
