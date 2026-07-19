@@ -372,22 +372,25 @@ function renderTechs(){
     return `<div class="rline">
       <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?'⛔ موقوف':'✅ فعّال'} · 📱 ${esc(t.phone||'—')}</small></div>
       <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
+      <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
     </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
   return `${rows}
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
       <b style="display:block;margin-bottom:6px">➕ إضافة فني</b>
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله ورمز يوصله برسالة — بدون كلمة مرور.</p>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله وكلمة المرور — بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.</p>
       <div class="field"><input id="nt_name" placeholder="الاسم (مثال: أحمد علي)" /></div>
       <div class="field"><input id="nt_phone" placeholder="رقم جواله (05xxxxxxxx)" inputmode="tel" /></div>
+      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٦ خانات فأكثر)" /></div>
       <button class="sbtn ok" style="width:100%;margin-top:6px" onclick="addTech()">إنشاء حساب الفني</button>
     </div>`;
 }
 async function addTech(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
-  const name=g('nt_name'), phone=g('nt_phone');
+  const name=g('nt_name'), phone=g('nt_phone'), password=g('nt_pass');
   if(!name||!phone){ toast('عبّي الاسم ورقم الجوال'); return; }
+  if(password.length<6){ toast('كلمة المرور ٦ خانات فأكثر'); return; }
   toast('⏳ جارٍ إنشاء الحساب...');
-  const d=await callStaffAdmin({ action:'create', name, phone, role:'tech' });
+  const d=await callStaffAdmin({ action:'create', name, phone, password, role:'tech' });
   if(d&&d.ok){ toast('✅ تم — الفني يدخل برقم '+d.phone); await loadStaff(); }
   else toast('⚠️ '+((d&&d.error)||'تعذّر الإنشاء'));
 }
