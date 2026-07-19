@@ -181,7 +181,7 @@ const SERVICES=[
 ];
 function svc(id){ return SERVICES.find(s=>s.id===id); }
 
-let me=null, ORDERS=[], tab='available';
+let me=null, ORDERS=[], OPEN=[], tab='available';
 /* الطلبات المنجزة تنصفط في سطر واحد، تفتح بالضغط (زي الفنيّين) */
 let doneOpen={};
 function toggleDone(id){ doneOpen[id]=!doneOpen[id]; render(); }
@@ -253,9 +253,25 @@ function rowToOrder(r){
     address:r.address||{}, date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
     status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'' };
 }
+/* الطلبات المتاحة تُقرأ من مصدر آمن (بلا اسم/جوال/عنوان دقيق/صور) —
+   بيانات العميل تظهر فقط بعد ما يقبل المزوّد الطلب ويصير له. */
+function openToOrder(r){
+  return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[],
+    customer:{name:'',phone:''}, address:{ city:r.city||'', district:r.district||'' },
+    date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
+    status:r.status||'new', quick:!!r.quick, note:'', videoUrl:'', invoice:null, providerPhone:'' };
+}
 async function loadOrders(){
   if(!cloudReady||!me){ render(); return; }
-  try{ const { data, error } = await sb.from('khafet_orders').select('*').order('service_date').order('start_min'); if(error) throw error; ORDERS=(data||[]).map(rowToOrder); render(); }catch(e){ render(); }
+  try{
+    const [m,o] = await Promise.all([
+      sb.from('khafet_orders').select('*').order('service_date').order('start_min'),      // طلباتي (كاملة)
+      sb.from('khafet_open_orders').select('*').order('service_date').order('start_min')  // المتاحة (آمنة)
+    ]);
+    ORDERS=(m.data||[]).map(rowToOrder);
+    OPEN=(o.data||[]).map(openToOrder);
+    render();
+  }catch(e){ render(); }
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(me) loadOrders(); }).subscribe(); }catch(e){} }
 
@@ -302,12 +318,16 @@ async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=nul
 
 /* ---- قبول الطلب ---- */
 async function acceptOrder(id){
-  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  const o=OPEN.find(x=>x.id===id); if(!o) return;
   if(!confirm('تأكيد قبول الطلب '+o.id+'؟')) return;
   try{
-    const { data, error } = await sb.from('khafet_orders').update({provider_phone:me.phone, status:'confirmed'}).eq('id',o.dbId).is('provider_phone',null).select();
+    // القبول يتم في الخادم (أول من يقبل يفوز) — ثم تظهر بيانات العميل
+    const { data, error } = await sb.rpc('accept_order', { p_order_id:o.dbId });
     if(error) throw error;
-    if(!data || !data.length){ toast('اعتذار — الطلب أخذه مزوّد آخر'); loadOrders(); return; }
+    if(!data || data.ok!==true){
+      toast(data && data.reason==='taken' ? 'اعتذار — الطلب أخذه مزوّد آخر' : 'تعذّر القبول');
+      loadOrders(); return;
+    }
     toast('تم قبول الطلب ✅'); tab='mine'; loadOrders();
   }catch(e){ toast('تعذّر القبول، حاول مرة ثانية'); }
 }
@@ -393,6 +413,19 @@ function jobCard(o, mode){
     </button>`;
   }
   const work=o.quick?`<div class="quick-tag">⚡ طلب سريع (معاينة)</div>`:`<div class="tj-row"><span class="tj-k">🔧 المطلوب</span><span class="tj-v">${(o.items||[]).map(i=>i.ico+' '+i.name+(i.qty>1?' ×'+ar(i.qty):'')).join('، ')}</span></div>`;
+  // الطلب المتاح: نوع الخدمة والوقت والمنطقة فقط — بيانات العميل تظهر بعد القبول
+  if(mode==='available'){
+    return `<div class="tjob">
+      <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span class="status new">متاح</span></div>
+      <div class="tj-body">
+        ${work}
+        <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
+        <div class="tj-row"><span class="tj-k">📍 المنطقة</span><span class="tj-v">${esc([a.city,a.district].filter(Boolean).join(' · ')||'—')}</span></div>
+        <div class="tj-row"><span class="tj-k">🔒 بيانات العميل</span><span class="tj-v">الاسم والجوال والعنوان تظهر لك بعد قبول الطلب</span></div>
+      </div>
+      <div class="tacts"><button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button></div>
+    </div>`;
+  }
   const mapUrl=a.mapUrl||('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')));
   let acts='';
   if(mode==='available') acts=`<button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button>`;
@@ -420,7 +453,7 @@ function jobCard(o, mode){
 function render(){
   if(!me){ showLogin(''); return; }
   document.getElementById('logoutBtn').style.display='';
-  const avail=ORDERS.filter(o=>['new','confirmed'].includes(o.status) && !o.providerPhone && sameCity(o));
+  const avail=OPEN.filter(o=>sameCity(o));   // من المصدر الآمن (بلا بيانات شخصية)
   const mine=ORDERS.filter(o=>o.providerPhone===me.phone && o.status!=='cancelled')
     .sort((a,b)=>{ const r=s=>s==='done'?1:0; if(r(a.status)!==r(b.status)) return r(a.status)-r(b.status); return (a.date+String(a.startMin).padStart(4,'0')).localeCompare(b.date+String(b.startMin).padStart(4,'0')); });
   const myDone=mine.filter(o=>o.status==='done').length;
