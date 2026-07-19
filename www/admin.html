@@ -370,27 +370,25 @@ function renderTechs(){
   const rows=techs.length? techs.map(t=>{
     const off=t.active===false;
     return `<div class="rline">
-      <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?'⛔ موقوف':'✅ فعّال'} · دخول: <code>${esc(t.login||'—')}</code>${t.phone?' · '+esc(t.phone):''}</small></div>
+      <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?'⛔ موقوف':'✅ فعّال'} · 📱 ${esc(t.phone||'—')}</small></div>
       <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
-      <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
     </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
   return `${rows}
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
-      <b style="display:block;margin-bottom:10px">➕ إضافة فني</b>
+      <b style="display:block;margin-bottom:6px">➕ إضافة فني</b>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله ورمز يوصله برسالة — بدون كلمة مرور.</p>
       <div class="field"><input id="nt_name" placeholder="الاسم (مثال: أحمد علي)" /></div>
-      <div class="field"><input id="nt_user" placeholder="اسم الدخول (إنجليزي بلا مسافات، مثال: ahmad)" inputmode="latin" /></div>
-      <div class="field"><input id="nt_phone" placeholder="الجوال (اختياري)" inputmode="tel" /></div>
-      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٦ خانات فأكثر)" /></div>
+      <div class="field"><input id="nt_phone" placeholder="رقم جواله (05xxxxxxxx)" inputmode="tel" /></div>
       <button class="sbtn ok" style="width:100%;margin-top:6px" onclick="addTech()">إنشاء حساب الفني</button>
     </div>`;
 }
 async function addTech(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
-  const name=g('nt_name'), login=g('nt_user'), phone=g('nt_phone'), password=g('nt_pass');
-  if(!name||!login||password.length<6){ toast('عبّي الاسم واسم الدخول وكلمة مرور ٦+'); return; }
+  const name=g('nt_name'), phone=g('nt_phone');
+  if(!name||!phone){ toast('عبّي الاسم ورقم الجوال'); return; }
   toast('⏳ جارٍ إنشاء الحساب...');
-  const d=await callStaffAdmin({ action:'create', login, name, phone, password, role:'tech' });
-  if(d&&d.ok){ toast('✅ تم — اسم دخول الفني: '+d.login); await loadStaff(); }
+  const d=await callStaffAdmin({ action:'create', name, phone, role:'tech' });
+  if(d&&d.ok){ toast('✅ تم — الفني يدخل برقم '+d.phone); await loadStaff(); }
   else toast('⚠️ '+((d&&d.error)||'تعذّر الإنشاء'));
 }
 async function toggleTechActive(uid, makeActive){
@@ -484,28 +482,53 @@ function toggleReviewHidden(id){ const o=ORDERS.find(x=>x.id===id); if(!o) retur
 async function approveProvider(phone,status){ if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
 
 /* ---- الدخول ---- */
-function showLogin(){ const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
-  document.getElementById('app').innerHTML=`<div class="login"><div class="ic">🏢</div><h1>لوحة المؤسسة</h1><p>دخول الإدارة</p>
-    <input id="au" type="email" placeholder="الإيميل" autocomplete="username" value="admin@khafet.app" />
-    <input id="ap" type="password" placeholder="كلمة المرور" autocomplete="current-password" />
-    <button class="btn" onclick="doLogin()">دخول</button>
-    <div id="lgerr" class="lgerr" style="display:none">بيانات الدخول غير صحيحة</div></div>`;
-  const ap=document.getElementById('ap'); if(ap) ap.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+/* الدخول بالجوال + رمز SMS (بدون كلمة مرور) */
+let otpPhone='', otpSent=false;
+function normPhone(v){
+  let d=String(v||'').replace(/[^0-9]/g,'');
+  if(d.startsWith('00')) d=d.slice(2);
+  if(d.startsWith('0'))  d='966'+d.slice(1);
+  if(!d.startsWith('966')) d='966'+d;
+  return d;
 }
-async function doLogin(){
-  const u=((document.getElementById('au')||{}).value||'').trim();
-  const p=((document.getElementById('ap')||{}).value||'').trim();
-  const btn=document.querySelector('.login .btn');
-  const fail=(msg)=>{ const e=document.getElementById('lgerr'); if(e){ e.textContent=msg; e.style.display='block'; }
-    if(btn){ btn.disabled=false; btn.textContent='دخول'; } };
-  if(!cloudReady){ fail('لا يوجد اتصال بالخادم'); return; }
-  if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
+function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textContent=msg||'تعذّر الدخول'; e.style.display='block'; }
+  const b=document.querySelector('.login .btn'); if(b){ b.disabled=false; b.textContent=otpSent?'تأكيد ودخول':'أرسل الرمز'; } }
+function resetOtp(){ otpSent=false; otpPhone=''; showLogin(); }
+function showLogin(){ const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
+  document.getElementById('app').innerHTML=`<div class="login"><div class="ic">🏢</div><h1>لوحة المؤسسة</h1>
+    <p>${otpSent?('أدخل الرمز المُرسل إلى '+otpPhone):'ادخلي برقم جوالك — يوصلك رمز برسالة'}</p>
+    ${otpSent?`
+    <input id="ac" inputmode="numeric" maxlength="6" placeholder="رمز التحقق" style="letter-spacing:.4em;text-align:center;font-weight:900" />
+    <button class="btn" onclick="verifyAdminOtp()">تأكيد ودخول</button>
+    <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.25);margin-top:8px" onclick="resetOtp()">تغيير الرقم</button>`
+    :`
+    <input id="au" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
+    <button class="btn" onclick="sendAdminOtp()">أرسل الرمز</button>`}
+    <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول</div></div>`;
+  const f=document.getElementById(otpSent?'ac':'au');
+  if(f) f.addEventListener('keydown',e=>{ if(e.key==='Enter'){ otpSent?verifyAdminOtp():sendAdminOtp(); } });
+}
+async function sendAdminOtp(){
+  const d=normPhone((document.getElementById('au')||{}).value||'');
+  if(d.length<12){ lgFail('رقم الجوال غير صحيح'); return; }
+  if(!cloudReady){ lgFail('لا يوجد اتصال بالخادم'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
-    const { error }=await sb.auth.signInWithPassword({ email: u.includes('@')?u:ADMIN_EMAIL, password:p });
+    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ channel:'sms' } });
     if(error) throw error;
-    if(!(await isAdminUser())){ await sb.auth.signOut(); throw new Error('ليست صلاحية أدمن'); }
-    loggedIn=true; loadAll(); subscribe();
-  }catch(e){ fail('بيانات الدخول غير صحيحة'); }
+    otpPhone='+'+d; otpSent=true; showLogin();
+  }catch(e){ lgFail('تعذّر إرسال الرمز — تأكدي من الرقم'); }
+}
+async function verifyAdminOtp(){
+  const code=((document.getElementById('ac')||{}).value||'').trim();
+  if(code.length<4){ lgFail('أدخلي الرمز'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
+  try{
+    const { error }=await sb.auth.verifyOtp({ phone:otpPhone, token:code, type:'sms' });
+    if(error) throw error;
+    if(!(await isAdminUser())){ await sb.auth.signOut(); throw new Error('no-admin'); }
+    otpSent=false; loggedIn=true; loadAll(); subscribe();
+  }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : 'الرمز غير صحيح'); }
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_admin_auth'); render(); }
 
