@@ -206,6 +206,31 @@ function initCloud(){
   try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON); cloudReady=true; loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
   render();
 }
+/* ===== إشعارات المزوّد: تسجيل الجهاز لاستقبال «طلب جديد وصلك» ===== */
+function inApp(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
+function getPushPlugin(){
+  const C=window.Capacitor; if(!C) return null;
+  try{ if(typeof C.registerPlugin==='function') return C.registerPlugin('PushNotifications'); }catch(e){}
+  return (C.Plugins && C.Plugins.PushNotifications) || null;
+}
+let _pn=null, _pnReady=false;
+async function initPush(){
+  if(!inApp() || !cloudReady) return;
+  try{
+    const PN=_pn||getPushPlugin(); if(!PN) return; _pn=PN;
+    if(!_pnReady){
+      await PN.addListener('registration', async (t)=>{
+        try{ await sb.rpc('register_staff_device', { p_token:t.value, p_platform:'ios' }); }
+        catch(e){ console.warn('حفظ جهاز المزوّد:', e); }
+      });
+      await PN.addListener('registrationError', e=> console.warn('خطأ تسجيل الإشعارات', e));
+      _pnReady=true;
+    }
+    let perm=await PN.checkPermissions();
+    if(perm.receive==='prompt'||perm.receive==='prompt-with-rationale') perm=await PN.requestPermissions();
+    if(perm.receive==='granted') await PN.register();
+  }catch(e){ console.warn('initPush', e); }
+}
 /* ---------- وسائط العملاء ----------
    الباكِت خاص — رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
 function mediaPath(v){
@@ -250,7 +275,7 @@ async function login(){
     const p=(data||[])[0];
     if(!p){ showLogin('❌ الرقم غير مسجّل. سجّل كمزوّد أولاً من الموقع.'); return; }
     if((p.status||'pending')!=='approved'){ showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
-    me=p; localStorage.setItem('khafet_provider_phone',phone); loadOrders();
+    me=p; localStorage.setItem('khafet_provider_phone',phone); loadOrders(); initPush();
   }catch(e){ showLogin('تعذّر الاتصال، حاول مرة ثانية.'); }
 }
 async function autoLogin(){
@@ -261,7 +286,7 @@ async function autoLogin(){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ localStorage.removeItem('khafet_provider_phone'); render(); return; }
     const { data } = await sb.from('khafet_providers').select('*').eq('phone',saved); const p=(data||[])[0];
-    if(p && (p.status||'')==='approved'){ me=p; loadOrders(); return; }
+    if(p && (p.status||'')==='approved'){ me=p; loadOrders(); initPush(); return; }
   }catch(e){}
   render();
 }

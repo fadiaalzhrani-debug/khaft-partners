@@ -58,6 +58,44 @@ workflows:
             plutil -replace ITSAppUsesNonExemptEncryption -bool false "$PLIST"
           echo "— الأذونات بعد التعديل —"
           plutil -p "$PLIST" | grep -i -e usagedescription -e CFBundleVersion -e CFBundleDisplayName
+      - name: صلاحية الإشعارات الفورية
+        script: |
+          # مشروع iOS يتولّد كل بناء، فنضيف صلاحية Push تلقائياً
+          ENT="ios/App/App/App.entitlements"
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="UTF-8"?>' \
+            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+            '<plist version="1.0"><dict/></plist>' > "$ENT"
+          /usr/libexec/PlistBuddy -c "Add :aps-environment string production" "$ENT"
+          ruby -e "require 'xcodeproj'; \
+            p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); \
+            t = p.targets.find { |x| x.name == 'App' }; \
+            t.build_configurations.each { |c| c.build_settings['CODE_SIGN_ENTITLEMENTS'] = 'App/App.entitlements' }; \
+            p.save; puts '✅ تمت إضافة صلاحية الإشعارات'"
+          cat "$ENT"
+      - name: ربط استقبال توكن الإشعارات
+        script: |
+          AD="ios/App/App/AppDelegate.swift"
+          if grep -q "didRegisterForRemoteNotificationsWithDeviceToken" "$AD"; then
+            echo "موجود - لا حاجة للتعديل"
+          else
+            echo "مفقود! نضيف تمرير توكن آبل للإضافة"
+            LAST=$(grep -n '^}' "$AD" | tail -1 | cut -d: -f1)
+            head -n $((LAST-1)) "$AD" > /tmp/ad.swift
+            printf '%s\n' \
+              '' \
+              '    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {' \
+              '        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)' \
+              '    }' \
+              '' \
+              '    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {' \
+              '        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)' \
+              '    }' \
+              '}' >> /tmp/ad.swift
+            cp /tmp/ad.swift "$AD"
+            echo "تمت الإضافة"
+          fi
+          grep -n "RemoteNotifications" "$AD" || echo "لا يزال مفقوداً!"
       - name: تجهيز مفتاح آبل
         script: |
           echo "$APP_STORE_CONNECT_KEY_B64" | base64 --decode > /tmp/AuthKey.p8
@@ -96,5 +134,3 @@ workflows:
       - ios/App/build/ios/ipa/*.ipa
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-
-# اختبار البناء التلقائي عند الرفع
