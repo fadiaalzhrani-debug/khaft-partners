@@ -352,6 +352,7 @@ async function loadAll(){
   try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); INV=iv.data||[]; }catch(e){}
   try{ const lg=await sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000); LOG=lg.data||[]; }catch(e){}
   try{ const st=await sb.from('khafet_staff').select('*'); STAFF=st.data||[]; }catch(e){}
+  try{ const ar=await sb.from('khafet_articles').select('*').order('sort'); ARTICLES=ar.data||[]; }catch(e){}
   render();
 }
 /* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
@@ -406,6 +407,77 @@ async function resetTechPass(uid){
   toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
 }
 async function loadStaff(){ if(!cloudReady) return; try{ const { data }=await sb.from('khafet_staff').select('*'); STAFF=data||[]; if(loggedIn) render(); }catch(e){} }
+
+/* ===== 📰 مقالات السلامة — تُنشر للعملاء فوراً بدون تحديث تطبيق ===== */
+let ARTICLES=[], artEditing=null;
+async function loadArticles(){
+  if(!cloudReady) return;
+  try{ const { data }=await sb.from('khafet_articles').select('*').order('sort').order('created_at',{ascending:false}); ARTICLES=data||[]; if(loggedIn) render(); }catch(e){}
+}
+function artNew(){ artEditing={ id:null, emoji:'💡', category:'سلامة', title:'', excerpt:'', body:'', image_url:'', published:true, sort:(ARTICLES.length+1) }; render(); }
+function artEdit(id){ const a=ARTICLES.find(x=>x.id===id); if(a){ artEditing=Object.assign({},a); render(); } }
+function artCancel(){ artEditing=null; render(); }
+function artField(k,v){ if(artEditing) artEditing[k]=v; }
+async function artSave(){
+  if(!artEditing) return;
+  const g=id=>((document.getElementById(id)||{}).value||'');
+  const rec={ emoji:g('ar_emoji').trim()||'💡', category:g('ar_cat').trim()||'سلامة',
+    title:g('ar_title').trim(), excerpt:g('ar_exc').trim(), body:g('ar_body'),
+    image_url:artEditing.image_url||null, published:!!(document.getElementById('ar_pub')||{}).checked,
+    sort:Number(g('ar_sort'))||0 };
+  if(!rec.title){ toast('اكتب عنوان المقال'); return; }
+  try{
+    if(artEditing.id){ const { error }=await sb.from('khafet_articles').update(rec).eq('id',artEditing.id); if(error) throw error; }
+    else { const { error }=await sb.from('khafet_articles').insert(rec); if(error) throw error; }
+    toast('✅ حُفظ المقال'); artEditing=null; await loadArticles();
+  }catch(e){ toast('⚠️ '+(e.message||'تعذّر الحفظ')); }
+}
+async function artDelete(id){
+  if(!confirm('حذف هذا المقال نهائياً؟')) return;
+  try{ const { error }=await sb.from('khafet_articles').delete().eq('id',id); if(error) throw error; toast('حُذف'); await loadArticles(); }
+  catch(e){ toast('⚠️ تعذّر الحذف'); }
+}
+async function artTogglePub(id, pub){
+  try{ await sb.from('khafet_articles').update({published:pub}).eq('id',id); await loadArticles(); }catch(e){ toast('⚠️'); }
+}
+async function artUpload(input){
+  const f=input.files && input.files[0]; if(!f || !artEditing) return;
+  toast('⏳ جارٍ رفع الصورة...');
+  try{
+    const ext=(f.name.split('.').pop()||'jpg').toLowerCase();
+    const path='art_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    const { error }=await sb.storage.from('khafet-articles').upload(path, f, { upsert:false });
+    if(error) throw error;
+    const { data }=sb.storage.from('khafet-articles').getPublicUrl(path);
+    artEditing.image_url=data.publicUrl; toast('✅ رُفعت الصورة'); render();
+  }catch(e){ toast('⚠️ '+(e.message||'تعذّر رفع الصورة')); }
+}
+function renderArticles(){
+  if(artEditing){
+    const a=artEditing;
+    return `<div class="field"><label>الأيقونة والتصنيف</label>
+        <div class="grid2"><input id="ar_emoji" value="${esc(a.emoji||'')}" placeholder="💡" />
+        <input id="ar_cat" value="${esc(a.category||'')}" placeholder="سلامة / سباكة / كهرباء" /></div></div>
+      <div class="field"><label>العنوان *</label><input id="ar_title" value="${esc(a.title||'')}" placeholder="مثال: ٧ علامات تسريب مياه" /></div>
+      <div class="field"><label>مقدّمة قصيرة (تظهر في القائمة)</label><textarea id="ar_exc" rows="2">${esc(a.excerpt||'')}</textarea></div>
+      <div class="field"><label>المقال</label><textarea id="ar_body" rows="10" placeholder="اكتبي المقال هنا...">${esc(a.body||'')}</textarea></div>
+      <div class="field"><label>صورة المقال</label>
+        ${a.image_url?`<img src="${esc(a.image_url)}" style="width:100%;max-height:170px;object-fit:cover;border-radius:10px;margin-bottom:8px" />`:''}
+        <input type="file" accept="image/*" onchange="artUpload(this)" /></div>
+      <div class="field"><label>الترتيب</label><input id="ar_sort" type="number" value="${a.sort||0}" /></div>
+      <label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="ar_pub" ${a.published!==false?'checked':''} /> منشور للعملاء</label>
+      <button class="sbtn ok" style="width:100%" onclick="artSave()">💾 حفظ المقال</button>
+      <button class="sbtn" style="width:100%;margin-top:8px" onclick="artCancel()">إلغاء</button>`;
+  }
+  const rows=ARTICLES.length? ARTICLES.map(a=>`
+    <div class="rline">
+      <div class="rl-t"><b>${esc(a.emoji||'')} ${esc(a.title)}</b><small>${a.published===false?'⚪ مسودّة':'🟢 منشور'} · ${esc(a.category||'')}</small></div>
+      <button class="sbtn" onclick="artEdit('${a.id}')">✏️</button>
+      <button class="sbtn ${a.published===false?'ok':''}" onclick="artTogglePub('${a.id}',${a.published===false})">${a.published===false?'انشر':'إخفاء'}</button>
+      <button class="sbtn danger" onclick="artDelete('${a.id}')">🗑️</button>
+    </div>`).join('') : `<p style="color:var(--muted)">لا توجد مقالات بعد.</p>`;
+  return `${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="artNew()">➕ مقال جديد</button>`;
+}
 async function logStock(it, delta, reason, actor){
   const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:actor||'المؤسسة' };
   if(cloudReady){ try{ const r=await sb.from('khafet_stock_log').insert(entry).select().single(); if(!r.error&&r.data){ LOG.unshift(r.data); return; } }catch(e){} }
@@ -710,6 +782,7 @@ function render(){
     ${orderCards}
     <div style="height:26px"></div>
     ${panel('techs', `🧑‍🔧 الفنيّون (${ar(STAFF.filter(s=>s.role==='tech').length)})`,   ()=>renderTechs())}
+    ${panel('arts',  `📰 مقالات السلامة (${ar(ARTICLES.length)})`,                       ()=>renderArticles())}
     ${panel('rem',   `📩 تذكيرات المواعيد القريبة`,                        ()=>remHtml)}
     ${panel('comm',  `💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`, ()=>renderCommission())}
     ${panel('prov',  `🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,          ()=>renderProviders())}
