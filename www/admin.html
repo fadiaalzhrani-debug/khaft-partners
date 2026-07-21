@@ -353,6 +353,7 @@ async function loadAll(){
   try{ const lg=await sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000); LOG=lg.data||[]; }catch(e){}
   try{ const st=await sb.from('khafet_staff').select('*'); STAFF=st.data||[]; }catch(e){}
   try{ const ar=await sb.from('khafet_articles').select('*').order('sort'); ARTICLES=ar.data||[]; }catch(e){}
+  try{ const sg=await sb.from('khafet_suggestions').select('*').order('created_at',{ascending:false}).limit(300); SUGS=sg.data||[]; }catch(e){}
   render();
 }
 /* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
@@ -407,6 +408,36 @@ async function resetTechPass(uid){
   toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
 }
 async function loadStaff(){ if(!cloudReady) return; try{ const { data }=await sb.from('khafet_staff').select('*'); STAFF=data||[]; if(loggedIn) render(); }catch(e){} }
+
+/* ===== 💡 اقتراحات العملاء ===== */
+let SUGS=[];
+async function loadSugs(){
+  if(!cloudReady) return;
+  try{ const { data }=await sb.from('khafet_suggestions').select('*').order('created_at',{ascending:false}).limit(300); SUGS=data||[]; if(loggedIn) render(); }catch(e){}
+}
+const SUG_ICON={ 'اقتراح':'💡', 'شكوى':'⚠️', 'شكر':'🌟' };
+async function sugHandled(id, v){
+  try{ await sb.from('khafet_suggestions').update({handled:v}).eq('id',id); await loadSugs(); }catch(e){ toast('⚠️'); }
+}
+async function sugDelete(id){
+  if(!confirm('حذف هذه الرسالة؟')) return;
+  try{ await sb.from('khafet_suggestions').delete().eq('id',id); toast('حُذفت'); await loadSugs(); }catch(e){ toast('⚠️ تعذّر الحذف'); }
+}
+function renderSuggestions(){
+  if(!SUGS.length) return `<p style="color:var(--muted)">ما وصلت رسائل بعد.</p>`;
+  return SUGS.map(s=>{
+    const d=s.created_at? new Date(s.created_at).toLocaleDateString('ar-SA') : '';
+    return `<div class="rline" style="align-items:flex-start;${s.handled?'opacity:.55':''}">
+      <div class="rl-t" style="flex:1">
+        <b>${SUG_ICON[s.kind]||'💬'} ${esc(s.kind||'رسالة')}${s.name?' — '+esc(s.name):''}</b>
+        <div style="white-space:pre-wrap;margin:6px 0;font-size:.93rem;line-height:1.7">${esc(s.body||'')}</div>
+        <small>${d}${s.phone?' · <a href="tel:'+esc(s.phone)+'">📞 '+esc(s.phone)+'</a>':''}</small>
+      </div>
+      <button class="sbtn ${s.handled?'':'ok'}" onclick="sugHandled('${s.id}',${!s.handled})">${s.handled?'↩︎':'✓'}</button>
+      <button class="sbtn danger" onclick="sugDelete('${s.id}')">🗑️</button>
+    </div>`;
+  }).join('');
+}
 
 /* ===== 📰 مقالات السلامة — تُنشر للعملاء فوراً بدون تحديث تطبيق ===== */
 let ARTICLES=[], artEditing=null;
@@ -783,6 +814,7 @@ function render(){
     <div style="height:26px"></div>
     ${panel('techs', `🧑‍🔧 الفنيّون (${ar(STAFF.filter(s=>s.role==='tech').length)})`,   ()=>renderTechs())}
     ${panel('arts',  `📰 مقالات السلامة (${ar(ARTICLES.length)})`,                       ()=>renderArticles())}
+    ${panel('sugs',  `💡 رسائل العملاء (${ar(SUGS.filter(s=>!s.handled).length)} جديدة)`,        ()=>renderSuggestions())}
     ${panel('rem',   `📩 تذكيرات المواعيد القريبة`,                        ()=>remHtml)}
     ${panel('comm',  `💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`, ()=>renderCommission())}
     ${panel('prov',  `🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,          ()=>renderProviders())}
