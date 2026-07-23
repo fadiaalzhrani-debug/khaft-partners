@@ -649,16 +649,66 @@ function renderCommission(){
   const rows=Object.keys(byP).map(ph=>`<div class="rline"><div class="rl-t"><b>${esc(provName(ph))}</b><small>${ar(byP[ph])} طلب · ${esc(ph)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(byP[ph]*COMMISSION)}</span></div>`).join('');
   return rows+`<div class="rline" style="border-top:2px solid var(--line)"><div class="rl-t"><b>الإجمالي المستحق</b></div><span style="font-weight:900;font-size:1.15rem">${money(total)}</span></div>`;
 }
+/* ═ إدارة المزوّدين بالاستثناء: بحث + فلاتر + اعتماد جماعي + إيقاف/تفعيل ═ */
+let provQ='', provCity='all', provSt='all';
+function provCityList(p){ return (Array.isArray(p.cities)&&p.cities.length?p.cities:[p.city]).filter(Boolean).map(s=>String(s).trim()); }
+function provAllCities(){ const s=new Set(); PROVIDERS.forEach(p=>provCityList(p).forEach(c=>s.add(c))); return [...s].sort(); }
+async function bulkApprove(){
+  const pend=PROVIDERS.filter(p=>(p.status||'pending')==='pending');
+  if(!pend.length){ toast('لا يوجد معلّقون'); return; }
+  if(!confirm('اعتماد كل المعلّقين ('+pend.length+')؟')) return;
+  try{ await sb.from('khafet_providers').update({status:'approved'}).eq('status','pending');
+    pend.forEach(p=>p.status='approved'); toast('✅ اعتُمد الجميع ('+pend.length+')');
+  }catch(e){ toast('⚠️ تعذّر الاعتماد الجماعي'); }
+  render();
+}
+async function suspendProvider(phone,to){
+  try{ await sb.from('khafet_providers').update({status:to}).eq('phone',phone);
+    const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=to;
+    toast(to==='suspended'?'⏸️ أُوقف المزوّد — ما تصله طلبات':'▶️ أُعيد تفعيله');
+  }catch(e){ toast('⚠️ تعذّر'); }
+  render();
+}
 function renderProviders(){
   if(!PROVIDERS.length) return `<p style="color:var(--muted)">لا يوجد مزوّدون مسجّلون بعد.</p>`;
-  const stL={pending:'قيد المراجعة',approved:'معتمد',rejected:'مرفوض'}, stC={pending:'st-new',approved:'st-done',rejected:'st-cancelled'};
-  return PROVIDERS.map(p=>{ const st=p.status||'pending'; const sv=Array.isArray(p.services)?p.services.join('، '):(p.services||'');
+  const stL={pending:'قيد المراجعة',approved:'معتمد',rejected:'مرفوض',suspended:'موقوف'},
+        stC={pending:'st-new',approved:'st-done',rejected:'st-cancelled',suspended:'st-cancelled'};
+  const cnt=s=>PROVIDERS.filter(p=>(p.status||'pending')===s).length;
+  const nPend=cnt('pending');
+  const list=PROVIDERS.filter(p=>{
+    const st=p.status||'pending';
+    if(provSt!=='all' && st!==provSt) return false;
+    if(provCity!=='all' && !provCityList(p).includes(provCity)) return false;
+    if(provQ){ const q=provQ.trim().toLowerCase();
+      if(!((p.name||'').toLowerCase().includes(q) || String(p.phone||'').includes(q))) return false; }
+    return true;
+  });
+  const chips=[['all','الكل',PROVIDERS.length],['pending','معلّق',nPend],['approved','معتمد',cnt('approved')],['suspended','موقوف',cnt('suspended')],['rejected','مرفوض',cnt('rejected')]];
+  const cards=list.map(p=>{ const st=p.status||'pending'; const sv=Array.isArray(p.services)?p.services.join('، '):(p.services||'');
+    let acts='';
+    if(st==='pending') acts=`<button class="sbtn ok" onclick="approveProvider('${esc(p.phone)}','approved')">✔️ اعتماد</button><button class="sbtn danger" onclick="approveProvider('${esc(p.phone)}','rejected')">رفض</button>`;
+    else if(st==='approved') acts=`<button class="sbtn danger" onclick="suspendProvider('${esc(p.phone)}','suspended')">⏸️ إيقاف</button>`;
+    else acts=`<button class="sbtn ok" onclick="suspendProvider('${esc(p.phone)}','approved')">▶️ تفعيل</button>`;
     return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${stL[st]||st}</span>
-      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(p.city)}${p.areas?' · '+esc(p.areas):''}</div></div>
+      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).join('، ')||'—')}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
       <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)}${p.experience?' · خبرة '+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
-      ${st==='pending'?`<div style="display:flex;gap:8px;margin-top:10px"><button class="sbtn ok" onclick="approveProvider('${esc(p.phone)}','approved')">✔️ اعتماد</button><button class="sbtn danger" onclick="approveProvider('${esc(p.phone)}','rejected')">رفض</button></div>`:''}</div>`;
+      <div style="display:flex;gap:8px;margin-top:10px">${acts}</div></div>`;
   }).join('');
+  return `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <input value="${esc(provQ)}" placeholder="🔍 بحث بالاسم أو الجوال ثم Enter" onchange="provQ=this.value;render()"
+        style="flex:1;min-width:180px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:var(--card);color:var(--ink)" />
+      <select onchange="provCity=this.value;render()" style="padding:9px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:var(--card);color:var(--ink)">
+        <option value="all">كل المدن</option>
+        ${provAllCities().map(c=>`<option value="${esc(c)}" ${provCity===c?'selected':''}>${esc(c)}</option>`).join('')}
+      </select>
+      ${nPend>0?`<button class="sbtn ok" onclick="bulkApprove()">✔️ اعتماد الكل (${ar(nPend)})</button>`:''}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+      ${chips.map(([k,l,n])=>`<button class="tab ${provSt===k?'active':''}" onclick="provSt='${k}';render()">${l} (${ar(n)})</button>`).join('')}
+    </div>
+    ${cards||'<p style="color:var(--muted)">لا نتائج بهذا الفلتر.</p>'}`;
 }
 function renderAdminOrder(o){
   const itemsRows=o.items.map(i=>`<div class="li"><span>${i.ico||''} ${i.name}${i.qty>1?' ×'+ar(i.qty):''}</span><span>${i.custom?'—':money((i.price||0)*(i.qty||1))}</span></div>`).join('');
