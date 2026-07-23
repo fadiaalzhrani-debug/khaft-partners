@@ -270,10 +270,36 @@ async function loadOrders(){
     ]);
     ORDERS=(m.data||[]).map(rowToOrder);
     OPEN=(o.data||[]).map(openToOrder);
+    notifyFresh();
     render();
   }catch(e){ render(); }
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(me) loadOrders(); }).subscribe(); }catch(e){} }
+
+/* تنبيه داخل الصفحة: صوت + اهتزاز أول ما يوصل طلب جديد من مدن خدمته */
+let seenOpen=null;
+function beep(){ try{
+  const ctx=window._actx||(window._actx=new (window.AudioContext||window.webkitAudioContext)());
+  if(ctx.state==='suspended') ctx.resume();
+  const t=ctx.currentTime;
+  [880,1174.7].forEach((f,i)=>{ const o=ctx.createOscillator(),g=ctx.createGain();
+    o.frequency.value=f; o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.0001,t+i*0.18);
+    g.gain.exponentialRampToValueAtTime(0.3,t+i*0.18+0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+i*0.18+0.16);
+    o.start(t+i*0.18); o.stop(t+i*0.18+0.2); });
+}catch(e){} }
+function notifyFresh(){
+  if(!me){ seenOpen=null; return; }
+  const rel=OPEN.filter(o=>servesCity(o));
+  if(seenOpen){
+    const fresh=rel.filter(o=>!seenOpen.has(o.dbId));
+    if(fresh.length){ beep(); if(navigator.vibrate) navigator.vibrate([200,100,200]); toast('🔔 وصل طلب جديد في مدن خدمتك!'); }
+  }
+  seenOpen=new Set(rel.map(o=>o.dbId));
+}
+/* حزام أمان: حتى لو انقطع البث اللحظي، نحدّث كل ٣٠ ثانية */
+setInterval(()=>{ if(me && cloudReady && !document.hidden) loadOrders(); }, 30000);
 
 /* ---- الدخول ---- */
 /* الدخول برقم الجوال + كلمة المرور (بلا رسائل = بلا تكلفة على كل دخول) */
@@ -325,7 +351,12 @@ async function acceptOrder(id){
     const { data, error } = await sb.rpc('accept_order', { p_order_id:o.dbId });
     if(error) throw error;
     if(!data || data.ok!==true){
-      toast(data && data.reason==='taken' ? 'اعتذار — الطلب أخذه مزوّد آخر' : 'تعذّر القبول');
+      const R={ taken:'اعتذار — الطلب أخذه مزوّد آخر',
+                limit:'وصلت حدّ ٣ طلبات نشطة — أنجز طلباً قبل ما تقبل جديداً',
+                not_approved:'حسابك موقوف أو قيد المراجعة — تواصل مع الإدارة',
+                no_profile:'رقمك غير مسجّل كمزوّد',
+                not_provider:'هذا الحساب ليس حساب مزوّد' };
+      toast((data && R[data.reason]) || 'تعذّر القبول');
       loadOrders(); return;
     }
     toast('تم قبول الطلب ✅'); tab='mine'; loadOrders();
@@ -396,7 +427,7 @@ function showLogin(msg, wait){
     <input id="lg_pass" type="password" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
     <button class="btn" onclick="login()">دخول</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
-    <a class="reg" href="https://khaft1.netlify.app/" target="_blank" rel="noopener">لست مسجّلاً؟ سجّل كمزوّد صيانة عبر الموقع</a>
+    <a class="reg" href="https://fadiaalzhrani-debug.github.io/khaft/www/?join=1" target="_blank" rel="noopener">لست مسجّلاً؟ سجّل كمزوّد — التفعيل فوري</a>
     <a class="reg2" href="fanyeen.html">🧑‍🔧 هل أنت فني؟ دخول الفنيين</a>
   </div>`;
 }
@@ -479,6 +510,7 @@ function render(){
   const mine=ORDERS.filter(o=>o.providerPhone===me.phone && o.status!=='cancelled')
     .sort((a,b)=>{ const r=s=>s==='done'?1:0; if(r(a.status)!==r(b.status)) return r(a.status)-r(b.status); return (a.date+String(a.startMin).padStart(4,'0')).localeCompare(b.date+String(b.startMin).padStart(4,'0')); });
   const myDone=mine.filter(o=>o.status==='done').length;
+  const active=mine.filter(o=>o.status==='confirmed'||o.status==='progress').length;
   const owed=myDone*COMMISSION;
   const listArr = tab==='available'?avail:mine;
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك فوق لتصلك الطلبات'):'ما قبلت طلبات بعد'}</h3></div>`;
@@ -486,6 +518,7 @@ function render(){
     <div class="hero">
       <h1>أهلاً ${esc(me.name)}</h1>
       <div class="sub">📍 ${myCities().length?esc(myCities().join(' · ')):'⚠️ ما حدّدت مدن الخدمة'} · تستقبل طلبات هذه المدن</div>
+      <div class="sub">🔧 طلباتك النشطة: ${ar(active)} / ٣${active>=3?' — أنجز طلباً لتقبل غيره':''}</div>
       <button class="tbtn inv" style="margin-top:10px" onclick="toggleCities()">🗺️ ${citiesOpen?'إغلاق':'تعديل مدن الخدمة'}</button>
       ${citiesOpen?`
       <div style="margin-top:10px;background:rgba(255,255,255,.08);padding:12px;border-radius:12px;text-align:right">
