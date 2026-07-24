@@ -64,6 +64,22 @@
   .code-card{background:linear-gradient(135deg,rgba(245,197,24,.16),rgba(245,197,24,.05));border:1px solid rgba(245,197,24,.45);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
   .code-card .cc-code{font-size:1.9rem;font-weight:900;color:var(--gold);letter-spacing:6px;margin:6px 0}
   .code-card small{color:var(--muted);font-size:.84rem;line-height:1.7;display:block}
+  /* تقويم أيام المزوّد — طلباته هو فقط */
+  .calbar{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:14px}
+  .cal-head{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;font-weight:900}
+  .cal-nav{background:rgba(0,0,0,.25);border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:10px;font-size:1.1rem}
+  .cal-nav:active{background:var(--gold);color:var(--ink)}
+  .cal-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+  .cal-day{flex-shrink:0;width:56px;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:11px;padding:7px 2px;text-align:center;color:var(--muted)}
+  .cal-day .cd-w{display:block;font-size:.68rem;font-weight:700}
+  .cal-day .cd-n{display:block;font-size:1.05rem;font-weight:900;color:var(--text)}
+  .cal-day .cd-c{display:block;font-size:.68rem;font-weight:800;color:var(--gold)}
+  .cal-day.has{border-color:rgba(245,197,24,.5)}
+  .cal-day.today{border-color:var(--gold);background:rgba(245,197,24,.12)}
+  .cal-day.sel{background:var(--gold);border-color:var(--gold)}
+  .cal-day.sel .cd-n,.cal-day.sel .cd-w,.cal-day.sel .cd-c{color:var(--ink)}
+  .cal-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;font-weight:800;font-size:.9rem}
+  .cal-filter button{background:var(--ink);color:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 14px;font-weight:800;font-size:.82rem}
 
   .tjob{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
   .tj-head{background:linear-gradient(90deg,rgba(245,197,24,.14),rgba(245,197,24,.04));padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
@@ -206,6 +222,45 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;'
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function parseISO(s){ const [y,m,d]=String(s).split('-').map(Number); return new Date(y,m-1,d); }
+function dateISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+/* ═ تقويم أيام المزوّد/الفني: يعرض عدد طلباته هو فقط، والضغط على يوم يفلتر القوائم ═ */
+const AR_DAYS_SHORT=['أحد','إثن','ثلا','أرب','خمي','جمع','سبت'];
+let pvCalMonth=(function(){ const d=new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })();
+let pvCalFilter='';
+function myJobsList(){ return ORDERS.filter(o=>(me&&me.tech ? o.handledBy===me.uid : o.providerPhone===(me&&me.phone)) && o.status!=='cancelled'); }
+function pvJobsOn(iso){ return myJobsList().filter(o=>o.date===iso).length; }
+function pvCalPick(iso){ pvCalFilter = (pvCalFilter===iso ? '' : iso); render(); }
+function pvCalClear(){ pvCalFilter=''; render(); }
+function pvCalPrev(){ pvCalMonth.setMonth(pvCalMonth.getMonth()-1); render(); }
+function pvCalNext(){ pvCalMonth.setMonth(pvCalMonth.getMonth()+1); render(); }
+function renderPvCalendar(){
+  const todayISO=dateISO(new Date());
+  const y=pvCalMonth.getFullYear(), m=pvCalMonth.getMonth();
+  const days=new Date(y,m+1,0).getDate();
+  let cells='';
+  for(let dd=1; dd<=days; dd++){
+    const d=new Date(y,m,dd), iso=dateISO(d), c=pvJobsOn(iso);
+    const cls=[c?'has':'', iso===todayISO?'today':'', pvCalFilter===iso?'sel':''].filter(Boolean).join(' ');
+    cells+=`<button class="cal-day ${cls}" onclick="pvCalPick('${iso}')">
+      <span class="cd-w">${AR_DAYS_SHORT[d.getDay()]}</span>
+      <b class="cd-n">${ar(dd)}</b>
+      <span class="cd-c">${c?('🔧 '+ar(c)):'·'}</span>
+    </button>`;
+  }
+  const filterBar = pvCalFilter
+    ? `<div class="cal-filter"><span>📅 ${dayLabel(pvCalFilter)} — ${ar(pvJobsOn(pvCalFilter))} من طلباتك</span><button onclick="pvCalClear()">عرض كل الأيام</button></div>`
+    : '';
+  return `<div class="calbar">
+    <div class="cal-head">
+      <button class="cal-nav" onclick="pvCalPrev()">›</button>
+      <b>${AR_MON[m]} ${ar(y)}</b>
+      <button class="cal-nav" onclick="pvCalNext()">‹</button>
+    </div>
+    <div class="cal-strip" id="pvCalStrip">${cells}</div>
+    ${filterBar}
+  </div>`;
+}
 function dayLabel(s){ const d=parseISO(s); return AR_DAYS[d.getDay()]+' '+ar(d.getDate())+' '+AR_MON[d.getMonth()]; }
 function fmtTime(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h<12?'ص':'م'; let h12=h%12||12; return ar(h12)+':'+ar(String(m).padStart(2,'0'))+' '+ap; }
 function fmtDur(mins){ if(!mins) return 'حسب المعاينة'; const h=Math.floor(mins/60),m=mins%60,p=[]; if(h===1)p.push('ساعة');else if(h===2)p.push('ساعتان');else if(h>2)p.push(ar(h)+' ساعات'); if(m)p.push(ar(m)+' دقيقة'); return p.join(' و'); }
@@ -673,8 +728,11 @@ function render(){
   const myDone=mine.filter(o=>o.status==='done').length;
   const active=mine.filter(o=>o.status==='confirmed'||o.status==='progress').length;
   const owed=myDone*COMMISSION;
-  const listArr = tab==='available'?avail:mine;
-  const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك فوق لتصلك الطلبات'):'ما قبلت طلبات بعد'}</h3></div>`;
+  // فلترة بيوم التقويم المختار (طلباته هو فقط)
+  const availF = pvCalFilter ? avail.filter(o=>o.date===pvCalFilter) : avail;
+  const mineF  = pvCalFilter ? mine.filter(o=>o.date===pvCalFilter)  : mine;
+  const listArr = tab==='available'?availF:mineF;
+  const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من الإدارة لتصلك الطلبات'):'ما قبلت طلبات بعد')}</h3></div>`;
   // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
   const subLine = me.tech
     ? (me.hasProvider ? `🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>` : `🧑‍🔧 فني جديد`)
@@ -731,9 +789,10 @@ function render(){
       </div>`:''}
     </div>
     ${showJobs?`
+    ${tab!=='manage'?renderPvCalendar():''}
     <div class="tabs">
-      <button class="tab ${tab==='available'?'active':''}" onclick="setTab('available')">المتاحة <span class="cnt">(${ar(avail.length)})</span></button>
-      <button class="tab ${tab==='mine'?'active':''}" onclick="setTab('mine')">طلباتي <span class="cnt">(${ar(mine.length)})</span></button>
+      <button class="tab ${tab==='available'?'active':''}" onclick="setTab('available')">المتاحة <span class="cnt">(${ar(availF.length)})</span></button>
+      <button class="tab ${tab==='mine'?'active':''}" onclick="setTab('mine')">طلباتي <span class="cnt">(${ar(mineF.length)})</span></button>
       <button class="tab ${tab==='manage'?'active':''}" onclick="setTab('manage')">⚙️ ${me.tech?'حسابي':'الإدارة'}</button>
     </div>
     <div style="padding-bottom:30px">${tab==='manage'?manage:list}</div>`
