@@ -336,7 +336,7 @@ async function login(){
 }
 async function autoLogin(){
   const saved=localStorage.getItem('khafet_provider_phone');
-  if(!saved){ render(); return; }
+  if(!saved){ initialScreen(); return; }
   // لازم تكون فيه جلسة Supabase صالحة — مو بس رقم محفوظ بالمتصفح
   try{
     const { data:{ session } } = await sb.auth.getSession();
@@ -347,7 +347,7 @@ async function autoLogin(){
     const { data:info }=await sb.rpc('my_staff_info');
     if(info && info.role==='tech'){ await enterTechMode(info, normPhone(saved)); return; }
   }catch(e){}
-  render();
+  initialScreen();
 }
 /* دخول الفني: يعرض طلبات مدن مزوّده، ويقبلها كنفسه */
 async function enterTechMode(info, d){
@@ -706,7 +706,9 @@ async function removeTech(uid,name){ if(!confirm('إزالة الفني '+(name|
 function setTab(t){ tab=t; render(); }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
-render();
+/* ?techreg=1 → يفتح نموذج تسجيل الفني مباشرة (من رابط بوابة الفنيين) */
+function initialScreen(){ try{ if(new URLSearchParams(location.search).get('techreg')==='1' && !me){ showTechReg(''); return; } }catch(e){} render(); }
+initialScreen();
 if(window.supabase) initCloud(); else window.addEventListener('load', initCloud);
 </script>
 </body>
