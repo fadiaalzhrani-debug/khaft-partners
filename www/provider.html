@@ -50,6 +50,20 @@
   .tab{flex:1;padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-weight:800;color:var(--muted);text-align:center}
   .tab.active{background:var(--gold);color:var(--ink);border-color:var(--gold)}
   .tab .cnt{opacity:.7}
+  /* لوحة نظيفة: إحصاءات + بطاقات إدارة */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+  .stat b{display:block;font-size:1.45rem;font-weight:900;color:var(--gold);line-height:1.2}
+  .stat small{color:var(--muted);font-size:.78rem;font-weight:700}
+  .mpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .mpanel h3{font-size:1rem;font-weight:900;margin-bottom:6px}
+  .mpanel .hint{color:var(--muted);font-size:.84rem;margin-bottom:10px;line-height:1.7}
+  .mpanel input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--text);font-size:1rem;font-weight:700}
+  .mrow{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line)}
+  .mrow:last-child{border-bottom:none}
+  .code-card{background:linear-gradient(135deg,rgba(245,197,24,.16),rgba(245,197,24,.05));border:1px solid rgba(245,197,24,.45);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
+  .code-card .cc-code{font-size:1.9rem;font-weight:900;color:var(--gold);letter-spacing:6px;margin:6px 0}
+  .code-card small{color:var(--muted);font-size:.84rem;line-height:1.7;display:block}
 
   .tjob{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
   .tj-head{background:linear-gradient(90deg,rgba(245,197,24,.14),rgba(245,197,24,.04));padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
@@ -661,59 +675,69 @@ function render(){
   const owed=myDone*COMMISSION;
   const listArr = tab==='available'?avail:mine;
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك فوق لتصلك الطلبات'):'ما قبلت طلبات بعد'}</h3></div>`;
-  // لوحة المزوّد: مدن الخدمة + إضافة فني بكوده + قائمة فريقه
-  const provPanel = me.tech ? '' : `
-      <button class="tbtn inv" style="margin-top:10px" onclick="toggleCities()">🗺️ ${citiesOpen?'إغلاق':'تعديل مدن الخدمة'}</button>
-      ${citiesOpen?`
-      <div style="margin-top:10px;background:rgba(255,255,255,.08);padding:12px;border-radius:12px;text-align:right">
-        <div style="font-size:.85rem;opacity:.85;margin-bottom:8px">اكتب المدن اللي تخدمها مفصولة بفاصلة — أي طلب يجي من هذه المدن يوصلك وتقبله أو تتركه.</div>
-        <input id="pv_cities" value="${esc(myCities().join('، '))}" placeholder="مثال: الدمام، الخبر، الظهران"
-          style="width:100%;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.2);color:inherit;font-size:1rem" />
-        <button class="tbtn done" style="margin-top:8px;width:100%" onclick="saveMyCities()">💾 حفظ مدن الخدمة</button>
-      </div>`:''}
-      <button class="tbtn inv" style="margin-top:10px" onclick="toggleTechs()">🧑‍🔧 ${techsOpen?'إغلاق':'فنيّي وإضافة فني'}${TECHS.length?` (${ar(TECHS.length)})`:''}</button>
-      ${techsOpen?`<div style="margin-top:10px;background:rgba(255,255,255,.08);padding:12px;border-radius:12px;text-align:right">
-        <div style="font-size:.85rem;opacity:.85;margin-bottom:8px">فنيّك يسجّل ويعطيك كوده — اكتبه هنا فينضم لفريقك.</div>
-        <div style="display:flex;gap:8px">
-          <input id="add_tech_code" placeholder="كود الفني" onkeydown="if(event.key==='Enter')addTechByCode()"
-            style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.2);color:inherit;font-size:1rem;text-transform:uppercase;letter-spacing:2px;text-align:center" />
-          <button class="tbtn done" onclick="addTechByCode()">➕ أضف</button>
-        </div>
-        <div style="margin-top:12px">
-        ${TECHS.length? TECHS.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.1)">
-            <span><b>${esc(t.name||'فني')}</b> <small style="opacity:.7">${esc(t.phone||'')}</small></span>
-            <button class="tbtn" style="padding:3px 10px;background:rgba(220,70,70,.35)" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button>
-          </div>`).join('') : '<div style="opacity:.75;font-size:.9rem">ما أضفت فنيّين بعد.</div>'}
-        </div>
-      </div>`:''}`;
-  // لوحة الفني: كوده وحالته
-  const techPanel = !me.tech ? '' : `
-      <div class="sub" style="margin-top:10px;background:rgba(245,197,24,.14);border:1px solid rgba(245,197,24,.4);border-radius:12px;padding:12px">
-        🔑 كودك: <b style="letter-spacing:3px;font-size:1.2rem;color:#F5C518">${esc(me.code||'—')}</b>
-        <button class="tbtn" style="padding:3px 10px;margin-right:6px;vertical-align:middle" onclick="copyMyCode()">📋 نسخ</button>
-        <div style="font-size:.82rem;opacity:.9;margin-top:6px">${me.hasProvider?`✅ أنت في فريق <b>${esc(me.providerName||'مزوّدك')}</b>`:'أعطِ هذا الكود لمزوّدك — يضيفه عنده فتستقبل طلباته.'}</div>
-      </div>`;
+  // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
   const subLine = me.tech
-    ? (me.hasProvider ? `🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b> · ${esc(myCities().join(' · ')||'—')}`
-                      : `🧑‍🔧 فني جديد — بانتظار أن يضيفك مزوّدك`)
-    : `📍 ${myCities().length?esc(myCities().join(' · ')):'⚠️ ما حدّدت مدن الخدمة'} · تستقبل طلبات هذه المدن`;
-  const showJobs = !me.tech || me.hasProvider;   // الفني بلا مزوّد يشوف رسالة انتظار
+    ? (me.hasProvider ? `🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>` : `🧑‍🔧 فني جديد`)
+    : `🏢 مزوّد خدمة${myCities().length?` · 📍 ${esc(myCities().join(' · '))}`:''}`;
+  const showJobs = !me.tech || me.hasProvider;   // الفني بلا مزوّد: كوده أول
+
+  // محتوى تبويب الإدارة
+  let manage='';
+  if(me.tech){
+    manage=`
+      <div class="code-card">
+        <small>كودك — أعطه لمزوّدك يضيفك لفريقه</small>
+        <div class="cc-code">${esc(me.code||'—')}</div>
+        <button class="tbtn done" style="padding:8px 22px" onclick="copyMyCode()">📋 نسخ الكود</button>
+      </div>
+      <div class="mpanel"><h3>🏢 مزوّدي</h3>
+        ${me.hasProvider
+          ? `<div class="hint" style="margin:0">✅ أنت في فريق <b style="color:var(--gold)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}</div>`
+          : `<div class="hint" style="margin:0">ما أضافك مزوّد بعد — أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.</div>`}
+      </div>`;
+  } else {
+    manage=`
+      <div class="mpanel"><h3>📍 مدن الخدمة</h3>
+        <div class="hint">اكتب المدن مفصولة بفاصلة — أي طلب من هذه المدن يوصلك وتقبله أو تتركه.</div>
+        <input id="pv_cities" value="${esc(myCities().join('، '))}" placeholder="مثال: الدمام، الخبر، الظهران" />
+        <button class="tbtn done" style="margin-top:10px;width:100%" onclick="saveMyCities()">💾 حفظ المدن</button>
+      </div>
+      <div class="mpanel"><h3>🧑‍🔧 فريقي ${TECHS.length?`(${ar(TECHS.length)})`:''}</h3>
+        <div class="hint">فنيّك يسجّل من التطبيق ويعطيك كوده — أدخله هنا فينضم لفريقك ويستقبل طلباتك معك.</div>
+        <div style="display:flex;gap:8px">
+          <input id="add_tech_code" placeholder="كود الفني" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-transform:uppercase;letter-spacing:3px;text-align:center" />
+          <button class="tbtn done" style="padding:0 18px" onclick="addTechByCode()">➕ أضف</button>
+        </div>
+        <div style="margin-top:10px">
+        ${TECHS.length? TECHS.map(t=>`<div class="mrow">
+            <span><b>${esc(t.name||'فني')}</b> <small style="color:var(--muted)">${esc(t.phone||'')}</small></span>
+            <button class="tbtn" style="padding:4px 12px;background:rgba(220,70,70,.3)" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button>
+          </div>`).join('') : '<div class="hint" style="margin:4px 0 0">ما أضفت فنيّين بعد.</div>'}
+        </div>
+      </div>
+      ${owed>0?`<div class="mpanel"><h3>💼 المستحق للمنصة</h3>
+        <div class="hint" style="margin:0"><b style="color:var(--gold);font-size:1.2rem">${money(owed)}</b> عن ${ar(myDone)} ${myDone===1?'طلب منجز':'طلبات منجزة'} (${money(COMMISSION)}/طلب)</div>
+      </div>`:''}`;
+  }
+
   document.getElementById('app').innerHTML=`
     <div class="hero">
-      <h1>أهلاً ${esc(me.name)}</h1>
+      <h1>أهلاً ${esc(me.name)} 👋</h1>
       <div class="sub">${subLine}</div>
-      ${showJobs?`<div class="sub">🔧 طلباتك النشطة: ${ar(active)} / ٣${active>=3?' — أنجز طلباً لتقبل غيره':''}</div>`:''}
-      ${techPanel}${provPanel}
-      ${!me.tech && owed>0?`<div class="owed">💼 مستحق للمنصة: <b>${money(owed)}</b> (${ar(myDone)} طلب)</div>`:''}
+      ${showJobs?`<div class="stats">
+        <div class="stat"><b>${ar(avail.length)}</b><small>طلبات متاحة</small></div>
+        <div class="stat"><b>${ar(active)}<span style="font-size:.85rem;color:var(--muted)"> /٣</span></b><small>قيد التنفيذ</small></div>
+        <div class="stat"><b>${ar(myDone)}</b><small>منجزة</small></div>
+      </div>`:''}
     </div>
     ${showJobs?`
     <div class="tabs">
-      <button class="tab ${tab==='available'?'active':''}" onclick="setTab('available')">طلبات متاحة <span class="cnt">(${ar(avail.length)})</span></button>
+      <button class="tab ${tab==='available'?'active':''}" onclick="setTab('available')">المتاحة <span class="cnt">(${ar(avail.length)})</span></button>
       <button class="tab ${tab==='mine'?'active':''}" onclick="setTab('mine')">طلباتي <span class="cnt">(${ar(mine.length)})</span></button>
+      <button class="tab ${tab==='manage'?'active':''}" onclick="setTab('manage')">⚙️ ${me.tech?'حسابي':'الإدارة'}</button>
     </div>
-    <div style="padding-bottom:30px">${list}</div>`
-    : `<div class="empty" style="padding:44px 22px"><div class="ico">🤝</div><h3>سجّلت بنجاح!</h3>
-       <p style="opacity:.85;margin-top:10px;line-height:1.9">أعطِ كودك <b style="color:#F5C518;letter-spacing:2px">${esc(me.code||'')}</b> لمزوّدك، يضيفه عنده، وبعدها تستقبل طلبات مدنه هنا مباشرة.</p></div>`}`;
+    <div style="padding-bottom:30px">${tab==='manage'?manage:list}</div>`
+    : `<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}`;
 }
 /* ---- فريق المزوّد (فنيّوه) ---- */
 let techsOpen=false, TECHS=[];
@@ -730,7 +754,7 @@ async function addTechByCode(){
     else toast(data && data.reason==='bad_code' ? '❌ كود الفني غير صحيح' : 'تعذّرت الإضافة');
   }catch(e){ toast('تعذّرت الإضافة، حاول ثانية'); }
 }
-function setTab(t){ tab=t; render(); }
+function setTab(t){ tab=t; render(); if(t==='manage'&&me&&!me.tech){ loadTechs().then(render); } }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
 /* ?techreg=1 → يفتح نموذج تسجيل الفني مباشرة (من رابط بوابة الفنيين) */
