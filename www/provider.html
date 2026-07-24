@@ -650,7 +650,7 @@ async function verifyTechReg(){
     if(error){ showTechOtp('❌ الرمز غير صحيح — حاول ثانية'); return; }
     if(techCtx.existing){ try{ await sb.auth.updateUser({ password:techCtx.pass }); }catch(e){} }
     const { data }=await sb.rpc('register_tech', { p_name:techCtx.name, p_phone:techCtx.local });
-    if(!data || data.ok!==true){ showTechOtp('تعذّر التسجيل، حاول ثانية'); return; }
+    if(!data || data.ok!==true){ showTechOtp(data && data.reason==='is_admin' ? '⚠️ هذا الرقم حساب مدير — لا يُسجّل كفني. استخدم رقماً آخر.' : 'تعذّر التسجيل، حاول ثانية'); return; }
     const info={ role:'tech', name:techCtx.name, code:data.code, cities:[] };
     try{ const r=await sb.rpc('my_staff_info'); if(r.data) Object.assign(info, r.data); }catch(e){}
     await enterTechMode(info, techCtx.e164.slice(1));
