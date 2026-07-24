@@ -561,6 +561,8 @@ function getPushPlugin(){
 let _pn=null, _pnReady=false;
 async function initPush(){
   if(!inApp() || !cloudReady) return;          // التطبيق فقط، وبعد جاهزية السحابة
+  // أندرويد: الإشعارات تحتاج Firebase (غير مُعد) — نتجاوزها لتفادي انهيار التطبيق
+  try{ if(window.Capacitor.getPlatform && window.Capacitor.getPlatform()==='android') return; }catch(e){}
   try{
     const PN=_pn||getPushPlugin(); if(!PN) return; _pn=PN;
     if(!_pnReady){
