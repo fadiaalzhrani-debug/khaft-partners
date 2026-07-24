@@ -354,6 +354,7 @@ async function enterTechMode(info, d){
   let uid=null;
   try{ const { data:{ user } }=await sb.auth.getUser(); uid=user&&user.id; }catch(e){}
   me={ tech:true, uid, name:info.name||'فني', phone:'0'+String(d||'').slice(3),
+       code:info.code||'', hasProvider:!!info.provider_code,
        cities:info.cities||[], providerName:info.provider_name||'', providerPhone:info.provider_phone||'' };
   localStorage.setItem('khafet_provider_phone', me.phone);
   loadOrders(); initPush();
@@ -527,26 +528,24 @@ let techCtx=null;
 function showTechReg(msg){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">🧑‍🔧</div><h1>تسجيل فني بكود مزوّد</h1>
-    <p>خذ الكود من مزوّدك، وسجّل عشان تستقبل طلباته معه.</p>
+    <div class="ic">🧑‍🔧</div><h1>تسجيل فني جديد</h1>
+    <p>سجّل حسابك — ويطلع لك <b>كودك</b> تعطيه لمزوّدك ليضيفك لفريقه.</p>
     <input id="tr_name" placeholder="اسمك" />
     <input id="tr_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="tr_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
-    <input id="tr_code" placeholder="كود المزوّد" style="text-transform:uppercase;letter-spacing:3px;text-align:center;font-weight:800" />
     <button class="btn" onclick="submitTechReg()">تسجيل ✅</button>
-    ${msg?`<div class="msg ${/تعذّر|صحيح|اكتب|المرور|الكود/.test(msg)?'':'wait'}">${msg}</div>`:''}
+    ${msg?`<div class="msg ${/تعذّر|صحيح|اكتب|المرور/.test(msg)?'':'wait'}">${msg}</div>`:''}
     <a class="reg2" onclick="showLogin('')" style="cursor:pointer">لديك حساب؟ تسجيل الدخول</a>
   </div>`;
 }
 async function submitTechReg(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
-  const name=g('tr_name'), pass=g('tr_pass'), code=g('tr_code').toUpperCase(), d=normPhone(g('tr_phone'));
+  const name=g('tr_name'), pass=g('tr_pass'), d=normPhone(g('tr_phone'));
   if(!name){ showTechReg('اكتب اسمك'); return; }
   if(d.length<12){ showTechReg('رقم الجوال غير صحيح'); return; }
   if(pass.length<6){ showTechReg('كلمة المرور ٦ أحرف على الأقل'); return; }
-  if(code.length<4){ showTechReg('اكتب كود المزوّد'); return; }
   if(!cloudReady){ showTechReg('لا يوجد اتصال، حاول بعد قليل'); return; }
-  techCtx={ name, pass, code, e164:'+'+d, local:'0'+d.slice(3) };
+  techCtx={ name, pass, e164:'+'+d, local:'0'+d.slice(3) };
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ نرسل رمز التحقق...'; }
   try{
     const { error }=await sb.auth.signUp({ phone:techCtx.e164, password:pass });
@@ -572,9 +571,9 @@ async function verifyTechReg(){
     const { error }=await sb.auth.verifyOtp({ phone:techCtx.e164, token:otp, type:'sms' });
     if(error){ showTechOtp('❌ الرمز غير صحيح — حاول ثانية'); return; }
     if(techCtx.existing){ try{ await sb.auth.updateUser({ password:techCtx.pass }); }catch(e){} }
-    const { data }=await sb.rpc('register_tech', { p_code:techCtx.code, p_name:techCtx.name, p_phone:techCtx.local });
-    if(!data || data.ok!==true){ showTechOtp(data && data.reason==='bad_code'?'❌ كود المزوّد غير صحيح — تأكد منه':'تعذّر التسجيل، حاول ثانية'); return; }
-    const info={ role:'tech', name:techCtx.name, cities:[], provider_name:data.provider };
+    const { data }=await sb.rpc('register_tech', { p_name:techCtx.name, p_phone:techCtx.local });
+    if(!data || data.ok!==true){ showTechOtp('تعذّر التسجيل، حاول ثانية'); return; }
+    const info={ role:'tech', name:techCtx.name, code:data.code, cities:[] };
     try{ const r=await sb.rpc('my_staff_info'); if(r.data) Object.assign(info, r.data); }catch(e){}
     await enterTechMode(info, techCtx.e164.slice(1));
   }catch(e){ showTechOtp('تعذّر الإكمال — حاول مرة ثانية'); }
@@ -662,6 +661,7 @@ function render(){
   const owed=myDone*COMMISSION;
   const listArr = tab==='available'?avail:mine;
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك فوق لتصلك الطلبات'):'ما قبلت طلبات بعد'}</h3></div>`;
+  // لوحة المزوّد: مدن الخدمة + إضافة فني بكوده + قائمة فريقه
   const provPanel = me.tech ? '' : `
       <button class="tbtn inv" style="margin-top:10px" onclick="toggleCities()">🗺️ ${citiesOpen?'إغلاق':'تعديل مدن الخدمة'}</button>
       ${citiesOpen?`
@@ -671,31 +671,49 @@ function render(){
           style="width:100%;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.2);color:inherit;font-size:1rem" />
         <button class="tbtn done" style="margin-top:8px;width:100%" onclick="saveMyCities()">💾 حفظ مدن الخدمة</button>
       </div>`:''}
-      <div class="sub" style="margin-top:10px;background:rgba(245,197,24,.14);border:1px solid rgba(245,197,24,.4);border-radius:12px;padding:10px 12px">
-        🔑 كودك: <b style="letter-spacing:3px;font-size:1.15rem;color:#F5C518">${esc(me.code||'—')}</b>
-        <button class="tbtn" style="padding:3px 10px;margin-right:6px;vertical-align:middle" onclick="copyMyCode()">📋 نسخ</button>
-        <div style="font-size:.8rem;opacity:.85;margin-top:4px">شاركه مع فنيّيك — يسجّلون به ويستقبلون طلباتك معك</div>
-      </div>
-      <button class="tbtn inv" style="margin-top:10px" onclick="toggleTechs()">🧑‍🔧 ${techsOpen?'إغلاق':'فنيّي'}${TECHS.length?` (${ar(TECHS.length)})`:''}</button>
+      <button class="tbtn inv" style="margin-top:10px" onclick="toggleTechs()">🧑‍🔧 ${techsOpen?'إغلاق':'فنيّي وإضافة فني'}${TECHS.length?` (${ar(TECHS.length)})`:''}</button>
       ${techsOpen?`<div style="margin-top:10px;background:rgba(255,255,255,.08);padding:12px;border-radius:12px;text-align:right">
+        <div style="font-size:.85rem;opacity:.85;margin-bottom:8px">فنيّك يسجّل ويعطيك كوده — اكتبه هنا فينضم لفريقك.</div>
+        <div style="display:flex;gap:8px">
+          <input id="add_tech_code" placeholder="كود الفني" onkeydown="if(event.key==='Enter')addTechByCode()"
+            style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.2);color:inherit;font-size:1rem;text-transform:uppercase;letter-spacing:2px;text-align:center" />
+          <button class="tbtn done" onclick="addTechByCode()">➕ أضف</button>
+        </div>
+        <div style="margin-top:12px">
         ${TECHS.length? TECHS.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 2px;border-bottom:1px solid rgba(255,255,255,.1)">
             <span><b>${esc(t.name||'فني')}</b> <small style="opacity:.7">${esc(t.phone||'')}</small></span>
             <button class="tbtn" style="padding:3px 10px;background:rgba(220,70,70,.35)" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button>
-          </div>`).join('') : '<div style="opacity:.75;font-size:.9rem">ما انضم فنيّون بعد — شاركهم كودك فوق.</div>'}
+          </div>`).join('') : '<div style="opacity:.75;font-size:.9rem">ما أضفت فنيّين بعد.</div>'}
+        </div>
       </div>`:''}`;
+  // لوحة الفني: كوده وحالته
+  const techPanel = !me.tech ? '' : `
+      <div class="sub" style="margin-top:10px;background:rgba(245,197,24,.14);border:1px solid rgba(245,197,24,.4);border-radius:12px;padding:12px">
+        🔑 كودك: <b style="letter-spacing:3px;font-size:1.2rem;color:#F5C518">${esc(me.code||'—')}</b>
+        <button class="tbtn" style="padding:3px 10px;margin-right:6px;vertical-align:middle" onclick="copyMyCode()">📋 نسخ</button>
+        <div style="font-size:.82rem;opacity:.9;margin-top:6px">${me.hasProvider?`✅ أنت في فريق <b>${esc(me.providerName||'مزوّدك')}</b>`:'أعطِ هذا الكود لمزوّدك — يضيفه عنده فتستقبل طلباته.'}</div>
+      </div>`;
+  const subLine = me.tech
+    ? (me.hasProvider ? `🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b> · ${esc(myCities().join(' · ')||'—')}`
+                      : `🧑‍🔧 فني جديد — بانتظار أن يضيفك مزوّدك`)
+    : `📍 ${myCities().length?esc(myCities().join(' · ')):'⚠️ ما حدّدت مدن الخدمة'} · تستقبل طلبات هذه المدن`;
+  const showJobs = !me.tech || me.hasProvider;   // الفني بلا مزوّد يشوف رسالة انتظار
   document.getElementById('app').innerHTML=`
     <div class="hero">
       <h1>أهلاً ${esc(me.name)}</h1>
-      <div class="sub">${me.tech?`🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b> · `:'📍 '}${myCities().length?esc(myCities().join(' · ')):(me.tech?'—':'⚠️ ما حدّدت مدن الخدمة')} · تستقبل طلبات هذه المدن</div>
-      <div class="sub">🔧 طلباتك النشطة: ${ar(active)} / ٣${active>=3?' — أنجز طلباً لتقبل غيره':''}</div>
-      ${provPanel}
+      <div class="sub">${subLine}</div>
+      ${showJobs?`<div class="sub">🔧 طلباتك النشطة: ${ar(active)} / ٣${active>=3?' — أنجز طلباً لتقبل غيره':''}</div>`:''}
+      ${techPanel}${provPanel}
       ${!me.tech && owed>0?`<div class="owed">💼 مستحق للمنصة: <b>${money(owed)}</b> (${ar(myDone)} طلب)</div>`:''}
     </div>
+    ${showJobs?`
     <div class="tabs">
       <button class="tab ${tab==='available'?'active':''}" onclick="setTab('available')">طلبات متاحة <span class="cnt">(${ar(avail.length)})</span></button>
       <button class="tab ${tab==='mine'?'active':''}" onclick="setTab('mine')">طلباتي <span class="cnt">(${ar(mine.length)})</span></button>
     </div>
-    <div style="padding-bottom:30px">${list}</div>`;
+    <div style="padding-bottom:30px">${list}</div>`
+    : `<div class="empty" style="padding:44px 22px"><div class="ico">🤝</div><h3>سجّلت بنجاح!</h3>
+       <p style="opacity:.85;margin-top:10px;line-height:1.9">أعطِ كودك <b style="color:#F5C518;letter-spacing:2px">${esc(me.code||'')}</b> لمزوّدك، يضيفه عنده، وبعدها تستقبل طلبات مدنه هنا مباشرة.</p></div>`}`;
 }
 /* ---- فريق المزوّد (فنيّوه) ---- */
 let techsOpen=false, TECHS=[];
@@ -703,6 +721,15 @@ async function loadTechs(){ if(!me||!cloudReady) return; try{ const { data }=awa
 async function toggleTechs(){ techsOpen=!techsOpen; if(techsOpen) await loadTechs(); render(); }
 function copyMyCode(){ const c=(me&&me.code)||''; try{ navigator.clipboard.writeText(c); toast('📋 نُسخ كودك: '+c); }catch(e){ toast('كودك: '+c); } }
 async function removeTech(uid,name){ if(!confirm('إزالة الفني '+(name||'')+' من فريقك؟')) return; try{ await sb.rpc('remove_my_tech',{ p_uid:uid }); }catch(e){} await loadTechs(); toast('تمت الإزالة'); render(); }
+async function addTechByCode(){
+  const el=document.getElementById('add_tech_code'); const code=((el&&el.value)||'').trim().toUpperCase();
+  if(code.length<4){ toast('اكتب كود الفني'); return; }
+  try{
+    const { data }=await sb.rpc('add_tech_by_code',{ p_code:code });
+    if(data && data.ok){ toast('✅ أُضيف الفني: '+(data.name||'')); if(el) el.value=''; await loadTechs(); render(); }
+    else toast(data && data.reason==='bad_code' ? '❌ كود الفني غير صحيح' : 'تعذّرت الإضافة');
+  }catch(e){ toast('تعذّرت الإضافة، حاول ثانية'); }
+}
 function setTab(t){ tab=t; render(); }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
