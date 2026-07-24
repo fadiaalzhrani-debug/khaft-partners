@@ -558,11 +558,15 @@ async function submitSignup(){
   signupCtx={ name, pass, cities, svcs, e164:'+'+d, local:'0'+d.slice(3) };
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ نرسل رمز التحقق...'; }
   try{
-    const { error }=await sb.auth.signUp({ phone:signupCtx.e164, password:pass });
+    const { data, error }=await sb.auth.signUp({ phone:signupCtx.e164, password:pass });
     if(error){
       if(/already|registered|exists/i.test(error.message||'')){ signupCtx.existing=true;
         const r=await sb.auth.signInWithOtp({ phone:signupCtx.e164 }); if(r.error) throw r.error; }
       else throw error;
+    } else if(data && data.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+      // رقم له حساب مسبقاً: signUp يرجّع «نجاحاً وهمياً» بلا رسالة — نرسل رمز دخول فعلياً
+      signupCtx.existing=true;
+      const r=await sb.auth.signInWithOtp({ phone:signupCtx.e164 }); if(r.error) throw r.error;
     }
     showSignupOtp('');
   }catch(e){ showSignup('تعذّر إرسال الرمز — تأكد من الرقم وحاول ثانية'); }
@@ -617,9 +621,14 @@ async function submitTechReg(){
   techCtx={ name, pass, e164:'+'+d, local:'0'+d.slice(3) };
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ نرسل رمز التحقق...'; }
   try{
-    const { error }=await sb.auth.signUp({ phone:techCtx.e164, password:pass });
+    const { data, error }=await sb.auth.signUp({ phone:techCtx.e164, password:pass });
     if(error){ if(/already|registered|exists/i.test(error.message||'')){ techCtx.existing=true;
       const r=await sb.auth.signInWithOtp({ phone:techCtx.e164 }); if(r.error) throw r.error; } else throw error; }
+    else if(data && data.user && Array.isArray(data.user.identities) && data.user.identities.length===0){
+      // رقم له حساب مسبقاً: signUp يرجّع «نجاحاً وهمياً» بلا رسالة — نرسل رمز دخول فعلياً
+      techCtx.existing=true;
+      const r=await sb.auth.signInWithOtp({ phone:techCtx.e164 }); if(r.error) throw r.error;
+    }
     showTechOtp('');
   }catch(e){ showTechReg('تعذّر إرسال الرمز — تأكد من الرقم وحاول ثانية'); }
 }
