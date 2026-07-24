@@ -213,5 +213,23 @@ workflows:
           chmod +x ./gradlew
           ./gradlew bundleRelease
           find . -name "*.aab" -exec ls -lh {} \;
+      - name: رفع تلقائي لـGoogle Play (اختبار داخلي)
+        script: |
+          # يتخطّى بأمان حتى تُضاف بيانات حساب الخدمة كمتغيّر GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+          if [ -z "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS" ]; then
+            echo "— لا توجد بيانات ربط Google Play بعد — نتخطّى الرفع (البناء نفسه ناجح) —"; exit 0; fi
+          AAB=$(find "$CM_BUILD_DIR" -name "*.aab" | head -1)
+          echo "الملف: $AAB"
+          echo "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS" > /tmp/gcloud_key.json
+          fastlane supply \
+            --aab "$AAB" \
+            --json_key /tmp/gcloud_key.json \
+            --package_name "$PACKAGE_NAME" \
+            --track internal \
+            --release_status completed \
+            --skip_upload_metadata true \
+            --skip_upload_images true \
+            --skip_upload_screenshots true \
+            --skip_upload_changelogs true
     artifacts:
       - android/app/build/outputs/bundle/**/*.aab
