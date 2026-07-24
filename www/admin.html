@@ -79,6 +79,12 @@
   .flow i.arr{background:#0b7a3b;color:#fff;border-color:#0b7a3b}
   .flow span{color:var(--line);font-weight:900;font-size:.7rem}
   .mini-ok{color:#0b7a3b;font-weight:800;font-size:.82rem;align-self:center;margin-inline-end:6px}
+  /* شريط الأقسام الرئيسي — يقسّم اللوحة لصفحات واضحة */
+  .secbar{display:flex;gap:8px;overflow-x:auto;margin-top:16px;padding-bottom:4px;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);padding-top:8px}
+  .secbar::-webkit-scrollbar{display:none}
+  .secbtn{flex:1;min-width:96px;padding:12px 8px;border-radius:13px;background:var(--card);border:1.5px solid var(--line);font-weight:800;color:var(--muted);text-align:center;white-space:nowrap;position:relative;font-size:.95rem}
+  .secbtn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .secbtn .bdg{position:absolute;top:-7px;left:-4px;background:#c0392b;color:#fff;font-size:.68rem;font-weight:900;min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 5px}
   .fbar{display:flex;gap:8px;overflow-x:auto;margin-top:16px;padding-bottom:4px;scrollbar-width:none}
   .fbar::-webkit-scrollbar{display:none}
   .tab{white-space:nowrap;padding:9px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700;color:var(--muted);font-size:.9rem}
@@ -198,7 +204,7 @@ const BRAND='خافِت'; const COMMISSION=3;
 const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط — ليس سرّاً
 let loggedIn=false;                     // تُحدَّد من جلسة Supabase
 
-let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all';
+let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='orders';
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
 function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
 function money(n){ return ar(n)+' ر.س'; }
@@ -849,31 +855,52 @@ function render(){
   const rem=ORDERS.filter(o=>['new','confirmed'].includes(o.status)&&(o.date===todayISO||o.date===dateISO(tmr))).sort((a,b)=>a.startMin-b.startMin);
   const remHtml=rem.length?rem.map(o=>`<div class="rline"><span style="font-size:1.3rem">⏰</span><div class="rl-t"><b>${esc(o.customer.name)}</b> — ${o.id}<small>${dayLabel(o.date)} · ${fmtTime(o.startMin)} · ${esc(o.customer.phone)}</small></div><button class="sbtn ${o.reminded?'':'ok'}" onclick="sendReminder('${o.id}')">${o.reminded?'✓ أُرسل':'تذكير'}</button></div>`).join(''):`<p style="color:var(--muted)">لا مواعيد قريبة.</p>`;
   const pendingProv=PROVIDERS.filter(p=>(p.status||'pending')==='pending').length;
+  // ═ لوحة منظّمة بأقسام: كل شي له مكانه بدل صفحة وحدة طويلة ═
+  const newSugs=SUGS.filter(s=>!s.handled).length;
+  const newSubs=SUBS.filter(s=>s.status!=='active').length;
+  const block=(t,h)=>`<div class="panel"><h3 class="ph open" style="cursor:default"><span>${t}</span></h3>${h}</div>`;
+  const secs=[
+    ['orders','📥 الطلبات', cnt('new')],
+    ['team','👥 الفريق', pendingProv],
+    ['cust','💬 العملاء', newSugs+newSubs],
+    ['store','📦 المخزن', 0],
+    ['prices','🏷️ الأسعار', 0],
+  ];
+  const secbar=secs.map(([k,l,n])=>`<button class="secbtn ${adminSection===k?'active':''}" onclick="setAdminSection('${k}')">${l}${n>0?`<span class="bdg">${ar(n)}</span>`:''}</button>`).join('');
+  let body='';
+  if(adminSection==='orders'){
+    body=`${renderCalendar(todayISO)}
+      <div class="fbar">${fbar}</div>
+      ${orderCards||'<p style="color:var(--muted);margin-top:14px">لا طلبات بهذا الفلتر.</p>'}
+      <div style="height:10px"></div>
+      ${block('📩 تذكيرات المواعيد القريبة', remHtml)}`;
+  } else if(adminSection==='team'){
+    body=`${block(`🧑‍🔧 فنيّو خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`, renderTechs())}
+      ${block(`🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`, renderProviders())}
+      ${block(`💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`, renderCommission())}`;
+  } else if(adminSection==='cust'){
+    body=`${block(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`, renderSuggestions())}
+      ${block(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`, renderSubs())}
+      ${block(`📰 مقالات السلامة (${ar(ARTICLES.length)})`, renderArticles())}`;
+  } else if(adminSection==='store'){
+    body=`${block(`📦 المخزن (${ar(INV.length)} صنف)`, renderInventory())}
+      ${block('📋 سجل حركة المخزن (يومي)', renderStockLog())}`;
+  } else {
+    body=block('🏷️ أسعار الخدمات', renderPriceEditor());
+  }
   document.getElementById('app').innerHTML=`<div class="screen">
-    <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة إدارة الطلبات والمزوّدين</small></div></div>
+    <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
       <div class="stat gold"><div class="n">${ar(todayOrders.length)}</div><div class="l">📅 طلبات اليوم</div></div>
       <div class="stat"><div class="n">${ar(cnt('new'))}</div><div class="l">🆕 بانتظار التأكيد</div></div>
       <div class="stat"><div class="n">${ar(pendingProv)}</div><div class="l">🤝 مزوّدون للمراجعة</div></div>
       <div class="stat green"><div class="n">${money(revenue)}</div><div class="l">💰 إيراد مكتمل</div></div>
     </div>
-    ${renderCalendar(todayISO)}
-    <div class="sec-head"><h2>📥 الطلبات</h2></div>
-    <div class="fbar">${fbar}</div>
-    ${orderCards}
-    <div style="height:26px"></div>
-    ${panel('techs', `🧑‍🔧 الفنيّون (${ar(STAFF.filter(s=>s.role==='tech').length)})`,   ()=>renderTechs())}
-    ${panel('arts',  `📰 مقالات السلامة (${ar(ARTICLES.length)})`,                       ()=>renderArticles())}
-    ${panel('sugs',  `💡 رسائل العملاء (${ar(SUGS.filter(s=>!s.handled).length)} جديدة)`,        ()=>renderSuggestions())}
-    ${panel('rem',   `📩 تذكيرات المواعيد القريبة`,                        ()=>remHtml)}
-    ${panel('comm',  `💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`, ()=>renderCommission())}
-    ${panel('prov',  `🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,          ()=>renderProviders())}
-    ${panel('subs',  `🛡️ طلبات الاشتراك (${ar(SUBS.filter(s=>s.status!=='active').length)} جديد)`, ()=>renderSubs())}
-    ${panel('inv',   `📦 المخزن (${ar(INV.length)} صنف)`,                    ()=>renderInventory())}
-    ${panel('log',   `📋 سجل حركة المخزن (يومي)`,                           ()=>renderStockLog())}
-    ${panel('prices',`🏷️ أسعار الخدمات`,                                    ()=>renderPriceEditor())}
+    <div class="secbar">${secbar}</div>
+    <div style="margin-top:14px">${body}</div>
   </div>`;
 }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
 render();
