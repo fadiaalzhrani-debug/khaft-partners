@@ -149,6 +149,8 @@ workflows:
           include: true
       cancel_previous_builds: true
     environment:
+      groups:
+        - appstore          # نفس المجموعة — نضيف فيها بيانات Google Play
       android_signing:
         - khafet_upload
       vars:
