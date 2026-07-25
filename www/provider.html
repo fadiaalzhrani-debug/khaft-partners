@@ -96,6 +96,11 @@
   .mchips{display:flex;flex-wrap:wrap;gap:8px}
   .mchip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:#FBF9F3;color:var(--muted);font-weight:800;font-size:.85rem}
   .mchip.on{background:var(--gold);color:#1A1712;border-color:var(--gold-deep)}
+  /* شرائح اختيار متعدد (مدن/خدمات) */
+  .picks{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:4px 0 6px;max-height:190px;overflow-y:auto}
+  .pick-chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);border-radius:20px;padding:6px 13px;font-size:.86rem;cursor:pointer;background:var(--card);font-weight:700;color:var(--text)}
+  .pick-chip input{margin:0;width:15px;height:15px;accent-color:var(--gold-deep)}
+  .pick-chip:has(input:checked){background:var(--gold);color:#1A1712;border-color:var(--gold-deep)}
   /* صلاحيات الفني */
   .tech-card{background:#FBF9F3;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:10px}
   .tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -702,7 +707,8 @@ function showLogin(msg, wait){
   </div>`;
 }
 /* ---- تسجيل مزوّد جديد (داخل التطبيق) ---- */
-const SIGNUP_CATS=['سباكة','كهرباء','تكييف','نجارة','دهان','أجهزة منزلية','تنظيف','أعمال عامة'];
+const SIGNUP_CATS=['سباكة','كهرباء','تكييف','نجارة','دهان','أجهزة منزلية','تنظيف','مكافحة حشرات','عزل مائي','جبس وديكور','ألمنيوم','زجاج ومرايا','حدادة','سيراميك وبلاط','تمديد غاز','ستائر','كاميرات مراقبة','مصاعد','خزانات مياه','تنسيق حدائق','مسابح','أعمال عامة'];
+const SA_CITIES=['الرياض','جدة','مكة','المدينة','الدمام','الخبر','الظهران','الأحساء','القطيف','الجبيل','بريدة','عنيزة','حائل','تبوك','أبها','خميس مشيط','نجران','جازان','ينبع','الطائف','عرعر','سكاكا','الباحة','حفر الباطن'];
 let signupCtx=null;
 function showSignup(msg){
   document.getElementById('logoutBtn').style.display='none';
@@ -713,11 +719,14 @@ function showSignup(msg){
     <input id="su_name" placeholder="الاسم / اسم المؤسسة" />
     <input id="su_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="su_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
-    <input id="su_cities" placeholder="مدن الخدمة مفصولة بفاصلة: الخبر، الدمام" />
+    <div style="text-align:right;margin:8px 2px 4px;font-size:.9rem;font-weight:700">مدن الخدمة (اختر واحدة أو أكثر):</div>
+    <div id="su_cities" class="picks">
+      ${SA_CITIES.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${c}</label>`).join('')}
+    </div>
     <input id="su_cr" inputmode="numeric" placeholder="رقم السجل التجاري" />
-    <div style="text-align:right;margin:10px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات:</div>
-    <div id="su_svcs" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:6px">
-      ${SIGNUP_CATS.map(c=>`<label style="border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;font-size:.86rem;cursor:pointer;background:var(--card)"><input type="checkbox" value="${c}" style="margin-left:5px"> ${c}</label>`).join('')}
+    <div style="text-align:right;margin:8px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات (اختر واحدة أو أكثر):</div>
+    <div id="su_svcs" class="picks">
+      ${SIGNUP_CATS.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${c}</label>`).join('')}
     </div>
     <button class="btn" onclick="submitSignup()">تسجيل وتفعيل ✅</button>
     ${msg?`<div class="msg ${/تعذّر|صحيح|اكتب|اختر|المرور/.test(msg)?'':'wait'}">${msg}</div>`:''}
@@ -727,7 +736,7 @@ function showSignup(msg){
 async function submitSignup(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
   const name=g('su_name'), pass=g('su_pass'), d=normPhone(g('su_phone'));
-  const cities=g('su_cities').split(/[،,\n]+/).map(s=>s.trim()).filter(Boolean);
+  const cities=[...document.querySelectorAll('#su_cities input:checked')].map(c=>c.value);
   const svcs=[...document.querySelectorAll('#su_svcs input:checked')].map(c=>c.value);
   const cr=g('su_cr');
   if(!name){ showSignup('اكتب الاسم'); return; }
@@ -853,8 +862,7 @@ function servesCity(o){
 }
 function toggleCities(){ citiesOpen=!citiesOpen; render(); }
 async function saveMyCities(){
-  const v=((document.getElementById('pv_cities')||{}).value||'').trim();
-  const arr=v.split(/[،,\n]+/).map(s=>s.trim()).filter(Boolean);
+  const arr=[...document.querySelectorAll('#pv_cities input:checked')].map(c=>c.value);
   try{
     const { error }=await sb.from('khafet_providers').update({ cities:arr }).eq('id', me.id);
     if(error) throw error;
@@ -1017,8 +1025,10 @@ function render(){
         </div>
       </div>
       <div class="mpanel"><h3>📍 مدن الخدمة</h3>
-        <div class="hint">اكتب المدن مفصولة بفاصلة — أي طلب من هذه المدن يوصلك وتقبله أو تتركه.</div>
-        <input id="pv_cities" value="${esc(myCities().join('، '))}" placeholder="مثال: الدمام، الخبر، الظهران" />
+        <div class="hint">اختر مدنك — أي طلب من هذه المدن يوصلك وتقبله أو تتركه.</div>
+        <div id="pv_cities" class="picks" style="max-height:220px;justify-content:flex-start">
+          ${SA_CITIES.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}" ${myCities().includes(c)?'checked':''}> ${c}</label>`).join('')}
+        </div>
         <button class="tbtn done" style="margin-top:10px;width:100%" onclick="saveMyCities()">💾 حفظ المدن</button>
       </div>
       <div class="mpanel"><h3>🧑‍🔧 فريقي ${TECHS.length?`(${ar(TECHS.length)})`:''}</h3>
