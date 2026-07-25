@@ -962,6 +962,8 @@ function render(){
   // فلترة بيوم التقويم المختار (طلباته هو فقط)
   const availF = pvCalFilter ? avail.filter(o=>o.date===pvCalFilter) : avail;
   const mineF  = pvCalFilter ? mine.filter(o=>o.date===pvCalFilter)  : mine;
+  // قائمة الطلبات المتاحة (تظهر تحت المربّعات بالرئيسية)
+  const availList = availF.length ? availF.map(o=>jobCard(o,'available')).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من «حسابي» لتصلك الطلبات'}</h3></div>`;
   // ═ أرقام الداشبورد (المزوّد يختار اللي يهمّه) ═
   const _rev=mine.filter(o=>o.status==='done').reduce((s,o)=>s+orderInvTotal(o),0);
   const _stockVal=PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
@@ -1028,7 +1030,6 @@ function render(){
   // ═ واجهة المربّعات (زي لوحة الإدارة): الرئيسية = بطاقات الأقسام ═
   const isJobTab=(tab==='available'||tab==='mine');
   const CARDS=[
-    ['available','📥','الطلبات المتاحة', ar(availF.length)+' متاح', availF.length],
     ['mine','🧰','طلباتي', ar(mineF.length)+' طلب', 0],
   ];
   if(seeStock()) CARDS.push(['stock','📦','المخزن', ar(PINV.length)+' صنف', 0]);
@@ -1057,7 +1058,12 @@ function render(){
         <div class="sub">${subLine}</div>
         ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
       </div>
-      ${showJobs?`<div class="hgrid">${cardsHTML}</div>`:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}
+      ${showJobs?`
+        <div class="hgrid">${cardsHTML}</div>
+        <div style="margin-top:24px;font-weight:900;font-size:1.12rem">📥 الطلبات المتاحة</div>
+        ${renderPvCalendar()}
+        <div style="padding-bottom:30px">${availList}</div>
+      `:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}
     `:`
       <div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
         <button class="backbtn" onclick="goHome()">‹ الرئيسية</button>
