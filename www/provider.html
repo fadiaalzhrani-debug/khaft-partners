@@ -67,6 +67,7 @@
   .irow .qn.low{color:#c0392b}
   .pill{display:inline-block;font-size:.72rem;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--gold-tint);color:var(--gold-deep);border:1px solid var(--line)}
   .x-btn{background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.35);color:#c0392b;border-radius:9px;padding:6px 10px;font-weight:800;font-size:.82rem;flex-shrink:0}
+  .assign-sel{flex:1;min-width:150px;padding:11px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-family:inherit;font-size:.9rem}
   /* مفتاح تشغيل/إيقاف */
   .sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
   .sw-row:last-child{border-bottom:0}
@@ -239,6 +240,7 @@ function svc(id){ return SERVICES.find(s=>s.id===id); }
 
 let me=null, ORDERS=[], OPEN=[], tab='available';
 let PINV=[], PCUST=[];   // مخزن + عملاء المزوّد (مشتركة مع فريقه)
+let bookOpen=false;      // نموذج الحجز المباشر
 function myPid(){ return me ? (me.tech ? (me.provider_id||null) : me.id) : null; }
 function seeStock(){ return !!(me && (!me.tech || me.techs_see_stock)); }
 function seeCust(){ return !!(me && (!me.tech || me.techs_see_customers)); }
@@ -760,6 +762,13 @@ function jobCard(o, mode){
     else if(o.status==='progress') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
     else if(o.status==='done') acts=`<div class="tbtn donelbl">✓ مكتمل</div><button class="tbtn fold" onclick="toggleDone('${o.id}')">▴</button>`;
     acts+=`<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?'✓ الفاتورة':'🧾 فاتورة'}</button>`;
+    // المزوّد يوزّع الطلب على فني من فريقه
+    if(!me.tech && TECHS.length && o.status!=='done'){
+      acts+=`<select class="assign-sel" onchange="assignOrder('${o.dbId}',this.value)">
+        <option value="">🧑‍🔧 توزيع على فني…</option>
+        ${TECHS.map(t=>`<option value="${t.user_id}" ${o.handledBy===t.user_id?'selected':''}>${esc(t.name||'فني')}</option>`).join('')}
+      </select>`;
+    }
   }
   return `<div class="tjob">
     <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span class="status ${o.status}">${({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status}</span></div>
@@ -869,6 +878,7 @@ function render(){
   else if(tab==='stock') body=renderStock();
   else if(tab==='customers') body=renderCustomers();
   else if(tab==='invoices') body=renderInvoices();
+  else if(tab==='mine') body=(!me.tech?bookPanel():'')+list;
   else body=list;
 
   document.getElementById('app').innerHTML=`
@@ -1005,6 +1015,52 @@ function renderInvoices(){
     <div class="mpanel">${rows}</div>`;
 }
 function printOrderInv(id){ const o=ORDERS.find(x=>x.id===id); if(o) printInvoiceDoc(o); }
+
+/* ═══════════ الحجز المباشر + التوزيع على فني ═══════════ */
+function toggleBook(){ bookOpen=!bookOpen; render(); }
+function bookPanel(){
+  if(!bookOpen) return `<button class="tbtn done" style="width:100%;margin-bottom:14px" onclick="toggleBook()">➕ حجز جديد لعميل</button>`;
+  const today=new Date().toISOString().slice(0,10);
+  return `<div class="mpanel">
+    <h3>➕ حجز جديد لعميل</h3>
+    <div class="hint">أضف طلباً مباشرة — يظهر في «طلباتي»${TECHS.length?' وتقدر توزّعه على فني':''}.</div>
+    <input id="bk_name" placeholder="اسم العميل" />
+    <input id="bk_phone" inputmode="tel" placeholder="جوال العميل" style="margin-top:8px" />
+    <input id="bk_city" placeholder="المدينة" style="margin-top:8px" />
+    <input id="bk_note" placeholder="الخدمة / المشكلة" style="margin-top:8px" />
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="bk_date" type="date" value="${today}" style="flex:1" />
+      <input id="bk_time" type="time" value="10:00" style="flex:1" />
+    </div>
+    ${TECHS.length?`<select id="bk_tech" class="assign-sel" style="width:100%;margin-top:8px">
+      <option value="">— بدون توزيع —</option>
+      ${TECHS.map(t=>`<option value="${t.user_id}">🧑‍🔧 ${esc(t.name||'فني')}</option>`).join('')}
+    </select>`:''}
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="tbtn done" onclick="submitBooking()">💾 احجز</button>
+      <button class="tbtn" style="background:var(--gold-tint);color:var(--ink)" onclick="toggleBook()">إلغاء</button>
+    </div>
+  </div>`;
+}
+async function submitBooking(){
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const name=g('bk_name'), phone=g('bk_phone'), city=g('bk_city'), note=g('bk_note');
+  const date=g('bk_date')||new Date().toISOString().slice(0,10), time=g('bk_time'), tech=g('bk_tech');
+  if(!name){ toast('اكتب اسم العميل'); return; }
+  let start=600; if(time&&time.indexOf(':')>0){ const p=time.split(':'); start=(+p[0])*60+(+p[1]); }
+  try{
+    const { data }=await sb.rpc('provider_book_order',{ p_customer:name, p_phone:phone, p_city:city, p_items:[], p_date:date, p_start:start, p_duration:60, p_note:note, p_tech:tech||null });
+    if(data&&data.ok){ toast('✅ تم الحجز #'+ar(data.order_no)); bookOpen=false; loadOrders(); }
+    else toast('تعذّر الحجز');
+  }catch(e){ toast('تعذّر الحجز'); }
+}
+async function assignOrder(dbId,techUid){
+  try{
+    const { data }=await sb.rpc('assign_order_tech',{ p_order:Number(dbId), p_tech:techUid||null });
+    if(data&&data.ok){ toast(techUid?'✅ وُزّع على الفني':'أُلغي التوزيع'); loadOrders(); }
+    else toast(data&&data.reason==='not_my_tech'?'الفني مو من فريقك':'تعذّر التوزيع');
+  }catch(e){ toast('تعذّر التوزيع'); }
+}
 
 /* ---- فريق المزوّد (فنيّوه) ---- */
 let techsOpen=false, TECHS=[];
