@@ -714,6 +714,7 @@ function showSignup(msg){
     <input id="su_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="su_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
     <input id="su_cities" placeholder="مدن الخدمة مفصولة بفاصلة: الخبر، الدمام" />
+    <input id="su_cr" inputmode="numeric" placeholder="رقم السجل التجاري" />
     <div style="text-align:right;margin:10px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات:</div>
     <div id="su_svcs" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:6px">
       ${SIGNUP_CATS.map(c=>`<label style="border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;font-size:.86rem;cursor:pointer;background:var(--card)"><input type="checkbox" value="${c}" style="margin-left:5px"> ${c}</label>`).join('')}
@@ -728,13 +729,14 @@ async function submitSignup(){
   const name=g('su_name'), pass=g('su_pass'), d=normPhone(g('su_phone'));
   const cities=g('su_cities').split(/[،,\n]+/).map(s=>s.trim()).filter(Boolean);
   const svcs=[...document.querySelectorAll('#su_svcs input:checked')].map(c=>c.value);
+  const cr=g('su_cr');
   if(!name){ showSignup('اكتب الاسم'); return; }
   if(d.length<12){ showSignup('رقم الجوال غير صحيح'); return; }
   if(pass.length<6){ showSignup('كلمة المرور ٦ أحرف على الأقل'); return; }
   if(!cities.length){ showSignup('اكتب مدن الخدمة'); return; }
   if(!svcs.length){ showSignup('اختر نوع الخدمات'); return; }
   if(!cloudReady){ showSignup('لا يوجد اتصال، حاول بعد قليل'); return; }
-  signupCtx={ name, pass, cities, svcs, e164:'+'+d, local:'0'+d.slice(3) };
+  signupCtx={ name, pass, cities, svcs, cr, e164:'+'+d, local:'0'+d.slice(3) };
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ نرسل رمز التحقق...'; }
   try{
     const { data, error }=await sb.auth.signUp({ phone:signupCtx.e164, password:pass });
@@ -768,7 +770,7 @@ async function verifySignupOtp(){
     if(error){ showSignupOtp('❌ الرمز غير صحيح — حاول ثانية'); return; }
     if(signupCtx.existing){ try{ await sb.auth.updateUser({ password:signupCtx.pass }); }catch(e){} }
     // أنشئ ملف المزوّد — الخادم يعتمده فوراً إذا مكتمل
-    try{ await sb.from('khafet_providers').insert({ name:signupCtx.name, phone:signupCtx.local, city:signupCtx.cities[0]||'', cities:signupCtx.cities, services:signupCtx.svcs }); }catch(e){}
+    try{ await sb.from('khafet_providers').insert({ name:signupCtx.name, phone:signupCtx.local, city:signupCtx.cities[0]||'', cities:signupCtx.cities, services:signupCtx.svcs, cr_number:signupCtx.cr||null }); }catch(e){}
     const { data }=await sb.from('khafet_providers').select('*').in('phone',[signupCtx.local, signupCtx.e164.slice(1), signupCtx.e164]);
     const p=(data||[])[0];
     if(p && (p.status||'')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush(); }
