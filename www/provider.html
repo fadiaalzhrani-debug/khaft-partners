@@ -101,6 +101,19 @@
   .pick-chip{display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);border-radius:20px;padding:6px 13px;font-size:.86rem;cursor:pointer;background:var(--card);font-weight:700;color:var(--text)}
   .pick-chip input{margin:0;width:15px;height:15px;accent-color:var(--gold-deep)}
   .pick-chip:has(input:checked){background:var(--gold);color:#1A1712;border-color:var(--gold-deep)}
+  /* ═ مربّعات الرئيسية (زي لوحة الإدارة) ═ */
+  .hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:430px){.hgrid{grid-template-columns:1fr}}
+  .hcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;text-align:right;cursor:pointer;box-shadow:var(--shadow);transition:.14s;display:flex;flex-direction:column;gap:5px}
+  .hcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .hcard:active{transform:scale(.98)}
+  .hcard .hc-ic{font-size:2rem;line-height:1}
+  .hcard h3{font-size:1.16rem;font-weight:900;color:var(--ink)}
+  .hcard p{color:var(--muted);font-size:.85rem;font-weight:700;flex:1}
+  .hcard .hc-open{color:var(--gold-deep);font-weight:800;font-size:.82rem;margin-top:2px}
+  .hcard .hc-badge{position:absolute;top:14px;left:14px;background:#e11d48;color:#fff;font-weight:900;font-size:.75rem;padding:2px 9px;border-radius:999px;min-width:24px;text-align:center}
+  .backbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 16px;font-weight:800;color:var(--ink);font-family:inherit;cursor:pointer}
+  .backbtn:hover{border-color:var(--gold)}
   /* صلاحيات الفني */
   .tech-card{background:#FBF9F3;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:10px}
   .tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -280,7 +293,7 @@ const SERVICES=[
 ];
 function svc(id){ return SERVICES.find(s=>s.id===id); }
 
-let me=null, ORDERS=[], OPEN=[], tab='available';
+let me=null, ORDERS=[], OPEN=[], tab='home';
 let PINV=[], PCUST=[];   // مخزن + عملاء المزوّد (مشتركة مع فريقه)
 let bookOpen=false;      // نموذج الحجز المباشر
 function myPid(){ return me ? (me.tech ? (me.provider_id||null) : me.id) : null; }
@@ -545,7 +558,7 @@ async function enterTechMode(info, d){
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=null; localStorage.removeItem('khafet_provider_phone'); render(); }
 /* 🏠 الرئيسية = الصفحة الرئيسية لحسابه (لوحته)، مو اختيار البوابات */
-function goHome(){ if(me){ tab='available'; pvCalFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
+function goHome(){ if(me){ tab='home'; pvCalFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
 /* ═══════════ إعدادات الحساب (مثل أي تطبيق) ═══════════ */
 function soundOn(){ return localStorage.getItem('khafet_sound')!=='off'; }
 function toggleSound(){ localStorage.setItem('khafet_sound', soundOn()?'off':'on'); render(); toast(soundOn()?'🔔 التنبيه الصوتي مفعّل':'🔕 أُوقف التنبيه الصوتي'); }
@@ -1055,13 +1068,19 @@ function render(){
 
   manage += settingsPanel();   // ⚙️ إعدادات موحّدة (تغيير باسورد/تنبيهات/دعم/حذف/خروج)
 
-  // تبويبات ديناميكية + توزيع المحتوى (مخزن/عملاء/فواتير حسب صلاحية العرض)
+  // ═ واجهة المربّعات (زي لوحة الإدارة): الرئيسية = بطاقات الأقسام ═
   const isJobTab=(tab==='available'||tab==='mine');
-  let TABS=[['available','المتاحة','('+ar(availF.length)+')'],['mine','طلباتي','('+ar(mineF.length)+')']];
-  if(seeStock()) TABS.push(['stock','📦 المخزن','']);
-  if(seeInv())   TABS.push(['invoices','🧾 الفواتير','']);
-  // «حسابي» ثابت بالهيدر فوق (زر acctBtn) — فما نكرّره كتبويب هنا
-  const tabsHTML=TABS.map(([k,l,c])=>`<button class="tab ${tab===k?'active':''}" onclick="setTab('${k}')">${l}${c?` <span class="cnt">${c}</span>`:''}</button>`).join('');
+  const CARDS=[
+    ['available','📥','الطلبات المتاحة', ar(availF.length)+' متاح', availF.length],
+    ['mine','🧰','طلباتي', ar(mineF.length)+' طلب', 0],
+  ];
+  if(seeStock()) CARDS.push(['stock','📦','المخزن', ar(PINV.length)+' صنف', 0]);
+  if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', ar(myDone)+' منجز', 0]);
+  const cardsHTML=CARDS.map(([k,ic,t,sub,badge])=>`<div class="hcard" onclick="setTab('${k}')">
+    ${badge>0?`<span class="hc-badge">${ar(badge)}</span>`:''}
+    <span class="hc-ic">${ic}</span><h3>${t}</h3><p>${sub}</p><span class="hc-open">فتح ›</span>
+  </div>`).join('');
+  const secTitle={available:'📥 الطلبات المتاحة',mine:'🧰 طلباتي',stock:'📦 المخزن',invoices:'🧾 الفواتير',manage:'👤 حسابي'}[tab]||'';
   let body;
   if(tab==='manage') body=manage;
   else if(tab==='stock') body=renderStock();
@@ -1069,17 +1088,23 @@ function render(){
   else if(tab==='mine') body=(!me.tech?bookPanel():'')+list;
   else body=list;
 
+  const inHome=(tab==='home');
   document.getElementById('app').innerHTML=`
-    <div class="hero">
-      <h1>أهلاً ${esc(me.name)} 👋</h1>
-      <div class="sub">${subLine}</div>
-      ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
-    </div>
-    ${showJobs?`
-    ${isJobTab?renderPvCalendar():''}
-    <div class="tabs">${tabsHTML}</div>
-    <div style="padding-bottom:30px">${body}</div>`
-    : `<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}`;
+    ${inHome?`
+      <div class="hero">
+        <h1>أهلاً ${esc(me.name)} 👋</h1>
+        <div class="sub">${subLine}</div>
+        ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
+      </div>
+      ${showJobs?`<div class="hgrid">${cardsHTML}</div>`:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}
+    `:`
+      <div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
+        <button class="backbtn" onclick="goHome()">‹ الرئيسية</button>
+        <b style="font-size:1.12rem;font-weight:900;flex:1">${secTitle}</b>
+      </div>
+      ${isJobTab?renderPvCalendar():''}
+      <div style="margin-top:12px;padding-bottom:30px">${body}</div>
+    `}`;
 }
 
 /* ═══════════ المخزن (مشترك: المزوّد + فريقه) ═══════════ */
