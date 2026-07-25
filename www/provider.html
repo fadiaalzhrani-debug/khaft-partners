@@ -754,6 +754,11 @@ function render(){
   let manage='';
   if(me.tech){
     manage=`
+      <div class="mpanel"><h3>👤 بياناتي</h3>
+        <div class="mrow"><span>الاسم</span><b>${esc(me.name||'—')}</b></div>
+        <div class="mrow"><span>الجوال</span><b style="direction:ltr">${esc(me.phone||'—')}</b></div>
+        <div class="mrow"><span>الصفة</span><b>🧑‍🔧 فني</b></div>
+      </div>
       <div class="code-card">
         <small>كودك — أعطه لمزوّدك يضيفك لفريقه</small>
         <div class="cc-code">${esc(me.code||'—')}</div>
@@ -763,9 +768,15 @@ function render(){
         ${me.hasProvider
           ? `<div class="hint" style="margin:0">✅ أنت في فريق <b style="color:var(--gold-deep)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}</div>`
           : `<div class="hint" style="margin:0">ما أضافك مزوّد بعد — أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.</div>`}
-      </div>`;
+      </div>
+      <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>`;
   } else {
     manage=`
+      <div class="mpanel"><h3>👤 بياناتي</h3>
+        <div class="mrow"><span>الاسم</span><b>${esc(me.name||'—')}</b></div>
+        <div class="mrow"><span>الجوال</span><b style="direction:ltr">${esc(me.phone||'—')}</b></div>
+        <div class="mrow"><span>الصفة</span><b>🏢 مزوّد خدمة</b></div>
+      </div>
       <div class="mpanel"><h3>📍 مدن الخدمة</h3>
         <div class="hint">اكتب المدن مفصولة بفاصلة — أي طلب من هذه المدن يوصلك وتقبله أو تتركه.</div>
         <input id="pv_cities" value="${esc(myCities().join('، '))}" placeholder="مثال: الدمام، الخبر، الظهران" />
@@ -786,7 +797,8 @@ function render(){
       </div>
       ${owed>0?`<div class="mpanel"><h3>💼 المستحق للمنصة</h3>
         <div class="hint" style="margin:0"><b style="color:var(--gold-deep);font-size:1.2rem">${money(owed)}</b> عن ${ar(myDone)} ${myDone===1?'طلب منجز':'طلبات منجزة'} (${money(COMMISSION)}/طلب)</div>
-      </div>`:''}`;
+      </div>`:''}
+      <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>`;
   }
 
   document.getElementById('app').innerHTML=`
@@ -804,7 +816,7 @@ function render(){
     <div class="tabs">
       <button class="tab ${tab==='available'?'active':''}" onclick="setTab('available')">المتاحة <span class="cnt">(${ar(availF.length)})</span></button>
       <button class="tab ${tab==='mine'?'active':''}" onclick="setTab('mine')">طلباتي <span class="cnt">(${ar(mineF.length)})</span></button>
-      <button class="tab ${tab==='manage'?'active':''}" onclick="setTab('manage')">⚙️ ${me.tech?'حسابي':'الإدارة'}</button>
+      <button class="tab ${tab==='manage'?'active':''}" onclick="setTab('manage')">👤 حسابي</button>
     </div>
     <div style="padding-bottom:30px">${tab==='manage'?manage:list}</div>`
     : `<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}`;
