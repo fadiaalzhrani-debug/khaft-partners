@@ -213,6 +213,18 @@
   .set-row.danger .sr-l{color:#c0392b}
   .set-body{padding:6px 2px 12px}
   .set-body input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-size:1rem}
+  /* ═ مربّعات الرئيسية (زي لوحة الإدارة) ═ */
+  .hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:430px){.hgrid{grid-template-columns:1fr}}
+  .hcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;text-align:start;cursor:pointer;box-shadow:var(--shadow);transition:.14s;display:flex;flex-direction:column;gap:5px}
+  .hcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .hcard:active{transform:scale(.98)}
+  .hcard .hc-ic{font-size:2rem;line-height:1}
+  .hcard h3{font-size:1.16rem;font-weight:900;color:var(--ink)}
+  .hcard p{color:var(--muted);font-size:.85rem;font-weight:700;flex:1;margin:0}
+  .hcard .hc-open{color:var(--gold-deep);font-weight:800;font-size:.82rem;margin-top:2px}
+  .backbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 16px;font-weight:800;color:var(--ink);font-family:inherit;cursor:pointer}
+  .backbtn:hover{border-color:var(--gold)}
   .worth{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(245,197,24,.04));border:1px solid rgba(245,197,24,.32);border-radius:14px;padding:14px 15px;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
   .worth .w-lbl{color:var(--muted);font-size:.7rem;font-weight:700;margin-bottom:3px}
   .worth .w-big{font-size:1.65rem;font-weight:900;color:var(--gold-deep);font-variant-numeric:tabular-nums;line-height:1}
@@ -990,7 +1002,7 @@ async function doLogin(){
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); render(); }
 /* 🏠 الرئيسية = صفحة حسابه الرئيسية (طلباته)، مو اختيار البوابات */
-function goHome(){ if(loggedIn){ tab='orders'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
+function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
 /* إعدادات الحساب */
 function toggleSet(k){ const el=document.getElementById('set_'+k); if(el) el.style.display=(el.style.display==='none'?'block':'none'); }
 async function changePass(){
@@ -1049,7 +1061,7 @@ function renderCalendar(){
 }
 
 /* ===================== الأقسام الأربعة (شريط سفلي) ===================== */
-let tab='orders';                       // orders | inv | book | invoices
+let tab='home';                         // home | orders | inv | book | invoices | acct
 function setTab(k){ tab=k; try{window.scrollTo(0,0);}catch(e){} render(); }
 const TABL={
   ar:['الطلبات','المستودع','حجز لعميل','الفواتير','حسابي'],
@@ -1357,8 +1369,8 @@ function render(){
     </div>`;
   }).join(''); }
 
-  // قسم الطلبات (الافتراضي)
-  const ordersView=`
+  // الهيرو (رئيسية فقط) + محتوى الطلبات
+  const heroHTML=`
     <div class="hero">
       <h1>${t('title')}</h1>
       <p>${t('sub')}</p>
@@ -1367,19 +1379,33 @@ function render(){
         <div class="stat"><div class="n">${ar(openCount)}</div><div class="l">${t('active')}</div></div>
       </div>
       ${!usingCloud?`<div class="offline">⚠️ ${t('offline')}</div>`:''}
-    </div>
-    ${renderCalendar()}
-    <div class="jobs">${cards}</div>`;
+    </div>`;
+  const ordersContent=`${renderCalendar()}<div class="jobs">${cards}</div>`;
 
-  // اختيار القسم حسب الشريط السفلي
+  // ═ مربّعات الرئيسية (زي لوحة الإدارة) — متعددة اللغات ═
+  const CARDS=[['orders','📋',tl(0),ar(openCount)],['inv','📦',tl(1),ar((INV||[]).length)],['book','📅',tl(2),''],['invoices','🧾',tl(3),'']];
+  const openLbl=lang==='ar'?'فتح ›':lang==='en'?'Open ›':lang==='ur'?'کھولیں ›':'खोल्नुहोस् ›';
+  const cardsHTML=CARDS.map(([k,ic,lbl,sub])=>`<div class="hcard" onclick="setTab('${k}')"><span class="hc-ic">${ic}</span><h3>${lbl}</h3><p>${sub||'&nbsp;'}</p><span class="hc-open">${openLbl}</span></div>`).join('');
+  const homeLbl=lang==='ar'?'الرئيسية':lang==='en'?'Home':lang==='ur'?'ہوم':'गृह';
+  const secLbl=({orders:tl(0),inv:tl(1),book:tl(2),invoices:tl(3),acct:tl(4)})[tab]||'';
+
   let view;
-  if(tab==='inv')           view=renderInvTab();
-  else if(tab==='book')     view=renderBookTab();
-  else if(tab==='invoices') view=renderInvoicesTab();
-  else if(tab==='acct')     view=renderAccountTab();
-  else                      view=ordersView;
-
-  document.getElementById('app').innerHTML = view + renderTabs();
+  if(tab==='home'){
+    view=`${heroHTML}<div class="hgrid">${cardsHTML}</div>`;
+  } else {
+    let sec;
+    if(tab==='inv')           sec=renderInvTab();
+    else if(tab==='book')     sec=renderBookTab();
+    else if(tab==='invoices') sec=renderInvoicesTab();
+    else if(tab==='acct')     sec=renderAccountTab();
+    else                      sec=ordersContent;
+    view=`<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
+        <button class="backbtn" onclick="goHome()">‹ ${homeLbl}</button>
+        <b style="font-size:1.12rem;font-weight:900;flex:1">${secLbl}</b>
+      </div>
+      <div style="margin-top:12px">${sec}</div>`;
+  }
+  document.getElementById('app').innerHTML = view;
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),1800); }
 
