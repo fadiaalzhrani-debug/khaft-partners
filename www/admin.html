@@ -16,6 +16,23 @@
     --ink:#1A1712; --brand-dark:#000; --bg:#FAF7EF; --card:#fff; --muted:#6E685B; --line:#EBE5D6;
     --ok:#15803D; --ok-soft:#DCFCE7; --danger:#DC2626; --danger-soft:#FBE4E4;
     --r:18px; --shadow:0 1px 2px rgba(40,32,10,.04),0 10px 28px rgba(40,32,10,.06); --shadow-sm:0 1px 2px rgba(40,32,10,.04),0 4px 12px rgba(40,32,10,.045); }
+  /* ═ الرئيسية: مربّعات الأقسام ═ */
+  .hgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin-top:16px}
+  @media(max-width:520px){.hgrid{grid-template-columns:1fr}}
+  .hcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;text-align:right;cursor:pointer;box-shadow:var(--shadow-sm);transition:.14s;display:flex;flex-direction:column;gap:7px}
+  .hcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+  .hcard:active{transform:scale(.98)}
+  .hc-top{display:flex;align-items:center;justify-content:space-between}
+  .hc-ic{font-size:2rem;line-height:1}
+  .hc-badge{background:var(--danger);color:#fff;font-weight:900;font-size:.8rem;padding:2px 10px;border-radius:999px;min-width:26px;text-align:center}
+  .hcard h3{font-size:1.18rem;font-weight:900;color:var(--ink)}
+  .hcard p{color:var(--muted);font-size:.82rem;font-weight:600;line-height:1.5;flex:1}
+  .hc-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .hc-opt{background:var(--gold-tint);border:1px solid var(--line);color:var(--gold-deep);font-weight:800;font-size:.76rem;padding:6px 11px;border-radius:9px}
+  .hc-opt:hover{background:var(--gold);color:var(--ink)}
+  .backbtn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-weight:800;color:var(--ink);font-family:inherit;margin-bottom:6px;box-shadow:var(--shadow-sm)}
+  .backbtn:hover{border-color:var(--gold)}
+  @media print{ .admin-bar,.stats,.sechead button,#toast{display:none!important} .backbtn{display:none!important} body{background:#fff} .screen{padding:0;max-width:100%} .panel{box-shadow:none;border-color:#ccc;break-inside:avoid} }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Cairo','Segoe UI',Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-tap-highlight-color:transparent}
   .wrap{max-width:960px;margin:0 auto;padding:0 18px}
@@ -204,7 +221,7 @@ const BRAND='خافِت'; const COMMISSION=3;
 const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط — ليس سرّاً
 let loggedIn=false;                     // تُحدَّد من جلسة Supabase
 
-let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='orders';
+let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='';
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
 function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
 function money(n){ return ar(n)+' ر.س'; }
@@ -866,7 +883,20 @@ function render(){
     ['store','📦 المخزن', 0],
     ['prices','🏷️ الأسعار', 0],
   ];
-  const secbar=secs.map(([k,l,n])=>`<button class="secbtn ${adminSection===k?'active':''}" onclick="setAdminSection('${k}')">${l}${n>0?`<span class="bdg">${ar(n)}</span>`:''}</button>`).join('');
+  const CARDS=[
+    ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
+    ['team','👥','الفريق', pendingProv, 'الفنيّون · المزوّدون · المستحقات', true],
+    ['cust','💬','العملاء', newSugs+newSubs, 'الرسائل · الاشتراكات · مقالات السلامة', false],
+    ['store','📦','المخزن', 0, ar(INV.length)+' صنف · سجل الحركة', true],
+    ['prices','🏷️','الأسعار', 0, 'تعديل أسعار الخدمات', false],
+  ];
+  const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
+    <div class="hcard" onclick="setAdminSection('${k}')">
+      <div class="hc-top"><span class="hc-ic">${ic}</span>${n>0?`<span class="hc-badge">${ar(n)}</span>`:''}</div>
+      <h3>${t}</h3>
+      <p>${desc}</p>
+      <div class="hc-opts"><span class="hc-opt">فتح ›</span>${exp?`<span class="hc-opt" onclick="event.stopPropagation();exportSection('${k}')">⤓ تصدير</span>`:''}</div>
+    </div>`).join('')}</div>`;
   let body='';
   if(adminSection==='orders'){
     body=`${renderCalendar(todayISO)}
@@ -885,9 +915,10 @@ function render(){
   } else if(adminSection==='store'){
     body=`${block(`📦 المخزن (${ar(INV.length)} صنف)`, renderInventory())}
       ${block('📋 سجل حركة المخزن (يومي)', renderStockLog())}`;
-  } else {
+  } else if(adminSection==='prices'){
     body=block('🏷️ أسعار الخدمات', renderPriceEditor());
   }
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المخزن',prices:'🏷️ الأسعار'})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
@@ -896,11 +927,46 @@ function render(){
       <div class="stat"><div class="n">${ar(pendingProv)}</div><div class="l">🤝 مزوّدون للمراجعة</div></div>
       <div class="stat green"><div class="n">${money(revenue)}</div><div class="l">💰 إيراد مكتمل</div></div>
     </div>
-    <div class="secbar">${secbar}</div>
-    <div style="margin-top:14px">${body}</div>
+    ${adminSection===''
+      ? homeCards
+      : `<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
+           <button class="backbtn" style="margin:0" onclick="setAdminSection('')">‹ القائمة</button>
+           <b style="font-size:1.15rem;font-weight:900;flex:1">${secTitle}</b>
+           ${['orders','team','store'].includes(adminSection)?`<button class="backbtn" style="margin:0" onclick="exportSection('${adminSection}')">⤓ Excel</button>`:''}
+           <button class="backbtn" style="margin:0" onclick="printReport()">🖨️ طباعة</button>
+         </div>
+         <div style="margin-top:12px">${body}</div>`}
   </div>`;
 }
 function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); }
+/* ═ تصدير إلى Excel (CSV بترميز عربي) ═ */
+function csvCell(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function downloadCSV(name, headers, rows){
+  const csv='﻿'+[headers].concat(rows).map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name+'.csv'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },500);
+}
+function statusAr(s){ return ({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل',cancelled:'ملغي'})[s]||s; }
+function exportSection(k){
+  try{
+    const d=dateISO(new Date());
+    if(k==='orders'){
+      downloadCSV('الطلبات-'+d, ['رقم','العميل','الجوال','المدينة','الخدمة','التاريخ','الوقت','الحالة','الإجمالي'],
+        ORDERS.map(o=>[o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',(o.address&&o.address.city)||'',(o.items||[]).map(i=>i.name).join(' + '),o.date||'',fmtTime(o.startMin||0),statusAr(o.status),o.finalPrice||o.price||0]));
+    } else if(k==='store'){
+      downloadCSV('المخزن-'+d, ['الصنف','الكمية','الوحدة','سعر الشراء','سعر البيع'],
+        INV.map(it=>[it.name,it.qty,it.unit||'',it.buy_price||0,it.sell_price||0]));
+    } else if(k==='team'){
+      const done=ORDERS.filter(o=>o.status==='done'&&o.providerPhone); const byP={};
+      done.forEach(o=>{ byP[o.providerPhone]=(byP[o.providerPhone]||0)+1; });
+      downloadCSV('مستحقات-المزوّدين-'+d, ['المزوّد','الجوال','طلبات منجزة','المستحق (ر.س)'],
+        Object.keys(byP).map(ph=>[provName(ph),ph,byP[ph],byP[ph]*COMMISSION]));
+    }
+    toast('⤓ تم تنزيل ملف Excel');
+  }catch(e){ toast('تعذّر التصدير'); }
+}
+function printReport(){ window.print(); }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
 render();
