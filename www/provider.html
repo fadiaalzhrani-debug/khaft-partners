@@ -288,7 +288,7 @@ const METRIC_DEFS={
   available:{ic:'📥',label:'طلبات متاحة'}, active:{ic:'🔧',label:'قيد التنفيذ'}, done:{ic:'✅',label:'منجزة'},
   revenue:{ic:'📈',label:'الإيرادات'}, stock:{ic:'📦',label:'قيمة المخزون'}, monthly:{ic:'🧾',label:'مصاريف شهرية'},
   net:{ic:'💵',label:'الصافي'}, owed:{ic:'💼',label:'المستحق'}, team:{ic:'🧑‍🔧',label:'فريقي'},
-  customers:{ic:'👥',label:'العملاء'}, kpi:{ic:'⭐',label:'رقمي المهم'}
+  kpi:{ic:'⭐',label:'رقمي المهم'}
 };
 function pvMoney(n){ return ar(Math.round(+n||0))+' ر.س'; }
 /* تصدير Excel (CSV عربي) */
@@ -306,8 +306,8 @@ function exportInvoices(){
   toast('⤓ تم تنزيل الملف');
 }
 function exportStock(){
-  downloadCSV('مخزوني', ['الصنف','الكمية','الوحدة','سعر البيع'],
-    PINV.map(it=>[it.name,it.qty,it.unit||'',it.sell_price||0]));
+  downloadCSV('مخزوني', ['الصنف','الكمية','سعر الشراء','سعر البيع','ربح/وحدة','النسبة٪','قيمة البيع'],
+    PINV.map(it=>{ const b=+it.buy_price||0,s=+it.sell_price||0,q=+it.qty||0; return [it.name,q,b,s,s-b, b>0?Math.round((s-b)/b*100):0, q*s]; }));
   toast('⤓ تم تنزيل الملف');
 }
 /* الطلبات المنجزة تنصفط في سطر واحد، تفتح بالضغط (زي الفنيّين) */
@@ -448,15 +448,11 @@ async function loadOrders(){
 }
 /* مخزن + عملاء المزوّد — مشتركة بين المزوّد وفريقه، معزولة بالـRLS */
 async function loadBiz(){
-  if(!cloudReady||!me||!myPid()){ PINV=[]; PCUST=[]; return; }
+  if(!cloudReady||!me||!myPid()){ PINV=[]; return; }
   try{
-    const [iv,cu]=await Promise.all([
-      seeStock()? sb.from('provider_inventory').select('*').order('name') : Promise.resolve({data:[]}),
-      seeCust() ? sb.from('provider_customers').select('*').order('created_at',{ascending:false}) : Promise.resolve({data:[]})
-    ]);
-    PINV=iv.data||[]; PCUST=cu.data||[];
-    render();
-  }catch(e){ PINV=[]; PCUST=[]; }
+    const iv = seeStock()? await sb.from('provider_inventory').select('*').order('name') : {data:[]};
+    PINV=iv.data||[]; render();
+  }catch(e){ PINV=[]; }
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(me) loadOrders(); }).subscribe(); }catch(e){} }
 
@@ -547,14 +543,38 @@ async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=nul
 function soundOn(){ return localStorage.getItem('khafet_sound')!=='off'; }
 function toggleSound(){ localStorage.setItem('khafet_sound', soundOn()?'off':'on'); render(); toast(soundOn()?'🔔 التنبيه الصوتي مفعّل':'🔕 أُوقف التنبيه الصوتي'); }
 function toggleSet(k){ const el=document.getElementById('set_'+k); if(el) el.style.display = (el.style.display==='none'?'block':'none'); }
+/* تغيير كلمة المرور بتأكيد كود على الجوال */
+let _pendPass=null;
+function pvPhoneE164(){ return '+966'+String((me&&me.phone)||'').replace(/\D/g,'').replace(/^966/,'').replace(/^0/,''); }
+function passStep(){ if(_pendPass) confirmPassOtp(); else changePass(); }
 async function changePass(){
   const a=((document.getElementById('np1')||{}).value)||'', b=((document.getElementById('np2')||{}).value)||'';
   if(a.length<6){ toast('كلمة المرور ٦ خانات على الأقل'); return; }
   if(a!==b){ toast('كلمتا المرور غير متطابقتين'); return; }
-  try{ const { error }=await sb.auth.updateUser({ password:a }); if(error) throw error;
-    const p1=document.getElementById('np1'),p2=document.getElementById('np2'); if(p1)p1.value=''; if(p2)p2.value='';
-    toggleSet('pass'); toast('✅ تم تحديث كلمة المرور');
-  }catch(e){ const m=(e&&e.message)||''; toast(/different from the old/i.test(m)?'الجديدة لازم تكون مختلفة عن القديمة':'تعذّر التحديث، حاول ثانية'); }
+  try{
+    const { error }=await sb.auth.signInWithOtp({ phone: pvPhoneE164(), options:{ shouldCreateUser:false } });
+    if(error) throw error;
+    _pendPass=a;
+    const box=document.getElementById('np_otp_box'); if(box) box.style.display='block';
+    const btn=document.getElementById('np_btn'); if(btn) btn.textContent='✅ تأكيد وتغيير كلمة المرور';
+    const o=document.getElementById('np_otp'); if(o) o.focus();
+    toast('📲 أرسلنا كود تأكيد على جوالك');
+  }catch(e){ toast('تعذّر إرسال الكود، حاول بعد قليل'); }
+}
+async function confirmPassOtp(){
+  const code=((document.getElementById('np_otp')||{}).value||'').trim();
+  if(code.length<4){ toast('اكتب كود التأكيد'); return; }
+  try{
+    const { error:ve }=await sb.auth.verifyOtp({ phone: pvPhoneE164(), token: code, type:'sms' });
+    if(ve) throw ve;
+    const { error:ue }=await sb.auth.updateUser({ password: _pendPass });
+    if(ue) throw ue;
+    _pendPass=null;
+    ['np1','np2','np_otp'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const box=document.getElementById('np_otp_box'); if(box) box.style.display='none';
+    const btn=document.getElementById('np_btn'); if(btn) btn.textContent='💾 تحديث كلمة المرور';
+    toggleSet('pass'); toast('✅ تم تغيير كلمة المرور');
+  }catch(e){ const m=(e&&e.message)||''; toast(/different from the old/i.test(m)?'الجديدة لازم تكون مختلفة عن القديمة':'الكود غير صحيح أو انتهى'); }
 }
 async function deleteAccount(){
   if(!confirm('حذف حسابك نهائياً؟ لن تستقبل طلبات بعدها.')) return;
@@ -571,8 +591,12 @@ function settingsPanel(){
       <div class="set-row" onclick="toggleSet('pass')"><div class="sr-l"><span class="sr-ic">🔑</span> تغيير كلمة المرور</div><span class="sr-ar">›</span></div>
       <div id="set_pass" class="set-body" style="display:none">
         <input id="np1" type="password" placeholder="كلمة المرور الجديدة" autocomplete="new-password" />
-        <input id="np2" type="password" placeholder="أعد كتابتها" autocomplete="new-password" style="margin-top:8px" onkeydown="if(event.key==='Enter')changePass()" />
-        <button class="tbtn done" style="width:100%;margin-top:10px" onclick="changePass()">💾 تحديث كلمة المرور</button>
+        <input id="np2" type="password" placeholder="أعد كتابتها" autocomplete="new-password" style="margin-top:8px" />
+        <div id="np_otp_box" style="display:none;margin-top:8px">
+          <div class="hint" style="margin:0 0 6px">📲 أرسلنا كود تأكيد على جوالك — أدخله للتأكيد:</div>
+          <input id="np_otp" inputmode="numeric" placeholder="كود التأكيد" style="text-align:center;letter-spacing:5px" onkeydown="if(event.key==='Enter')confirmPassOtp()" />
+        </div>
+        <button class="tbtn done" id="np_btn" style="width:100%;margin-top:10px" onclick="passStep()">💾 تحديث كلمة المرور</button>
       </div>
       <div class="set-row"><div class="sr-l"><span class="sr-ic">🔔</span> تنبيه صوتي للطلبات</div>
         <button class="sw ${soundOn()?'on':''}" onclick="toggleSound()"></button></div>
@@ -1006,7 +1030,7 @@ function render(){
             <div class="tc-top"><span><b>${esc(t.name||'فني')}</b> <small style="color:var(--muted)">${esc(t.phone||'')}</small></span>
               <button class="x-btn" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button></div>
             <div class="perm-title">صلاحياته:</div>
-            <div class="perm-chips">${[['accept','قبول الطلبات'],['stock','المخزن'],['customers','العملاء'],['invoices','الفواتير']].map(([pk,pl])=>`<button class="pchip ${pm[pk]?'on':''}" onclick="toggleTechPerm('${t.user_id}','${pk}')">${pm[pk]?'✓ ':''}${pl}</button>`).join('')}</div>
+            <div class="perm-chips">${[['accept','قبول الطلبات'],['stock','المخزن'],['invoices','الفواتير']].map(([pk,pl])=>`<button class="pchip ${pm[pk]?'on':''}" onclick="toggleTechPerm('${t.user_id}','${pk}')">${pm[pk]?'✓ ':''}${pl}</button>`).join('')}</div>
           </div>`; }).join('') : '<div class="hint" style="margin:4px 0 0">ما أضفت فنيّين بعد.</div>'}
         </div>
       </div>
@@ -1021,14 +1045,12 @@ function render(){
   const isJobTab=(tab==='available'||tab==='mine');
   let TABS=[['available','المتاحة','('+ar(availF.length)+')'],['mine','طلباتي','('+ar(mineF.length)+')']];
   if(seeStock()) TABS.push(['stock','📦 المخزن','']);
-  if(seeCust())  TABS.push(['customers','👥 العملاء','']);
   if(seeInv())   TABS.push(['invoices','🧾 الفواتير','']);
   // «حسابي» ثابت بالهيدر فوق (زر acctBtn) — فما نكرّره كتبويب هنا
   const tabsHTML=TABS.map(([k,l,c])=>`<button class="tab ${tab===k?'active':''}" onclick="setTab('${k}')">${l}${c?` <span class="cnt">${c}</span>`:''}</button>`).join('');
   let body;
   if(tab==='manage') body=manage;
   else if(tab==='stock') body=renderStock();
-  else if(tab==='customers') body=renderCustomers();
   else if(tab==='invoices') body=renderInvoices();
   else if(tab==='mine') body=(!me.tech?bookPanel():'')+list;
   else body=list;
@@ -1051,17 +1073,22 @@ function stockLow(it){ return (+it.qty||0)<=2; }
 function renderStock(){
   if(!myPid()) return `<div class="empty"><div class="ico">📦</div><h3>غير متاح</h3></div>`;
   const items=PINV.slice().sort((a,b)=>String(a.name).localeCompare(b.name,'ar'));
-  const val=items.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
-  const rows=items.length? items.map(it=>`
-    <div class="irow">
-      <div class="in-nm"><b>${esc(it.name)}</b><small>${it.sell_price?pvMoney(it.sell_price)+' · ':''}${esc(it.unit||'حبة')}</small></div>
+  const sellVal=items.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
+  const buyVal =items.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0);
+  const profit=sellVal-buyVal, margin=buyVal>0?Math.round(profit/buyVal*100):0;
+  const rows=items.length? items.map(it=>{
+    const buy=+it.buy_price||0, sell=+it.sell_price||0, pu=sell-buy, mg=buy>0?Math.round(pu/buy*100):0;
+    const info=[ buy?'شراء '+pvMoney(buy):'', sell?'بيع '+pvMoney(sell):'' ].filter(Boolean).join(' · ');
+    return `<div class="irow">
+      <div class="in-nm"><b>${esc(it.name)}</b>
+        <small>${info||esc(it.unit||'حبة')}${(buy&&sell)?` · <span style="color:${pu>=0?'var(--ok)':'#c0392b'};font-weight:800">ربح ${pvMoney(pu)} (${ar(mg)}٪)</span>`:''}</small></div>
       <div class="qty">
         <button class="qbtn" onclick="stockAdj(${it.id},-1)">−</button>
         <span class="qn ${stockLow(it)?'low':''}">${ar(+it.qty||0)}</span>
         <button class="qbtn" onclick="stockAdj(${it.id},1)">＋</button>
       </div>
       <button class="x-btn" onclick="stockDel(${it.id},'${esc(String(it.name).replace(/'/g,''))}')">حذف</button>
-    </div>`).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه أصناف بعد — أضف أول صنف فوق.</div>`;
+    </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه أصناف بعد — أضف أول صنف فوق.</div>`;
   return `
     <div class="mpanel">
       <h3>📦 مخزن ${me.tech?'المزوّد':'الفريق'} ${items.length?`(${ar(items.length)})`:''}</h3>
@@ -1071,12 +1098,15 @@ function renderStock(){
         <input id="st_qty" type="number" inputmode="numeric" placeholder="كمية" style="max-width:80px" />
       </div>
       <div class="biz-add" style="margin-top:-4px">
-        <input id="st_price" type="number" inputmode="numeric" placeholder="سعر البيع (اختياري)" />
-        <button class="tbtn done" style="padding:0 20px;flex:0 0 auto" onclick="stockAdd()">➕ أضف</button>
+        <input id="st_buy" type="number" inputmode="numeric" placeholder="سعر الشراء" />
+        <input id="st_price" type="number" inputmode="numeric" placeholder="سعر البيع" />
+        <button class="tbtn done" style="padding:0 18px;flex:0 0 auto" onclick="stockAdd()">➕</button>
       </div>
     </div>
     <div class="mpanel">
-      <div class="mrow" style="border-bottom:1px solid var(--line);padding-top:0"><span class="hint" style="margin:0">قيمة المخزون</span><b style="color:var(--gold-deep)">${pvMoney(val)}</b></div>
+      <div class="mrow" style="padding-top:0"><span class="hint" style="margin:0">💰 قيمة المخزون (بالبيع)</span><b style="color:var(--gold-deep)">${pvMoney(sellVal)}</b></div>
+      <div class="mrow"><span class="hint" style="margin:0">📦 التكلفة (بالشراء)</span><b>${pvMoney(buyVal)}</b></div>
+      <div class="mrow" style="border-bottom:1px solid var(--line)"><span class="hint" style="margin:0">📈 الربح المتوقّع</span><b style="color:${profit>=0?'var(--ok)':'#c0392b'}">${pvMoney(profit)} · ${ar(margin)}٪</b></div>
       ${rows}
       ${items.length?`<button class="tbtn" style="width:100%;margin-top:12px;background:var(--gold-tint);color:var(--gold-deep);font-size:.95rem;padding:11px" onclick="exportStock()">⤓ تصدير Excel</button>`:''}
     </div>`;
@@ -1084,11 +1114,12 @@ function renderStock(){
 async function stockAdd(){
   const n=((document.getElementById('st_name')||{}).value||'').trim();
   const q=+((document.getElementById('st_qty')||{}).value||0);
+  const buy=+((document.getElementById('st_buy')||{}).value||0);
   const p=+((document.getElementById('st_price')||{}).value||0);
   if(!n){ toast('اكتب اسم الصنف'); return; }
   const pid=myPid(); if(!pid) return;
   try{
-    const { error }=await sb.from('provider_inventory').insert({ provider_id:pid, name:n, qty:q, sell_price:p });
+    const { error }=await sb.from('provider_inventory').insert({ provider_id:pid, name:n, qty:q, buy_price:buy, sell_price:p });
     if(error) throw error;
     await sb.from('provider_stock_log').insert({ provider_id:pid, item_name:n, delta:q, reason:'إضافة صنف', actor:me.name });
     toast('✅ أُضيف الصنف'); await loadBiz();
