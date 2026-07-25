@@ -115,8 +115,9 @@
   .sw::after{content:"";position:absolute;top:3px;right:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:.15s}
   .sw.on::after{right:24px}
   /* لوحة نظيفة: إحصاءات + بطاقات إدارة */
-  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:10px;margin-top:14px}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+  .stats{display:flex;gap:9px;margin-top:14px;overflow-x:auto;scrollbar-width:none;padding-bottom:3px}
+  .stats::-webkit-scrollbar{display:none}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 15px;text-align:center;flex:0 0 auto;min-width:96px}
   .stat b{display:block;font-size:1.45rem;font-weight:900;color:var(--gold-deep);line-height:1.2}
   .stat small{color:var(--muted);font-size:.78rem;font-weight:700}
   .mpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
@@ -1000,9 +1001,9 @@ function render(){
         <button class="tbtn done" style="margin-top:10px;width:100%" onclick="saveMyCities()">💾 حفظ المدن</button>
       </div>
       <div class="mpanel"><h3>🧑‍🔧 فريقي ${TECHS.length?`(${ar(TECHS.length)})`:''}</h3>
-        <div class="hint">فنيّك يسجّل من التطبيق ويعطيك كوده — أدخله هنا فينضم لفريقك ويستقبل طلباتك معك.</div>
+        <div class="hint">فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل <b>كوده أو رقم جواله</b> هنا فينضم لفريقك.</div>
         <div style="display:flex;gap:8px">
-          <input id="add_tech_code" placeholder="كود الفني" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-transform:uppercase;letter-spacing:3px;text-align:center" />
+          <input id="add_tech_code" placeholder="كود الفني أو جواله" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-align:center" />
           <button class="tbtn done" style="padding:0 18px" onclick="addTechByCode()">➕ أضف</button>
         </div>
         <div style="margin-top:10px">
@@ -1229,12 +1230,12 @@ async function toggleTechs(){ techsOpen=!techsOpen; if(techsOpen) await loadTech
 function copyMyCode(){ const c=(me&&me.code)||''; try{ navigator.clipboard.writeText(c); toast('📋 نُسخ كودك: '+c); }catch(e){ toast('كودك: '+c); } }
 async function removeTech(uid,name){ if(!confirm('إزالة الفني '+(name||'')+' من فريقك؟')) return; try{ await sb.rpc('remove_my_tech',{ p_uid:uid }); }catch(e){} await loadTechs(); toast('تمت الإزالة'); render(); }
 async function addTechByCode(){
-  const el=document.getElementById('add_tech_code'); const code=((el&&el.value)||'').trim().toUpperCase();
-  if(code.length<4){ toast('اكتب كود الفني'); return; }
+  const el=document.getElementById('add_tech_code'); const code=((el&&el.value)||'').trim();
+  if(code.length<4){ toast('اكتب كود الفني أو جواله'); return; }
   try{
     const { data }=await sb.rpc('add_tech_by_code',{ p_code:code });
     if(data && data.ok){ toast('✅ أُضيف الفني: '+(data.name||'')); if(el) el.value=''; await loadTechs(); render(); }
-    else toast(data && data.reason==='bad_code' ? '❌ كود الفني غير صحيح' : 'تعذّرت الإضافة');
+    else toast(data && data.reason==='bad_code' ? '❌ الكود أو الجوال غير صحيح — تأكّد أنه سجّل كفني' : 'تعذّرت الإضافة');
   }catch(e){ toast('تعذّرت الإضافة، حاول ثانية'); }
 }
 function setTab(t){ tab=t; render(); if(t==='manage'&&me&&!me.tech){ loadTechs().then(render); } if((t==='stock'||t==='customers'||t==='invoices')&&me){ loadBiz(); } }
