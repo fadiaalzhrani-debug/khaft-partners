@@ -188,6 +188,23 @@
 
   /* ===== المستودع الاحترافي ===== */
   :root{ --amber:#FBBF24; --red:#F87171; }
+  /* ==== تبويب حسابي ==== */
+  .acc-wrap{padding:18px 0 100px}
+  .acc-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .acc-av{width:56px;height:56px;border-radius:16px;background:var(--gold);color:var(--ink);display:grid;place-items:center;font-size:1.8rem;flex-shrink:0}
+  .acc-head b{display:block;font-size:1.18rem;font-weight:900;line-height:1.3}
+  .acc-head span{color:var(--muted);font-size:.85rem;font-weight:700}
+  .acc-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+  .acc-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);font-weight:700}
+  .acc-row:last-child{border-bottom:0}
+  .acc-row span{color:var(--muted)}
+  .acc-lbl{font-weight:900;padding:14px 0 10px}
+  .acc-langs{display:flex;flex-wrap:wrap;gap:8px;padding:0 0 14px}
+  .acc-lang{padding:9px 16px;border-radius:11px;font-weight:800;font-size:.9rem;background:var(--panel);border:1px solid var(--line);color:var(--muted)}
+  .acc-lang.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+  .acc-code{background:linear-gradient(135deg,rgba(245,197,24,.16),rgba(245,197,24,.05));border:1px solid rgba(245,197,24,.45);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
+  .acc-code small{color:var(--muted);font-size:.84rem;line-height:1.6;display:block}
+  .acc-code-v{font-size:1.9rem;font-weight:900;color:var(--gold-deep);letter-spacing:6px;margin:8px 0}
   .worth{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(245,197,24,.04));border:1px solid rgba(245,197,24,.32);border-radius:14px;padding:14px 15px;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
   .worth .w-lbl{color:var(--muted);font-size:.7rem;font-weight:700;margin-bottom:3px}
   .worth .w-big{font-size:1.65rem;font-weight:900;color:var(--gold-deep);font-variant-numeric:tabular-nums;line-height:1}
@@ -580,12 +597,15 @@ async function initPush(){
   }catch(e){ console.warn('initPush', e); }
 }
 /* اسم الفني الحالي — لنسب الإجراءات إليه */
-let myName='';
+let myName='', myPhone='', myCode='';
 async function loadMyName(){
   try{ const { data:{ user } }=await sb.auth.getUser();
-    if(user){ const { data }=await sb.from('khafet_staff').select('name').eq('user_id',user.id).maybeSingle(); myName=(data&&data.name)||''; } }
+    if(user){ myPhone = user.phone ? ('0'+String(user.phone).replace(/^\+?966/,'')) : '';
+      const { data }=await sb.from('khafet_staff').select('name,code').eq('user_id',user.id).maybeSingle();
+      myName=(data&&data.name)||''; myCode=(data&&data.code)||''; } }
   catch(e){ myName=''; }
 }
+function copyMyCode(){ if(!myCode) return; try{ navigator.clipboard.writeText(myCode); toast('📋 '+myCode); }catch(e){ toast(myCode); } }
 async function loadPrices(){
   if(!cloudReady) return;
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); if(invEditing) renderInvoice(); } }catch(e){}
@@ -1002,17 +1022,49 @@ function renderCalendar(){
 let tab='orders';                       // orders | inv | book | invoices
 function setTab(k){ tab=k; try{window.scrollTo(0,0);}catch(e){} render(); }
 const TABL={
-  ar:['الطلبات','المستودع','حجز لعميل','الفواتير'],
-  en:['Jobs','Stock','Book','Invoices'],
-  ne:['कामहरू','स्टक','बुकिङ','बिलहरू'],
-  hi:['काम','स्टॉक','बुकिंग','बिल'],
-  ur:['کام','اسٹاک','بکنگ','بل']
+  ar:['الطلبات','المستودع','حجز لعميل','الفواتير','حسابي'],
+  en:['Jobs','Stock','Book','Invoices','Account'],
+  ne:['कामहरू','स्टक','बुकिङ','बिलहरू','खाता'],
+  hi:['काम','स्टॉक','बुकिंग','बिल','खाता'],
+  ur:['کام','اسٹاک','بکنگ','بل','اکاؤنٹ']
 };
 function tl(i){ return (TABL[lang]||TABL.ar)[i]; }
 /* نقطة تنبيه على المستودع لو فيه صنف قارب ينفد */
 function invLow(){ return (INV||[]).some(i=>(+i.qty||0) <= 2); }
+/* ---- تبويب حسابي ---- */
+function renderAccountTab(){
+  const L={
+    ar:{name:'الاسم',phone:'الجوال',role:'الصفة',tech:'🧑‍🔧 فني خافِت',code:'كودك — أعطه لمزوّدك ليضيفك لفريقه',copy:'📋 نسخ الكود',lang:'🌐 لغة العرض',out:'🚪 تسجيل الخروج'},
+    en:{name:'Name',phone:'Phone',role:'Role',tech:'🧑‍🔧 Khafet technician',code:'Your code — give it to your provider to add you',copy:'📋 Copy code',lang:'🌐 Display language',out:'🚪 Log out'},
+    ne:{name:'नाम',phone:'फोन',role:'भूमिका',tech:'🧑‍🔧 खाफेट टेक्निसियन',code:'तपाईंको कोड — प्रदायकलाई दिनुहोस्',copy:'📋 कोड कपी गर्नुहोस्',lang:'🌐 भाषा',out:'🚪 लगआउट'},
+    hi:{name:'नाम',phone:'फ़ोन',role:'भूमिका',tech:'🧑‍🔧 ख़ाफ़ेट तकनीशियन',code:'आपका कोड — प्रदाता को दें',copy:'📋 कोड कॉपी करें',lang:'🌐 भाषा',out:'🚪 लॉगआउट'},
+    ur:{name:'نام',phone:'فون',role:'حیثیت',tech:'🧑‍🔧 خافت ٹیکنیشن',code:'آپ کا کوڈ — اپنے فراہم کنندہ کو دیں',copy:'📋 کوڈ کاپی کریں',lang:'🌐 زبان',out:'🚪 لاگ آؤٹ'}
+  };
+  const x=L[lang]||L.ar;
+  const codeCard = myCode ? `
+    <div class="acc-code">
+      <small>${x.code}</small>
+      <div class="acc-code-v">${esc(myCode)}</div>
+      <button class="tbtn done" style="padding:8px 22px" onclick="copyMyCode()">${x.copy}</button>
+    </div>` : '';
+  const langBtns = [['ne','नेपाली'],['hi','हिन्दी'],['ur','اردو'],['en','EN'],['ar','عربي']]
+    .map(([l,n])=>`<button class="acc-lang${l===lang?' on':''}" onclick="setLang('${l}')">${n}</button>`).join('');
+  return `<div class="acc-wrap">
+    <div class="acc-head"><div class="acc-av">👤</div><div><b>${esc(myName||x.tech)}</b><span>${x.tech}</span></div></div>
+    <div class="acc-panel">
+      <div class="acc-row"><span>${x.name}</span><b>${esc(myName||'—')}</b></div>
+      <div class="acc-row"><span>${x.phone}</span><b style="direction:ltr">${esc(myPhone||'—')}</b></div>
+    </div>
+    ${codeCard}
+    <div class="acc-panel">
+      <div class="acc-lbl">${x.lang}</div>
+      <div class="acc-langs">${langBtns}</div>
+    </div>
+    <button class="tbtn" style="width:100%;margin-top:4px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">${x.out}</button>
+  </div>`;
+}
 function renderTabs(){
-  const K=[['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];
+  const K=[['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾'],['acct','👤']];
   return `<nav class="tabbar">${K.map(([k,ic],i)=>
     `<button class="tb ${tab===k?'on':''}" onclick="setTab('${k}')"><i>${ic}</i><span>${tl(i)}</span>${(k==='inv'&&invLow())?'<em class="tdot"></em>':''}</button>`
   ).join('')}</nav>`;
@@ -1277,6 +1329,7 @@ function render(){
   if(tab==='inv')           view=renderInvTab();
   else if(tab==='book')     view=renderBookTab();
   else if(tab==='invoices') view=renderInvoicesTab();
+  else if(tab==='acct')     view=renderAccountTab();
   else                      view=ordersView;
 
   document.getElementById('app').innerHTML = view + renderTabs();
