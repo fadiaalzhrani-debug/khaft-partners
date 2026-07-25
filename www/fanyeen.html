@@ -342,6 +342,7 @@
       <button data-l="en">EN</button>
       <button data-l="ar">عربي</button>
     </div>
+    <button class="logout" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('acct')">👤 حسابي</button>
     <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
   </div>
 </header>
@@ -943,6 +944,7 @@ function normPhone(v){
 function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textContent=msg||'تعذّر الدخول · Sign-in failed'; e.style.display='block'; } }
 function showLogin(){
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
+  const ab0=document.getElementById('acctBtn'); if(ab0) ab0.style.display='none';
   document.getElementById('app').innerHTML=`
     <div class="login">
       <div class="ic">🧑‍🔧</div><h1>دخول الفنيين</h1>
@@ -1225,6 +1227,7 @@ function render(){
   document.documentElement.setAttribute('dir', isRTL()?'rtl':'ltr');
   if(!loggedIn){ showLogin(); return; }
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='';
+  const ab1=document.getElementById('acctBtn'); if(ab1) ab1.style.display='';
   document.querySelectorAll('.langsw button').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
 
   const todayISO=dateISO(new Date());
