@@ -1073,7 +1073,7 @@ function renderAccountTab(){
   </div>`;
 }
 function renderTabs(){
-  const K=[['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾'],['acct','👤']];
+  const K=[['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];   // «حسابي» ثابت بالهيدر (acctBtn) بدل تبويب مكرّر
   return `<nav class="tabbar">${K.map(([k,ic],i)=>
     `<button class="tb ${tab===k?'on':''}" onclick="setTab('${k}')"><i>${ic}</i><span>${tl(i)}</span>${(k==='inv'&&invLow())?'<em class="tdot"></em>':''}</button>`
   ).join('')}</nav>`;
