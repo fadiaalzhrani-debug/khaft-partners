@@ -92,6 +92,19 @@
   .set-row.danger .sr-l{color:#c0392b}
   .set-body{padding:6px 2px 12px}
   .set-body input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-size:1rem}
+  /* اختيار أرقام الداشبورد */
+  .chk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:420px){.chk-grid{grid-template-columns:1fr}}
+  .chk-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#FBF9F3;font-weight:700;font-size:.9rem;cursor:pointer}
+  .chk-row.on{background:var(--gold-tint);border-color:var(--gold)}
+  .chk-row input{width:20px;height:20px;accent-color:var(--gold-deep);flex-shrink:0}
+  /* صلاحيات الفني */
+  .tech-card{background:#FBF9F3;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:10px}
+  .tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .perm-title{color:var(--muted);font-size:.78rem;font-weight:800;margin:9px 0 6px}
+  .perm-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .pchip{padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-weight:800;font-size:.82rem}
+  .pchip.on{background:var(--ok);color:#fff;border-color:var(--ok)}
   /* مفتاح تشغيل/إيقاف */
   .sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
   .sw-row:last-child{border-bottom:0}
@@ -102,7 +115,7 @@
   .sw::after{content:"";position:absolute;top:3px;right:3px;width:23px;height:23px;border-radius:50%;background:#fff;transition:.15s}
   .sw.on::after{right:24px}
   /* لوحة نظيفة: إحصاءات + بطاقات إدارة */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:10px;margin-top:14px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
   .stat b{display:block;font-size:1.45rem;font-weight:900;color:var(--gold-deep);line-height:1.2}
   .stat small{color:var(--muted);font-size:.78rem;font-weight:700}
@@ -267,9 +280,17 @@ let me=null, ORDERS=[], OPEN=[], tab='available';
 let PINV=[], PCUST=[];   // مخزن + عملاء المزوّد (مشتركة مع فريقه)
 let bookOpen=false;      // نموذج الحجز المباشر
 function myPid(){ return me ? (me.tech ? (me.provider_id||null) : me.id) : null; }
-function seeStock(){ return !!(me && (!me.tech || me.techs_see_stock)); }
-function seeCust(){ return !!(me && (!me.tech || me.techs_see_customers)); }
-function seeInv(){ return !!(me && (!me.tech || me.techs_see_invoices)); }
+function seeStock(){ return !!(me && (!me.tech || (me.perms&&me.perms.stock))); }
+function seeCust(){ return !!(me && (!me.tech || (me.perms&&me.perms.customers))); }
+function seeInv(){ return !!(me && (!me.tech || (me.perms&&me.perms.invoices))); }
+function canAccept(){ return !!(me && (!me.tech || (me.perms&&me.perms.accept))); }
+/* كتالوج أرقام الداشبورد (المزوّد يختار منها) */
+const METRIC_DEFS={
+  available:{ic:'📥',label:'طلبات متاحة'}, active:{ic:'🔧',label:'قيد التنفيذ'}, done:{ic:'✅',label:'منجزة'},
+  revenue:{ic:'📈',label:'الإيرادات'}, stock:{ic:'📦',label:'قيمة المخزون'}, monthly:{ic:'🧾',label:'مصاريف شهرية'},
+  net:{ic:'💵',label:'الصافي'}, owed:{ic:'💼',label:'المستحق'}, team:{ic:'🧑‍🔧',label:'فريقي'},
+  customers:{ic:'👥',label:'العملاء'}, kpi:{ic:'⭐',label:'رقمي المهم'}
+};
 function pvMoney(n){ return ar(Math.round(+n||0))+' ر.س'; }
 /* تصدير Excel (CSV عربي) */
 function csvCell(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
@@ -518,8 +539,7 @@ async function enterTechMode(info, d){
        code:info.code||'', hasProvider:!!info.provider_code,
        cities:info.cities||[], providerName:info.provider_name||'', providerPhone:info.provider_phone||'',
        provider_id:info.provider_id||null,
-       techs_see_stock:info.techs_see_stock!==false, techs_see_customers:info.techs_see_customers!==false,
-       techs_see_invoices:!!info.techs_see_invoices };
+       perms:info.perms||{accept:true,stock:false,customers:false,invoices:false} };
   localStorage.setItem('khafet_provider_phone', me.phone);
   loadOrders(); initPush();
 }
@@ -841,8 +861,10 @@ function jobCard(o, mode){
         <div class="tj-row"><span class="tj-k">🔒 بيانات العميل</span><span class="tj-v">الاسم والجوال والعنوان تظهر لك بعد قبول الطلب</span></div>
       </div>
       <div class="tacts">
-        <button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button>
-        ${exclusive?`<button class="tbtn" style="flex:0 0 auto;padding:16px 18px;background:var(--gold-tint);color:var(--muted)" onclick="skipOffer('${o.id}')">تخطّي ⏭️</button>`:''}
+        ${canAccept()
+          ? `<button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button>
+             ${exclusive?`<button class="tbtn" style="flex:0 0 auto;padding:16px 18px;background:var(--gold-tint);color:var(--muted)" onclick="skipOffer('${o.id}')">تخطّي ⏭️</button>`:''}`
+          : `<div class="tbtn" style="background:var(--gold-tint);color:var(--muted);cursor:default">🔒 مزوّدك يوزّع الطلبات</div>`}
       </div>
     </div>`;
   }
@@ -892,6 +914,18 @@ function render(){
   // فلترة بيوم التقويم المختار (طلباته هو فقط)
   const availF = pvCalFilter ? avail.filter(o=>o.date===pvCalFilter) : avail;
   const mineF  = pvCalFilter ? mine.filter(o=>o.date===pvCalFilter)  : mine;
+  // ═ أرقام الداشبورد (المزوّد يختار اللي يهمّه) ═
+  const _rev=mine.filter(o=>o.status==='done').reduce((s,o)=>s+orderInvTotal(o),0);
+  const _stockVal=PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
+  const _stockCost=PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0);
+  const _monthly=+((me&&me.monthly_cost)||0);
+  const _net=_rev-_stockCost-_monthly;
+  const METRICS={ available:ar(avail.length), active:ar(active), done:ar(myDone),
+    revenue:pvMoney(_rev), stock:pvMoney(_stockVal), monthly:pvMoney(_monthly),
+    net:pvMoney(_net), owed:pvMoney(owed), team:ar(TECHS.length),
+    customers:ar(PCUST.length), kpi:pvMoney((me&&me.kpi_value)||0) };
+  const dashKeys = me.tech ? ['available','active','done'] : ((me.dash_metrics&&me.dash_metrics.length)?me.dash_metrics:['available','active','done']);
+  const statsHTML = dashKeys.map(k=>METRIC_DEFS[k]?`<div class="stat"><b>${METRICS[k]}</b><small>${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</small></div>`:'').join('');
   const listArr = tab==='available'?availF:mineF;
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من الإدارة لتصلك الطلبات'):'ما قبلت طلبات بعد')}</h3></div>`;
   // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
@@ -951,6 +985,15 @@ function render(){
           </div>
         </div>`;
       })()}
+      <div class="mpanel"><h3>📊 أرقام صفحتي الرئيسية</h3>
+        <div class="hint">اختر الأرقام اللي تبيها تطلع لك فوق.</div>
+        <div class="chk-grid">
+        ${Object.keys(METRIC_DEFS).map(k=>`<label class="chk-row ${(me.dash_metrics||[]).includes(k)?'on':''}">
+          <span>${METRIC_DEFS[k].ic} ${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</span>
+          <input type="checkbox" ${(me.dash_metrics||[]).includes(k)?'checked':''} onchange="toggleMetric('${k}')" />
+        </label>`).join('')}
+        </div>
+      </div>
       <div class="mpanel"><h3>📍 مدن الخدمة</h3>
         <div class="hint">اكتب المدن مفصولة بفاصلة — أي طلب من هذه المدن يوصلك وتقبله أو تتركه.</div>
         <input id="pv_cities" value="${esc(myCities().join('، '))}" placeholder="مثال: الدمام، الخبر، الظهران" />
@@ -963,20 +1006,13 @@ function render(){
           <button class="tbtn done" style="padding:0 18px" onclick="addTechByCode()">➕ أضف</button>
         </div>
         <div style="margin-top:10px">
-        ${TECHS.length? TECHS.map(t=>`<div class="mrow">
-            <span><b>${esc(t.name||'فني')}</b> <small style="color:var(--muted)">${esc(t.phone||'')}</small></span>
-            <button class="tbtn" style="padding:4px 12px;background:rgba(220,70,70,.3)" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button>
-          </div>`).join('') : '<div class="hint" style="margin:4px 0 0">ما أضفت فنيّين بعد.</div>'}
+        ${TECHS.length? TECHS.map(t=>{ const pm=t.perms||{}; return `<div class="tech-card">
+            <div class="tc-top"><span><b>${esc(t.name||'فني')}</b> <small style="color:var(--muted)">${esc(t.phone||'')}</small></span>
+              <button class="x-btn" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button></div>
+            <div class="perm-title">صلاحياته:</div>
+            <div class="perm-chips">${[['accept','قبول الطلبات'],['stock','المخزن'],['customers','العملاء'],['invoices','الفواتير']].map(([pk,pl])=>`<button class="pchip ${pm[pk]?'on':''}" onclick="toggleTechPerm('${t.user_id}','${pk}')">${pm[pk]?'✓ ':''}${pl}</button>`).join('')}</div>
+          </div>`; }).join('') : '<div class="hint" style="margin:4px 0 0">ما أضفت فنيّين بعد.</div>'}
         </div>
-      </div>
-      <div class="mpanel"><h3>👁️ وش يشوف فنيّوك</h3>
-        <div class="hint">تحكّم بالأقسام اللي تظهر لفريقك في حساباتهم.</div>
-        <div class="sw-row"><div class="sw-tx"><b>📦 المخزن</b><small>يشوفون ويصرفون من مخزنك</small></div>
-          <button class="sw ${me.techs_see_stock?'on':''}" onclick="toggleVis('stock')"></button></div>
-        <div class="sw-row"><div class="sw-tx"><b>👥 العملاء</b><small>يشوفون سجل عملائك</small></div>
-          <button class="sw ${me.techs_see_customers?'on':''}" onclick="toggleVis('customers')"></button></div>
-        <div class="sw-row"><div class="sw-tx"><b>🧾 الفواتير</b><small>يشوفون فواتير الطلبات</small></div>
-          <button class="sw ${me.techs_see_invoices?'on':''}" onclick="toggleVis('invoices')"></button></div>
       </div>
       ${owed>0?`<div class="mpanel"><h3>💼 المستحق للمنصة</h3>
         <div class="hint" style="margin:0"><b style="color:var(--gold-deep);font-size:1.2rem">${money(owed)}</b> عن ${ar(myDone)} ${myDone===1?'طلب منجز':'طلبات منجزة'} (${money(COMMISSION)}/طلب)</div>
@@ -1005,11 +1041,7 @@ function render(){
     <div class="hero">
       <h1>أهلاً ${esc(me.name)} 👋</h1>
       <div class="sub">${subLine}</div>
-      ${showJobs?`<div class="stats">
-        <div class="stat"><b>${ar(avail.length)}</b><small>طلبات متاحة</small></div>
-        <div class="stat"><b>${ar(active)}<span style="font-size:.85rem;color:var(--muted)"> /٣</span></b><small>قيد التنفيذ</small></div>
-        <div class="stat"><b>${ar(myDone)}</b><small>منجزة</small></div>
-      </div>`:''}
+      ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
     </div>
     ${showJobs?`
     ${isJobTab?renderPvCalendar():''}
@@ -1214,6 +1246,23 @@ async function toggleVis(which){
   else if(which==='invoices') me.techs_see_invoices=!me.techs_see_invoices;
   render();
   try{ await sb.rpc('set_tech_visibility',{ p_stock:!!me.techs_see_stock, p_customers:!!me.techs_see_customers, p_invoices:!!me.techs_see_invoices }); toast('💾 حُفظ'); }
+  catch(e){ toast('تعذّر الحفظ'); }
+}
+/* المزوّد يختار أرقام صفحته الرئيسية */
+async function toggleMetric(k){
+  if(!me||me.tech) return;
+  let arr=(me.dash_metrics||[]).slice();
+  if(arr.includes(k)) arr=arr.filter(x=>x!==k); else arr.push(k);
+  if(!arr.length) arr=['available'];
+  me.dash_metrics=arr; render();
+  try{ await sb.rpc('set_dash_metrics',{ p_metrics:arr }); }catch(e){ toast('تعذّر الحفظ'); }
+}
+/* المزوّد يمنح/يسحب صلاحية لفني */
+async function toggleTechPerm(uid,pk){
+  const t=TECHS.find(x=>x.user_id===uid); if(!t) return;
+  t.perms=t.perms||{}; t.perms[pk]=!t.perms[pk];
+  render();
+  try{ await sb.rpc('set_tech_perms',{ p_uid:uid, p_perms:t.perms }); toast('💾 حُدّثت الصلاحيات'); }
   catch(e){ toast('تعذّر الحفظ'); }
 }
 /* حفظ أرقام لوحة المزوّد المالية */
