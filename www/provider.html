@@ -246,6 +246,25 @@ function seeStock(){ return !!(me && (!me.tech || me.techs_see_stock)); }
 function seeCust(){ return !!(me && (!me.tech || me.techs_see_customers)); }
 function seeInv(){ return !!(me && (!me.tech || me.techs_see_invoices)); }
 function pvMoney(n){ return ar(Math.round(+n||0))+' ر.س'; }
+/* تصدير Excel (CSV عربي) */
+function csvCell(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function downloadCSV(name, headers, rows){
+  const csv='﻿'+[headers].concat(rows).map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name+'.csv'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },500);
+}
+function exportInvoices(){
+  const done=myJobsList().filter(o=>o.status==='done');
+  downloadCSV('فواتيري', ['الطلب','العميل','الجوال','التاريخ','الإجمالي'],
+    done.map(o=>[o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',o.date||'',orderInvTotal(o)]));
+  toast('⤓ تم تنزيل الملف');
+}
+function exportStock(){
+  downloadCSV('مخزوني', ['الصنف','الكمية','الوحدة','سعر البيع'],
+    PINV.map(it=>[it.name,it.qty,it.unit||'',it.sell_price||0]));
+  toast('⤓ تم تنزيل الملف');
+}
 /* الطلبات المنجزة تنصفط في سطر واحد، تفتح بالضغط (زي الفنيّين) */
 let doneOpen={};
 function toggleDone(id){ doneOpen[id]=!doneOpen[id]; render(); }
@@ -930,6 +949,7 @@ function renderStock(){
     <div class="mpanel">
       <div class="mrow" style="border-bottom:1px solid var(--line);padding-top:0"><span class="hint" style="margin:0">قيمة المخزون</span><b style="color:var(--gold-deep)">${pvMoney(val)}</b></div>
       ${rows}
+      ${items.length?`<button class="tbtn" style="width:100%;margin-top:12px;background:var(--gold-tint);color:var(--gold-deep);font-size:.95rem;padding:11px" onclick="exportStock()">⤓ تصدير Excel</button>`:''}
     </div>`;
 }
 async function stockAdd(){
@@ -1011,6 +1031,7 @@ function renderInvoices(){
     <div class="mpanel">
       <h3>🧾 الفواتير ${done.length?`(${ar(done.length)})`:''}</h3>
       <div class="mrow" style="border-bottom:0;padding-bottom:0"><span class="hint" style="margin:0">إجمالي المنجز</span><b style="color:var(--gold-deep);font-size:1.2rem">${pvMoney(total)}</b></div>
+      ${done.length?`<button class="tbtn" style="width:100%;margin-top:12px;background:var(--gold-tint);color:var(--gold-deep);font-size:.95rem;padding:11px" onclick="exportInvoices()">⤓ تصدير Excel</button>`:''}
     </div>
     <div class="mpanel">${rows}</div>`;
 }
