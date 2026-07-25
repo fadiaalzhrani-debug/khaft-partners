@@ -92,12 +92,10 @@
   .set-row.danger .sr-l{color:#c0392b}
   .set-body{padding:6px 2px 12px}
   .set-body input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-size:1rem}
-  /* اختيار أرقام الداشبورد */
-  .chk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  @media(max-width:420px){.chk-grid{grid-template-columns:1fr}}
-  .chk-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:#FBF9F3;font-weight:700;font-size:.9rem;cursor:pointer}
-  .chk-row.on{background:var(--gold-tint);border-color:var(--gold)}
-  .chk-row input{width:20px;height:20px;accent-color:var(--gold-deep);flex-shrink:0}
+  /* اختيار أرقام الداشبورد — شرائط مضغوطة */
+  .mchips{display:flex;flex-wrap:wrap;gap:8px}
+  .mchip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:#FBF9F3;color:var(--muted);font-weight:800;font-size:.85rem}
+  .mchip.on{background:var(--gold);color:#1A1712;border-color:var(--gold-deep)}
   /* صلاحيات الفني */
   .tech-card{background:#FBF9F3;border:1px solid var(--line);border-radius:13px;padding:12px;margin-bottom:10px}
   .tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -987,12 +985,9 @@ function render(){
         </div>`;
       })()}
       <div class="mpanel"><h3>📊 أرقام صفحتي الرئيسية</h3>
-        <div class="hint">اختر الأرقام اللي تبيها تطلع لك فوق.</div>
-        <div class="chk-grid">
-        ${Object.keys(METRIC_DEFS).map(k=>`<label class="chk-row ${(me.dash_metrics||[]).includes(k)?'on':''}">
-          <span>${METRIC_DEFS[k].ic} ${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</span>
-          <input type="checkbox" ${(me.dash_metrics||[]).includes(k)?'checked':''} onchange="toggleMetric('${k}')" />
-        </label>`).join('')}
+        <div class="hint">اضغط الأرقام اللي تبيها تطلع لك فوق.</div>
+        <div class="mchips">
+        ${Object.keys(METRIC_DEFS).map(k=>{ const on=(me.dash_metrics||[]).includes(k); return `<button class="mchip ${on?'on':''}" onclick="toggleMetric('${k}')">${on?'✓ ':''}${METRIC_DEFS[k].ic} ${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</button>`; }).join('')}
         </div>
       </div>
       <div class="mpanel"><h3>📍 مدن الخدمة</h3>
