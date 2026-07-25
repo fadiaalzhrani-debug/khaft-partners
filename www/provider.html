@@ -12,15 +12,17 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" /></noscript>
 <style>
-  :root{ --gold:#F5C518; --gold-strong:#E7B70B; --ink:#141414; --bg:#0F1115; --panel:#171A20; --card:#1C2027;
-    --text:#EDEEF0; --muted:#9AA0AA; --line:#2A2F38; --ok:#22C55E; --danger:#F87171; --r:18px; --shadow:0 12px 30px rgba(0,0,0,.35); }
+  :root{ --gold:#F5C518; --gold-strong:#E7B70B; --gold-deep:#B8860B; --gold-soft:#FBF1C9; --gold-tint:#FDF8E7;
+    --ink:#1A1712; --bg:#FAF7EF; --panel:#F3EEE2; --card:#fff; --text:#1A1712; --muted:#6E685B; --line:#EBE5D6;
+    --ok:#15803D; --ok-soft:#DCFCE7; --danger:#DC2626; --danger-soft:#FBE4E4;
+    --r:18px; --shadow:0 1px 2px rgba(40,32,10,.04),0 10px 28px rgba(40,32,10,.06); --shadow-sm:0 1px 2px rgba(40,32,10,.04),0 4px 12px rgba(40,32,10,.045); }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Cairo','Segoe UI',Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-tap-highlight-color:transparent}
   .wrap{max-width:900px;margin:0 auto;padding:0 16px}
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
   input,select{font-family:inherit;font-size:1rem}
   a{color:inherit;text-decoration:none}
-  header.top{position:sticky;top:0;z-index:30;background:rgba(15,17,21,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+  header.top{position:sticky;top:0;z-index:30;background:rgba(250,247,239,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
   .top .wrap{display:flex;align-items:center;gap:12px;min-height:64px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.15rem}
   .brand .mk{width:36px;height:36px;border-radius:10px;background:var(--gold);color:var(--ink);display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
@@ -35,48 +37,48 @@
   .login input{width:100%;padding:15px;border-radius:13px;background:var(--card);border:1px solid var(--line);color:var(--text);text-align:center;font-weight:700;font-size:1.1rem;margin-bottom:12px}
   .btn{width:100%;background:var(--gold);color:var(--ink);font-weight:900;padding:16px;border-radius:13px;font-size:1.05rem;transition:.15s}
   .btn:hover{background:var(--gold-strong)}
-  .login .reg{display:block;margin-top:16px;color:var(--gold);font-weight:800}
+  .login .reg{display:block;margin-top:16px;color:var(--gold-deep);font-weight:800}
   .login .reg2{display:block;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);color:var(--muted);font-weight:700;font-size:.9rem}
   .login .reg2:hover{color:var(--text)}
   .login .msg{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#fca5a5;border-radius:12px;padding:12px;margin-top:12px;font-weight:600}
-  .login .msg.wait{background:rgba(245,197,24,.12);border-color:rgba(245,197,24,.3);color:var(--gold)}
+  .login .msg.wait{background:rgba(245,197,24,.12);border-color:rgba(245,197,24,.3);color:var(--gold-deep)}
 
   .hero{padding:18px 0 6px}
   .hero h1{font-size:1.3rem;font-weight:900}
   .hero .sub{color:var(--muted);font-size:.9rem}
   .owed{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px;margin-top:10px;font-size:.85rem;font-weight:700;color:var(--muted)}
-  .owed b{color:var(--gold)}
+  .owed b{color:var(--gold-deep)}
   .tabs{display:flex;gap:8px;margin:16px 0}
   .tab{flex:1;padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-weight:800;color:var(--muted);text-align:center}
-  .tab.active{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+  .tab.active{background:var(--gold);color:var(--ink);border-color:var(--gold-deep)}
   .tab .cnt{opacity:.7}
   /* لوحة نظيفة: إحصاءات + بطاقات إدارة */
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
-  .stat b{display:block;font-size:1.45rem;font-weight:900;color:var(--gold);line-height:1.2}
+  .stat b{display:block;font-size:1.45rem;font-weight:900;color:var(--gold-deep);line-height:1.2}
   .stat small{color:var(--muted);font-size:.78rem;font-weight:700}
   .mpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
   .mpanel h3{font-size:1rem;font-weight:900;margin-bottom:6px}
   .mpanel .hint{color:var(--muted);font-size:.84rem;margin-bottom:10px;line-height:1.7}
-  .mpanel input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--text);font-size:1rem;font-weight:700}
+  .mpanel input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-size:1rem;font-weight:700}
   .mrow{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line)}
   .mrow:last-child{border-bottom:none}
   .code-card{background:linear-gradient(135deg,rgba(245,197,24,.16),rgba(245,197,24,.05));border:1px solid rgba(245,197,24,.45);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
-  .code-card .cc-code{font-size:1.9rem;font-weight:900;color:var(--gold);letter-spacing:6px;margin:6px 0}
+  .code-card .cc-code{font-size:1.9rem;font-weight:900;color:var(--gold-deep);letter-spacing:6px;margin:6px 0}
   .code-card small{color:var(--muted);font-size:.84rem;line-height:1.7;display:block}
   /* تقويم أيام المزوّد — طلباته هو فقط */
   .calbar{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:14px}
   .cal-head{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px;font-weight:900}
-  .cal-nav{background:rgba(0,0,0,.25);border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:10px;font-size:1.1rem}
+  .cal-nav{background:#FBF9F3;border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:10px;font-size:1.1rem}
   .cal-nav:active{background:var(--gold);color:var(--ink)}
   .cal-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
-  .cal-day{flex-shrink:0;width:56px;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:11px;padding:7px 2px;text-align:center;color:var(--muted)}
+  .cal-day{flex-shrink:0;width:56px;background:#FBF9F3;border:1px solid var(--line);border-radius:11px;padding:7px 2px;text-align:center;color:var(--muted)}
   .cal-day .cd-w{display:block;font-size:.68rem;font-weight:700}
   .cal-day .cd-n{display:block;font-size:1.05rem;font-weight:900;color:var(--text)}
-  .cal-day .cd-c{display:block;font-size:.68rem;font-weight:800;color:var(--gold)}
+  .cal-day .cd-c{display:block;font-size:.68rem;font-weight:800;color:var(--gold-deep)}
   .cal-day.has{border-color:rgba(245,197,24,.5)}
-  .cal-day.today{border-color:var(--gold);background:rgba(245,197,24,.12)}
-  .cal-day.sel{background:var(--gold);border-color:var(--gold)}
+  .cal-day.today{border-color:var(--gold-deep);background:rgba(245,197,24,.12)}
+  .cal-day.sel{background:var(--gold);border-color:var(--gold-deep)}
   .cal-day.sel .cd-n,.cal-day.sel .cd-w,.cal-day.sel .cd-c{color:var(--ink)}
   .cal-filter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;font-weight:800;font-size:.9rem}
   .cal-filter button{background:var(--ink);color:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 14px;font-weight:800;font-size:.82rem}
@@ -84,26 +86,26 @@
   .tjob{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
   .tj-head{background:linear-gradient(90deg,rgba(245,197,24,.14),rgba(245,197,24,.04));padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
   .tj-when{font-weight:900;font-size:1.2rem}
-  .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;background:#23272f;border:1px solid var(--line)}
-  .status.new{background:rgba(245,197,24,.15);color:var(--gold)}
-  .status.confirmed,.status.progress{background:rgba(56,132,255,.15);color:#7fb0ff}
-  .status.done{background:rgba(34,197,94,.15);color:#6ee7a0}
+  .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;background:var(--gold-tint);color:var(--muted);border:1px solid var(--line)}
+  .status.new{background:var(--gold-tint);color:#8a6d00;border-color:var(--gold-soft)}
+  .status.confirmed,.status.progress{background:#E6F1FB;color:#185FA5;border-color:#B5D4F4}
+  .status.done{background:var(--ok-soft);color:var(--ok);border-color:#BBF7D0}
   .tj-body{padding:15px 18px}
   .tj-row{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:1.05rem}
   .tj-row:last-child{border-bottom:none}
   .tj-k{min-width:110px;color:var(--muted);font-weight:700;font-size:.95rem;flex-shrink:0}
   .tj-v{flex:1;font-weight:800}
-  .tj-v a{color:var(--gold)}
+  .tj-v a{color:var(--gold-deep)}
   .quick-tag{display:inline-block;background:var(--gold);color:var(--ink);font-weight:900;padding:6px 14px;border-radius:999px;font-size:.9rem;margin-bottom:6px}
   .tvideo{display:inline-flex;gap:6px;background:#7c3aed;color:#fff !important;padding:9px 15px;border-radius:11px;font-weight:800;font-size:.92rem;margin-top:4px}
   .tmap{display:inline-flex;gap:6px;margin-top:8px;background:var(--gold);color:var(--ink);padding:9px 15px;border-radius:11px;font-weight:800;font-size:.9rem}
   .tacts{display:flex;gap:10px;padding:0 18px 16px}
   .tbtn{flex:1;padding:16px;border-radius:13px;font-weight:900;font-size:1.1rem;text-align:center}
   .tbtn.accept{background:var(--gold);color:var(--ink)}
-  .tbtn.done{background:var(--ok);color:#04210f}
-  .tbtn.inv{background:#211D16;border:1px solid rgba(245,197,24,.3);color:var(--gold)}
-  .tbtn.inv.sent{background:rgba(34,197,94,.14);color:#6ee7a0}
-  .tbtn.donelbl{background:rgba(34,197,94,.14);color:#6ee7a0}
+  .tbtn.done{background:var(--ok);color:#fff}
+  .tbtn.inv{background:var(--gold-tint);border:1px solid var(--gold-soft);color:var(--gold-deep)}
+  .tbtn.inv.sent{background:var(--ok-soft);color:var(--ok)}
+  .tbtn.donelbl{background:var(--ok-soft);color:var(--ok)}
   .empty{text-align:center;padding:50px 20px;color:var(--muted)}
   .empty .ico{font-size:3rem;margin-bottom:10px;opacity:.5}
 
@@ -120,13 +122,13 @@
   .inv-row{display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--line)}
   .inv-row .ir-name{flex:1;font-weight:800;font-size:1.15rem}
   .inv-row .ir-qty{display:flex;align-items:center;background:var(--card);border-radius:11px;overflow:hidden}
-  .inv-row .ir-qty button{width:38px;height:40px;font-weight:900;color:var(--gold);font-size:1.35rem}
+  .inv-row .ir-qty button{width:38px;height:40px;font-weight:900;color:var(--gold-deep);font-size:1.35rem}
   .inv-row .ir-qty span{min-width:30px;text-align:center;font-weight:900;font-size:1.15rem}
   .inv-row .ir-price{width:92px;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:900;text-align:center;font-size:1.1rem}
   .inv-row .ir-del{color:var(--danger);font-size:1.3rem;padding:6px}
   .inv-empty{color:var(--muted);text-align:center;padding:20px;font-weight:700}
   .inv-total{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:2px solid var(--line);font-weight:900;font-size:1.5rem}
-  .inv-total b{color:var(--gold)}
+  .inv-total b{color:var(--gold-deep)}
   .inv-acts{display:flex;gap:10px;margin-top:18px}
   .inv-acts .tbtn{flex:1}
 
@@ -517,8 +519,8 @@ function showLogin(msg, wait){
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب؟ سجّل الآن 👇</div>
-      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--gold)" onclick="showSignup('')">➕ تسجيل مزوّد جديد</button>
-      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--gold);margin-top:10px" onclick="showTechReg('')">🧑‍🔧 تسجيل فني (بكود مزوّد)</button>
+      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink)" onclick="showSignup('')">➕ تسجيل مزوّد جديد</button>
+      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink);margin-top:10px" onclick="showTechReg('')">🧑‍🔧 تسجيل فني (بكود مزوّد)</button>
     </div>
     <a class="reg2" href="fanyeen.html">فني خافِت المباشر؟ دخول من هنا</a>
   </div>`;
@@ -537,7 +539,7 @@ function showSignup(msg){
     <input id="su_cities" placeholder="مدن الخدمة مفصولة بفاصلة: الخبر، الدمام" />
     <div style="text-align:right;margin:10px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات:</div>
     <div id="su_svcs" style="display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:6px">
-      ${SIGNUP_CATS.map(c=>`<label style="border:1.5px solid rgba(255,255,255,.28);border-radius:20px;padding:5px 12px;font-size:.86rem;cursor:pointer"><input type="checkbox" value="${c}" style="margin-left:5px"> ${c}</label>`).join('')}
+      ${SIGNUP_CATS.map(c=>`<label style="border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;font-size:.86rem;cursor:pointer;background:var(--card)"><input type="checkbox" value="${c}" style="margin-left:5px"> ${c}</label>`).join('')}
     </div>
     <button class="btn" onclick="submitSignup()">تسجيل وتفعيل ✅</button>
     ${msg?`<div class="msg ${/تعذّر|صحيح|اكتب|اختر|المرور/.test(msg)?'':'wait'}">${msg}</div>`:''}
@@ -759,7 +761,7 @@ function render(){
       </div>
       <div class="mpanel"><h3>🏢 مزوّدي</h3>
         ${me.hasProvider
-          ? `<div class="hint" style="margin:0">✅ أنت في فريق <b style="color:var(--gold)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}</div>`
+          ? `<div class="hint" style="margin:0">✅ أنت في فريق <b style="color:var(--gold-deep)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}</div>`
           : `<div class="hint" style="margin:0">ما أضافك مزوّد بعد — أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.</div>`}
       </div>`;
   } else {
@@ -783,7 +785,7 @@ function render(){
         </div>
       </div>
       ${owed>0?`<div class="mpanel"><h3>💼 المستحق للمنصة</h3>
-        <div class="hint" style="margin:0"><b style="color:var(--gold);font-size:1.2rem">${money(owed)}</b> عن ${ar(myDone)} ${myDone===1?'طلب منجز':'طلبات منجزة'} (${money(COMMISSION)}/طلب)</div>
+        <div class="hint" style="margin:0"><b style="color:var(--gold-deep);font-size:1.2rem">${money(owed)}</b> عن ${ar(myDone)} ${myDone===1?'طلب منجز':'طلبات منجزة'} (${money(COMMISSION)}/طلب)</div>
       </div>`:''}`;
   }
 
