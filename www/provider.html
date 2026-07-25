@@ -83,6 +83,15 @@
   .tjob-offer{border:2px solid var(--gold);box-shadow:0 0 0 4px rgba(245,197,24,.14)}
   .offer-banner{background:var(--gold);color:#1A1712;font-weight:900;font-size:.9rem;text-align:center;padding:9px 12px;border-radius:12px;margin-bottom:10px;line-height:1.4}
   .status.offer{background:var(--gold);color:#1A1712}
+  /* الإعدادات */
+  .set-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink);font-family:inherit;text-align:right}
+  .set-row:last-child{border-bottom:0}
+  .set-row .sr-l{display:flex;align-items:center;gap:11px;font-weight:700;font-size:.95rem}
+  .set-row .sr-ic{font-size:1.2rem}
+  .set-row .sr-ar{color:var(--muted);font-weight:900;font-size:1.2rem}
+  .set-row.danger .sr-l{color:#c0392b}
+  .set-body{padding:6px 2px 12px}
+  .set-body input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-size:1rem}
   /* مفتاح تشغيل/إيقاف */
   .sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
   .sw-row:last-child{border-bottom:0}
@@ -433,7 +442,7 @@ function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on(
 
 /* تنبيه داخل الصفحة: صوت + اهتزاز أول ما يوصل طلب جديد من مدن خدمته */
 let seenOpen=null;
-function beep(){ try{
+function beep(){ if(typeof soundOn==='function' && !soundOn()) return; try{
   const ctx=window._actx||(window._actx=new (window.AudioContext||window.webkitAudioContext)());
   if(ctx.state==='suspended') ctx.resume();
   const t=ctx.currentTime;
@@ -515,6 +524,45 @@ async function enterTechMode(info, d){
   loadOrders(); initPush();
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=null; localStorage.removeItem('khafet_provider_phone'); render(); }
+/* ═══════════ إعدادات الحساب (مثل أي تطبيق) ═══════════ */
+function soundOn(){ return localStorage.getItem('khafet_sound')!=='off'; }
+function toggleSound(){ localStorage.setItem('khafet_sound', soundOn()?'off':'on'); render(); toast(soundOn()?'🔔 التنبيه الصوتي مفعّل':'🔕 أُوقف التنبيه الصوتي'); }
+function toggleSet(k){ const el=document.getElementById('set_'+k); if(el) el.style.display = (el.style.display==='none'?'block':'none'); }
+async function changePass(){
+  const a=((document.getElementById('np1')||{}).value)||'', b=((document.getElementById('np2')||{}).value)||'';
+  if(a.length<6){ toast('كلمة المرور ٦ خانات على الأقل'); return; }
+  if(a!==b){ toast('كلمتا المرور غير متطابقتين'); return; }
+  try{ const { error }=await sb.auth.updateUser({ password:a }); if(error) throw error;
+    const p1=document.getElementById('np1'),p2=document.getElementById('np2'); if(p1)p1.value=''; if(p2)p2.value='';
+    toggleSet('pass'); toast('✅ تم تحديث كلمة المرور');
+  }catch(e){ toast('تعذّر التحديث، حاول ثانية'); }
+}
+async function deleteAccount(){
+  if(!confirm('حذف حسابك نهائياً؟ لن تستقبل طلبات بعدها.')) return;
+  if(!confirm('متأكد؟ هذا الإجراء لا يمكن التراجع عنه من التطبيق.')) return;
+  let ok=false; try{ const { data }=await sb.rpc('deactivate_my_account'); ok=!!data; }catch(e){}
+  if(!ok){ toast('تعذّر حذف الحساب — تواصل مع الدعم'); return; }
+  try{ if(sb) await sb.auth.signOut(); }catch(e){}
+  me=null; localStorage.removeItem('khafet_provider_phone'); toast('تم حذف الحساب'); render();
+}
+function settingsPanel(){
+  const waCtx='966'+String(CONTACT||'').replace(/^0/,'');
+  return `
+    <div class="mpanel"><h3>⚙️ الإعدادات</h3>
+      <div class="set-row" onclick="toggleSet('pass')"><div class="sr-l"><span class="sr-ic">🔑</span> تغيير كلمة المرور</div><span class="sr-ar">›</span></div>
+      <div id="set_pass" class="set-body" style="display:none">
+        <input id="np1" type="password" placeholder="كلمة المرور الجديدة" autocomplete="new-password" />
+        <input id="np2" type="password" placeholder="أعد كتابتها" autocomplete="new-password" style="margin-top:8px" onkeydown="if(event.key==='Enter')changePass()" />
+        <button class="tbtn done" style="width:100%;margin-top:10px" onclick="changePass()">💾 تحديث كلمة المرور</button>
+      </div>
+      <div class="set-row"><div class="sr-l"><span class="sr-ic">🔔</span> تنبيه صوتي للطلبات</div>
+        <button class="sw ${soundOn()?'on':''}" onclick="toggleSound()"></button></div>
+      <a class="set-row" href="https://wa.me/${waCtx}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">💬</span> تواصل مع الدعم</div><span class="sr-ar">›</span></a>
+      <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> حذف الحساب</div><span class="sr-ar">›</span></div>
+    </div>
+    <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>
+    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:14px">رزق · خافِت © ٢٠٢٦</div>`;
+}
 
 /* ---- قبول الطلب ---- */
 async function acceptOrder(id){
@@ -870,8 +918,7 @@ function render(){
         ${me.hasProvider
           ? `<div class="hint" style="margin:0">✅ أنت في فريق <b style="color:var(--gold-deep)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}</div>`
           : `<div class="hint" style="margin:0">ما أضافك مزوّد بعد — أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.</div>`}
-      </div>
-      <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>`;
+      </div>`;
   } else {
     manage=`
       <div class="mpanel"><h3>👤 بياناتي</h3>
@@ -933,9 +980,10 @@ function render(){
       </div>
       ${owed>0?`<div class="mpanel"><h3>💼 المستحق للمنصة</h3>
         <div class="hint" style="margin:0"><b style="color:var(--gold-deep);font-size:1.2rem">${money(owed)}</b> عن ${ar(myDone)} ${myDone===1?'طلب منجز':'طلبات منجزة'} (${money(COMMISSION)}/طلب)</div>
-      </div>`:''}
-      <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>`;
+      </div>`:''}`;
   }
+
+  manage += settingsPanel();   // ⚙️ إعدادات موحّدة (تغيير باسورد/تنبيهات/دعم/حذف/خروج)
 
   // تبويبات ديناميكية + توزيع المحتوى (مخزن/عملاء/فواتير حسب صلاحية العرض)
   const isJobTab=(tab==='available'||tab==='mine');
@@ -943,7 +991,7 @@ function render(){
   if(seeStock()) TABS.push(['stock','📦 المخزن','']);
   if(seeCust())  TABS.push(['customers','👥 العملاء','']);
   if(seeInv())   TABS.push(['invoices','🧾 الفواتير','']);
-  TABS.push(['manage','👤 حسابي','']);
+  // «حسابي» ثابت بالهيدر فوق (زر acctBtn) — فما نكرّره كتبويب هنا
   const tabsHTML=TABS.map(([k,l,c])=>`<button class="tab ${tab===k?'active':''}" onclick="setTab('${k}')">${l}${c?` <span class="cnt">${c}</span>`:''}</button>`).join('');
   let body;
   if(tab==='manage') body=manage;
