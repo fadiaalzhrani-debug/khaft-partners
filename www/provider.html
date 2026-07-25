@@ -238,7 +238,7 @@
 <body>
 <header class="top"><div class="wrap">
   <div class="brand"><span class="mk">🤝</span><span>خافِت<small>بوابة المزوّد</small></span></div>
-  <a href="index.html" class="home-link">🏠 <span class="ht">الرئيسية</span></a>
+  <a class="home-link" style="cursor:pointer" onclick="goHome()">🏠 <span class="ht">الرئيسية</span></a>
   <span class="spacer"></span>
   <button class="logout" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('manage')">👤 حسابي</button>
   <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
@@ -544,6 +544,8 @@ async function enterTechMode(info, d){
   loadOrders(); initPush();
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=null; localStorage.removeItem('khafet_provider_phone'); render(); }
+/* 🏠 الرئيسية = الصفحة الرئيسية لحسابه (لوحته)، مو اختيار البوابات */
+function goHome(){ if(me){ tab='available'; pvCalFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
 /* ═══════════ إعدادات الحساب (مثل أي تطبيق) ═══════════ */
 function soundOn(){ return localStorage.getItem('khafet_sound')!=='off'; }
 function toggleSound(){ localStorage.setItem('khafet_sound', soundOn()?'off':'on'); render(); toast(soundOn()?'🔔 التنبيه الصوتي مفعّل':'🔕 أُوقف التنبيه الصوتي'); }
