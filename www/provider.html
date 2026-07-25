@@ -518,11 +518,11 @@ function showLogin(msg, wait){
     <button class="btn" onclick="login()">دخول</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
-      <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب؟ سجّل الآن 👇</div>
+      <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب مزوّد؟ سجّل الآن 👇</div>
       <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink)" onclick="showSignup('')">➕ تسجيل مزوّد جديد</button>
-      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink);margin-top:10px" onclick="showTechReg('')">🧑‍🔧 تسجيل فني (بكود مزوّد)</button>
+      <div style="color:var(--muted);font-size:.8rem;margin-top:12px;line-height:1.5">الفنيّون يسجّلون من بوابة <b>فنيّو خافِت</b> ويأخذون كودهم، وتضيفهم أنت من <b>⚙️ الإدارة</b> بعد الدخول.</div>
     </div>
-    <a class="reg2" href="fanyeen.html">فني خافِت المباشر؟ دخول من هنا</a>
+    <a class="reg2" href="fanyeen.html">فني؟ دخول / تسجيل من بوابة فنيّو خافِت</a>
   </div>`;
 }
 /* ---- تسجيل مزوّد جديد (داخل التطبيق) ---- */
