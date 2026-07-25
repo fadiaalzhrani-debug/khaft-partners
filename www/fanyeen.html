@@ -205,6 +205,14 @@
   .acc-code{background:linear-gradient(135deg,rgba(245,197,24,.16),rgba(245,197,24,.05));border:1px solid rgba(245,197,24,.45);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
   .acc-code small{color:var(--muted);font-size:.84rem;line-height:1.6;display:block}
   .acc-code-v{font-size:1.9rem;font-weight:900;color:var(--gold-deep);letter-spacing:6px;margin:8px 0}
+  .set-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--ink);font-family:inherit;text-align:inherit}
+  .set-row:last-child{border-bottom:0}
+  .set-row .sr-l{display:flex;align-items:center;gap:11px;font-weight:700;font-size:.95rem}
+  .set-row .sr-ic{font-size:1.2rem}
+  .set-row .sr-ar{color:var(--muted);font-weight:900;font-size:1.2rem}
+  .set-row.danger .sr-l{color:#c0392b}
+  .set-body{padding:6px 2px 12px}
+  .set-body input{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-size:1rem}
   .worth{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(245,197,24,.04));border:1px solid rgba(245,197,24,.32);border-radius:14px;padding:14px 15px;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
   .worth .w-lbl{color:var(--muted);font-size:.7rem;font-weight:700;margin-bottom:3px}
   .worth .w-big{font-size:1.65rem;font-weight:900;color:var(--gold-deep);font-variant-numeric:tabular-nums;line-height:1}
@@ -981,6 +989,24 @@ async function doLogin(){
   }
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); render(); }
+/* إعدادات الحساب */
+function toggleSet(k){ const el=document.getElementById('set_'+k); if(el) el.style.display=(el.style.display==='none'?'block':'none'); }
+async function changePass(){
+  const a=((document.getElementById('np1')||{}).value)||'', b=((document.getElementById('np2')||{}).value)||'';
+  if(a.length<6){ toast(lang==='ar'?'٦ خانات على الأقل':'Min 6 characters'); return; }
+  if(a!==b){ toast(lang==='ar'?'غير متطابقتين':'Do not match'); return; }
+  try{ const { error }=await sb.auth.updateUser({ password:a }); if(error) throw error;
+    const p1=document.getElementById('np1'),p2=document.getElementById('np2'); if(p1)p1.value=''; if(p2)p2.value=''; toggleSet('pass');
+    toast(lang==='ar'?'✅ تم تحديث كلمة المرور':'✅ Password updated');
+  }catch(e){ const m=(e&&e.message)||''; toast(/different from the old/i.test(m)?(lang==='ar'?'لازم تكون مختلفة عن القديمة':'Must differ from old'):(lang==='ar'?'تعذّر التحديث':'Update failed')); }
+}
+async function deleteAccount(){
+  if(!confirm(lang==='ar'?'حذف حسابك؟ لن تستقبل مهام بعدها.':'Delete your account?')) return;
+  let ok=false; try{ const { data }=await sb.rpc('deactivate_my_account'); ok=!!data; }catch(e){}
+  if(!ok){ toast(lang==='ar'?'تعذّر الحذف — راجع الإدارة':'Delete failed'); return; }
+  try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); render();
+  toast(lang==='ar'?'تم حذف الحساب':'Account deleted');
+}
 
 /* ---- تقويم الشهر (نظرة عامة على الحجوزات) ---- */
 let calMonth=(function(){ const d=new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })();
@@ -1036,11 +1062,11 @@ function invLow(){ return (INV||[]).some(i=>(+i.qty||0) <= 2); }
 /* ---- تبويب حسابي ---- */
 function renderAccountTab(){
   const L={
-    ar:{name:'الاسم',phone:'الجوال',role:'الصفة',tech:'🧑‍🔧 فني خافِت',code:'كودك — أعطه لمزوّدك ليضيفك لفريقه',copy:'📋 نسخ الكود',lang:'🌐 لغة العرض',out:'🚪 تسجيل الخروج',done:'طلبات منجزة',today:'مهامي اليوم'},
-    en:{name:'Name',phone:'Phone',role:'Role',tech:'🧑‍🔧 Khafet technician',code:'Your code — give it to your provider to add you',copy:'📋 Copy code',lang:'🌐 Display language',out:'🚪 Log out',done:'Completed',today:'Today'},
-    ne:{name:'नाम',phone:'फोन',role:'भूमिका',tech:'🧑‍🔧 खाफेट टेक्निसियन',code:'तपाईंको कोड — प्रदायकलाई दिनुहोस्',copy:'📋 कोड कपी गर्नुहोस्',lang:'🌐 भाषा',out:'🚪 लगआउट',done:'सम्पन्न',today:'आज'},
-    hi:{name:'नाम',phone:'फ़ोन',role:'भूमिका',tech:'🧑‍🔧 ख़ाफ़ेट तकनीशियन',code:'आपका कोड — प्रदाता को दें',copy:'📋 कोड कॉपी करें',lang:'🌐 भाषा',out:'🚪 लॉगआउट',done:'पूर्ण',today:'आज'},
-    ur:{name:'نام',phone:'فون',role:'حیثیت',tech:'🧑‍🔧 خافت ٹیکنیشن',code:'آپ کا کوڈ — اپنے فراہم کنندہ کو دیں',copy:'📋 کوڈ کاپی کریں',lang:'🌐 زبان',out:'🚪 لاگ آؤٹ',done:'مکمل',today:'آج'}
+    ar:{name:'الاسم',phone:'الجوال',role:'الصفة',tech:'🧑‍🔧 فني خافِت',code:'كودك — أعطه لمزوّدك ليضيفك لفريقه',copy:'📋 نسخ الكود',lang:'🌐 لغة العرض',out:'🚪 تسجيل الخروج',done:'طلبات منجزة',today:'مهامي اليوم',chpass:'تغيير كلمة المرور',newpass:'كلمة المرور الجديدة',renew:'أعد كتابتها',save:'حفظ',del:'حذف الحساب'},
+    en:{name:'Name',phone:'Phone',role:'Role',tech:'🧑‍🔧 Khafet technician',code:'Your code — give it to your provider to add you',copy:'📋 Copy code',lang:'🌐 Display language',out:'🚪 Log out',done:'Completed',today:'Today',chpass:'Change password',newpass:'New password',renew:'Repeat it',save:'Save',del:'Delete account'},
+    ne:{name:'नाम',phone:'फोन',role:'भूमिका',tech:'🧑‍🔧 खाफेट टेक्निसियन',code:'तपाईंको कोड — प्रदायकलाई दिनुहोस्',copy:'📋 कोड कपी गर्नुहोस्',lang:'🌐 भाषा',out:'🚪 लगआउट',done:'सम्पन्न',today:'आज',chpass:'पासवर्ड परिवर्तन',newpass:'नयाँ पासवर्ड',renew:'फेरि लेख्नुहोस्',save:'सुरक्षित',del:'खाता मेटाउनुहोस्'},
+    hi:{name:'नाम',phone:'फ़ोन',role:'भूमिका',tech:'🧑‍🔧 ख़ाफ़ेट तकनीशियन',code:'आपका कोड — प्रदाता को दें',copy:'📋 कोड कॉपी करें',lang:'🌐 भाषा',out:'🚪 लॉगआउट',done:'पूर्ण',today:'आज',chpass:'पासवर्ड बदलें',newpass:'नया पासवर्ड',renew:'दोबारा लिखें',save:'सहेजें',del:'खाता हटाएं'},
+    ur:{name:'نام',phone:'فون',role:'حیثیت',tech:'🧑‍🔧 خافت ٹیکنیشن',code:'آپ کا کوڈ — اپنے فراہم کنندہ کو دیں',copy:'📋 کوڈ کاپی کریں',lang:'🌐 زبان',out:'🚪 لاگ آؤٹ',done:'مکمل',today:'آج',chpass:'پاسورڈ تبدیل کریں',newpass:'نیا پاس ورڈ',renew:'دوبارہ لکھیں',save:'محفوظ کریں',del:'اکاؤنٹ حذف کریں'}
   };
   const x=L[lang]||L.ar;
   const _today=dateISO(new Date());
@@ -1068,6 +1094,15 @@ function renderAccountTab(){
     <div class="acc-panel">
       <div class="acc-lbl">${x.lang}</div>
       <div class="acc-langs">${langBtns}</div>
+    </div>
+    <div class="acc-panel">
+      <div class="set-row" onclick="toggleSet('pass')"><div class="sr-l"><span class="sr-ic">🔑</span> ${x.chpass}</div><span class="sr-ar">›</span></div>
+      <div id="set_pass" class="set-body" style="display:none">
+        <input id="np1" type="password" placeholder="${x.newpass}" autocomplete="new-password" />
+        <input id="np2" type="password" placeholder="${x.renew}" autocomplete="new-password" style="margin-top:8px" onkeydown="if(event.key==='Enter')changePass()" />
+        <button class="tbtn done" style="width:100%;margin-top:10px" onclick="changePass()">💾 ${x.save}</button>
+      </div>
+      <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> ${x.del}</div><span class="sr-ar">›</span></div>
     </div>
     <button class="tbtn" style="width:100%;margin-top:4px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">${x.out}</button>
   </div>`;
