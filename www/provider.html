@@ -68,6 +68,17 @@
   .pill{display:inline-block;font-size:.72rem;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--gold-tint);color:var(--gold-deep);border:1px solid var(--line)}
   .x-btn{background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.35);color:#c0392b;border-radius:9px;padding:6px 10px;font-weight:800;font-size:.82rem;flex-shrink:0}
   .assign-sel{flex:1;min-width:150px;padding:11px;border-radius:11px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-family:inherit;font-size:.9rem}
+  /* لوحة الأرقام */
+  .fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .fin-cell{background:#FBF9F3;border:1px solid var(--line);border-radius:12px;padding:13px 10px;text-align:center}
+  .fin-cell b{display:block;font-size:1.28rem;font-weight:900;color:var(--ink);line-height:1.2}
+  .fin-cell small{color:var(--muted);font-size:.76rem;font-weight:700}
+  .fin-cell.rev b{color:var(--ok)}
+  .fin-cell.cost b{color:#c0392b}
+  .fin-cell.net b{color:var(--gold-deep)}
+  .fin-cell.neg b{color:#c0392b}
+  .fin-cell.kpi{background:var(--gold-tint);border-color:var(--gold)}
+  .fin-cell.kpi b{color:var(--gold-deep)}
   /* مفتاح تشغيل/إيقاف */
   .sw-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
   .sw-row:last-child{border-bottom:0}
@@ -199,6 +210,7 @@
   <div class="brand"><span class="mk">🤝</span><span>خافِت<small>بوابة المزوّد</small></span></div>
   <a href="index.html" class="home-link">🏠 <span class="ht">الرئيسية</span></a>
   <span class="spacer"></span>
+  <button class="logout" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('manage')">👤 حسابي</button>
   <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
 </div></header>
 
@@ -577,6 +589,7 @@ function renderInvoice(){
 /* ---- العرض ---- */
 function showLogin(msg, wait){
   document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">🤝</div><h1>بوابة المزوّد</h1>
     <p>ادخل برقمك المسجّل وكلمة المرور لاستقبال طلبات منطقتك.</p>
@@ -597,6 +610,7 @@ const SIGNUP_CATS=['سباكة','كهرباء','تكييف','نجارة','دها
 let signupCtx=null;
 function showSignup(msg){
   document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login" style="max-width:470px">
     <div class="ic">🤝</div><h1>تسجيل مزوّد جديد</h1>
     <p>سجّل وابدأ استقبال طلبات مدنك فوراً — بعد التسجيل يطلع لك <b>كودك</b> لضم فنيّيك.</p>
@@ -669,6 +683,7 @@ async function verifySignupOtp(){
 let techCtx=null;
 function showTechReg(msg){
   document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">🧑‍🔧</div><h1>تسجيل فني جديد</h1>
     <p>سجّل حسابك — ويطلع لك <b>كودك</b> تعطيه لمزوّدك ليضيفك لفريقه.</p>
@@ -807,6 +822,7 @@ function jobCard(o, mode){
 function render(){
   if(!me){ showLogin(''); return; }
   document.getElementById('logoutBtn').style.display='';
+  document.getElementById('acctBtn').style.display='';
   const avail=OPEN.filter(o=>servesCity(o));   // من المصدر الآمن (بلا بيانات شخصية) وحسب مدن خدمته
   const mine=ORDERS.filter(o=>(me.tech ? o.handledBy===me.uid : o.providerPhone===me.phone) && o.status!=='cancelled')
     .sort((a,b)=>{ const r=s=>s==='done'?1:0; if(r(a.status)!==r(b.status)) return r(a.status)-r(b.status); return (a.date+String(a.startMin).padStart(4,'0')).localeCompare(b.date+String(b.startMin).padStart(4,'0')); });
@@ -851,6 +867,31 @@ function render(){
         <div class="mrow"><span>الجوال</span><b style="direction:ltr">${esc(me.phone||'—')}</b></div>
         <div class="mrow"><span>الصفة</span><b>🏢 مزوّد خدمة</b></div>
       </div>
+      ${(()=>{
+        const revenue=mine.filter(o=>o.status==='done').reduce((s,o)=>s+orderInvTotal(o),0);
+        const stockCost=PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0);
+        const monthly=+me.monthly_cost||0;
+        const net=revenue-stockCost-monthly;
+        return `<div class="mpanel"><h3>💰 لوحة الأرقام</h3>
+          <div class="hint">الإيرادات تُحسب تلقائياً من فواتيرك المنجزة، والباقي تحطّه أنت.</div>
+          <div class="fin-grid">
+            <div class="fin-cell rev"><b>${pvMoney(revenue)}</b><small>📈 الإيرادات</small></div>
+            <div class="fin-cell cost"><b>${pvMoney(stockCost)}</b><small>📦 تكلفة المخزون</small></div>
+            <div class="fin-cell"><b>${pvMoney(monthly)}</b><small>🧾 مصاريف شهرية</small></div>
+            <div class="fin-cell ${net>=0?'net':'neg'}"><b>${pvMoney(net)}</b><small>💵 صافي تقديري</small></div>
+          </div>
+          ${me.kpi_label?`<div class="fin-cell kpi" style="margin-top:10px"><b>${pvMoney(me.kpi_value)}</b><small>⭐ ${esc(me.kpi_label)}</small></div>`:''}
+          <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px">
+            <div class="hint" style="margin-bottom:8px">✏️ عدّل أرقامك:</div>
+            <input id="fin_monthly" type="number" inputmode="numeric" placeholder="المصاريف الشهرية (ر.س)" value="${me.monthly_cost||''}" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input id="fin_klabel" placeholder="رقمي المهم (اسمه)" value="${esc(me.kpi_label||'')}" style="flex:1" />
+              <input id="fin_kvalue" type="number" inputmode="numeric" placeholder="قيمته" value="${me.kpi_value!=null?me.kpi_value:''}" style="max-width:100px" />
+            </div>
+            <button class="tbtn done" style="width:100%;margin-top:10px" onclick="saveFinance()">💾 حفظ الأرقام</button>
+          </div>
+        </div>`;
+      })()}
       <div class="mpanel"><h3>📍 مدن الخدمة</h3>
         <div class="hint">اكتب المدن مفصولة بفاصلة — أي طلب من هذه المدن يوصلك وتقبله أو تتركه.</div>
         <input id="pv_cities" value="${esc(myCities().join('، '))}" placeholder="مثال: الدمام، الخبر، الظهران" />
@@ -1107,6 +1148,18 @@ async function toggleVis(which){
   else if(which==='invoices') me.techs_see_invoices=!me.techs_see_invoices;
   render();
   try{ await sb.rpc('set_tech_visibility',{ p_stock:!!me.techs_see_stock, p_customers:!!me.techs_see_customers, p_invoices:!!me.techs_see_invoices }); toast('💾 حُفظ'); }
+  catch(e){ toast('تعذّر الحفظ'); }
+}
+/* حفظ أرقام لوحة المزوّد المالية */
+async function saveFinance(){
+  if(!me||me.tech) return;
+  const m=+((document.getElementById('fin_monthly')||{}).value||0);
+  const kl=((document.getElementById('fin_klabel')||{}).value||'').trim();
+  const kvRaw=(document.getElementById('fin_kvalue')||{}).value;
+  const kv=(kvRaw===''||kvRaw==null)?null:+kvRaw;
+  me.monthly_cost=m; me.kpi_label=kl; me.kpi_value=kv;
+  render();
+  try{ await sb.rpc('set_provider_finance',{ p_monthly:m, p_label:kl||null, p_value:kv }); toast('💾 حُفظت الأرقام'); }
   catch(e){ toast('تعذّر الحفظ'); }
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
