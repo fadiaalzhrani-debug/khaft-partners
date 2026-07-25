@@ -13,12 +13,12 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" /></noscript>
 <style>
   :root{
-    --gold:#F5C518; --gold-strong:#E7B70B; --gold-soft:#FDF3CE;
-    --ink:#141414; --brand-soft:#FBF1C6;
-    --bg:#0F1115; --panel:#171A20; --card:#1C2027; --line:#2A2F38;
-    --text:#EDEEF0; --muted:#9AA0AA;
-    --ok:#22C55E; --ok-soft:#0f2f1c; --danger:#F87171;
-    --r:18px; --r-sm:12px; --shadow:0 12px 30px rgba(0,0,0,.35);
+    --gold:#F5C518; --gold-strong:#E7B70B; --gold-deep:#B8860B; --gold-soft:#FBF1C9; --gold-tint:#FDF8E7;
+    --ink:#1A1712; --brand-soft:#FBF1C6;
+    --bg:#FAF7EF; --panel:#F3EEE2; --card:#fff; --line:#EBE5D6;
+    --text:#1A1712; --muted:#6E685B;
+    --ok:#15803D; --ok-soft:#DCFCE7; --danger:#DC2626;
+    --r:18px; --r-sm:12px; --shadow:0 1px 2px rgba(40,32,10,.04),0 10px 28px rgba(40,32,10,.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'Cairo','Segoe UI',Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-tap-highlight-color:transparent}
@@ -26,7 +26,7 @@
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
   a{color:inherit;text-decoration:none}
 
-  header.top{position:sticky;top:0;z-index:30;background:rgba(15,17,21,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+  header.top{position:sticky;top:0;z-index:30;background:rgba(250,247,239,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
   .top .wrap{display:flex;align-items:center;gap:12px;min-height:66px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
   .brand{display:flex;align-items:center;gap:11px;font-weight:900;font-size:1.2rem}
   .brand .mk{width:38px;height:38px;border-radius:11px;background:var(--gold);color:var(--ink);display:grid;place-items:center;flex-shrink:0}
@@ -43,15 +43,15 @@
   .stat-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;min-width:120px}
   .stat .n{font-size:1.5rem;font-weight:900;line-height:1}
-  .stat .n.gold{color:var(--gold)}
+  .stat .n.gold{color:var(--gold-deep)}
   .stat .l{color:var(--muted);font-size:.8rem;margin-top:4px}
 
   .jobs{margin-top:18px;padding-bottom:40px}
-  .day-head{position:sticky;top:0;z-index:5;font-weight:900;font-size:1.02rem;color:var(--gold);background:#181b20;border:1px solid var(--line);border-radius:12px;padding:11px 16px;margin:22px 2px 12px}
+  .day-head{position:sticky;top:0;z-index:5;font-weight:900;font-size:1.02rem;color:var(--gold-deep);background:var(--gold-tint);border:1px solid var(--line);border-radius:12px;padding:11px 16px;margin:22px 2px 12px}
   .day-head:first-child{margin-top:4px}
   /* تقويم الشهر */
   .inv-toggle{width:100%;margin-top:16px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:14px 16px;font-weight:900;font-size:1.05rem;text-align:right;cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center}
-  .inv-toggle span{color:var(--gold)}
+  .inv-toggle span{color:var(--gold-deep)}
   .inv-box{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
   .inv-add-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .inv-add-row input{padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-family:inherit;font-weight:700;flex:1;min-width:120px}
@@ -67,7 +67,7 @@
   .inv-ctl .inv-amt{width:80px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-weight:800;text-align:center;font-family:inherit}
   .inv-ctl .tbtn{flex:0 0 auto;padding:10px 14px;font-size:.95rem}
   .calbar{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 12px 10px}
-  .cal-head{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:11px;font-weight:900;font-size:1.05rem;color:var(--gold)}
+  .cal-head{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:11px;font-weight:900;font-size:1.05rem;color:var(--gold-deep)}
   .cal-nav{background:var(--card);border:1px solid var(--line);color:var(--text);width:34px;height:34px;border-radius:10px;font-size:1.25rem;font-weight:900;cursor:pointer;line-height:1;font-family:inherit}
   .cal-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
   .cal-day{flex:0 0 auto;width:66px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.12s;color:var(--muted);font-family:inherit}
@@ -75,28 +75,28 @@
   .cal-day .cd-n{font-size:1.18rem;font-weight:900;color:var(--text);line-height:1}
   .cal-day .cd-c{font-size:.72rem;font-weight:800;color:var(--muted);white-space:nowrap}
   .cal-day.has{background:rgba(245,197,24,.1);border-color:rgba(245,197,24,.4)}
-  .cal-day.has .cd-c{color:var(--gold)}
+  .cal-day.has .cd-c{color:var(--gold-deep)}
   .cal-day.today{border-color:var(--gold)}
-  .cal-day.today .cd-n{color:var(--gold)}
+  .cal-day.today .cd-n{color:var(--gold-deep)}
   .cal-day.sel{background:var(--gold);border-color:var(--gold)}
   .cal-day.sel .cd-w,.cal-day.sel .cd-n,.cal-day.sel .cd-c{color:var(--ink)}
-  .cal-filter{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.9rem;color:var(--gold);font-weight:800}
+  .cal-filter{margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.9rem;color:var(--gold-deep);font-weight:800}
   .cal-filter button{background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:5px 13px;font-weight:800;cursor:pointer;font-family:inherit;font-size:.85rem}
   .tjob{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow)}
   .tjob.done{opacity:.6}
   .tj-head{background:linear-gradient(90deg,rgba(245,197,24,.14),rgba(245,197,24,.05));padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
   .tj-when{font-weight:900;font-size:1.28rem;display:flex;align-items:center;gap:8px}
-  .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap;background:#23272f;color:var(--text);border:1px solid var(--line)}
-  .status.new{background:rgba(245,197,24,.15);color:var(--gold)}
+  .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap;background:var(--gold-tint);color:var(--muted);border:1px solid var(--line)}
+  .status.new{background:rgba(245,197,24,.15);color:var(--gold-deep)}
   .status.confirmed{background:rgba(56,132,255,.15);color:#7fb0ff}
-  .status.progress{background:rgba(245,197,24,.15);color:var(--gold)}
+  .status.progress{background:rgba(245,197,24,.15);color:var(--gold-deep)}
   .status.done{background:rgba(34,197,94,.15);color:#6ee7a0}
   .tj-body{padding:16px 18px}
   .tj-row{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);font-size:1.12rem}
   .tj-row:last-child{border-bottom:none}
   .tj-k{min-width:124px;color:var(--muted);font-weight:700;font-size:1rem;flex-shrink:0}
   .tj-v{flex:1;font-weight:800}
-  .tj-v a{color:var(--gold);font-weight:800}
+  .tj-v a{color:var(--gold-deep);font-weight:800}
   .quick-tag{display:inline-block;background:var(--gold);color:var(--ink);font-weight:900;padding:6px 14px;border-radius:999px;font-size:.9rem;margin-bottom:6px}
   .tj-row.early-row{background:rgba(37,211,102,.08);border-radius:10px;padding:10px 8px;border-bottom:none}
   .tj-row.early-row .tj-v{color:#5ee68f;font-weight:800}
@@ -106,7 +106,7 @@
   .tacts{display:flex;flex-wrap:wrap;gap:10px;padding:0 18px 16px}
   .tbtn{flex:1;padding:16px;border-radius:13px;font-weight:900;font-size:1.12rem;text-align:center}
   .tbtn.start{background:var(--gold);color:var(--ink)}
-  .tbtn.done{background:var(--ok);color:#04210f}
+  .tbtn.done{background:var(--ok);color:#fff}
   .tbtn.donelbl{background:var(--ok-soft);color:#6ee7a0}
   .tbtn.reject{flex:0 0 auto;background:transparent;border:1px solid rgba(248,113,113,.45);color:#fca5a5;font-size:.95rem}
   .rj-list{display:grid;gap:9px}
@@ -123,7 +123,7 @@
   .delay-ctl .dc-btns{display:flex;gap:7px}
   .delay-ctl .dc-btns button{background:#2a2318;border:1px solid rgba(255,149,0,.4);color:#ffb347;font-weight:900;border-radius:10px;padding:9px 13px;font-size:.95rem;cursor:pointer;font-family:inherit}
   .delay-ctl .dc-btns .dc-reset{background:var(--card);border-color:var(--line);color:var(--muted)}
-  .tbtn.arrive{background:#25D366;color:#04210f}
+  .tbtn.arrive{background:#25D366;color:#fff}
   .tbtn.arrivedlbl{background:rgba(37,211,102,.15);color:#5ee68f}
   .tbtn.onway{background:#3884ff;color:#fff}
   .tbtn.onwaylbl{background:rgba(56,132,255,.15);color:#7fb0ff}
@@ -136,7 +136,7 @@
   .offline{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#fca5a5;border-radius:12px;padding:12px 16px;margin-top:14px;font-size:.9rem;font-weight:600}
 
   #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--gold);color:var(--ink);padding:14px 24px;border-radius:14px;font-weight:800;z-index:60;opacity:0;transition:.3s;box-shadow:var(--shadow);max-width:90%;text-align:center;pointer-events:none}
-  .tbtn.inv{background:#211D16;border:1px solid rgba(245,197,24,.3);color:var(--gold)}
+  .tbtn.inv{background:var(--gold-tint);border:1px solid var(--gold-soft);color:var(--gold-deep)}
   .tbtn.inv.sent{background:rgba(34,197,94,.14);border-color:transparent;color:#6ee7a0}
   /* محرر الفاتورة */
   .inv-modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);display:none;align-items:flex-end;justify-content:center}
@@ -153,14 +153,14 @@
   .inv-row .ir-pname{flex:1;min-width:0;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:1.05rem;font-family:inherit}
   .inv-row .ir-pname:focus{outline:none;border-color:var(--gold)}
   .inv-row .ir-qty{display:flex;align-items:center;background:var(--card);border-radius:11px;overflow:hidden}
-  .inv-row .ir-qty button{width:38px;height:40px;font-weight:900;color:var(--gold);font-size:1.35rem}
+  .inv-row .ir-qty button{width:38px;height:40px;font-weight:900;color:var(--gold-deep);font-size:1.35rem}
   .inv-row .ir-qty span{min-width:30px;text-align:center;font-weight:900;font-size:1.15rem}
   .inv-row .ir-price{width:92px;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:900;text-align:center;font-size:1.1rem}
   .inv-row .ir-del{color:var(--danger);font-size:1.3rem;padding:6px}
   .inv-empty{color:var(--muted);text-align:center;padding:20px;font-weight:700;font-size:1.05rem}
   .inv-disc{margin-top:12px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.35);border-radius:10px;padding:9px 13px;color:#5ee68f;font-weight:800;font-size:.92rem}
   .inv-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:14px;border-top:2px solid var(--line);font-weight:900;font-size:1.5rem}
-  .inv-total b{color:var(--gold)}
+  .inv-total b{color:var(--gold-deep)}
   .inv-acts{display:flex;gap:10px;margin-top:18px}
   .inv-acts .tbtn{flex:1;font-size:1.08rem;padding:17px}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -182,22 +182,22 @@
   .tb{flex:1;padding:8px 3px 7px;background:none;border:none;color:var(--muted);font-family:inherit;cursor:pointer;position:relative}
   .tb i{display:block;font-size:1.15rem;font-style:normal;line-height:1.3}
   .tb span{display:block;font-size:.6rem;font-weight:800;margin-top:1px}
-  .tb.on{color:var(--gold)}
+  .tb.on{color:var(--gold-deep)}
   .tb.on::before{content:"";position:absolute;top:0;right:24%;left:24%;height:2px;background:var(--gold);border-radius:0 0 3px 3px}
-  .tb .tdot{position:absolute;top:6px;left:27%;width:7px;height:7px;border-radius:50%;background:var(--gold);border:1.5px solid #171a20}
+  .tb .tdot{position:absolute;top:6px;left:27%;width:7px;height:7px;border-radius:50%;background:var(--gold);border:1.5px solid var(--card)}
 
   /* ===== المستودع الاحترافي ===== */
   :root{ --amber:#FBBF24; --red:#F87171; }
   .worth{background:linear-gradient(135deg,rgba(245,197,24,.14),rgba(245,197,24,.04));border:1px solid rgba(245,197,24,.32);border-radius:14px;padding:14px 15px;margin-top:14px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
   .worth .w-lbl{color:var(--muted);font-size:.7rem;font-weight:700;margin-bottom:3px}
-  .worth .w-big{font-size:1.65rem;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;line-height:1}
+  .worth .w-big{font-size:1.65rem;font-weight:900;color:var(--gold-deep);font-variant-numeric:tabular-nums;line-height:1}
   .worth .w-big span{font-size:.85rem}
   .worth .w-side{text-align:end;display:flex;flex-direction:column;gap:6px}
   .worth .w-side b{font-size:.85rem;font-weight:800;font-variant-numeric:tabular-nums}
   .w-chip{font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:99px}
   .w-chip.a{background:rgba(251,191,36,.14);color:var(--amber)} .w-chip.r{background:rgba(248,113,113,.14);color:var(--red)} .w-chip.g{background:rgba(74,222,128,.13);color:#6ee7a0}
 
-  .inv-add-toggle{width:100%;margin-top:11px;background:var(--card);border:1px dashed var(--gold-line, rgba(245,197,24,.32));color:var(--gold);border-radius:12px;padding:12px;font-weight:800;font-size:.92rem;cursor:pointer;font-family:inherit}
+  .inv-add-toggle{width:100%;margin-top:11px;background:var(--card);border:1px dashed var(--gold-line, rgba(245,197,24,.32));color:var(--gold-deep);border-radius:12px;padding:12px;font-weight:800;font-size:.92rem;cursor:pointer;font-family:inherit}
   .isearch{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:2px 12px;margin-top:11px}
   .isearch i{color:var(--muted);font-style:normal}
   .isearch input{flex:1;background:none;border:none;color:var(--text);font-family:inherit;font-size:.9rem;font-weight:600;padding:11px 0;outline:none}
@@ -224,7 +224,7 @@
   .iprice{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 10px}
   .iprice small{display:block;color:var(--muted);font-size:.6rem;font-weight:800}
   .iprice b{font-size:.9rem;font-weight:800;font-variant-numeric:tabular-nums}
-  .iprice.sell b{color:var(--gold)}
+  .iprice.sell b{color:var(--gold-deep)}
   .imar{color:#6ee7a0;font-size:.62rem;font-weight:700}
   .ii-acts{display:flex;gap:6px;margin-top:10px;align-items:center}
   .ii-acts .inv-amt{width:62px;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-family:inherit;font-weight:800;text-align:center}
@@ -233,7 +233,7 @@
   .ib.edit{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:9px 11px}
 
   /* ===== سجل حركة المستودع ===== */
-  .sl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 2px 10px;font-weight:900;font-size:1.02rem;color:var(--gold)}
+  .sl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 2px 10px;font-weight:900;font-size:1.02rem;color:var(--gold-deep)}
   .sl-head span{color:var(--muted);font-weight:600;font-size:.76rem}
   .sl-list{display:flex;flex-direction:column;gap:7px}
   .sl-empty{color:var(--muted);text-align:center;padding:18px;font-size:.9rem;background:var(--card);border:1px solid var(--line);border-radius:12px}
@@ -252,13 +252,13 @@
   /* ===== قسم: الفواتير ===== */
   .iv-sum{display:flex;justify-content:space-between;gap:10px;background:var(--card);border:1px solid rgba(245,197,24,.3);border-radius:14px;padding:14px 16px;margin-top:14px}
   .iv-sum span{display:block;color:var(--muted);font-size:.72rem;font-weight:700}
-  .iv-sum b{display:block;font-size:1.25rem;font-weight:900;color:var(--gold);margin-top:2px}
+  .iv-sum b{display:block;font-size:1.25rem;font-weight:900;color:var(--gold-deep);margin-top:2px}
   .ivrow{width:100%;display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:9px;font-family:inherit;color:inherit;text-align:start;cursor:pointer}
   .ivrow:active{transform:scale(.99)}
   .iv-m{flex:1;min-width:0}
   .iv-m b{display:block;font-size:.9rem;font-weight:800}
   .iv-m span{color:var(--muted);font-size:.74rem;font-weight:600}
-  .iv-amt{font-size:1rem;font-weight:900;color:var(--gold);flex-shrink:0}
+  .iv-amt{font-size:1rem;font-weight:900;color:var(--gold-deep);flex-shrink:0}
   .iv-ch{color:var(--muted);font-size:1.1rem;flex-shrink:0}
 
   /* ===== الطلب المنجز منصفط: سطر واحد يفتح بالضغط ===== */
@@ -931,9 +931,9 @@ function showLogin(){
       <input id="wp" type="password" placeholder="كلمة المرور · Password" autocomplete="current-password" />
       <button class="btn" onclick="doLogin()">دخول · Login</button>
       <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول · Sign-in failed</div>
-      <div style="margin-top:20px;padding-top:16px;border-top:1px dashed rgba(255,255,255,.15)">
-        <div style="opacity:.8;font-size:.9rem;margin-bottom:10px;font-weight:700">فني جديد؟ سجّل واحصل على كودك 👇</div>
-        <a href="provider.html?techreg=1" class="btn" style="display:block;text-align:center;text-decoration:none;background:transparent;border:2px solid #F5C518;color:#F5C518">🤝 تسجيل فني جديد</a>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
+        <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">فني جديد؟ سجّل واحصل على كودك 👇</div>
+        <a href="provider.html?techreg=1" class="btn" style="display:block;text-align:center;text-decoration:none;background:transparent;border:2px solid var(--gold);color:var(--ink)">🤝 تسجيل فني جديد</a>
       </div>
     </div>`;
   const wp=document.getElementById('wp'); if(wp) wp.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
