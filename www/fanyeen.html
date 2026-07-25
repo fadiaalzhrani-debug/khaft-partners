@@ -1034,13 +1034,16 @@ function invLow(){ return (INV||[]).some(i=>(+i.qty||0) <= 2); }
 /* ---- تبويب حسابي ---- */
 function renderAccountTab(){
   const L={
-    ar:{name:'الاسم',phone:'الجوال',role:'الصفة',tech:'🧑‍🔧 فني خافِت',code:'كودك — أعطه لمزوّدك ليضيفك لفريقه',copy:'📋 نسخ الكود',lang:'🌐 لغة العرض',out:'🚪 تسجيل الخروج'},
-    en:{name:'Name',phone:'Phone',role:'Role',tech:'🧑‍🔧 Khafet technician',code:'Your code — give it to your provider to add you',copy:'📋 Copy code',lang:'🌐 Display language',out:'🚪 Log out'},
-    ne:{name:'नाम',phone:'फोन',role:'भूमिका',tech:'🧑‍🔧 खाफेट टेक्निसियन',code:'तपाईंको कोड — प्रदायकलाई दिनुहोस्',copy:'📋 कोड कपी गर्नुहोस्',lang:'🌐 भाषा',out:'🚪 लगआउट'},
-    hi:{name:'नाम',phone:'फ़ोन',role:'भूमिका',tech:'🧑‍🔧 ख़ाफ़ेट तकनीशियन',code:'आपका कोड — प्रदाता को दें',copy:'📋 कोड कॉपी करें',lang:'🌐 भाषा',out:'🚪 लॉगआउट'},
-    ur:{name:'نام',phone:'فون',role:'حیثیت',tech:'🧑‍🔧 خافت ٹیکنیشن',code:'آپ کا کوڈ — اپنے فراہم کنندہ کو دیں',copy:'📋 کوڈ کاپی کریں',lang:'🌐 زبان',out:'🚪 لاگ آؤٹ'}
+    ar:{name:'الاسم',phone:'الجوال',role:'الصفة',tech:'🧑‍🔧 فني خافِت',code:'كودك — أعطه لمزوّدك ليضيفك لفريقه',copy:'📋 نسخ الكود',lang:'🌐 لغة العرض',out:'🚪 تسجيل الخروج',done:'طلبات منجزة',today:'مهامي اليوم'},
+    en:{name:'Name',phone:'Phone',role:'Role',tech:'🧑‍🔧 Khafet technician',code:'Your code — give it to your provider to add you',copy:'📋 Copy code',lang:'🌐 Display language',out:'🚪 Log out',done:'Completed',today:'Today'},
+    ne:{name:'नाम',phone:'फोन',role:'भूमिका',tech:'🧑‍🔧 खाफेट टेक्निसियन',code:'तपाईंको कोड — प्रदायकलाई दिनुहोस्',copy:'📋 कोड कपी गर्नुहोस्',lang:'🌐 भाषा',out:'🚪 लगआउट',done:'सम्पन्न',today:'आज'},
+    hi:{name:'नाम',phone:'फ़ोन',role:'भूमिका',tech:'🧑‍🔧 ख़ाफ़ेट तकनीशियन',code:'आपका कोड — प्रदाता को दें',copy:'📋 कोड कॉपी करें',lang:'🌐 भाषा',out:'🚪 लॉगआउट',done:'पूर्ण',today:'आज'},
+    ur:{name:'نام',phone:'فون',role:'حیثیت',tech:'🧑‍🔧 خافت ٹیکنیشن',code:'آپ کا کوڈ — اپنے فراہم کنندہ کو دیں',copy:'📋 کوڈ کاپی کریں',lang:'🌐 زبان',out:'🚪 لاگ آؤٹ',done:'مکمل',today:'آج'}
   };
   const x=L[lang]||L.ar;
+  const _today=dateISO(new Date());
+  const _done=ORDERS.filter(o=>o.status==='done').length;
+  const _todayN=ORDERS.filter(o=>o.date===_today && o.status!=='done').length;
   const codeCard = myCode ? `
     <div class="acc-code">
       <small>${x.code}</small>
@@ -1051,6 +1054,10 @@ function renderAccountTab(){
     .map(([l,n])=>`<button class="acc-lang${l===lang?' on':''}" onclick="setLang('${l}')">${n}</button>`).join('');
   return `<div class="acc-wrap">
     <div class="acc-head"><div class="acc-av">👤</div><div><b>${esc(myName||x.tech)}</b><span>${x.tech}</span></div></div>
+    <div class="acc-panel" style="display:flex;gap:10px;text-align:center;padding:16px">
+      <div style="flex:1"><b style="font-size:1.7rem;color:var(--gold-deep);display:block;line-height:1.1">${ar(_done)}</b><small style="color:var(--muted);font-weight:700">${x.done}</small></div>
+      <div style="flex:1;border-inline-start:1px solid var(--line)"><b style="font-size:1.7rem;display:block;line-height:1.1">${ar(_todayN)}</b><small style="color:var(--muted);font-weight:700">${x.today}</small></div>
+    </div>
     <div class="acc-panel">
       <div class="acc-row"><span>${x.name}</span><b>${esc(myName||'—')}</b></div>
       <div class="acc-row"><span>${x.phone}</span><b style="direction:ltr">${esc(myPhone||'—')}</b></div>
