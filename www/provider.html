@@ -260,6 +260,7 @@
   <div class="brand"><span class="mk">🤝</span><span>خافِت<small>بوابة المزوّد</small></span></div>
   <a class="home-link" style="cursor:pointer" onclick="goHome()">🏠 <span class="ht">الرئيسية</span></a>
   <span class="spacer"></span>
+  <button class="logout" id="langBtn" onclick="toggleLang()" title="English / عربي">🌐 <span class="ht">EN</span></button>
   <button class="logout" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('manage')">👤 حسابي</button>
   <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
 </div></header>
@@ -349,6 +350,9 @@ function dateISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(
 
 /* ═ تقويم أيام المزوّد/الفني: يعرض عدد طلباته هو فقط، والضغط على يوم يفلتر القوائم ═ */
 const AR_DAYS_SHORT=['أحد','إثن','ثلا','أرب','خمي','جمع','سبت'];
+const EN_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const EN_MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const EN_DAYS_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let pvCalMonth=(function(){ const d=new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })();
 let pvCalFilter='';
 function myJobsList(){ return ORDERS.filter(o=>(me&&me.tech ? o.handledBy===me.uid : o.providerPhone===(me&&me.phone)) && o.status!=='cancelled'); }
@@ -366,27 +370,27 @@ function renderPvCalendar(){
     const d=new Date(y,m,dd), iso=dateISO(d), c=pvJobsOn(iso);
     const cls=[c?'has':'', iso===todayISO?'today':'', pvCalFilter===iso?'sel':''].filter(Boolean).join(' ');
     cells+=`<button class="cal-day ${cls}" onclick="pvCalPick('${iso}')">
-      <span class="cd-w">${AR_DAYS_SHORT[d.getDay()]}</span>
+      <span class="cd-w">${(_uiEN()?EN_DAYS_SHORT:AR_DAYS_SHORT)[d.getDay()]}</span>
       <b class="cd-n">${ar(dd)}</b>
       <span class="cd-c">${c?('🔧 '+ar(c)):'·'}</span>
     </button>`;
   }
   const filterBar = pvCalFilter
-    ? `<div class="cal-filter"><span>📅 ${dayLabel(pvCalFilter)} — ${ar(pvJobsOn(pvCalFilter))} من طلباتك</span><button onclick="pvCalClear()">عرض كل الأيام</button></div>`
+    ? `<div class="cal-filter"><span>📅 ${dayLabel(pvCalFilter)} — ${ar(pvJobsOn(pvCalFilter))} ${LX('من طلباتك','of your orders')}</span><button onclick="pvCalClear()">${LX('عرض كل الأيام','Show all days')}</button></div>`
     : '';
   return `<div class="calbar">
     <div class="cal-head">
       <button class="cal-nav" onclick="pvCalPrev()">›</button>
-      <b>${AR_MON[m]} ${ar(y)}</b>
+      <b>${_uiEN()?EN_MON[m]:AR_MON[m]} ${_uiEN()?y:ar(y)}</b>
       <button class="cal-nav" onclick="pvCalNext()">‹</button>
     </div>
     <div class="cal-strip" id="pvCalStrip">${cells}</div>
     ${filterBar}
   </div>`;
 }
-function dayLabel(s){ const d=parseISO(s); return AR_DAYS[d.getDay()]+' '+ar(d.getDate())+' '+AR_MON[d.getMonth()]; }
-function fmtTime(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h<12?'ص':'م'; let h12=h%12||12; return ar(h12)+':'+ar(String(m).padStart(2,'0'))+' '+ap; }
-function fmtDur(mins){ if(!mins) return 'حسب المعاينة'; const h=Math.floor(mins/60),m=mins%60,p=[]; if(h===1)p.push('ساعة');else if(h===2)p.push('ساعتان');else if(h>2)p.push(ar(h)+' ساعات'); if(m)p.push(ar(m)+' دقيقة'); return p.join(' و'); }
+function dayLabel(s){ const d=parseISO(s); if(_uiEN()) return EN_DAYS[d.getDay()]+' '+d.getDate()+' '+EN_MON[d.getMonth()]; return AR_DAYS[d.getDay()]+' '+ar(d.getDate())+' '+AR_MON[d.getMonth()]; }
+function fmtTime(mins){ let h=Math.floor(mins/60),m=mins%60; let h12=h%12||12; const en=_uiEN(); const ap=h<12?(en?'AM':'ص'):(en?'PM':'م'); const num=en?(x=>String(x)):ar; return num(h12)+':'+num(String(m).padStart(2,'0'))+' '+ap; }
+function fmtDur(mins){ if(!mins) return _uiEN()?'After inspection':'حسب المعاينة'; const h=Math.floor(mins/60),m=mins%60; if(_uiEN()){ const q=[]; if(h)q.push(h+' hr'); if(m)q.push(m+' min'); return q.join(' ')||'0 min'; } const p=[]; if(h===1)p.push('ساعة');else if(h===2)p.push('ساعتان');else if(h>2)p.push(ar(h)+' ساعات'); if(m)p.push(ar(m)+' دقيقة'); return p.join(' و'); }
 
 /* ---- السحابة ---- */
 let sb=null, cloudReady=false;
@@ -1012,8 +1016,8 @@ function render(){
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من الإدارة لتصلك الطلبات'):'ما قبلت طلبات بعد')}</h3></div>`;
   // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
   const subLine = me.tech
-    ? (me.hasProvider ? `🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>` : `🧑‍🔧 فني جديد`)
-    : `🏢 مزوّد خدمة${myCities().length?` · 📍 ${esc(myCities().join(' · '))}`:''}`;
+    ? (me.hasProvider ? LX(`🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>`,`🧑‍🔧 Technician at <b>${esc(me.providerName||'a provider')}</b>`) : LX('🧑‍🔧 فني جديد','🧑‍🔧 New technician'))
+    : LX(`🏢 مزوّد خدمة${myCities().length?` · 📍 ${esc(myCities().join(' · '))}`:''}`,`🏢 Service provider${myCities().length?` · 📍 ${esc(myCities().map(c=>(T_DICT[c]||c)).join(' · '))}`:''}`);
   const showJobs = !me.tech || me.hasProvider;   // الفني بلا مزوّد: كوده أول
 
   // محتوى تبويب الإدارة
@@ -1063,13 +1067,13 @@ function render(){
   // ═ واجهة المربّعات (زي لوحة الإدارة): الرئيسية = بطاقات الأقسام ═
   const isJobTab=(tab==='available'||tab==='mine');
   const CARDS=[];
-  if(seeStock()) CARDS.push(['stock','📦','المخزن', ar(PINV.length)+' صنف', 0]);
-  if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', ar(myDone)+' منجز', 0]);
+  if(seeStock()) CARDS.push(['stock','📦','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+' items'), 0]);
+  if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', LX(ar(myDone)+' منجز', myDone+' completed'), 0]);
   CARDS.push(['route','🗺️','مسار اليوم','مواقع طلباتك', 0]);
   CARDS.push(['ratings','⭐','تقييماتي','رأي عملائك', 0]);
   if(!me.tech){  CARDS.push(['numbers','💰','لوحة الأرقام','أرباحك وأرقامك', 0]);
-                 CARDS.push(['team','🧑‍🔧','فريقي', ar(TECHS.length)+' فني', 0]);
-                 CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?ar(PREM.length)+' تذكير':'دخل متكرّر', 0]); }
+                 CARDS.push(['team','🧑‍🔧','فريقي', LX(ar(TECHS.length)+' فني', TECHS.length+' techs'), 0]);
+                 CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+' reminders'):LX('دخل متكرّر','Recurring income'), 0]); }
   const cardsHTML=CARDS.map(([k,ic,t,sub,badge])=>`<div class="hcard" onclick="setTab('${k}')">
     ${badge>0?`<span class="hc-badge">${ar(badge)}</span>`:''}
     <span class="hc-ic">${ic}</span><h3>${t}</h3><p>${sub}</p><span class="hc-open">فتح ›</span>
@@ -1091,7 +1095,7 @@ function render(){
   document.getElementById('app').innerHTML=`
     ${inHome?`
       <div class="hero">
-        <h1>أهلاً ${esc(me.name)} 👋</h1>
+        <h1>${LX('أهلاً','Hi')} ${esc(me.name)} 👋</h1>
         <div class="sub">${subLine}</div>
         ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
       </div>
@@ -1126,7 +1130,7 @@ function renderNumbers(){
   // 📊 دخل آخر ٧ أيام
   const days=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().slice(0,10)); }
   const dInc=days.map(dt=>mine.filter(o=>o.status==='done'&&o.date===dt).reduce((s,o)=>s+orderInvTotal(o),0));
-  const maxI=Math.max(1,...dInc); const dow=['أحد','إثن','ثلا','أرب','خمي','جمع','سبت'];
+  const maxI=Math.max(1,...dInc); const dow=_uiEN()?EN_DAYS_SHORT:['أحد','إثن','ثلا','أرب','خمي','جمع','سبت'];
   const chartPanel=`<div class="mpanel"><h3>📊 دخل آخر ٧ أيام</h3>
     <div style="display:flex;align-items:flex-end;gap:6px;height:130px;margin-top:6px">
     ${days.map((dt,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
@@ -1143,7 +1147,7 @@ function renderNumbers(){
   // 👛 محفظتي
   const walletPanel=`<div class="mpanel"><h3>👛 محفظتي</h3>
     <div class="mrow"><span class="hint" style="margin:0">💵 إجمالي دخلك</span><b>${pvMoney(revenue)}</b></div>
-    <div class="mrow"><span class="hint" style="margin:0">🏢 عمولة المنصة (${ar(myDone)}×${ar(COMMISSION)})</span><b style="color:#c0392b">− ${pvMoney(owed)}</b></div>
+    <div class="mrow"><span class="hint" style="margin:0">🏢 ${LX('عمولة المنصة','Platform commission')} (${_uiEN()?myDone:ar(myDone)}×${_uiEN()?COMMISSION:ar(COMMISSION)})</span><b style="color:#c0392b">− ${pvMoney(owed)}</b></div>
     <div class="mrow" style="border-bottom:0"><span class="hint" style="margin:0"><b>✅ صافي لك</b></span><b style="color:var(--ok);font-size:1.25rem">${pvMoney(revenue-owed)}</b></div>
   </div>`;
   return `<div class="mpanel"><h3>💰 لوحة الأرقام</h3>
@@ -1200,7 +1204,7 @@ function renderRatings(){
       <h3 style="justify-content:center">⭐ تقييماتي</h3>
       <div style="font-size:3.2rem;font-weight:900;color:var(--gold-deep);line-height:1.15">${rated.length?avg.toFixed(1):'—'}</div>
       <div style="color:var(--gold);font-size:1.5rem;letter-spacing:4px">${starRow(avg)}</div>
-      <div class="hint" style="margin:6px 0 0">${ar(rated.length)} تقييم</div>
+      <div class="hint" style="margin:6px 0 0">${_uiEN()?rated.length:ar(rated.length)} ${LX('تقييم','ratings')}</div>
     </div>
     ${withText.length? withText.map(o=>`<div class="mpanel" style="padding:15px">
       <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--gold);font-size:1.1rem;letter-spacing:2px">${starRow(o.rating)}</span><small style="color:var(--muted)">${pvDate(o.date)}</small></div>
@@ -1218,7 +1222,7 @@ function renderRoute(){
   let routeBtn='';
   if(todayJobs.length>=1){
     const stops=todayJobs.map(o=>geoPt(o.address)).filter(Boolean);
-    routeBtn=`<a class="tbtn done" style="display:block;text-align:center;text-decoration:none;margin-bottom:12px" href="https://www.google.com/maps/dir/${stops.join('/')}" target="_blank" rel="noopener">🗺️ افتح مسار اليوم (${ar(todayJobs.length)} ${todayJobs.length===1?'محطة':'محطات'})</a>`;
+    routeBtn=`<a class="tbtn done" style="display:block;text-align:center;text-decoration:none;margin-bottom:12px" href="https://www.google.com/maps/dir/${stops.join('/')}" target="_blank" rel="noopener">🗺️ ${LX('افتح مسار اليوم',"Open today's route")} (${_uiEN()?todayJobs.length:ar(todayJobs.length)} ${todayJobs.length===1?LX('محطة','stop'):LX('محطات','stops')})</a>`;
   }
   const rows=jobs.length? jobs.map(o=>{const a=o.address||{};
     return `<div class="irow">
@@ -1294,8 +1298,8 @@ function renderStock(){
     </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه أصناف بعد — أضف أول صنف فوق.</div>`;
   return `
     <div class="mpanel">
-      <h3>📦 مخزن ${me.tech?'المزوّد':'الفريق'} ${items.length?`(${ar(items.length)})`:''}</h3>
-      <div class="hint">أصناف مشتركة بينك وبين ${me.tech?'زملائك':'فنيّينك'} — الكل يشوف نفس الكميات.</div>
+      <h3>📦 ${LX(me.tech?'مخزن المزوّد':'مخزن الفريق', me.tech?"Provider's stock":'Team stock')} ${items.length?`(${_uiEN()?items.length:ar(items.length)})`:''}</h3>
+      <div class="hint">${LX('أصناف مشتركة بينك وبين '+(me.tech?'زملائك':'فنيّينك')+' — الكل يشوف نفس الكميات.','Items shared between you and your '+(me.tech?'colleagues':'technicians')+' — everyone sees the same quantities.')}</div>
       <div class="biz-add">
         <input id="st_name" placeholder="اسم الصنف" onkeydown="if(event.key==='Enter')stockAdd()" />
         <input id="st_qty" type="number" inputmode="numeric" placeholder="كمية" style="max-width:80px" />
@@ -1514,11 +1518,176 @@ async function saveFinance(){
   try{ await sb.rpc('set_provider_finance',{ p_monthly:m, p_label:kl||null, p_value:kv }); toast('💾 حُفظت الأرقام'); }
   catch(e){ toast('تعذّر الحفظ'); }
 }
-function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
+function toast(m){ const el=document.getElementById('toast'); el.textContent=(typeof TR==='function'?TR(m):m); el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
+
+/* ============================================================
+   🌐 ترجمة الواجهة عربي/إنجليزي — طبقة تلقائية (نفس محرّك تطبيق العميل)
+   ============================================================ */
+let UILANG = localStorage.getItem('khafet_uilang') || 'ar';
+const T_DICT = {
+  // العلامة والهيدر والتنقّل
+  "خافِت":"Khafet","بوابة المزوّد":"Provider Portal","خافِت | بوابة المزوّد":"Khafet | Provider Portal",
+  "الرئيسية":"Home","‹ الرئيسية":"‹ Home","👤 حسابي":"👤 Account","حسابي":"Account","خروج":"Sign out","🚪 تسجيل الخروج":"🚪 Sign out","دخول":"Sign in",
+  "رزق · خافِت © ٢٠٢٦":"Rizq · Khafet © 2026","خاص بالمزوّد":"Provider only","غير متاح":"Unavailable","فتح ›":"Open ›",
+  // بطاقات الرئيسية / الأقسام
+  "📥 الطلبات المتاحة":"📥 Available orders","طلبات متاحة":"Available orders","🏆 أكثر خدماتك طلباً":"🏆 Your top services",
+  "💰 لوحة الأرقام":"💰 Numbers board","⭐ تقييماتي":"⭐ My ratings","🗺️ الخريطة":"🗺️ Map","🗺️ مسار اليوم والطلبات القادمة":"🗺️ Today's route & upcoming orders",
+  "🔔 تذكيرات الصيانة الدورية":"🔔 Maintenance reminders","فريقي":"My team","⚙️ الإدارة":"⚙️ Management","⚙️ الإعدادات":"⚙️ Settings",
+  "🏢 مزوّدي":"🏢 My provider","🏢 مزوّد خدمة":"🏢 Service provider","👛 محفظتي":"👛 My wallet","🧑‍🔧 فني":"🧑‍🔧 Technician",
+  // المخزن
+  "💰 قيمة المخزون (بالبيع)":"💰 Stock value (at sale)","📦 التكلفة (بالشراء)":"📦 Cost (at purchase)","📦 تكلفة المخزون":"📦 Stock cost","قيمة المخزون":"Stock value",
+  "＋ أضف خدمة":"＋ Add service","خدمة إضافية":"Extra service","بند مخصص":"Custom item","ما فيه أصناف بعد — أضف أول صنف فوق.":"No items yet — add the first above.","📈 الربح المتوقّع":"📈 Expected profit",
+  // لوحة الأرقام
+  "📊 دخل آخر ٧ أيام":"📊 Income (last 7 days)","📈 الإيرادات":"📈 Revenue","الإيرادات":"Revenue","💵 إجمالي دخلك":"💵 Your total income","💵 صافي تقديري":"💵 Estimated net",
+  "💼 المستحق للمنصة":"💼 Owed to platform","🧾 مصاريف شهرية":"🧾 Monthly costs","مصاريف شهرية":"Monthly costs","📊 أرقام صفحتي الرئيسية":"📊 My home numbers","رقمي المهم":"My key number",
+  "✏️ عدّل أرقامك:":"✏️ Edit your numbers:","اضغط الأرقام اللي تبيها تطلع لك فوق (أهم ٥).":"Tap the numbers you want shown at top (top 5).",
+  "الإيرادات تُحسب تلقائياً من فواتيرك المنجزة، والباقي تحطّه أنت.":"Revenue is auto-calculated from your completed invoices; you set the rest.",
+  "الصافي":"Net","المستحق":"Owed","إجمالي المنجز":"Total completed","منجزة":"completed","✅ صافي لك":"✅ Your net","👛 محفظتي":"👛 My wallet",
+  // الخريطة / المسار
+  "🗺️ اذهب":"🗺️ Go","مواقع طلباتك — افتح المسار كامل ورتّب مشوارك ووفّر وقتك.":"Your orders' locations — open the full route, plan your trip and save time.",
+  "ما عندك طلبات قادمة.":"No upcoming orders.","عرض كل الأيام":"Show all days","📍 المنطقة":"📍 Area","📍 الموقع":"📍 Location",
+  // الطلبات
+  "الاسم والجوال والعنوان تظهر لك بعد قبول الطلب":"Name, phone and address appear after you accept the order","🔒 بيانات العميل":"🔒 Customer details","🔒 مزوّدك يوزّع الطلبات":"🔒 Your provider dispatches orders",
+  "⚡ معروض عليك أولاً — بادر بالقبول قبل ما يُفتح لبقية المزوّدين":"⚡ Offered to you first — accept before it opens to other providers","✅ اقبل الطلب":"✅ Accept order","تخطّي ⏭️":"Skip ⏭️","تخطّيت الطلب":"Order skipped",
+  "🔧 المطلوب":"🔧 Needed","🛠️ المشكلة":"🛠️ Problem","🔧 بدء العمل":"🔧 Start work","✅ إنهاء":"✅ Finish","✓ مكتمل":"✓ Completed","قيد التنفيذ":"In progress","مكتمل":"Completed",
+  "⏱️ المدة":"⏱️ Duration","⏰ حان وقتها":"⏰ Due now","🏠 صورة المنزل":"🏠 House photo","📷 صورة/مقطع":"📷 Photo/clip","🎥 عرض":"🎥 View","👤 العميل":"👤 Customer","ما قبلت طلبات بعد.":"You haven't accepted any orders yet.",
+  "الاسم":"Name","الجوال":"Phone","الخدمة":"Service","السعر":"Price","العدد":"Qty","الإجمالي":"Total","الصفة":"Role","⚡ طلب سريع (معاينة)":"⚡ Quick request (inspection)",
+  // الضمان
+  "🛡️ الضمان":"🛡️ Warranty","ضمان ٧ أيام":"7-day warranty","ضمان ٣٠ يوم":"30-day warranty","ضمان ٩٠ يوم":"90-day warranty","بدون ضمان":"No warranty",
+  // الحجز
+  "➕ حجز جديد لعميل":"➕ New booking for a client","💾 احجز":"💾 Book","تعذّر الحجز":"Couldn't book","اكتب اسم العميل":"Enter client name","👤 بياناتي":"👤 My details",
+  "— بدون توزيع —":"— No assignment —","🧑‍🔧 توزيع على فني…":"🧑‍🔧 Assign to a technician…","✅ وُزّع على الفني":"✅ Assigned to technician","أُلغي التوزيع":"Assignment cancelled","تعذّر التوزيع":"Couldn't assign",
+  // الفواتير
+  "فاتورة":"Invoice","حفظ وإرسال للعميل":"Save & send to client","ما فيه فواتير بعد — تظهر بعد إنجاز الطلبات وإصدار فواتيرها.":"No invoices yet — they appear after completing orders and issuing invoices.",
+  "🖨️ طباعة":"🖨️ Print","⤓ تصدير Excel":"⤓ Export Excel","التاريخ":"Date",
+  // فريقي
+  "🧑‍🔧 فني":"🧑‍🔧 Technician","➕ أضف":"➕ Add","➕ أضف تذكير":"➕ Add reminder","اكتب كود الفني أو جواله":"Enter technician code or phone","✅ أُضيف الفني:":"✅ Technician added:",
+  "إزالة الفني":"Remove technician","إزالة":"Remove","تمت الإزالة":"Removed","الفني مو من فريقك":"Technician isn't in your team","ما أضفت فنيّين بعد.":"You haven't added technicians yet.",
+  "صلاحياته:":"Permissions:","💾 حُدّثت الصلاحيات":"💾 Permissions updated","📍 مدينته:":"📍 Their city:","كوده أو رقم جواله":"Their code or phone","من فريقك؟":"From your team?",
+  "✅ أنت في فريق":"✅ You're in the team of","❌ الكود أو الجوال غير صحيح — تأكّد أنه سجّل كفني":"❌ Code or phone is wrong — make sure they registered as a technician","تعذّرت الإضافة":"Couldn't add","تعذّرت الإضافة، حاول ثانية":"Couldn't add, try again","الصفة":"Role",
+  // المدن
+  "📍 مدن الخدمة":"📍 Service cities","📍 كل مدنك":"📍 All your cities","كل مدنك":"All your cities","مدنك المختارة:":"Your selected cities:",
+  "ابحث عن مدينتك وأضفها — أي طلب من مدنك المختارة يوصلك.":"Search for your city and add it — any order from your selected cities reaches you.","ابحث وأضف مدينة فوق 👆":"Search and add a city above 👆",
+  "ما فيه مدينة بهذا الاسم":"No city by that name","💾 حفظ المدن":"💾 Save cities","مدن الخدمة (اختر واحدة أو أكثر):":"Service cities (choose one or more):","نوع الخدمات (اختر واحدة أو أكثر):":"Service types (choose one or more):",
+  // التذكيرات
+  "ما فيه تذكيرات — أضف أول تذكير فوق.":"No reminders — add the first above.","تواصل مع هؤلاء العملاء الآن.":"Contact these clients now.",
+  // العملاء
+  "ما فيه عملاء بعد — أضف أول عميل فوق.":"No clients yet — add the first above.",
+  // الإعدادات والحساب
+  "👤 بياناتي":"👤 My details","تغيير كلمة المرور":"Change password","💾 تحديث كلمة المرور":"💾 Update password","تأكيد الجوال":"Confirm phone",
+  "📲 أرسلنا كود تأكيد على جوالك — أدخله للتأكيد:":"📲 We sent a confirmation code to your phone — enter it to confirm:","تأكيد ✅":"Confirm ✅","تأكيد وتفعيل ✅":"Confirm & activate ✅",
+  "تنبيه صوتي للطلبات":"Order sound alert","🔔 التنبيه الصوتي مفعّل":"🔔 Sound alert on","🔕 أُوقف التنبيه الصوتي":"🔕 Sound alert off","حذف الحساب":"Delete account","حذف":"Delete","تم حذف الحساب":"Account deleted",
+  "تواصل مع الدعم":"Contact support","💾 حُفظ":"💾 Saved","💾 حفظ الأرقام":"💾 Save numbers","💾 حُفظت الأرقام":"💾 Numbers saved","تعذّر الحفظ":"Couldn't save","تعذّر، حاول ثانية":"Failed, try again","➕ أضف":"➕ Add",
+  // التسجيل / الدخول
+  "➕ تسجيل مزوّد جديد":"➕ Register new provider","تسجيل مزوّد جديد":"Register new provider","تسجيل فني جديد":"Register new technician","تسجيل ✅":"Register ✅","تسجيل وتفعيل ✅":"Register & activate ✅",
+  "لديك حساب؟ تسجيل الدخول":"Have an account? Sign in","ما عندك حساب مزوّد؟ سجّل الآن 👇":"No provider account? Register now 👇","سجّل حسابك — ويطلع لك":"Register your account — and you'll get",
+  "سجّل وابدأ استقبال طلبات مدنك فوراً — بعد التسجيل يطلع لك":"Register and start receiving orders in your cities right away — after registering you'll get",
+  "ادخل برقمك المسجّل وكلمة المرور لاستقبال طلبات منطقتك.":"Sign in with your registered number and password to receive orders in your area.",
+  "فني؟ دخول / تسجيل من بوابة فنيّو خافِت":"Technician? Sign in / register from the Khafet Technicians portal","الفنيّون يسجّلون من بوابة":"Technicians register from the portal","فنيّو خافِت":"Khafet Technicians",
+  "فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل":"Your technician registers from the technicians portal and gets their code — enter","كودك":"Your code","كودك:":"Your code:","📋 نسخ الكود":"📋 Copy code","📋 نُسخ كودك:":"📋 Your code copied:",
+  "كودك — أعطه لمزوّدك يضيفك لفريقه":"Your code — give it to your provider to add you to their team","تعطيه لمزوّدك ليضيفك لفريقه.":"Give it to your provider to add you to their team.","لضم فنيّيك.":"to add your technicians.",
+  "هنا فينضم لفريقك.":"here to join your team.","ويأخذون كودهم، وتضيفهم أنت من":"and they get their code, and you add them from","بعد الدخول.":"after signing in.","سجّل الآن 👇":"Register now 👇",
+  // أنواع الخدمات
+  "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتبريد":"AC & Cooling","نجارة":"Carpentry","دهان":"Painting","تنظيف":"Cleaning","أعمال عامة":"General work","أجهزة منزلية":"Home appliances",
+  // خدمات مفردة
+  "تغيير شطّاف":"Change bidet sprayer","تسليك مجاري/بالوعة":"Unclog drain / sewer","تغيير خلاط ماء":"Change water mixer","إصلاح تسريب مياه":"Fix water leak","تركيب/إصلاح سخان":"Install / repair water heater",
+  "إصلاح سيفون الحمام":"Fix toilet flush","تنظيف خزان المياه":"Clean water tank","تغيير لمبة/إضاءة":"Change lamp / light","تركيب ثريا":"Install chandelier","إصلاح قصر/انقطاع":"Fix short circuit / outage",
+  "تغيير مفتاح/بريزة":"Change switch / socket","تركيب مروحة سقف":"Install ceiling fan","فحص لوحة الكهرباء":"Inspect electrical panel","تركيب مكيف سبليت":"Install split AC","صيانة/إصلاح مكيف":"AC service / repair",
+  "تعبئة فريون":"Refill freon","تنظيف مكيف سبليت":"Clean split AC","صيانة مكيف شباك":"Window AC service","تعليق/تركيب رفوف":"Mount shelves","إصلاح باب/مفصلات":"Fix door / hinges","إصلاح دولاب/مطبخ":"Fix cabinet / kitchen",
+  "تركيب/تجميع أثاث":"Assemble furniture","إصلاح نافذة/شيش":"Fix window","دهان غرفة":"Paint a room","ترميم وتلميس دهان":"Paint touch-up","معالجة تشققات ورطوبة":"Fix cracks & damp","ترويبة بلاط/سيراميك":"Tile grouting",
+  "عزل تسرب بسيط":"Simple leak sealing","تنظيف عام للمنزل":"General home cleaning","تنظيف كنب وسجاد":"Sofa & carpet cleaning","إصلاح ثلاجة":"Fix fridge","إصلاح غسالة":"Fix washing machine","إصلاح غسالة صحون":"Fix dishwasher","إصلاح فرن/بوتاجاز":"Fix oven / stove",
+  // المدن
+  "الرياض":"Riyadh","جدة":"Jeddah","مكة المكرمة":"Makkah","المدينة المنورة":"Madinah","الدمام":"Dammam","الخبر":"Khobar","الظهران":"Dhahran","القطيف":"Qatif","الجبيل":"Jubail","الأحساء":"Al-Ahsa",
+  "الطائف":"Taif","تبوك":"Tabuk","أبها":"Abha","خميس مشيط":"Khamis Mushait","حائل":"Hail","نجران":"Najran","جازان":"Jazan","ينبع":"Yanbu","بريدة":"Buraidah","الخرج":"Al-Kharj",
+  // عناوين البطاقات والحالات الفارغة
+  "المخزن":"Stock","الفواتير":"Invoices","مسار اليوم":"Today's route","مواقع طلباتك":"Your orders' locations","تقييماتي":"My ratings","رأي عملائك":"Your clients' feedback",
+  "لوحة الأرقام":"Numbers board","أرباحك وأرقامك":"Your profits & numbers","تذكيرات الصيانة":"Maintenance reminders","دخل متكرّر":"Recurring income","طلباتي":"My orders","فتح ›":"Open ›",
+  "لا طلبات في هذا اليوم":"No orders on this day","لا توجد طلبات متاحة في مدن خدمتك حالياً":"No available orders in your service cities right now",
+  "حدّد مدن خدمتك من الإدارة لتصلك الطلبات":"Set your service cities from Management to receive orders","حدّد مدن خدمتك من «حسابي» لتصلك الطلبات":"Set your service cities from Account to receive orders","ما قبلت طلبات بعد":"You haven't accepted any orders yet",
+  "ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد ٦ شهور) — دخل متكرّر لك.":"Remind your clients of upcoming maintenance (e.g. AC service in 6 months) — recurring income for you.",
+  "اسم الصنف":"Item name","الكمية":"Qty","سعر الشراء":"Buy price","سعر البيع":"Sell price","ربح/وحدة":"Profit/unit","النسبة٪":"Margin %","قيمة البيع":"Sale value","الصنف":"Item","اكتب اسم الصنف":"Enter item name","✅ أُضيف الصنف":"✅ Item added",
+  "قبول الطلبات":"Accept orders","إضافة/تعديل مخزن":"Add/edit stock","إصدار فواتير":"Issue invoices","محطة":"stop","محطات":"stops",
+  "تقييماتك بدون ملاحظات مكتوبة.":"Your ratings have no written notes.","ما وصلتك تقييمات بعد — تظهر بعد إنجاز الطلبات وتقييم العملاء.":"No ratings yet — they appear after you complete orders and clients rate you.","عميل":"Client",
+  "🧑‍🔧 فني لدى":"🧑‍🔧 Technician at","🧑‍🔧 فني جديد":"🧑‍🔧 New technician","لا توجد أوقات متاحة":"No available times","المنطقة":"Area","إجمالي":"Total","الرصيد":"Balance",
+  // الوحدات
+  "ر.س":"SAR","إلغاء":"Cancel","يوم":"day","دقيقة":"min"
+};
+/* ---- محرّك الترجمة (مطابق لتطبيق العميل) ---- */
+function _west(s){ return String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+const _TOK=[["ريال","SAR"],["ر.س","SAR"],["٪","%"]];
+const T_DICT_N={}; for(const _k in T_DICT){ T_DICT_N[_west(_k).trim()]=T_DICT[_k]; }
+const _EMO=/^((?:[←-⯿️‍\u{1F000}-\u{1FAFF}]+\s*)+)([\s\S]+)$/u;
+function _uiEN(){ return (typeof UILANG!=='undefined') && UILANG==='en'; }
+function LX(a,e){ return _uiEN()?e:a; }
+function _tr(raw){
+  if(raw==null) return raw;
+  const s=String(raw);
+  const m0=s.match(/^(\s*)([\s\S]*?)(\s*)$/); const lead=m0[1], core=m0[2], trail=m0[3];
+  if(!core) return raw;
+  const h=T_DICT_N[_west(core)];
+  if(h!=null && h!=='') return lead+h+trail;
+  const em=core.match(_EMO);
+  if(em){ const r=T_DICT_N[_west(em[2].trim())]; if(r!=null && r!=='') return lead+em[1]+r+trail; }
+  let out=core, ch=false;
+  for(const [a,b] of _TOK){ if(out.indexOf(a)>=0){ out=out.split(a).join(b); ch=true; } }
+  const w=_west(out); if(w!==out){ out=w; ch=true; }
+  return ch? lead+out+trail : raw;
+}
+function TR(s){ return _uiEN()? _tr(s): s; }
+const _SKIP='.notr';
+function _translateEl(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  const nodes=[]; let n; while(n=w.nextNode()) nodes.push(n);
+  for(const node of nodes){
+    if(node.parentElement && node.parentElement.closest(_SKIP)) continue;
+    if(node.__o===undefined) node.__o=node.nodeValue;
+    const t=_tr(node.__o);
+    if(t!==node.nodeValue) node.nodeValue=t;
+  }
+  root.querySelectorAll('[placeholder]').forEach(el=>{ if(el.__po===undefined) el.__po=el.getAttribute('placeholder'); const t=T_DICT_N[_west((el.__po||'').trim())]; if(t) el.setAttribute('placeholder',t); });
+}
+function _restoreEl(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  let n; while(n=w.nextNode()){ if(n.__o!==undefined && n.nodeValue!==n.__o) n.nodeValue=n.__o; }
+  root.querySelectorAll('[placeholder]').forEach(el=>{ if(el.__po!=null) el.setAttribute('placeholder',el.__po); });
+}
+let _mo=null;
+function _startI18n(){
+  if(!_mo) _mo=new MutationObserver(()=>{ if(_uiEN()) applyLang(); });
+  try{ _mo.disconnect(); }catch(e){}
+  const app=document.getElementById('app'), hd=document.querySelector('header.top');
+  if(app) _mo.observe(app,{childList:true,subtree:true,characterData:true});
+  if(hd)  _mo.observe(hd,{childList:true,subtree:true,characterData:true});
+}
+function applyLang(){
+  if(!_uiEN()) return;
+  if(_mo){ try{_mo.disconnect();}catch(e){} }
+  _translateEl(document.querySelector('header.top'));
+  _translateEl(document.getElementById('app'));
+  _startI18n();
+}
+function syncLangBtn(){ const b=document.getElementById('langBtn'); if(b){ const s=b.querySelector('.ht'); if(s) s.textContent = _uiEN()?'ع':'EN'; } }
+function setUILang(l){
+  UILANG=l; try{localStorage.setItem('khafet_uilang',l);}catch(e){}
+  document.documentElement.lang = l==='en'?'en':'ar';
+  document.documentElement.dir  = l==='en'?'ltr':'rtl';
+  render();
+  if(l==='en') applyLang(); else _restoreEl(document.querySelector('header.top'));
+  syncLangBtn();
+  try{window.scrollTo(0,0);}catch(e){}
+}
+function toggleLang(){ setUILang(_uiEN()?'ar':'en'); }
 
 /* ?techreg=1 → يفتح نموذج تسجيل الفني مباشرة (من رابط بوابة الفنيين) */
 function initialScreen(){ try{ if(new URLSearchParams(location.search).get('techreg')==='1' && !me){ showTechReg(''); return; } }catch(e){} render(); }
+document.documentElement.lang = UILANG==='en'?'en':'ar';
+document.documentElement.dir  = UILANG==='en'?'ltr':'rtl';
 initialScreen();
+_startI18n();
+if(_uiEN()) applyLang();
+syncLangBtn();
 if(window.supabase) initCloud(); else window.addEventListener('load', initCloud);
 </script>
 </body>
