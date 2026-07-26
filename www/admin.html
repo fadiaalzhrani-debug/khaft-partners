@@ -205,6 +205,7 @@
   <div class="brand"><span class="mk">🏢</span><span>خافِت</span></div>
   <a onclick="setAdminSection('')" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;background:#F5C518;color:#141414;font-weight:800;font-size:.85rem;padding:7px 12px;border-radius:10px;text-decoration:none;white-space:nowrap">🏠 الرئيسية</a>
   <span class="spacer"></span>
+  <button class="logout" id="langBtn" onclick="toggleLang()" title="English / عربي">🌐 <span class="ht">EN</span></button>
   <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
 </div></header>
 <div class="wrap"><div id="app"></div></div>
@@ -229,7 +230,7 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;'
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function parseISO(s){ const [y,m,d]=String(s).split('-').map(Number); return new Date(y,m-1,d); }
-function dayLabel(s){ const d=parseISO(s); return AR_DAYS[d.getDay()]+' '+ar(d.getDate())+' '+AR_MON[d.getMonth()]; }
+function dayLabel(s){ const d=parseISO(s); if(typeof _uiEN==='function'&&_uiEN()) return EN_DAYS[d.getDay()]+' '+d.getDate()+' '+EN_MON[d.getMonth()]; return AR_DAYS[d.getDay()]+' '+ar(d.getDate())+' '+AR_MON[d.getMonth()]; }
 function fmtTime(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h<12?'ص':'م'; let h12=h%12||12; return ar(h12)+':'+ar(String(m).padStart(2,'0'))+' '+ap; }
 function fmtDur(mins){ if(!mins) return 'حسب المعاينة'; const h=Math.floor(mins/60),m=mins%60,p=[]; if(h===1)p.push('ساعة');else if(h===2)p.push('ساعتان');else if(h>2)p.push(ar(h)+' ساعات'); if(m)p.push(ar(m)+' دقيقة'); return p.join(' و'); }
 function dateISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -625,7 +626,7 @@ function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textCon
 function resetOtp(){ otpSent=false; otpPhone=''; showLogin(); }
 function showLogin(){ const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   document.getElementById('app').innerHTML=`<div class="login"><div class="ic">🏢</div><h1>لوحة المؤسسة</h1>
-    <p>${otpSent?('أدخل الرمز المُرسل إلى '+otpPhone):'ادخلي برقم جوالك — يوصلك رمز برسالة'}</p>
+    <p>${otpSent?LX('أدخل الرمز المُرسل إلى '+otpPhone,'Enter the code sent to '+otpPhone):LX('ادخلي برقم جوالك — يوصلك رمز برسالة','Enter your mobile number — a code will be sent by SMS')}</p>
     ${otpSent?`
     <input id="ac" inputmode="numeric" maxlength="6" placeholder="رمز التحقق" style="letter-spacing:.4em;text-align:center;font-weight:900" />
     <button class="btn" onclick="verifyAdminOtp()">تأكيد ودخول</button>
@@ -712,7 +713,7 @@ function renderProviders(){
     if(st==='pending') acts=`<button class="sbtn ok" onclick="approveProvider('${esc(p.phone)}','approved')">✔️ اعتماد</button><button class="sbtn danger" onclick="approveProvider('${esc(p.phone)}','rejected')">رفض</button>`;
     else if(st==='approved') acts=`<button class="sbtn danger" onclick="suspendProvider('${esc(p.phone)}','suspended')">⏸️ إيقاف</button>`;
     else acts=`<button class="sbtn ok" onclick="suspendProvider('${esc(p.phone)}','approved')">▶️ تفعيل</button>`;
-    return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${stL[st]||st}</span>
+    return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st)}</span>
       <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).join('، ')||'—')}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
       <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)}${p.experience?' · خبرة '+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
@@ -726,10 +727,10 @@ function renderProviders(){
         <option value="all">كل المدن</option>
         ${provAllCities().map(c=>`<option value="${esc(c)}" ${provCity===c?'selected':''}>${esc(c)}</option>`).join('')}
       </select>
-      ${nPend>0?`<button class="sbtn ok" onclick="bulkApprove()">✔️ اعتماد الكل (${ar(nPend)})</button>`:''}
+      ${nPend>0?`<button class="sbtn ok" onclick="bulkApprove()">✔️ ${LX('اعتماد الكل','Approve all')} (${_uiEN()?nPend:ar(nPend)})</button>`:''}
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-      ${chips.map(([k,l,n])=>`<button class="tab ${provSt===k?'active':''}" onclick="provSt='${k}';render()">${l} (${ar(n)})</button>`).join('')}
+      ${chips.map(([k,l,n])=>`<button class="tab ${provSt===k?'active':''}" onclick="provSt='${k}';render()">${_uiEN()?(T_DICT[l]||l):l} (${_uiEN()?n:ar(n)})</button>`).join('')}
     </div>
     ${cards||'<p style="color:var(--muted)">لا نتائج بهذا الفلتر.</p>'}`;
 }
@@ -803,6 +804,9 @@ function panel(key, title, contentFn){
 
 /* ---- شريط الأيام ---- */
 const AR_DAYS_SHORT=['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+const EN_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const EN_MON=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const EN_DAYS_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let calMonth=new Date(), calFilter='';
 function jobsOn(iso){ return ORDERS.filter(o=>o.date===iso && o.status!=='cancelled').length; }
 function calPick(iso){ calFilter=(calFilter===iso?'':iso); render(); }
@@ -817,7 +821,7 @@ function renderCalendar(todayISO){
     const d=new Date(y,m,dd), iso=dateISO(d), c=jobsOn(iso);
     const cls=[c?'has':'', iso===todayISO?'today':'', calFilter===iso?'sel':''].filter(Boolean).join(' ');
     cells+=`<button class="cal-day ${cls}" onclick="calPick('${iso}')">
-      <span class="cd-w">${AR_DAYS_SHORT[d.getDay()]}</span>
+      <span class="cd-w">${(_uiEN()?EN_DAYS_SHORT:AR_DAYS_SHORT)[d.getDay()]}</span>
       <b class="cd-n">${ar(dd)}</b>
       <span class="cd-c">${c?('👤 '+ar(c)):'·'}</span>
     </button>`;
@@ -828,7 +832,7 @@ function renderCalendar(todayISO){
   return `<div class="calbar">
     <div class="cal-head">
       <button class="cal-nav" onclick="calPrev()">›</button>
-      <b>${AR_MON[m]} ${ar(y)}</b>
+      <b>${_uiEN()?EN_MON[m]:AR_MON[m]} ${_uiEN()?y:ar(y)}</b>
       <button class="cal-nav" onclick="calNext()">‹</button>
     </div>
     <div class="cal-strip">${cells}</div>
@@ -863,7 +867,7 @@ function render(){
   const revenue=ORDERS.filter(o=>o.status==='done').reduce((a,o)=>a+o.finalPrice,0);
   const todayOrders=ORDERS.filter(o=>o.date===todayISO && o.status!=='cancelled');
   const filters=[['all','الكل',ORDERS.length],['new','قيد المراجعة',cnt('new')],['confirmed','مؤكد',cnt('confirmed')],['progress','قيد التنفيذ',cnt('progress')],['done','مكتمل',cnt('done')],['cancelled','ملغي',cnt('cancelled')]];
-  const fbar=filters.map(([k,l,n])=>`<button class="tab ${adminFilter===k?'active':''}" onclick="setAdminFilter('${k}')">${l} (${ar(n)})</button>`).join('');
+  const fbar=filters.map(([k,l,n])=>`<button class="tab ${adminFilter===k?'active':''}" onclick="setAdminFilter('${k}')">${_uiEN()?(T_DICT[l]||l):l} (${_uiEN()?n:ar(n)})</button>`).join('');
   let list=ORDERS.slice();
   if(adminFilter!=='all') list=list.filter(o=>o.status===adminFilter);
   if(calFilter) list=list.filter(o=>o.date===calFilter);   // فلترة بيوم من الشريط
@@ -887,7 +891,7 @@ function render(){
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
     ['team','👥','الفريق', pendingProv, 'الفنيّون · المزوّدون · المستحقات', true],
     ['cust','💬','العملاء', newSugs+newSubs, 'الرسائل · الاشتراكات · مقالات السلامة', false],
-    ['store','📦','المخزن', 0, ar(INV.length)+' صنف · سجل الحركة', true],
+    ['store','📦','المخزن', 0, LX(ar(INV.length)+' صنف · سجل الحركة', INV.length+' items · Movement log'), true],
     ['prices','🏷️','الأسعار', 0, 'تعديل أسعار الخدمات', false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
@@ -901,22 +905,22 @@ function render(){
   if(adminSection==='orders'){
     body=`${renderCalendar(todayISO)}
       <div class="fbar">${fbar}</div>
-      ${orderCards||'<p style="color:var(--muted);margin-top:14px">لا طلبات بهذا الفلتر.</p>'}
+      ${orderCards||`<p style="color:var(--muted);margin-top:14px">${LX('لا طلبات بهذا الفلتر.','No orders with this filter.')}</p>`}
       <div style="height:10px"></div>
-      ${block('📩 تذكيرات المواعيد القريبة', remHtml)}`;
+      ${block(LX('📩 تذكيرات المواعيد القريبة','📩 Upcoming appointment reminders'), remHtml)}`;
   } else if(adminSection==='team'){
-    body=`${block(`🧑‍🔧 فنيّو خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`, renderTechs())}
-      ${block(`🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`, renderProviders())}
-      ${block(`💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`, renderCommission())}`;
+    body=`${block(LX(`🧑‍🔧 فنيّو خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`,`🧑‍🔧 Khafet technicians (${STAFF.filter(s=>s.role==='tech').length})`), renderTechs())}
+      ${block(LX(`🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
+      ${block(LX(`💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`,`💰 Platform dues (${COMMISSION} SAR/order commission)`), renderCommission())}`;
   } else if(adminSection==='cust'){
-    body=`${block(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`, renderSuggestions())}
-      ${block(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`, renderSubs())}
-      ${block(`📰 مقالات السلامة (${ar(ARTICLES.length)})`, renderArticles())}`;
+    body=`${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Client messages (${newSugs} new)`), renderSuggestions())}
+      ${block(LX(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`,`🛡️ Subscription requests (${newSubs} new)`), renderSubs())}
+      ${block(LX(`📰 مقالات السلامة (${ar(ARTICLES.length)})`,`📰 Safety articles (${ARTICLES.length})`), renderArticles())}`;
   } else if(adminSection==='store'){
-    body=`${block(`📦 المخزن (${ar(INV.length)} صنف)`, renderInventory())}
-      ${block('📋 سجل حركة المخزن (يومي)', renderStockLog())}`;
+    body=`${block(LX(`📦 المخزن (${ar(INV.length)} صنف)`,`📦 Stock (${INV.length} items)`), renderInventory())}
+      ${block(LX('📋 سجل حركة المخزن (يومي)','📋 Stock movement log (daily)'), renderStockLog())}`;
   } else if(adminSection==='prices'){
-    body=block('🏷️ أسعار الخدمات', renderPriceEditor());
+    body=block(LX('🏷️ أسعار الخدمات','🏷️ Service prices'), renderPriceEditor());
   }
   const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المخزن',prices:'🏷️ الأسعار'})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
@@ -967,9 +971,132 @@ function exportSection(k){
   }catch(e){ toast('تعذّر التصدير'); }
 }
 function printReport(){ window.print(); }
-function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
+function toast(m){ const el=document.getElementById('toast'); el.textContent=(typeof TR==='function'?TR(m):m); el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
+/* ============================================================
+   🌐 ترجمة الواجهة عربي/إنجليزي — طبقة تلقائية (نفس المحرّك)
+   ============================================================ */
+let UILANG = localStorage.getItem('khafet_uilang') || 'ar';
+const T_DICT = {
+  // العلامة والهيدر
+  "خافِت":"Khafet","لوحة المؤسسة":"Company Dashboard","خافِت | لوحة المؤسسة":"Khafet | Company Dashboard","لوحة الإدارة":"Admin Dashboard","🏠 الرئيسية":"🏠 Home","الرئيسية":"Home","خروج":"Sign out","‹ القائمة":"‹ Menu",
+  // بطاقات/أقسام
+  "📅 طلبات اليوم":"📅 Today's orders","📅 الموعد":"📅 Appointment","📍 الموقع":"📍 Location","💰 الإجمالي":"💰 Total","💰 إيراد مكتمل":"💰 Completed revenue","الإجمالي المستحق":"Total due",
+  "⭐ التقييم":"⭐ Rating","⭐ التحكم بالتقييم في الرئيسية":"⭐ Home rating control","🤝 المزوّد":"🤝 Provider","🤝 مزوّدون للمراجعة":"🤝 Providers to review","🔔 موعد أبكر":"🔔 Earlier slot",
+  "🛠️ المشكلة":"🛠️ Problem","🏠 صورة المنزل":"🏠 House photo","📷 صورة/مقطع":"📷 Photo/clip","🎥 عرض":"🎥 View","⏱️ المدة":"⏱️ Duration","👤 العميل":"👤 Customer","🔧 المطلوب":"🔧 Needed",
+  // الطلبات والحالات
+  "📥 وصلنا الطلب":"📥 Order received","🔧 بدء العمل":"🔧 Start work","🚪 الفني وصل الموقع":"🚪 Technician arrived","🚪 وصل ✓":"🚪 Arrived ✓","✅ إنهاء":"✅ Finish","✅ تمت الخدمة":"✅ Service done",
+  "✔️ تأكيد الموعد":"✔️ Confirm appointment","✔️ تأكيد":"✔️ Confirm","✔️ اعتماد":"✔️ Approve","❌ رفض الفني":"❌ Reject technician","رفض":"Reject","ملغي":"Cancelled","🆕 بانتظار التأكيد":"🆕 Awaiting confirmation",
+  "العميل يرحّب بموعد أبكر":"Client welcomes an earlier slot","قيد التنفيذ":"In progress","مكتمل":"Completed","جديد":"New","مؤكد":"Confirmed",
+  // الفنيّون
+  "➕ إضافة فني":"➕ Add technician","إنشاء حساب الفني":"Create technician account","لا يوجد فنيّون بعد — أضف أول فني تحت.":"No technicians yet — add the first below.",
+  // المزوّدون
+  "لا يوجد مزوّدون مسجّلون بعد.":"No registered providers yet.","لا توجد طلبات منجزة عبر مزوّدين بعد.":"No orders completed via providers yet.","⏸️ إيقاف":"⏸️ Pause","▶️ تفعيل":"▶️ Activate","تفعيل":"Activate",
+  // المخزن
+  "➕ إضافة صنف":"➕ Add item","المخزن فارغ — أضف أصنافك.":"Stock is empty — add your items.","شراء ＋":"Buy ＋","صرف －":"Dispense －","اشتُري:":"Bought:","· المفروض:":"· Expected:","· صُرف:":"· Dispensed:","✅ مطابق":"✅ Matches","لا توجد حركات بعد.":"No movements yet.",
+  "اكتب الكمية":"Enter quantity","✅ أُضيف الصنف للمخزن":"✅ Item added to stock","➕ أُضيف للمخزن":"➕ Added to stock","➖ صُرف للعميل":"➖ Dispensed to client","الصنف":"Item","الكمية":"Qty",
+  // المقالات
+  "➕ مقال جديد":"➕ New article","💾 حفظ المقال":"💾 Save article","صورة المقال":"Article image","المقال":"Article","الأيقونة والتصنيف":"Icon & category","العنوان *":"Title *","مقدّمة قصيرة (تظهر في القائمة)":"Short intro (shown in the list)","الترتيب":"Order","منشور للعملاء":"Published to clients","لا توجد مقالات بعد.":"No articles yet.","✅ رُفعت الصورة":"✅ Image uploaded",
+  "منشور":"Published","مسودة":"Draft",
+  // شرائح وحالات المزوّدين/الطلبات
+  "الكل":"All","قيد المراجعة":"Under review","معلّق":"Pending","معتمد":"Approved","موقوف":"Suspended","مرفوض":"Rejected",
+  "🔍 بحث بالاسم أو الجوال ثم Enter":"🔍 Search by name or phone then Enter","اعتماد الكل":"Approve all",
+  // لغات محرّر الأسعار
+  "عربي":"Arabic","اردو":"Urdu","إنجليزي":"English","نيبالي":"Nepali","هندي":"Hindi",
+  // الأسعار
+  "💾 حفظ الأسعار":"💾 Save prices","💾 حُفظت الأسعار":"💾 Prices saved",
+  // الرسائل والاشتراكات
+  "ما وصلت رسائل بعد.":"No messages yet.","لا توجد طلبات اشتراك.":"No subscription requests.",
+  // فلاتر وحالات فارغة
+  "لا توجد طلبات":"No orders","لا طلبات بهذا الفلتر.":"No orders with this filter.","لا نتائج بهذا الفلتر.":"No results with this filter.","لا مواعيد قريبة.":"No upcoming appointments.","كل المدن":"All cities","عرض كل الأيام":"Show all days","فتح ›":"Open ›",
+  // الدخول
+  "أرسل الرمز":"Send code","تأكيد ودخول":"Confirm & sign in","تغيير الرقم":"Change number","تعذّر الدخول":"Couldn't sign in",
+  // التصدير
+  "⤓ تصدير":"⤓ Export","🖨️ طباعة":"🖨️ Print","⤓ تم تنزيل ملف Excel":"⤓ Excel file downloaded","تعذّر التصدير":"Couldn't export","إلغاء":"Cancel",
+  // المدن
+  "الرياض":"Riyadh","جدة":"Jeddah","مكة المكرمة":"Makkah","المدينة المنورة":"Madinah","الدمام":"Dammam","الخبر":"Khobar","الظهران":"Dhahran","القطيف":"Qatif","الجبيل":"Jubail","الأحساء":"Al-Ahsa",
+  "الطائف":"Taif","تبوك":"Tabuk","أبها":"Abha","خميس مشيط":"Khamis Mushait","حائل":"Hail","نجران":"Najran","جازان":"Jazan","ينبع":"Yanbu","بريدة":"Buraidah","الخرج":"Al-Kharj",
+  // عناوين البطاقات
+  "الطلبات":"Orders","الجديدة · التقويم · التذكيرات":"New · Calendar · Reminders","الفريق":"Team","الفنيّون · المزوّدون · المستحقات":"Technicians · Providers · Dues",
+  "العملاء":"Customers","الرسائل · الاشتراكات · مقالات السلامة":"Messages · Subscriptions · Safety articles","المخزن":"Stock","سجل الحركة":"Movement log","الأسعار":"Prices","تعديل أسعار الخدمات":"Edit service prices",
+  "الجوال":"Phone","الاسم":"Name","الخدمة":"Service","السعر":"Price","العدد":"Qty","الإجمالي":"Total","الحالة":"Status","التاريخ":"Date","الموعد":"Appointment",
+  // الوحدات
+  "ر.س":"SAR","يوم":"day","دقيقة":"min"
+};
+/* ---- محرّك الترجمة (مطابق) ---- */
+function _west(s){ return String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
+const _TOK=[["ريال","SAR"],["ر.س","SAR"],["٪","%"]];
+const T_DICT_N={}; for(const _k in T_DICT){ T_DICT_N[_west(_k).trim()]=T_DICT[_k]; }
+const _EMO=/^((?:[←-⯿️‍\u{1F000}-\u{1FAFF}]+\s*)+)([\s\S]+)$/u;
+function _uiEN(){ return (typeof UILANG!=='undefined') && UILANG==='en'; }
+function LX(a,e){ return _uiEN()?e:a; }
+function _tr(raw){
+  if(raw==null) return raw;
+  const s=String(raw);
+  const m0=s.match(/^(\s*)([\s\S]*?)(\s*)$/); const lead=m0[1], core=m0[2], trail=m0[3];
+  if(!core) return raw;
+  const h=T_DICT_N[_west(core)];
+  if(h!=null && h!=='') return lead+h+trail;
+  const em=core.match(_EMO);
+  if(em){ const r=T_DICT_N[_west(em[2].trim())]; if(r!=null && r!=='') return lead+em[1]+r+trail; }
+  let out=core, ch=false;
+  for(const [a,b] of _TOK){ if(out.indexOf(a)>=0){ out=out.split(a).join(b); ch=true; } }
+  const w=_west(out); if(w!==out){ out=w; ch=true; }
+  return ch? lead+out+trail : raw;
+}
+function TR(s){ return _uiEN()? _tr(s): s; }
+const _SKIP='.notr,.art-body';
+function _translateEl(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  const nodes=[]; let n; while(n=w.nextNode()) nodes.push(n);
+  for(const node of nodes){
+    if(node.parentElement && node.parentElement.closest(_SKIP)) continue;
+    if(node.__o===undefined) node.__o=node.nodeValue;
+    const t=_tr(node.__o);
+    if(t!==node.nodeValue) node.nodeValue=t;
+  }
+  root.querySelectorAll('[placeholder]').forEach(el=>{ if(el.__po===undefined) el.__po=el.getAttribute('placeholder'); const t=T_DICT_N[_west((el.__po||'').trim())]; if(t) el.setAttribute('placeholder',t); });
+}
+function _restoreEl(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+  let n; while(n=w.nextNode()){ if(n.__o!==undefined && n.nodeValue!==n.__o) n.nodeValue=n.__o; }
+  root.querySelectorAll('[placeholder]').forEach(el=>{ if(el.__po!=null) el.setAttribute('placeholder',el.__po); });
+}
+let _mo=null;
+function _startI18n(){
+  if(!_mo) _mo=new MutationObserver(()=>{ if(_uiEN()) applyLang(); });
+  try{ _mo.disconnect(); }catch(e){}
+  const app=document.getElementById('app'), hd=document.querySelector('header.top');
+  if(app) _mo.observe(app,{childList:true,subtree:true,characterData:true});
+  if(hd)  _mo.observe(hd,{childList:true,subtree:true,characterData:true});
+}
+function applyLang(){
+  if(!_uiEN()) return;
+  if(_mo){ try{_mo.disconnect();}catch(e){} }
+  _translateEl(document.querySelector('header.top'));
+  _translateEl(document.getElementById('app'));
+  _startI18n();
+}
+function syncLangBtn(){ const b=document.getElementById('langBtn'); if(b){ const s=b.querySelector('.ht'); if(s) s.textContent = _uiEN()?'ع':'EN'; } }
+function setUILang(l){
+  UILANG=l; try{localStorage.setItem('khafet_uilang',l);}catch(e){}
+  document.documentElement.lang = l==='en'?'en':'ar';
+  document.documentElement.dir  = l==='en'?'ltr':'rtl';
+  render();
+  if(l==='en') applyLang(); else _restoreEl(document.querySelector('header.top'));
+  syncLangBtn();
+  try{window.scrollTo(0,0);}catch(e){}
+}
+function toggleLang(){ setUILang(_uiEN()?'ar':'en'); }
+
+document.documentElement.lang = UILANG==='en'?'en':'ar';
+document.documentElement.dir  = UILANG==='en'?'ltr':'rtl';
 render();
+_startI18n();
+if(_uiEN()) applyLang();
+syncLangBtn();
 if(window.supabase) initCloud(); else window.addEventListener('load', initCloud);
 </script>
 </body>
