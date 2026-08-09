@@ -735,7 +735,7 @@ function renderProviders(){
     ${cards||'<p style="color:var(--muted)">لا نتائج بهذا الفلتر.</p>'}`;
 }
 function renderAdminOrder(o){
-  const itemsRows=o.items.map(i=>`<div class="li"><span>${i.ico||''} ${i.name}${i.qty>1?' ×'+ar(i.qty):''}</span><span>${i.custom?'—':money((i.price||0)*(i.qty||1))}</span></div>`).join('');
+  const itemsRows=o.items.map(i=>`<div class="li"><span>${esc(i.ico||'')} ${esc(i.name)}${i.qty>1?' ×'+ar(i.qty):''}</span><span>${i.custom?'—':money((i.price||0)*(i.qty||1))}</span></div>`).join('');
   const created=new Date(o.createdAt); const cs=ar(created.getDate())+' '+AR_MON[created.getMonth()];
   let acts='';
   if(o.status==='new') acts=`<button class="sbtn ok" onclick="setStatus('${o.id}','confirmed')">✔️ تأكيد</button><button class="sbtn danger" onclick="setStatus('${o.id}','cancelled')">إلغاء</button>`;

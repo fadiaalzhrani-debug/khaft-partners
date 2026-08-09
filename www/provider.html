@@ -473,18 +473,35 @@ async function loadOrders(){
     notifyFresh();
     loadTechs();   // فريق المزوّد (يحدّث العدّاد)
     loadBiz();     // مخزن + عملاء المزوّد
-    render();
-  }catch(e){ render(); }
+    renderSafe();
+  }catch(e){ renderSafe(); }
 }
 /* مخزن + عملاء المزوّد — مشتركة بين المزوّد وفريقه، معزولة بالـRLS */
 async function loadBiz(){
   if(!cloudReady||!me||!myPid()){ PINV=[]; PREM=[]; return; }
   try{
     const iv = seeStock()? await sb.from('provider_inventory').select('*').order('name') : {data:[]};
-    PINV=iv.data||[]; loadReminders(); render();
+    PINV=iv.data||[]; loadReminders(); renderSafe();
   }catch(e){ PINV=[]; }
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(me) loadOrders(); }).subscribe(); }catch(e){} }
+
+/* ⛔ لا نعيد رسم الشاشة والمستخدم يكتب — التحديث التلقائي كان يمسح ما كتبه */
+let _pendingRender=false;
+function userIsTyping(){
+  const a=document.activeElement;
+  if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !a.disabled && a.type!=='button') return true;
+  try{ if(bookOpen) return true; }catch(e){}          // نموذج الحجز مفتوح
+  try{ if(_pendPass) return true; }catch(e){}         // بانتظار كود تغيير كلمة المرور
+  const fields=['np1','np2','np_otp','pv_city_search','st_name','st_qty','rm_name','rm_phone'];
+  return fields.some(id=>{ const el=document.getElementById(id); return el && el.value && el.value.trim(); });
+}
+function renderSafe(){
+  if(userIsTyping()){ _pendingRender=true; return; }
+  _pendingRender=false; render();
+}
+/* أول ما يخلّص المستخدم كتابته، نطبّق التحديث المؤجّل */
+document.addEventListener('focusout', function(){ setTimeout(function(){ if(_pendingRender && !userIsTyping()) renderSafe(); },400); }, true);
 
 /* تنبيه داخل الصفحة: صوت + اهتزاز أول ما يوصل طلب جديد من مدن خدمته */
 let seenOpen=null;
@@ -917,14 +934,14 @@ function jobCard(o, mode){
   const a=o.address||{};
   // المنجز (في طلباتي) ينصفط بسطر واحد أخضر — يفتح بالضغط
   if(mode==='mine' && o.status==='done' && !doneOpen[o.id]){
-    const work=(o.items||[]).map(i=>i.ico+' '+i.name).join('، ');
+    const work=(o.items||[]).map(i=>esc(i.ico)+' '+esc(i.name)).join('، ');
     return `<button class="tjob-mini" onclick="toggleDone('${o.id}')">
       <span class="tm-ic">✅</span>
       <span class="tm-tx"><b>${fmtTime(o.startMin)} · ${dayLabel(o.date)}</b><small>${esc(o.customer.name||work||'')}</small></span>
       <span class="tm-badge">مكتمل</span><span class="tm-arrow">▾</span>
     </button>`;
   }
-  const work=o.quick?`<div class="quick-tag">⚡ طلب سريع (معاينة)</div>`:`<div class="tj-row"><span class="tj-k">🔧 المطلوب</span><span class="tj-v">${(o.items||[]).map(i=>i.ico+' '+i.name+(i.qty>1?' ×'+ar(i.qty):'')).join('، ')}</span></div>`;
+  const work=o.quick?`<div class="quick-tag">⚡ طلب سريع (معاينة)</div>`:`<div class="tj-row"><span class="tj-k">🔧 المطلوب</span><span class="tj-v">${(o.items||[]).map(i=>esc(i.ico)+' '+esc(i.name)+(i.qty>1?' ×'+ar(i.qty):'')).join('، ')}</span></div>`;
   // الطلب المتاح: نوع الخدمة والوقت والمنطقة فقط — بيانات العميل تظهر بعد القبول
   if(mode==='available'){
     const exclusive = o.offeredTo && o.offeredTo===myPid() && !o.openToAll;
@@ -1444,7 +1461,7 @@ async function submitBooking(){
 }
 async function assignOrder(dbId,techUid){
   try{
-    const { data }=await sb.rpc('assign_order_tech',{ p_order:Number(dbId), p_tech:techUid||null });
+    const { data }=await sb.rpc('assign_order_tech',{ p_order:dbId, p_tech:techUid||null });
     if(data&&data.ok){ toast(techUid?'✅ وُزّع على الفني':'أُلغي التوزيع'); loadOrders(); }
     else toast(data&&data.reason==='not_my_tech'?'الفني مو من فريقك':'تعذّر التوزيع');
   }catch(e){ toast('تعذّر التوزيع'); }

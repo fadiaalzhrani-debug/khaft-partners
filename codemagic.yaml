@@ -47,13 +47,16 @@ workflows:
           setkey NSPhotoLibraryAddUsageDescription "لحفظ صور العمل في معرض صورك"
           setkey NSMicrophoneUsageDescription "لتسجيل مقطع فيديو يوضّح حالة العمل عند الحاجة"
           setkey CFBundleVersion "$BUILD_NUMBER"
+          setkey CFBundleShortVersionString "1.1.0"
           setkey CFBundleDisplayName "رزق"
-          # آيفون فقط — التطبيق مصمّم للجوال
+          # آيفون فقط + الحد الأدنى iOS 15 (آبل تحذّر تحت 15.0)
           ruby -e "require 'xcodeproj'; \
             p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); \
             t = p.targets.find { |x| x.name == 'App' }; \
-            t.build_configurations.each { |c| c.build_settings['TARGETED_DEVICE_FAMILY'] = '1' }; \
-            p.save; puts '✅ التطبيق صار آيفون فقط'"
+            t.build_configurations.each { |c| c.build_settings['TARGETED_DEVICE_FAMILY'] = '1'; \
+              c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' }; \
+            p.build_configurations.each { |c| c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0' }; \
+            p.save; puts '✅ آيفون فقط + الحد الأدنى iOS 15'"
           # HTTPS القياسي فقط = تشفير معفى، فلا تسأل آبل كل مرة
           plutil -insert ITSAppUsesNonExemptEncryption -bool false "$PLIST" 2>/dev/null || \
             plutil -replace ITSAppUsesNonExemptEncryption -bool false "$PLIST"
@@ -127,10 +130,20 @@ workflows:
           IPA=$(find "$CM_BUILD_DIR" -name '*.ipa' | head -1)
           echo "الملف: $IPA"
           export APP_STORE_CONNECT_PRIVATE_KEY="$(cat /tmp/AuthKey.p8)"
+          set +e
           app-store-connect publish \
             --path "$IPA" \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER"
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" 2>&1 | tee /tmp/publish.log
+          CODE=${PIPESTATUS[0]}
+          if [ "$CODE" -ne 0 ]; then
+            echo ""
+            echo "═════════ ❌ سبب فشل الرفع (مستخرج تلقائياً) ═════════"
+            grep -oE '"(message|NSLocalizedDescription)" : "[^"]*"' /tmp/publish.log | sort -u
+            grep -oE '"code" : [0-9-]+' /tmp/publish.log | sort -u
+            echo "═══════════════════════════════════════════════════"
+          fi
+          exit $CODE
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
       - build/ios/ipa/*.ipa

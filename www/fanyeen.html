@@ -1292,7 +1292,7 @@ function render(){
   else { let lastDate=null; cards=shown.map(o=>{
     const a=o.address||{};
     const sep=isRTL()?'، ':', ';
-    const work=(o.items||[]).map(i=>i.ico+' '+svcName(i)+(i.qty>1?' ×'+i.qty:'')).join(sep);
+    const work=(o.items||[]).map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const addr=[a.city,a.district,a.street].filter(Boolean).join(' · ');
     const mapUrl=a.mapUrl || ('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')));
     const gpsPin=!!(a.lat&&a.lng);
