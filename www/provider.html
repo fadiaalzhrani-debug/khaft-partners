@@ -253,6 +253,18 @@
     .tacts{padding:0 14px 14px}
     .tbtn{font-size:1rem;padding:14px}
   }
+
+/* 👁 إظهار/إخفاء كلمة المرور — يلتف حول الحقل */
+.pwwrap{position:relative;display:block}
+.pwwrap > input{width:100%;padding-inline-end:46px !important}
+.pweye{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);
+  background:none;border:0;padding:6px 8px;cursor:pointer;line-height:0;
+  color:#8A7A55;border-radius:8px;-webkit-tap-highlight-color:transparent}
+.pweye:hover{background:rgba(0,0,0,.05)}
+.pweye svg{width:21px;height:21px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.forgot-link{display:block;width:100%;background:none;border:0;color:var(--gold-deep,#9C7A0A);font-weight:800;font-size:.9rem;font-family:inherit;padding:10px 4px;margin-top:8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.forgot-link:hover{opacity:.75}
 </style>
 </head>
 <body>
@@ -746,6 +758,7 @@ function showLogin(msg, wait){
     <input id="lg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="lg_pass" type="password" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
     <button class="btn" onclick="login()">دخول</button>
+    <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب مزوّد؟ سجّل الآن 👇</div>
@@ -754,6 +767,76 @@ function showLogin(msg, wait){
     </div>
     <a class="reg2" href="fanyeen.html">فني؟ دخول / تسجيل من بوابة فنيّو خافِت</a>
   </div>`;
+}
+/* ═══════ نسيت كلمة المرور — كود على الجوال ثم كلمة مرور جديدة ═══════ */
+let _fgPhone=null;   // الجوال بصيغة E164 بعد إرسال الكود
+function showForgot(msg){
+  const pre=((document.getElementById('lg_phone')||{}).value)||'';
+  document.getElementById('app').innerHTML=`<div class="login">
+    <div class="ic">🔑</div><h1>استعادة كلمة المرور</h1>
+    <p>اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد لتعيين كلمة مرور جديدة.</p>
+    <input id="fg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" value="${esc(pre)}" onkeydown="if(event.key==='Enter')sendForgotCode()" />
+    <button class="btn" onclick="sendForgotCode()">📲 أرسل كود التأكيد</button>
+    ${msg?`<div class="msg">${msg}</div>`:''}
+    <button type="button" class="forgot-link" onclick="showLogin('')">‹ رجوع لتسجيل الدخول</button>
+  </div>`;
+}
+async function sendForgotCode(){
+  const d=normPhone((document.getElementById('fg_phone')||{}).value||'');
+  if(d.length<12){ showForgot('❌ رقم الجوال غير صحيح.'); return; }
+  if(!cloudReady){ showForgot('لا يوجد اتصال بالخادم'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ جاري الإرسال...'; }
+  try{
+    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ shouldCreateUser:false } });
+    if(error){ showForgot('❌ الرقم غير مسجّل، أو تعذّر الإرسال — حاول بعد قليل.'); return; }
+    _fgPhone='+'+d;
+    showForgotCode('');
+  }catch(e){ showForgot('تعذّر الإرسال، حاول مرة ثانية.'); }
+}
+function showForgotCode(msg){
+  document.getElementById('app').innerHTML=`<div class="login">
+    <div class="ic">✉️</div><h1>تعيين كلمة مرور جديدة</h1>
+    <p>أرسلنا كوداً إلى <b style="direction:ltr;display:inline-block">${esc(_fgPhone||'')}</b></p>
+    <input id="fg_code" inputmode="numeric" maxlength="8" placeholder="••••" style="text-align:center;letter-spacing:6px;font-size:1.3rem" />
+    <input id="fg_p1" type="password" placeholder="كلمة المرور الجديدة (٦ فأكثر)" autocomplete="new-password" />
+    <input id="fg_p2" type="password" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password" onkeydown="if(event.key==='Enter')confirmForgot()" />
+    <button class="btn" onclick="confirmForgot()">✅ حفظ ودخول</button>
+    ${msg?`<div class="msg">${msg}</div>`:''}
+    <button type="button" class="forgot-link" onclick="sendForgotCode()">لم يصلك الكود؟ إعادة الإرسال</button>
+    <button type="button" class="forgot-link" onclick="showLogin('')">‹ رجوع لتسجيل الدخول</button>
+  </div>`;
+  setTimeout(()=>{ const c=document.getElementById('fg_code'); if(c) c.focus(); },80);
+}
+async function confirmForgot(){
+  const code=((document.getElementById('fg_code')||{}).value||'').trim();
+  const a=((document.getElementById('fg_p1')||{}).value)||'', b=((document.getElementById('fg_p2')||{}).value)||'';
+  if(code.length<4){ showForgotCode('اكتب كود التأكيد المرسل لجوالك'); return; }
+  if(a.length<6){ showForgotCode('كلمة المرور ٦ خانات على الأقل'); return; }
+  if(a!==b){ showForgotCode('كلمتا المرور غير متطابقتين'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
+  try{
+    const { error:ve }=await sb.auth.verifyOtp({ phone:_fgPhone, token:code, type:'sms' });
+    if(ve){ showForgotCode('❌ الكود غير صحيح أو انتهت صلاحيته.'); return; }
+    const { error:ue }=await sb.auth.updateUser({ password:a });
+    if(ue){ showForgotCode('تعذّر حفظ كلمة المرور — جرّب كلمة مختلفة.'); return; }
+    _fgPhone=null;
+    toast('✅ تم تغيير كلمة المرور');
+    autoLoginAfterReset();
+  }catch(e){ showForgotCode('تعذّر، حاول مرة ثانية.'); }
+}
+/* بعد تغيير كلمة المرور نكمّل الدخول بالجلسة الحالية مباشرة */
+async function autoLoginAfterReset(){
+  try{
+    const { data:{ user } }=await sb.auth.getUser();
+    const ph=String((user&&user.phone)||'').replace(/\D/g,'');
+    const local05='0'+ph.slice(3);
+    const { data }=await sb.from('khafet_providers').select('*').in('phone',[local05, ph, '+'+ph]);
+    const p=(data||[])[0];
+    if(p && (p.status||'pending')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush(); return; }
+    const { data:info }=await sb.rpc('my_staff_info');
+    if(info && info.role==='tech'){ await enterTechMode(info, ph); return; }
+    showLogin('✅ تم تغيير كلمة المرور — سجّل الدخول الآن.');
+  }catch(e){ showLogin('✅ تم تغيير كلمة المرور — سجّل الدخول الآن.'); }
 }
 /* ---- تسجيل مزوّد جديد (داخل التطبيق) ---- */
 const SIGNUP_CATS=['سباكة','كهرباء','تكييف','نجارة','دهان','أجهزة منزلية','تنظيف','مكافحة حشرات','عزل مائي','جبس وديكور','ألمنيوم','زجاج ومرايا','حدادة','سيراميك وبلاط','تمديد غاز','ستائر','كاميرات مراقبة','مصاعد','خزانات مياه','تنسيق حدائق','مسابح','أعمال عامة'];
@@ -1706,6 +1789,39 @@ _startI18n();
 if(_uiEN()) applyLang();
 syncLangBtn();
 if(window.supabase) initCloud(); else window.addEventListener('load', initCloud);
+
+/* 👁 إظهار/إخفاء كلمة المرور — يُطبَّق تلقائياً على أي حقل كلمة مرور يظهر بالصفحة */
+const _EYE_OPEN='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+const _EYE_OFF='<svg viewBox="0 0 24 24"><path d="M10.6 5.2A9.9 9.9 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.8M6.2 6.2A17 17 0 0 0 2 12s3.6 7 10 7a9.8 9.8 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M2 2l20 20"/></svg>';
+function _pwToggle(btn){
+  const inp=btn.parentNode.querySelector('input');
+  if(!inp) return;
+  const show = inp.type==='password';
+  inp.type = show?'text':'password';
+  btn.innerHTML = show?_EYE_OFF:_EYE_OPEN;
+  btn.setAttribute('aria-label', show?'إخفاء كلمة المرور':'إظهار كلمة المرور');
+  try{ inp.focus({preventScroll:true}); }catch(e){}
+}
+function applyPwEyes(){
+  document.querySelectorAll('input[type="password"]').forEach(function(inp){
+    if(inp.parentNode && inp.parentNode.classList && inp.parentNode.classList.contains('pwwrap')) return;
+    const w=document.createElement('span'); w.className='pwwrap';
+    inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
+    const b=document.createElement('button');
+    b.type='button'; b.className='pweye'; b.innerHTML=_EYE_OPEN;
+    b.setAttribute('aria-label','إظهار كلمة المرور');
+    b.setAttribute('tabindex','-1');
+    b.onclick=function(e){ e.preventDefault(); e.stopPropagation(); _pwToggle(b); };
+    w.appendChild(b);
+  });
+}
+/* يراقب الصفحة: أي حقل كلمة مرور جديد يُرسم، ينضاف له الزر تلقائياً */
+try{
+  new MutationObserver(function(){ applyPwEyes(); })
+    .observe(document.documentElement,{childList:true,subtree:true});
+}catch(e){}
+document.addEventListener('DOMContentLoaded', applyPwEyes);
+setTimeout(applyPwEyes, 300);
 </script>
 </body>
 </html>
