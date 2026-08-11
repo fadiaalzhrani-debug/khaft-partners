@@ -265,6 +265,9 @@
 
 .forgot-link{display:block;width:100%;background:none;border:0;color:var(--gold-deep,#9C7A0A);font-weight:800;font-size:.9rem;font-family:inherit;padding:10px 4px;margin-top:8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .forgot-link:hover{opacity:.75}
+
+.rememberme{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:.88rem;font-weight:700;color:var(--muted,#6E5F44);cursor:pointer;user-select:none}
+.rememberme input{width:17px;height:17px;accent-color:#F5C518;cursor:pointer}
 </style>
 </head>
 <body>
@@ -567,10 +570,18 @@ async function login(){
       try{ const { data:info }=await sb.rpc('my_staff_info'); if(info && info.role==='tech'){ await enterTechMode(info, d); return; } }catch(e2){}
       try{ await sb.auth.signOut(); }catch(e2){} showLogin('❌ الرقم غير مسجّل — سجّل كمزوّد أو كفني بكودك.'); return; }
     if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
-    me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush();
+    me=p; localStorage.setItem('khafet_provider_phone',p.phone);
+    try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){}
+    loadOrders(); initPush();
   }catch(e){ showLogin('تعذّر الاتصال، حاول مرة ثانية.'); }
 }
 async function autoLogin(){
+  // «تذكرني» غير مفعّل؟ ننهي الجلسة القديمة ونعرض الدخول من جديد
+  if(localStorage.getItem('khafet_remember')==='0'){
+    try{ await sb.auth.signOut(); }catch(e){}
+    try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){}
+    render(); return;
+  }
   const saved=localStorage.getItem('khafet_provider_phone');
   if(!saved){ initialScreen(); return; }
   // لازم تكون فيه جلسة Supabase صالحة — مو بس رقم محفوظ بالمتصفح
@@ -583,7 +594,9 @@ async function autoLogin(){
     const { data:info }=await sb.rpc('my_staff_info');
     if(info && info.role==='tech'){ await enterTechMode(info, normPhone(saved)); return; }
   }catch(e){}
-  initialScreen();
+  // ما نفعت الجلسة المحفوظة — امسح العلامة واعرض شاشة الدخول (وإلا تعلق شاشة التحقق)
+  try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){}
+  render();
 }
 /* دخول الفني: يعرض طلبات مدن مزوّده، ويقبلها كنفسه */
 async function enterTechMode(info, d){
@@ -758,6 +771,7 @@ function showLogin(msg, wait){
     <input id="lg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="lg_pass" type="password" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
     <button class="btn" onclick="login()">دخول</button>
+    <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني — ابقَ مسجّلاً بهذا الجهاز</label>
     <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
@@ -1781,7 +1795,17 @@ function setUILang(l){
 function toggleLang(){ setUILang(_uiEN()?'ar':'en'); }
 
 /* ?techreg=1 → يفتح نموذج تسجيل الفني مباشرة (من رابط بوابة الفنيين) */
-function initialScreen(){ try{ if(new URLSearchParams(location.search).get('techreg')==='1' && !me){ showTechReg(''); return; } }catch(e){} render(); }
+function initialScreen(){
+  try{ if(new URLSearchParams(location.search).get('techreg')==='1' && !me){ showTechReg(''); return; } }catch(e){}
+  // جلسة محفوظة؟ نعرض «جارٍ التحقق» بدل شاشة الدخول حتى لا تتبدل الشاشة فجأة أثناء الكتابة
+  try{ if(!me && localStorage.getItem('khafet_provider_phone') && localStorage.getItem('khafet_remember')!=='0'){ showChecking(); return; } }catch(e){}
+  render();
+}
+function showChecking(){
+  const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
+  const ab=document.getElementById('acctBtn'); if(ab) ab.style.display='none';
+  document.getElementById('app').innerHTML=`<div class="login"><div class="ic">⏳</div><h1>لحظة…</h1><p>نتحقق من جلستك المحفوظة</p></div>`;
+}
 document.documentElement.lang = UILANG==='en'?'en':'ar';
 document.documentElement.dir  = UILANG==='en'?'ltr':'rtl';
 initialScreen();

@@ -355,6 +355,9 @@
 
 .forgot-link{display:block;width:100%;background:none;border:0;color:var(--gold-deep,#9C7A0A);font-weight:800;font-size:.9rem;font-family:inherit;padding:10px 4px;margin-top:8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .forgot-link:hover{opacity:.75}
+
+.rememberme{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:.88rem;font-weight:700;color:var(--muted,#6E5F44);cursor:pointer;user-select:none}
+.rememberme input{width:17px;height:17px;accent-color:#F5C518;cursor:pointer}
 </style>
 </head>
 <body>
@@ -591,7 +594,10 @@ async function initCloud(){
       cloudReady=true;
       // استعادة الجلسة: الدخول محفوظ في Supabase مو في المتصفح
       const { data:{ session } }=await sb.auth.getSession();
-      if(session){
+      if(session && localStorage.getItem('khafet_remember')==='0'){
+        // «تذكرني» غير مفعّل — ننهي الجلسة القديمة ويسجّل من جديد
+        try{ await sb.auth.signOut(); }catch(e){}
+      } else if(session){
         const { data:role }=await sb.rpc('staff_role');
         if(role){ loggedIn=true; await loadMyName(); } else { try{ await sb.auth.signOut(); }catch(e){} }
       }
@@ -984,6 +990,7 @@ function showLogin(){
       <input id="wu" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
       <input id="wp" type="password" placeholder="كلمة المرور · Password" autocomplete="current-password" />
       <button class="btn" onclick="doLogin()">دخول · Login</button>
+      <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني · Remember me</label>
       <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟ · Forgot password?</button>
       <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول · Sign-in failed</div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
@@ -1070,6 +1077,7 @@ async function doLogin(){
     const { data:role }=await sb.rpc('staff_role');
     if(!role){ await sb.auth.signOut(); throw new Error('no-role'); }
     await loadMyName();
+    try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){}
     loggedIn=true; render(); loadOrders(); initPush();
   }catch(e){
     if(btn){ btn.disabled=false; btn.textContent='دخول · Login'; }
