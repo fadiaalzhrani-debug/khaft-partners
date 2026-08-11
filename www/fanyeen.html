@@ -773,8 +773,7 @@ async function markOnWay(id){
   if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({on_the_way:true, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.onTheWay=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   toast(lang==='ar'?'🚗 أُبلغ العميل إنك في الطريق':'🚗 Customer notified you are on the way'); render();
-  // رسالة واتساب للعميل
-  try{ window.open(waLink(o.customer.phone, ONWAY_MSG), '_blank'); }catch(e){}
+  // العميل يستلم إشعاراً مختصراً من التطبيق تلقائياً — بدون رسائل واتساب
 }
 async function markArrived(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
@@ -782,8 +781,7 @@ async function markArrived(id){
   if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({arrived:true, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.arrived=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   toast(t('arrivedToast')); render();
-  // افتح واتساب للعميل برسالة الوصول
-  try{ window.open(waLink(o.customer.phone, ARRIVE_MSG), '_blank'); }catch(e){}
+  // العميل يستلم إشعار «الفني عند بابك» من التطبيق تلقائياً — بدون واتساب
 }
 // الفني يحتاج وقت إضافي على الطلب الحالي → يتأخر ويُبلَّغ العميل التالي تلقائياً
 async function addDelay(id, mins){
