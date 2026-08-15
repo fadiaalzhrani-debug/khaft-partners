@@ -1259,6 +1259,13 @@ function render(){
     const ids=avail.map(o=>o.dbId);
     setTimeout(function(){ markAvailSeen(ids); }, 1500);
   }
+  /* شريط التقويم يفتح على اليوم الحالي مباشرة (مو بداية الشهر) */
+  setTimeout(function(){
+    try{
+      const t=document.querySelector('#pvCalStrip .cal-day.sel')||document.querySelector('#pvCalStrip .cal-day.today');
+      if(t&&t.scrollIntoView) t.scrollIntoView({inline:'center',block:'nearest'});
+    }catch(e){}
+  }, 60);
 }
 
 /* ═══════════ لوحة الأرقام (مربّع بالرئيسية) ═══════════ */
