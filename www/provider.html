@@ -268,6 +268,10 @@
 
 .rememberme{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:.88rem;font-weight:700;color:var(--muted,#6E5F44);cursor:pointer;user-select:none}
 .rememberme input{width:17px;height:17px;accent-color:#F5C518;cursor:pointer}
+
+  /* الطلب الجديد — أخضر لين يشوفه المزوّد */
+  .tjob-new{border:1.5px solid #15803D !important;background:#F1FAF4;box-shadow:0 4px 14px rgba(21,128,61,.12)}
+  .new-banner{background:#15803D;color:#fff;font-weight:800;font-size:.85rem;padding:8px 14px;border-radius:12px 12px 0 0;display:flex;align-items:center;gap:7px}
 </style>
 </head>
 <body>
@@ -474,8 +478,23 @@ function openToOrder(r){
     customer:{name:'',phone:''}, address:{ city:r.city||'', district:r.district||'' },
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
     status:r.status||'new', quick:!!r.quick, note:'', videoUrl:'', invoice:null, providerPhone:'',
-    offeredTo:r.offered_to||null, offerAt:r.offer_at||null, openToAll:!!r.open_to_all };
+    offeredTo:r.offered_to||null, offerAt:r.offer_at||null, openToAll:!!r.open_to_all,
+    createdAt:r.created_at||null };
 }
+
+/* «وصل قبل كم» بالعربي المختصر */
+function agoTxt(ts){
+  if(!ts) return '';
+  const m=Math.max(0, Math.round((Date.now()-new Date(ts).getTime())/60000));
+  if(m<1) return 'وصل الحين';
+  if(m<60) return 'وصل قبل '+ar(m)+' د';
+  const h=Math.round(m/60);
+  if(h<24) return 'وصل قبل '+ar(h)+' س';
+  return 'وصل قبل '+ar(Math.round(h/24))+' يوم';
+}
+/* الطلبات اللي شافها المزوّد — الجديد يظهر أخضر لين يشوفه */
+function seenAvail(){ try{ return new Set(JSON.parse(localStorage.getItem('khafet_seen_avail')||'[]')); }catch(e){ return new Set(); } }
+function markAvailSeen(ids){ try{ const s=seenAvail(); ids.forEach(i=>i&&s.add(i)); localStorage.setItem('khafet_seen_avail', JSON.stringify([...s].slice(-400))); }catch(e){} }
 async function loadOrders(){
   if(!cloudReady||!me){ render(); return; }
   try{
@@ -1042,9 +1061,10 @@ function jobCard(o, mode){
   // الطلب المتاح: نوع الخدمة والوقت والمنطقة فقط — بيانات العميل تظهر بعد القبول
   if(mode==='available'){
     const exclusive = o.offeredTo && o.offeredTo===myPid() && !o.openToAll;
-    return `<div class="tjob${exclusive?' tjob-offer':''}">
+    return `<div class="tjob${exclusive?' tjob-offer':''}${o._new?' tjob-new':''}">
+      ${o._new?`<div class="new-banner">🟢 طلب جديد — ${agoTxt(o.createdAt)||'وصل الحين'}</div>`:''}
       ${exclusive?`<div class="offer-banner">⚡ معروض عليك أولاً — بادر بالقبول قبل ما يُفتح لبقية المزوّدين</div>`:''}
-      <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span class="status ${exclusive?'offer':'new'}">${exclusive?'⚡ لك':'متاح'}</span></div>
+      <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${o.createdAt&&!o._new?`<small style="color:var(--muted);font-weight:700;margin-inline-end:6px">${agoTxt(o.createdAt)}</small>`:''}<span class="status ${exclusive?'offer':'new'}">${exclusive?'⚡ لك':'متاح'}</span></span></div>
       <div class="tj-body">
         ${work}
         <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
@@ -1104,6 +1124,10 @@ function render(){
   const _pid=myPid();
   const _tcity=(me.tech && me.perms && me.perms.city) ? me.perms.city : null;   // مدينة الفني المخصّصة
   const avail=OPEN.filter(o=>servesCity(o) && (o.openToAll || o.offeredTo===_pid) && (!_tcity || (o.address&&o.address.city)===_tcity));
+  /* الأحدث وصولاً أولاً + تمييز اللي ما شافه المزوّد بالأخضر */
+  const _seen=seenAvail();
+  avail.forEach(o=>{ o._new=!_seen.has(o.dbId); });
+  avail.sort((x,y)=> (y._new?1:0)-(x._new?1:0) || new Date(y.createdAt||0)-new Date(x.createdAt||0));
   const mine=ORDERS.filter(o=>(me.tech ? o.handledBy===me.uid : o.providerPhone===me.phone) && o.status!=='cancelled')
     .sort((a,b)=>{ const r=s=>s==='done'?1:0; if(r(a.status)!==r(b.status)) return r(a.status)-r(b.status); return (a.date+String(a.startMin).padStart(4,'0')).localeCompare(b.date+String(b.startMin).padStart(4,'0')); });
   const myDone=mine.filter(o=>o.status==='done').length;
@@ -1230,6 +1254,11 @@ function render(){
       ${isJobTab?renderPvCalendar():''}
       <div style="margin-top:12px;padding-bottom:30px">${body}</div>
     `}`;
+  /* بعد ما شاف القائمة، الجديد الحالي يُعتبر مقروءاً بالعرض الجاي */
+  if(tab==='home'||tab==='available'){
+    const ids=avail.map(o=>o.dbId);
+    setTimeout(function(){ markAvailSeen(ids); }, 1500);
+  }
 }
 
 /* ═══════════ لوحة الأرقام (مربّع بالرئيسية) ═══════════ */
