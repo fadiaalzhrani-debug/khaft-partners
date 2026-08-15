@@ -304,6 +304,11 @@
   .slot.win{white-space:nowrap;font-size:.88rem;font-weight:800}
   .slot.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
   .slot:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+  /* نافذة عليها حجز: تنضغط وتفتح تفاصيله — والجديدة غير المقروءة بالأخضر */
+  .slot.busy{background:#F3EEE2;border-style:dashed;color:var(--muted)}
+  .slot.busy .bl{display:block;font-size:.66rem;font-weight:800;color:#B8860B;margin-top:2px}
+  .slot.busy.newbk{background:rgba(22,163,74,.14);border-color:#16a34a;border-style:solid;color:#166534}
+  .slot.busy.newbk .bl{color:#16a34a}
   .notify-toggle{display:flex;align-items:center;gap:12px;margin-top:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
   .notify-toggle.on{border-color:#25D366;background:rgba(37,211,102,.1)}
   .notify-toggle .nt-check{width:26px;height:26px;flex-shrink:0;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:#fff;font-size:1rem}
@@ -1334,10 +1339,19 @@ async function invEdit(id){
 let bkDate=null, bkTime=null; const bkVals={};
 function pickBkDate(iso){ bkDate=iso; bkTime=null; render(); }
 function pickBkTime(m){ bkTime=m; render(); }
-/* النافذة مشغولة إذا فيها حجز قائم بنفس اليوم */
-function bkBusy(iso,m){
-  return ORDERS.some(o=>o.date===iso && o.status!=='cancelled' &&
-    (+o.startMin||0) < m+BK_WINDOW && ((+o.endMin)||((+o.startMin||0)+60)) > m);
+/* أول حجز قائم داخل النافذة بنفس اليوم */
+function bkWinOrder(iso,m){
+  return ORDERS.find(o=>o.date===iso && o.status!=='cancelled' &&
+    (+o.startMin||0) < m+BK_WINDOW && ((+o.endMin)||((+o.startMin||0)+60)) > m) || null;
+}
+/* ضغط نافذة محجوزة → افتح طلبات ذلك اليوم وانزل على الحجز نفسه */
+function openBkWindow(iso,m){
+  const o=bkWinOrder(iso,m); if(!o) return;
+  tab='orders'; calFilter=iso; render();
+  setTimeout(function(){
+    const el=document.getElementById('job-'+(o.dbId||'').replace(/[^a-zA-Z0-9_-]/g,''));
+    if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
+  }, 150);
 }
 /* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
 const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
@@ -1363,14 +1377,20 @@ function renderBookTab(){
       : `<small>📅</small><b>＋</b><span class="mon">${A?'تاريخ أبعد':'Later date'}</span>`}
     <input type="date" min="${dateISO(today)}" value="${farActive?bkDate:''}" onchange="if(this.value)pickBkDate(this.value)" />
   </label>`;
-  /* نوافذ اليوم بالترتيب — أول مربع أول ساعتين (٨–١٠ ص) وهكذا؛ المشغولة تنشطب */
+  /* نوافذ اليوم بالترتيب — أول مربع أول ساعتين (٨–١٠ ص) وهكذا؛ المحجوزة تنضغط لتفاصيلها والجديدة بالأخضر */
   const now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
   const isToday=bkDate===dateISO(now);
+  const seenB=seenJobs();
   const slots=[];
   for(let m=BK_WORK_START;m+60<=BK_WORK_END;m+=BK_WINDOW){
     if(isToday && m+BK_WINDOW<=nowMin) continue;
-    const busy=bkBusy(bkDate,m);
-    slots.push(`<button class="slot win ${bkTime===m?'active':''}" ${busy?'disabled':''} onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
+    const bo=bkWinOrder(bkDate,m);
+    if(bo){
+      const isNewB = bo.dbId && bo.status!=='done' && !seenB.has(bo.dbId);
+      slots.push(`<button class="slot win busy ${isNewB?'newbk':''}" onclick="openBkWindow('${bkDate}',${m})">${bkWindowLabel(m)}<span class="bl">${isNewB?(A?'🟢 حجز جديد — اضغط':'🟢 NEW — tap'):(A?'محجوز — اضغط للتفاصيل':'Booked — tap for details')}</span></button>`);
+    } else {
+      slots.push(`<button class="slot win ${bkTime===m?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
+    }
   }
   return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل وأنت بالموقع':'Book an appointment on the spot'}</p></div>
   <div class="bookf">
@@ -1381,7 +1401,7 @@ function renderBookTab(){
   <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
   <div class="bkpanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
     ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
-    <p style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:10px">${A?'المشطوب = عليه حجز موجود':'Struck-through = already booked'}</p>
+    <p style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:10px">${A?'المنقّط = محجوز، اضغطيه تشوفين تفاصيله · الأخضر = حجز جديد ما شفته بعد':'Dashed = booked, tap for details · Green = new unseen booking'}</p>
   </div>
   <div class="bookf">
     <div class="fu-field"><label>${A?'العنوان':'Address'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'حي · شارع · رقم المبنى':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
@@ -1516,7 +1536,7 @@ function render(){
     }
     const isNew = o.dbId && o.status!=='done' && !window._sj.has(o.dbId);
     const agoS = isNew ? jobAgo(o) : '';
-    return head+`<div class="tjob ${o.status==='done'?'done':''} ${o.quick?'quick':''} ${isNew?'unread':''}">
+    return head+`<div class="tjob ${o.status==='done'?'done':''} ${o.quick?'quick':''} ${isNew?'unread':''}" id="job-${(o.dbId||'').replace(/[^a-zA-Z0-9_-]/g,'')}">
       ${isNew?`<div class="newband"><span class="dot"></span>${lang==='ar'?'جديد':'NEW'}${agoS?' • '+agoS:''}</div>`:''}
       <div class="tj-head">
         <span class="tj-when">🕐 ${jobTime(o.startMin)} · ${jobDate(o.date)}</span>
