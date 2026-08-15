@@ -1238,13 +1238,13 @@ function render(){
         ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
       </div>
       ${showJobs?`
-        <div class="hgrid">${cardsHTML}</div>
-        <div style="margin-top:24px;font-weight:900;font-size:1.12rem">📥 الطلبات المتاحة</div>
+        <div style="margin-top:14px;font-weight:900;font-size:1.12rem">📥 الطلبات المتاحة</div>
         ${renderPvCalendar()}
         <div>${availList}</div>
         <div style="margin-top:24px;font-weight:900;font-size:1.12rem">🧰 طلباتي ${mineF.length?`(${ar(mineF.length)})`:''}</div>
         ${!me.tech?bookPanel():''}
-        <div style="padding-bottom:30px">${mineF.length?mineF.map(o=>jobCard(o,'mine')).join(''):'<div class="hint" style="text-align:center;padding:16px">ما قبلت طلبات بعد.</div>'}</div>
+        <div>${mineF.length?mineF.map(o=>jobCard(o,'mine')).join(''):'<div class="hint" style="text-align:center;padding:16px">ما قبلت طلبات بعد.</div>'}</div>
+        <div class="hgrid" style="margin-top:24px;padding-bottom:30px">${cardsHTML}</div>
       `:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}
     `:`
       <div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
