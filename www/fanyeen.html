@@ -291,21 +291,21 @@
   .dates{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .dchip{flex-shrink:0;min-width:76px;text-align:center;padding:11px 8px;border-radius:15px;border:1.5px solid var(--line);background:#fcfbf7;transition:.15s;font-family:inherit;color:inherit;cursor:pointer}
   .dchip.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
-  .dchip small{display:block;font-size:.72rem;opacity:.85;font-weight:700}
-  .dchip b{font-size:1.3rem;display:block;font-weight:800}
-  .dchip .mon{font-size:.72rem}
+  .dchip small{display:block;font-size:.8rem;opacity:.85;font-weight:700}
+  .dchip b{font-size:1.45rem;display:block;font-weight:800}
+  .dchip .mon{font-size:.8rem}
   .more-date{position:relative;border-style:dashed;border-color:var(--gold-strong,#E7B70B);background:rgba(245,197,24,.12);cursor:pointer;display:block}
   .more-date b{color:var(--gold-deep,#B8860B)}
   .more-date.active{border-style:solid;background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
   .more-date.active b{color:#fff}
   .more-date input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0}
-  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:4px}
-  .slot{padding:12px 6px;border-radius:13px;border:1.5px solid var(--line);background:#fcfbf7;font-weight:700;text-align:center;transition:.15s;font-size:.9rem;font-family:inherit;color:inherit;cursor:pointer}
-  .slot.win{white-space:nowrap;font-size:.88rem;font-weight:800}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:4px}
+  .slot{padding:13px 6px;border-radius:13px;border:1.5px solid var(--line);background:#fcfbf7;font-weight:700;text-align:center;transition:.15s;font-size:1rem;font-family:inherit;color:inherit;cursor:pointer}
+  .slot.win{white-space:nowrap;font-size:.98rem;font-weight:800}
   .slot.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
   .slot:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
   /* نافذة عليها حجز: تنضغط وتفتح تفاصيله — والجديدة غير المقروءة بالأخضر */
-  .slot .bl{display:block;font-size:.66rem;font-weight:800;margin-top:2px}
+  .slot .bl{display:block;font-size:.78rem;font-weight:800;margin-top:3px}
   .slot.busy{background:#F3EEE2;border-style:dashed;color:var(--muted)}
   .slot.busy .bl{color:#B8860B}
   .slot.busy.newbk{background:rgba(22,163,74,.14);border-color:#16a34a;border-style:solid;color:#166534}
@@ -316,6 +316,8 @@
   .slot.b-new .bl{color:#16a34a}
   .slot.b-seen{background:var(--gold);border-color:var(--gold);color:#1a1408}
   .slot.b-seen .bl{color:#1a1408;opacity:.75}
+  .slot.b-done{background:rgba(37,99,235,.10);border-color:#2563eb;color:#1e40af}
+  .slot.b-done .bl{color:#2563eb}
   .notify-toggle{display:flex;align-items:center;gap:12px;margin-top:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
   .notify-toggle.on{border-color:#25D366;background:rgba(37,211,102,.1)}
   .notify-toggle .nt-check{width:26px;height:26px;flex-shrink:0;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:#fff;font-size:1rem}
@@ -1370,6 +1372,7 @@ function schedTapWin(iso,m){
     /* ضغطة تفتح تفاصيل هذا الحجز فقط — وضغطة ثانية تسكّرها */
     schedOpen = (schedOpen===o.dbId) ? null : o.dbId;
     if(o.dbId) markJobsSeen([o.dbId]);
+    if(o.status==='done') doneOpen[o.id]=true;   /* المكتمل يفتح مفروداً عشان الفاتورة وغيرها */
     render();
     if(schedOpen) setTimeout(function(){
       const el=document.getElementById('job-'+(o.dbId||'').replace(/[^a-zA-Z0-9_-]/g,''));
@@ -1393,14 +1396,18 @@ function schedHTML(){
   const slots=[];
   for(let m=BK_WORK_START;m+60<=BK_WORK_END;m+=BK_WINDOW){
     const o=bkWinOrder(schedDate,m);
-    const cls = o ? ((o.dbId&&o.status!=='done'&&!seenS.has(o.dbId))?'b-new':'b-seen') : 'free';
-    const sub = o ? (cls==='b-new'?(A?'🟢 جديد':'🟢 NEW'):(A?'محجوز':'Booked')) : (A?'فاضي':'Free');
+    let cls='free', sub=A?'فاضي':'Free';
+    if(o){
+      if(o.status==='done'){ cls='b-done'; sub=A?'✓ مكتمل — الفاتورة':'✓ Done — invoice'; }
+      else if(o.dbId&&!seenS.has(o.dbId)){ cls='b-new'; sub=A?'🟢 جديد':'🟢 NEW'; }
+      else { cls='b-seen'; sub=A?'محجوز':'Booked'; }
+    }
     slots.push(`<button class="slot win ${cls}" onclick="schedTapWin('${schedDate}',${m})">${bkWindowLabel(m)}<span class="bl">${sub}</span></button>`);
   }
   return `<div class="bkpanel" style="margin-top:14px"><h3>📅 ${A?'جدول اليوم':'Day schedule'}</h3>
     <div class="dates">${chips.join('')}</div>
     <div class="slots" style="margin-top:12px">${slots.join('')}</div>
-    <p style="color:var(--muted);font-size:.78rem;font-weight:700;margin-top:10px">${A?'🟢 حجز جديد ما انفتح · الذهبي محجوز · الرمادي فاضي (اضغطيه تحجزين فيه)':'Green = new booking · Gold = booked · Gray = free (tap to book)'}</p>
+    <p style="color:var(--muted);font-size:.82rem;font-weight:700;margin-top:10px">${A?'🟢 جديد · الذهبي محجوز · الأزرق مكتمل (اضغطيه للفاتورة) · الرمادي فاضي':'Green = new · Gold = booked · Blue = done (tap for invoice) · Gray = free'}</p>
   </div>`;
 }
 /* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
