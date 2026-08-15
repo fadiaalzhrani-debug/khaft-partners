@@ -1362,14 +1362,16 @@ function openBkWindow(iso,m){
   }, 150);
 }
 /* ═ جدول اليوم بالرئيسية ═ */
-let schedDate=null;
-function schedPick(iso){ schedDate=iso; render(); }
+let schedDate=null, schedOpen=null;
+function schedPick(iso){ schedDate=iso; schedOpen=null; render(); }
 function schedTapWin(iso,m){
   const o=bkWinOrder(iso,m);
   if(o){
+    /* ضغطة تفتح تفاصيل هذا الحجز فقط — وضغطة ثانية تسكّرها */
+    schedOpen = (schedOpen===o.dbId) ? null : o.dbId;
     if(o.dbId) markJobsSeen([o.dbId]);
     render();
-    setTimeout(function(){
+    if(schedOpen) setTimeout(function(){
       const el=document.getElementById('job-'+(o.dbId||'').replace(/[^a-zA-Z0-9_-]/g,''));
       if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
     }, 120);
@@ -1535,7 +1537,7 @@ function render(){
   const openCount=jobs.filter(o=>o.status!=='done').length;
 
   if(!schedDate) schedDate=todayISO;
-  const shown = tab==='home' ? jobs.filter(o=>o.date===schedDate) : (calFilter ? jobs.filter(o=>o.date===calFilter) : jobs);
+  const shown = tab==='home' ? jobs.filter(o=>schedOpen && o.dbId===schedOpen) : (calFilter ? jobs.filter(o=>o.date===calFilter) : jobs);
   let cards;
   if(shown.length===0){ cards=`<div class="empty"><div class="ico">🧰</div><h3>${t('noJobs')}</h3></div>`; }
   else { let lastDate=null; cards=shown.map(o=>{
@@ -1643,10 +1645,10 @@ function render(){
 
   let view;
   if(tab==='home'){
-    /* الرئيسية: جدول اليوم وطلباته مباشرة — الأقسام صارت بالشريط تحت */
-    view=`${heroHTML}${schedHTML()}
-      <div style="margin-top:16px;font-weight:900;font-size:1.08rem">📋 ${lang==='ar'?('طلبات '+dayHeadLabel(schedDate)):('Orders — '+jobDate(schedDate))}</div>
-      <div class="jobs" style="margin-top:10px">${cards}</div>`;
+    /* الرئيسية: الجدول فقط — تفاصيل الحجز تطلع بس للمربع المضغوط */
+    view=`${heroHTML}${schedHTML()}${shown.length?`
+      <div style="margin-top:16px;font-weight:900;font-size:1.08rem">📋 ${lang==='ar'?'تفاصيل الحجز':'Booking details'}</div>
+      <div class="jobs" style="margin-top:10px">${cards}</div>`:''}`;
   } else {
     let sec;
     if(tab==='inv')           sec=renderInvTab();
