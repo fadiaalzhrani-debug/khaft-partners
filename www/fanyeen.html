@@ -285,17 +285,24 @@
 
   /* ===== قسم: حجز لعميل ===== */
   .bookf{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px;display:flex;flex-direction:column;gap:11px}
-  /* اختيار اليوم والوقت — نفس أسلوب تطبيق خافت */
-  .bkdates{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
-  .bkchip{flex:0 0 auto;min-width:62px;padding:8px 6px;border-radius:13px;border:1.5px solid var(--line);background:var(--card);text-align:center;font-family:inherit;color:var(--text);cursor:pointer}
-  .bkchip small{display:block;font-size:.68rem;font-weight:800;color:var(--muted)}
-  .bkchip b{display:block;font-size:1.15rem;font-weight:900;line-height:1.3}
-  .bkchip .mon{display:block;font-size:.66rem;font-weight:700;color:var(--muted)}
-  .bkchip.active{background:var(--gold);border-color:var(--gold);color:#1a1408}
-  .bkchip.active small,.bkchip.active .mon{color:#1a1408}
-  .bkslots{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:4px}
-  .bkslot{padding:11px 4px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-weight:800;text-align:center;font-size:.88rem;font-family:inherit;color:var(--text);cursor:pointer;white-space:nowrap}
-  .bkslot.active{background:#1a1408;color:#fff;border-color:#1a1408}
+  /* اختيار اليوم ونافذة الوصول — منسوخ حرفياً من تطبيق خافت */
+  .bkpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:16px}
+  .bkpanel h3{font-size:1.05rem;font-weight:800;margin-bottom:15px;display:flex;align-items:center;gap:8px}
+  .dates{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .dchip{flex-shrink:0;min-width:76px;text-align:center;padding:11px 8px;border-radius:15px;border:1.5px solid var(--line);background:#fcfbf7;transition:.15s;font-family:inherit;color:inherit;cursor:pointer}
+  .dchip.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
+  .dchip small{display:block;font-size:.72rem;opacity:.85;font-weight:700}
+  .dchip b{font-size:1.3rem;display:block;font-weight:800}
+  .dchip .mon{font-size:.72rem}
+  .more-date{position:relative;border-style:dashed;border-color:var(--gold-strong,#E7B70B);background:rgba(245,197,24,.12);cursor:pointer;display:block}
+  .more-date b{color:var(--gold-deep,#B8860B)}
+  .more-date.active{border-style:solid;background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
+  .more-date.active b{color:#fff}
+  .more-date input[type=date]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:none;padding:0}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:4px}
+  .slot{padding:12px 6px;border-radius:13px;border:1.5px solid var(--line);background:#fcfbf7;font-weight:700;text-align:center;transition:.15s;font-size:.9rem;font-family:inherit;color:inherit;cursor:pointer}
+  .slot.win{white-space:nowrap;font-size:.88rem;font-weight:800}
+  .slot.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
 
   /* ===== قسم: الفواتير ===== */
   .iv-sum{display:flex;justify-content:space-between;gap:10px;background:var(--card);border:1px solid rgba(245,197,24,.3);border-radius:14px;padding:14px 16px;margin-top:14px}
@@ -1306,39 +1313,53 @@ async function invEdit(id){
 }
 /* ---- قسم: حجز لعميل ---- */
 let bkDate=null, bkTime=null; const bkVals={};
-function pickBkDate(iso){ bkDate=iso; render(); }
+function pickBkDate(iso){ bkDate=iso; bkTime=null; render(); }
 function pickBkTime(m){ bkTime=m; render(); }
+/* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
+const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
+function bkWindowLabel(m){ return jobTime(m)+' – '+jobTime(Math.min(m+BK_WINDOW,BK_WORK_END)); }
 function renderBookTab(){
   const A=lang==='ar';
   const today=new Date(); today.setHours(0,0,0,0);
   if(!bkDate) bkDate=dateISO(today);
   const REL={ar:'اليوم',en:'Today',ne:'आज',hi:'आज',ur:'آج'};
-  /* شريط الأيام — أسبوعان، بدون الجمعة (عطلة) */
-  const chips=[];
-  for(let i=0;i<16;i++){
-    const d=new Date(today); d.setDate(today.getDate()+i);
-    if(d.getDay()===5) continue;
+  /* شريط الأيام — زي خافت بالضبط: أسبوعان بدون الجمعة + «تاريخ أبعد» */
+  const stripDays=[];
+  for(let i=0;i<16;i++){ const d=new Date(today); d.setDate(today.getDate()+i); if(d.getDay()!==5) stripDays.push(d); }
+  const dchips=stripDays.map((d,i)=>{
     const iso=dateISO(d);
-    chips.push(`<button class="bkchip ${bkDate===iso?'active':''}" onclick="pickBkDate('${iso}')">
-      <small>${i===0?(REL[lang]||REL.ar):WEEK[lang][d.getDay()]}</small><b>${ar(d.getDate())}</b><span class="mon">${MON[lang][d.getMonth()]}</span></button>`);
-  }
-  /* شبكة الأوقات — كل ساعة من ٨ صباحاً إلى ٩ مساءً */
-  const nowMin=(new Date()).getHours()*60+(new Date()).getMinutes();
-  const isToday=bkDate===dateISO(new Date());
+    return `<button class="dchip ${bkDate===iso?'active':''}" onclick="pickBkDate('${iso}')">
+      <small>${i===0?(REL[lang]||REL.ar):WEEK[lang][d.getDay()]}</small><b>${ar(d.getDate())}</b><span class="mon">${MON[lang][d.getMonth()]}</span></button>`;
+  }).join('');
+  const farActive = bkDate && !stripDays.some(d=>dateISO(d)===bkDate);
+  const fd = farActive ? parseISO(bkDate) : null;
+  const farChip=`<label class="dchip more-date ${farActive?'active':''}">
+    ${farActive
+      ? `<small>${WEEK[lang][fd.getDay()]}</small><b>${ar(fd.getDate())}</b><span class="mon">${MON[lang][fd.getMonth()]}</span>`
+      : `<small>📅</small><b>＋</b><span class="mon">${A?'تاريخ أبعد':'Later date'}</span>`}
+    <input type="date" min="${dateISO(today)}" value="${farActive?bkDate:''}" onchange="if(this.value)pickBkDate(this.value)" />
+  </label>`;
+  /* نوافذ الوصول — كل ساعتين زي خافت («٨:٠٠ ص – ١٠:٠٠ ص») */
+  const now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
+  const isToday=bkDate===dateISO(now);
   const slots=[];
-  for(let m=8*60;m<=21*60;m+=60){
-    if(isToday && m<nowMin) continue;
-    slots.push(`<button class="bkslot ${bkTime===m?'active':''}" onclick="pickBkTime(${m})">${jobTime(m)}</button>`);
+  for(let m=BK_WORK_START;m+60<=BK_WORK_END;m+=BK_WINDOW){
+    if(isToday && m+BK_WINDOW<=nowMin) continue;
+    slots.push(`<button class="slot win ${bkTime===m?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
   }
   return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل وأنت بالموقع':'Book an appointment on the spot'}</p></div>
   <div class="bookf">
     <div class="fu-field"><label>${A?'اسم العميل':'Customer name'}</label><input id="bk_name" value="${esc(bkVals.name||'')}" oninput="bkVals.name=this.value" placeholder="${A?'الاسم':'Name'}" /></div>
     <div class="fu-field"><label>${A?'الجوال':'Phone'}</label><input id="bk_phone" inputmode="tel" value="${esc(bkVals.phone||'')}" oninput="bkVals.phone=this.value" placeholder="05xxxxxxxx" /></div>
     <div class="fu-field"><label>${A?'الخدمة المطلوبة':'Service'}</label><input id="bk_svc" value="${esc(bkVals.svc||'')}" oninput="bkVals.svc=this.value" placeholder="${A?'مثال: تسليك مجاري':'e.g. Drain cleaning'}" /></div>
-    <div class="fu-field"><label>📅 ${A?'اختر اليوم':'Pick a day'}</label><div class="bkdates">${chips.join('')}</div></div>
-    <div class="fu-field"><label>🕐 ${A?'اختر الوقت':'Pick a time'}</label>${slots.length?`<div class="bkslots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'خلصت أوقات اليوم — اختر يوماً ثانياً':'No times left today — pick another day'}</p>`}</div>
+  </div>
+  <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
+  <div class="bkpanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
+    ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
+  </div>
+  <div class="bookf">
     <div class="fu-field"><label>${A?'العنوان':'Address'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'حي · شارع · رقم المبنى':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
-    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">📅 ${A?'احجز الموعد':'Book appointment'}${bkTime!=null?' — '+jobTime(bkTime):''}</button>
+    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">📅 ${A?'احجز الموعد':'Book appointment'}${bkTime!=null?' — '+bkWindowLabel(bkTime):''}</button>
   </div>`;
 }
 async function createBooking(){
