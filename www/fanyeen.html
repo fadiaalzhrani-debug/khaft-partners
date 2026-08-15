@@ -1489,7 +1489,8 @@ function render(){
       </div>
       <div style="margin-top:12px">${sec}</div>`;
   }
-  document.getElementById('app').innerHTML = view;
+  /* الشريط السفلي الثابت + مسافة تمنع تغطية آخر المحتوى */
+  document.getElementById('app').innerHTML = view + '<div style="height:84px"></div>' + renderTabs();
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),1800); }
 
