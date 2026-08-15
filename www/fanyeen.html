@@ -303,6 +303,7 @@
   .slot{padding:12px 6px;border-radius:13px;border:1.5px solid var(--line);background:#fcfbf7;font-weight:700;text-align:center;transition:.15s;font-size:.9rem;font-family:inherit;color:inherit;cursor:pointer}
   .slot.win{white-space:nowrap;font-size:.88rem;font-weight:800}
   .slot.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
+  .slot:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
   .notify-toggle{display:flex;align-items:center;gap:12px;margin-top:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
   .notify-toggle.on{border-color:#25D366;background:rgba(37,211,102,.1)}
   .notify-toggle .nt-check{width:26px;height:26px;flex-shrink:0;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:#fff;font-size:1rem}
@@ -1330,18 +1331,13 @@ async function invEdit(id){
   toast('✅ '+(A?'تعدّل':'Updated')); render();
 }
 /* ---- قسم: حجز لعميل ---- */
-let bkDate=null, bkTime=null, bkStep='time', bkEarlier=true; const bkVals={};
+let bkDate=null, bkTime=null; const bkVals={};
 function pickBkDate(iso){ bkDate=iso; bkTime=null; render(); }
 function pickBkTime(m){ bkTime=m; render(); }
-function toggleBkEarlier(){ bkEarlier=!bkEarlier; render(); }
-function bkBack(){ bkStep='time'; render(); }
-function bkNext(){
-  if(bkTime==null){
-    toast('🕐 '+(lang==='ar'?'اختر نافذة الوصول أولاً':'Pick an arrival window first'));
-    const el=document.getElementById('bkSlotsPanel'); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
-    return;
-  }
-  bkStep='info'; render(); try{window.scrollTo(0,0);}catch(e){}
+/* النافذة مشغولة إذا فيها حجز قائم بنفس اليوم */
+function bkBusy(iso,m){
+  return ORDERS.some(o=>o.date===iso && o.status!=='cancelled' &&
+    (+o.startMin||0) < m+BK_WINDOW && ((+o.endMin)||((+o.startMin||0)+60)) > m);
 }
 /* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
 const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
@@ -1367,41 +1363,29 @@ function renderBookTab(){
       : `<small>📅</small><b>＋</b><span class="mon">${A?'تاريخ أبعد':'Later date'}</span>`}
     <input type="date" min="${dateISO(today)}" value="${farActive?bkDate:''}" onchange="if(this.value)pickBkDate(this.value)" />
   </label>`;
-  /* نوافذ الوصول — كل ساعتين زي خافت («٨:٠٠ ص – ١٠:٠٠ ص») */
+  /* نوافذ اليوم بالترتيب — أول مربع أول ساعتين (٨–١٠ ص) وهكذا؛ المشغولة تنشطب */
   const now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
   const isToday=bkDate===dateISO(now);
   const slots=[];
   for(let m=BK_WORK_START;m+60<=BK_WORK_END;m+=BK_WINDOW){
     if(isToday && m+BK_WINDOW<=nowMin) continue;
-    slots.push(`<button class="slot win ${bkTime===m?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
+    const busy=bkBusy(bkDate,m);
+    slots.push(`<button class="slot win ${bkTime===m?'active':''}" ${busy?'disabled':''} onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
   }
-  /* ═ خطوة ١: متى يناسبك؟ — نسخة خافت حرفياً ═ */
-  if(bkStep==='time'){
-    const ready=bkTime!=null;
-    return `<div class="hero"><h1>${A?'متى يناسبك؟':'When suits you?'}</h1><p>${A?'احجز موعد جديد للعميل':'Book a new appointment for the customer'}</p></div>
-    <div class="notify-toggle ${bkEarlier?'on':''}" onclick="toggleBkEarlier()">
-      <span class="nt-check">${bkEarlier?'✓':''}</span>
-      <span class="nt-t"><b>🔔 ${A?'بلّغوني لو صار موعد أبكر':'Notify if an earlier slot opens'}</b><small>${A?'لو أحد ألغى وصار وقت أقرب، نتواصل مع العميل ونقدّم موعده':'If a closer time opens we contact the customer'}</small></span>
-    </div>
-    <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
-    <div class="bkpanel" id="bkSlotsPanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
-      ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
-    </div>
-    <div style="height:100px"></div>
-    <div class="nextbar"><div class="nbwrap">
-      <div class="nb-info"><b>${ready?bkWindowLabel(bkTime):'🕐 '+(A?'اختر نافذة الوصول':'Pick a window')}</b><small>${dayHeadLabel(bkDate)}</small></div>
-      <button class="nb-go${ready?'':' need'}" onclick="bkNext()">${A?'التالي':'Next'} <span>←</span></button>
-    </div></div>`;
-  }
-  /* ═ خطوة ٢: بيانات العميل ═ */
-  return `<div class="hero"><h1>${A?'بيانات العميل':'Customer details'}</h1><p>🕐 ${bkWindowLabel(bkTime)} · ${dayHeadLabel(bkDate)}</p></div>
-  <div style="margin-top:10px"><button class="backbtn" onclick="bkBack()">‹ ${A?'غيّر الموعد':'Change time'}</button></div>
+  return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل وأنت بالموقع':'Book an appointment on the spot'}</p></div>
   <div class="bookf">
     <div class="fu-field"><label>${A?'اسم العميل':'Customer name'}</label><input id="bk_name" value="${esc(bkVals.name||'')}" oninput="bkVals.name=this.value" placeholder="${A?'الاسم':'Name'}" /></div>
     <div class="fu-field"><label>${A?'الجوال':'Phone'}</label><input id="bk_phone" inputmode="tel" value="${esc(bkVals.phone||'')}" oninput="bkVals.phone=this.value" placeholder="05xxxxxxxx" /></div>
     <div class="fu-field"><label>${A?'الخدمة المطلوبة':'Service'}</label><input id="bk_svc" value="${esc(bkVals.svc||'')}" oninput="bkVals.svc=this.value" placeholder="${A?'مثال: تسليك مجاري':'e.g. Drain cleaning'}" /></div>
+  </div>
+  <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
+  <div class="bkpanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
+    ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
+    <p style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:10px">${A?'المشطوب = عليه حجز موجود':'Struck-through = already booked'}</p>
+  </div>
+  <div class="bookf">
     <div class="fu-field"><label>${A?'العنوان':'Address'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'حي · شارع · رقم المبنى':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
-    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">✅ ${A?'أكّد الحجز':'Confirm booking'}</button>
+    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">✅ ${A?'أكّد الحجز':'Confirm booking'}${bkTime!=null?' — '+bkWindowLabel(bkTime):''}</button>
   </div>`;
 }
 async function createBooking(){
@@ -1415,14 +1399,14 @@ async function createBooking(){
     items:[{id:'custom',name:svc||(A?'خدمة':'Service'),ico:'🔧',qty:1,price:0,custom:true}],
     service_date:date, start_min:startMin, duration:duration, end_min:startMin+duration,
     price:0, final_price:0, free:false, status:'confirmed', rating:0, reminded:false,
-    quick:true, wants_earlier:bkEarlier, note:(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
+    quick:true, note:(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
   const btn=document.getElementById('bk_go'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
   if(cloudReady){
     try{ const r=await sb.from('khafet_orders').insert(payload).select().single(); if(r.error) throw r.error; }
     catch(e){ toast('⚠️ '+(e.message||'')); if(btn){ btn.disabled=false; btn.textContent='📅'; } return; }
   }
   toast('✅ '+(A?'تم الحجز':'Booked'));
-  bkTime=null; bkStep='time'; bkEarlier=true; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr='';
+  bkTime=null; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr='';
   tab='orders'; calFilter=date;
   if(cloudReady) loadOrders(); else render();
 }
