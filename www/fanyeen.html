@@ -305,10 +305,17 @@
   .slot.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
   .slot:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
   /* نافذة عليها حجز: تنضغط وتفتح تفاصيله — والجديدة غير المقروءة بالأخضر */
+  .slot .bl{display:block;font-size:.66rem;font-weight:800;margin-top:2px}
   .slot.busy{background:#F3EEE2;border-style:dashed;color:var(--muted)}
-  .slot.busy .bl{display:block;font-size:.66rem;font-weight:800;color:#B8860B;margin-top:2px}
+  .slot.busy .bl{color:#B8860B}
   .slot.busy.newbk{background:rgba(22,163,74,.14);border-color:#16a34a;border-style:solid;color:#166534}
   .slot.busy.newbk .bl{color:#16a34a}
+  /* جدول اليوم بالرئيسية: أخضر = جديد، ذهبي = محجوز، رمادي = فاضي */
+  .slot.free{background:#EFEAE0;border-color:var(--line);color:var(--muted)}
+  .slot.b-new{background:rgba(22,163,74,.15);border-color:#16a34a;color:#166534}
+  .slot.b-new .bl{color:#16a34a}
+  .slot.b-seen{background:var(--gold);border-color:var(--gold);color:#1a1408}
+  .slot.b-seen .bl{color:#1a1408;opacity:.75}
   .notify-toggle{display:flex;align-items:center;gap:12px;margin-top:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
   .notify-toggle.on{border-color:#25D366;background:rgba(37,211,102,.1)}
   .notify-toggle .nt-check{width:26px;height:26px;flex-shrink:0;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:#fff;font-size:1rem}
@@ -1245,6 +1252,7 @@ function renderAccountTab(){
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> ${x.del}</div><span class="sr-ar">›</span></div>
     </div>
     <button class="tbtn" style="width:100%;margin-top:4px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">${x.out}</button>
+    <a href="index.html#stay" style="display:block;text-align:center;color:var(--muted);font-weight:700;font-size:.82rem;margin-top:14px">🤝 ${lang==='ar'?'صفحة رزق الرئيسية':'Rizq home page'}</a>
   </div>`;
 }
 function renderTabs(){
@@ -1352,6 +1360,46 @@ function openBkWindow(iso,m){
     const el=document.getElementById('job-'+(o.dbId||'').replace(/[^a-zA-Z0-9_-]/g,''));
     if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
   }, 150);
+}
+/* ═ جدول اليوم بالرئيسية ═ */
+let schedDate=null;
+function schedPick(iso){ schedDate=iso; render(); }
+function schedTapWin(iso,m){
+  const o=bkWinOrder(iso,m);
+  if(o){
+    if(o.dbId) markJobsSeen([o.dbId]);
+    render();
+    setTimeout(function(){
+      const el=document.getElementById('job-'+(o.dbId||'').replace(/[^a-zA-Z0-9_-]/g,''));
+      if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
+    }, 120);
+  } else {
+    bkDate=iso; bkTime=m; tab='book'; render();
+    try{window.scrollTo(0,0);}catch(e){}
+  }
+}
+function schedHTML(){
+  const A=lang==='ar';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const REL={ar:'اليوم',en:'Today',ne:'आज',hi:'आज',ur:'آج'};
+  const chips=[];
+  for(let i=0;i<16;i++){
+    const d=new Date(today); d.setDate(today.getDate()+i); const iso=dateISO(d);
+    chips.push(`<button class="dchip ${schedDate===iso?'active':''}" onclick="schedPick('${iso}')"><small>${i===0?(REL[lang]||REL.ar):WEEK[lang][d.getDay()]}</small><b>${ar(d.getDate())}</b><span class="mon">${MON[lang][d.getMonth()]}</span></button>`);
+  }
+  const seenS=seenJobs();
+  const slots=[];
+  for(let m=BK_WORK_START;m+60<=BK_WORK_END;m+=BK_WINDOW){
+    const o=bkWinOrder(schedDate,m);
+    const cls = o ? ((o.dbId&&o.status!=='done'&&!seenS.has(o.dbId))?'b-new':'b-seen') : 'free';
+    const sub = o ? (cls==='b-new'?(A?'🟢 جديد':'🟢 NEW'):(A?'محجوز':'Booked')) : (A?'فاضي':'Free');
+    slots.push(`<button class="slot win ${cls}" onclick="schedTapWin('${schedDate}',${m})">${bkWindowLabel(m)}<span class="bl">${sub}</span></button>`);
+  }
+  return `<div class="bkpanel" style="margin-top:14px"><h3>📅 ${A?'جدول اليوم':'Day schedule'}</h3>
+    <div class="dates">${chips.join('')}</div>
+    <div class="slots" style="margin-top:12px">${slots.join('')}</div>
+    <p style="color:var(--muted);font-size:.78rem;font-weight:700;margin-top:10px">${A?'🟢 حجز جديد ما انفتح · الذهبي محجوز · الرمادي فاضي (اضغطيه تحجزين فيه)':'Green = new booking · Gold = booked · Gray = free (tap to book)'}</p>
+  </div>`;
 }
 /* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
 const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
@@ -1486,7 +1534,8 @@ function render(){
   const todayCount=jobs.filter(o=>o.date===todayISO && o.status!=='done').length;
   const openCount=jobs.filter(o=>o.status!=='done').length;
 
-  const shown = calFilter ? jobs.filter(o=>o.date===calFilter) : jobs;
+  if(!schedDate) schedDate=todayISO;
+  const shown = tab==='home' ? jobs.filter(o=>o.date===schedDate) : (calFilter ? jobs.filter(o=>o.date===calFilter) : jobs);
   let cards;
   if(shown.length===0){ cards=`<div class="empty"><div class="ico">🧰</div><h3>${t('noJobs')}</h3></div>`; }
   else { let lastDate=null; cards=shown.map(o=>{
@@ -1594,7 +1643,10 @@ function render(){
 
   let view;
   if(tab==='home'){
-    view=`${heroHTML}<div class="hgrid">${cardsHTML}</div>`;
+    /* الرئيسية: جدول اليوم وطلباته مباشرة — الأقسام صارت بالشريط تحت */
+    view=`${heroHTML}${schedHTML()}
+      <div style="margin-top:16px;font-weight:900;font-size:1.08rem">📋 ${lang==='ar'?('طلبات '+dayHeadLabel(schedDate)):('Orders — '+jobDate(schedDate))}</div>
+      <div class="jobs" style="margin-top:10px">${cards}</div>`;
   } else {
     let sec;
     if(tab==='inv')           sec=renderInvTab();

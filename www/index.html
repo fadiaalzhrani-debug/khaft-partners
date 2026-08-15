@@ -6,6 +6,15 @@
 <title>رزق</title>
 <meta name="robots" content="noindex" />
 <meta name="theme-color" content="#141414" />
+<script>
+/* دخول مباشر: لو مسجل دخول من قبل، ودّه على صفحته فوراً (زي تويتر) — index.html#stay يوقف التحويل */
+try{
+  if(location.hash!=='#stay'){
+    if(localStorage.getItem('khafet_worker_auth')) location.replace('fanyeen.html');
+    else if(localStorage.getItem('khafet_provider_phone') && localStorage.getItem('khafet_remember')!=='0') location.replace('provider.html');
+  }
+}catch(e){}
+</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23141414'/><text y='.9em' x='18' font-size='58'>🤝</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
