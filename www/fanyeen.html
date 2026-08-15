@@ -303,6 +303,24 @@
   .slot{padding:12px 6px;border-radius:13px;border:1.5px solid var(--line);background:#fcfbf7;font-weight:700;text-align:center;transition:.15s;font-size:.9rem;font-family:inherit;color:inherit;cursor:pointer}
   .slot.win{white-space:nowrap;font-size:.88rem;font-weight:800}
   .slot.active{background:var(--ink,#1A1712);color:#fff;border-color:var(--ink,#1A1712)}
+  .notify-toggle{display:flex;align-items:center;gap:12px;margin-top:14px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
+  .notify-toggle.on{border-color:#25D366;background:rgba(37,211,102,.1)}
+  .notify-toggle .nt-check{width:26px;height:26px;flex-shrink:0;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:#fff;font-size:1rem}
+  .notify-toggle.on .nt-check{background:#25D366;border-color:#25D366}
+  .notify-toggle .nt-t b{display:block;font-weight:800;font-size:.98rem;color:var(--text)}
+  .notify-toggle .nt-t small{color:var(--muted);font-size:.82rem}
+  .nextbar{position:fixed;left:0;right:0;z-index:45;bottom:calc(56px + env(safe-area-inset-bottom));background:var(--ink,#1A1712);color:#fff;box-shadow:0 -10px 30px rgba(26,23,18,.2);border-top:1px solid rgba(245,197,24,.25)}
+  .nextbar .nbwrap{display:flex;align-items:center;gap:14px;height:74px;max-width:560px;margin:0 auto;padding:0 18px}
+  .nextbar .nb-info{flex:1;line-height:1.3}
+  .nextbar .nb-info b{font-size:1.02rem}
+  .nextbar .nb-info small{opacity:.72;display:block;font-size:.82rem}
+  .nextbar .nb-go{background:var(--gold);color:#1A1712;font-weight:900;padding:14px 26px;border-radius:13px;display:flex;gap:8px;align-items:center;font-size:1.02rem;border:none;font-family:inherit;cursor:pointer}
+  .nextbar .nb-go.need{animation:nbpulse 1.5s ease-in-out infinite}
+  @keyframes nbpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  /* طلب جديد غير مقروء — زي بريد الإيميل */
+  .tjob.unread{border:1.5px solid #16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.12)}
+  .newband{display:flex;align-items:center;gap:8px;background:#16a34a;color:#fff;font-weight:900;font-size:.85rem;padding:7px 14px}
+  .newband .dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:nbpulse 1.2s infinite}
 
   /* ===== قسم: الفواتير ===== */
   .iv-sum{display:flex;justify-content:space-between;gap:10px;background:var(--card);border:1px solid rgba(245,197,24,.3);border-radius:14px;padding:14px 16px;margin-top:14px}
@@ -747,7 +765,7 @@ function renderInvPanel(){
 function rowToOrder(r){
   return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[],
     customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
-    date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
+    date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, createdAt:r.created_at||null,
     free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0 };
 }
 function loadLocal(){
@@ -1312,9 +1330,19 @@ async function invEdit(id){
   toast('✅ '+(A?'تعدّل':'Updated')); render();
 }
 /* ---- قسم: حجز لعميل ---- */
-let bkDate=null, bkTime=null; const bkVals={};
+let bkDate=null, bkTime=null, bkStep='time', bkEarlier=true; const bkVals={};
 function pickBkDate(iso){ bkDate=iso; bkTime=null; render(); }
 function pickBkTime(m){ bkTime=m; render(); }
+function toggleBkEarlier(){ bkEarlier=!bkEarlier; render(); }
+function bkBack(){ bkStep='time'; render(); }
+function bkNext(){
+  if(bkTime==null){
+    toast('🕐 '+(lang==='ar'?'اختر نافذة الوصول أولاً':'Pick an arrival window first'));
+    const el=document.getElementById('bkSlotsPanel'); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  bkStep='info'; render(); try{window.scrollTo(0,0);}catch(e){}
+}
 /* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
 const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
 function bkWindowLabel(m){ return jobTime(m)+' – '+jobTime(Math.min(m+BK_WINDOW,BK_WORK_END)); }
@@ -1347,19 +1375,33 @@ function renderBookTab(){
     if(isToday && m+BK_WINDOW<=nowMin) continue;
     slots.push(`<button class="slot win ${bkTime===m?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
   }
-  return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل وأنت بالموقع':'Book an appointment on the spot'}</p></div>
+  /* ═ خطوة ١: متى يناسبك؟ — نسخة خافت حرفياً ═ */
+  if(bkStep==='time'){
+    const ready=bkTime!=null;
+    return `<div class="hero"><h1>${A?'متى يناسبك؟':'When suits you?'}</h1><p>${A?'احجز موعد جديد للعميل':'Book a new appointment for the customer'}</p></div>
+    <div class="notify-toggle ${bkEarlier?'on':''}" onclick="toggleBkEarlier()">
+      <span class="nt-check">${bkEarlier?'✓':''}</span>
+      <span class="nt-t"><b>🔔 ${A?'بلّغوني لو صار موعد أبكر':'Notify if an earlier slot opens'}</b><small>${A?'لو أحد ألغى وصار وقت أقرب، نتواصل مع العميل ونقدّم موعده':'If a closer time opens we contact the customer'}</small></span>
+    </div>
+    <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
+    <div class="bkpanel" id="bkSlotsPanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
+      ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
+    </div>
+    <div style="height:100px"></div>
+    <div class="nextbar"><div class="nbwrap">
+      <div class="nb-info"><b>${ready?bkWindowLabel(bkTime):'🕐 '+(A?'اختر نافذة الوصول':'Pick a window')}</b><small>${dayHeadLabel(bkDate)}</small></div>
+      <button class="nb-go${ready?'':' need'}" onclick="bkNext()">${A?'التالي':'Next'} <span>←</span></button>
+    </div></div>`;
+  }
+  /* ═ خطوة ٢: بيانات العميل ═ */
+  return `<div class="hero"><h1>${A?'بيانات العميل':'Customer details'}</h1><p>🕐 ${bkWindowLabel(bkTime)} · ${dayHeadLabel(bkDate)}</p></div>
+  <div style="margin-top:10px"><button class="backbtn" onclick="bkBack()">‹ ${A?'غيّر الموعد':'Change time'}</button></div>
   <div class="bookf">
     <div class="fu-field"><label>${A?'اسم العميل':'Customer name'}</label><input id="bk_name" value="${esc(bkVals.name||'')}" oninput="bkVals.name=this.value" placeholder="${A?'الاسم':'Name'}" /></div>
     <div class="fu-field"><label>${A?'الجوال':'Phone'}</label><input id="bk_phone" inputmode="tel" value="${esc(bkVals.phone||'')}" oninput="bkVals.phone=this.value" placeholder="05xxxxxxxx" /></div>
     <div class="fu-field"><label>${A?'الخدمة المطلوبة':'Service'}</label><input id="bk_svc" value="${esc(bkVals.svc||'')}" oninput="bkVals.svc=this.value" placeholder="${A?'مثال: تسليك مجاري':'e.g. Drain cleaning'}" /></div>
-  </div>
-  <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
-  <div class="bkpanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
-    ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
-  </div>
-  <div class="bookf">
     <div class="fu-field"><label>${A?'العنوان':'Address'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'حي · شارع · رقم المبنى':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
-    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">📅 ${A?'احجز الموعد':'Book appointment'}${bkTime!=null?' — '+bkWindowLabel(bkTime):''}</button>
+    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">✅ ${A?'أكّد الحجز':'Confirm booking'}</button>
   </div>`;
 }
 async function createBooking(){
@@ -1373,14 +1415,14 @@ async function createBooking(){
     items:[{id:'custom',name:svc||(A?'خدمة':'Service'),ico:'🔧',qty:1,price:0,custom:true}],
     service_date:date, start_min:startMin, duration:duration, end_min:startMin+duration,
     price:0, final_price:0, free:false, status:'confirmed', rating:0, reminded:false,
-    quick:true, note:(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
+    quick:true, wants_earlier:bkEarlier, note:(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
   const btn=document.getElementById('bk_go'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
   if(cloudReady){
     try{ const r=await sb.from('khafet_orders').insert(payload).select().single(); if(r.error) throw r.error; }
     catch(e){ toast('⚠️ '+(e.message||'')); if(btn){ btn.disabled=false; btn.textContent='📅'; } return; }
   }
   toast('✅ '+(A?'تم الحجز':'Booked'));
-  bkTime=null; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr='';
+  bkTime=null; bkStep='time'; bkEarlier=true; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr='';
   tab='orders'; calFilter=date;
   if(cloudReady) loadOrders(); else render();
 }
@@ -1412,9 +1454,23 @@ function renderInvoicesTab(){
 
 /* ---- العرض ---- */
 function setLang(l){ lang=l; localStorage.setItem('khafet_techlang',l); if(invEditing) renderInvoice(); render(); }
+/* الطلبات الجديدة غير المقروءة — زي بريد الإيميل */
+function seenJobs(){ try{ return new Set(JSON.parse(localStorage.getItem('khafet_tech_seen')||'[]')); }catch(e){ return new Set(); } }
+function markJobsSeen(ids){ try{ const s=seenJobs(); ids.forEach(i=>i&&s.add(i)); localStorage.setItem('khafet_tech_seen', JSON.stringify([...s].slice(-400))); }catch(e){} }
+function jobAgo(o){
+  if(!o.createdAt) return '';
+  const mins=Math.max(1, Math.round((Date.now()-new Date(o.createdAt).getTime())/60000));
+  const A=lang==='ar';
+  if(mins<60) return A?('وصل قبل '+ar(mins)+' د'):(mins+'m ago');
+  const h=Math.round(mins/60);
+  if(h<24) return A?('وصل قبل '+ar(h)+' س'):(h+'h ago');
+  const d=Math.round(h/24);
+  return A?('وصل قبل '+ar(d)+' يوم'):(d+'d ago');
+}
 function render(){
   document.documentElement.setAttribute('dir', isRTL()?'rtl':'ltr');
   if(!loggedIn){ showLogin(); return; }
+  const _sj=seenJobs(); window._sj=_sj;
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='';
   const ab1=document.getElementById('acctBtn'); if(ab1) ab1.style.display='';
   document.querySelectorAll('.langsw button').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
@@ -1474,7 +1530,10 @@ function render(){
         <span class="tm-arrow">▾</span>
       </button>`;
     }
-    return head+`<div class="tjob ${o.status==='done'?'done':''} ${o.quick?'quick':''}">
+    const isNew = o.dbId && o.status!=='done' && !window._sj.has(o.dbId);
+    const agoS = isNew ? jobAgo(o) : '';
+    return head+`<div class="tjob ${o.status==='done'?'done':''} ${o.quick?'quick':''} ${isNew?'unread':''}">
+      ${isNew?`<div class="newband"><span class="dot"></span>${lang==='ar'?'جديد':'NEW'}${agoS?' • '+agoS:''}</div>`:''}
       <div class="tj-head">
         <span class="tj-when">🕐 ${jobTime(o.startMin)} · ${jobDate(o.date)}</span>
         <span class="tj-badges">${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}<span class="status ${o.status}">${t('st')[o.status]}</span></span>
@@ -1547,6 +1606,11 @@ function render(){
   }
   /* الشريط السفلي الثابت + مسافة تمنع تغطية آخر المحتوى */
   document.getElementById('app').innerHTML = view + '<div style="height:84px"></div>' + renderTabs();
+  /* بعد ما شاف قائمة الطلبات، الجديد الحالي يُعتبر مقروءاً */
+  if(tab==='orders'){
+    const ids=jobs.map(o=>o.dbId).filter(Boolean);
+    setTimeout(function(){ markJobsSeen(ids); }, 1500);
+  }
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),1800); }
 
