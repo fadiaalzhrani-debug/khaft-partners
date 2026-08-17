@@ -172,14 +172,20 @@ workflows:
     scripts:
       - name: تثبيت الحزم
         script: npm install
-      - name: تجهيز منصة أندرويد
+      - name: تجهيز منصة أندرويد + Firebase
         script: |
-          # الإشعارات على أندرويد تحتاج Firebase (غير مُعد) — نزيلها لتفادي الانهيار
-          npm uninstall @capacitor/push-notifications 2>/dev/null || true
+          # نُبقي إضافة الإشعارات — أندرويد صار يدعم Firebase الآن
           npx cap add android || true
           npx cap sync android
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          # استهداف المستوى 36 (شرط Google Play)
+          # ملف google-services.json من سرّ Codemagic (Base64) — إشعارات فنيّي رزق
+          if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > android/app/google-services.json
+            echo "✅ وُضع google-services.json"
+          else
+            echo "⚠️ لا يوجد GOOGLE_SERVICES_JSON_B64 — إشعارات أندرويد لن تعمل حتى يُضاف السرّ"
+          fi
+          # استهداف المستوى 36 (شرط Google Play) + إضافة Firebase messaging
           python3 - <<'PY'
           import re
           p = 'android/variables.gradle'
@@ -191,7 +197,19 @@ workflows:
           g = open(gp, encoding='utf-8').read()
           if 'suppressUnsupportedCompileSdk' not in g:
               open(gp, 'a', encoding='utf-8').write('\nandroid.suppressUnsupportedCompileSdk=36\n')
-          print('compileSdk/targetSdk = 35')
+          bp = 'android/build.gradle'
+          b = open(bp, encoding='utf-8').read()
+          if 'com.google.gms:google-services' not in b:
+              b = re.sub(r'(dependencies\s*\{)', r"\1\n        classpath 'com.google.gms:google-services:4.4.2'", b, count=1)
+              open(bp, 'w', encoding='utf-8').write(b)
+          ap = 'android/app/build.gradle'
+          a = open(ap, encoding='utf-8').read()
+          if 'com.google.gms.google-services' not in a:
+              a += "\napply plugin: 'com.google.gms.google-services'\n"
+          if 'firebase-messaging' not in a:
+              a = re.sub(r'(dependencies\s*\{)', r"\1\n    implementation platform('com.google.firebase:firebase-bom:33.7.0')\n    implementation 'com.google.firebase:firebase-messaging'", a, count=1)
+          open(ap, 'w', encoding='utf-8').write(a)
+          print('✅ compileSdk/targetSdk=36 + Firebase messaging مُضاف')
           PY
           (yes | sdkmanager "platforms;android-36" >/dev/null 2>&1) \
             || (yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" >/dev/null 2>&1) \

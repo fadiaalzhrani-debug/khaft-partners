@@ -670,14 +670,12 @@ function getPushPlugin(){
 let _pn=null, _pnReady=false;
 async function initPush(){
   if(!inApp() || !cloudReady) return;          // التطبيق فقط، وبعد جاهزية السحابة
-  // أندرويد: الإشعارات تحتاج Firebase (غير مُعد) — نتجاوزها لتفادي انهيار التطبيق
-  try{ if(window.Capacitor.getPlatform && window.Capacitor.getPlatform()==='android') return; }catch(e){}
   try{
     const PN=_pn||getPushPlugin(); if(!PN) return; _pn=PN;
     if(!_pnReady){
       // لازم ننتظر تركيب المستمع قبل register وإلا يضيع ردّ آبل
       await PN.addListener('registration', async (t)=>{
-        try{ await sb.rpc('register_staff_device', { p_token:t.value, p_platform:'ios' }); }
+        try{ await sb.rpc('register_staff_device', { p_token:t.value, p_platform:((window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'ios') }); }
         catch(e){ console.warn('حفظ جهاز الفني:', e); }
       });
       await PN.addListener('registrationError', e=> console.warn('خطأ تسجيل الإشعارات', e));
