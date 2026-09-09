@@ -53,6 +53,9 @@
   .login input{width:100%;padding:15px;border-radius:13px;background:var(--card);border:1.5px solid var(--line);font-weight:700;font-size:1.05rem;margin-bottom:12px}
   .login input:focus{outline:none;border-color:var(--gold-strong)}
   .login .btn{width:100%;background:var(--ink);color:#fff;font-weight:900;padding:16px;border-radius:13px;font-size:1.05rem}
+  .login .rememberme{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 8px;margin:2px 0 12px;font-size:.95rem;font-weight:800;color:var(--ink);cursor:pointer;user-select:none;text-align:center}
+  .login .rememberme input{width:18px;height:18px;margin:0;padding:0;accent-color:#F5C518;cursor:pointer}
+  .login .rememberme small{flex:0 0 100%;font-weight:600;font-size:.78rem;color:var(--muted)}
   .login .lgerr{background:var(--danger-soft);color:#991B1B;border-radius:12px;padding:12px;margin-top:12px;font-weight:600;font-size:.9rem}
 
   .screen{padding:18px 0 40px}
@@ -208,6 +211,84 @@
 .pweye:hover{background:rgba(0,0,0,.05)}
 .pweye svg{width:21px;height:21px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
+
+/* ═ المستودع ═ */
+.wh-thumb{width:58px;height:58px;border-radius:12px;object-fit:cover;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:1.5rem;overflow:hidden;cursor:pointer}
+.wh-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.wf-photo{display:flex;align-items:center;gap:12px;grid-column:1/-1}
+.wf-photo .wh-thumb{width:84px;height:84px;font-size:2rem}
+.wf-photo .btns{display:flex;flex-direction:column;gap:6px}
+.wf-photo .sbtn{padding:9px 12px;font-size:.82rem}
+.wh-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:90;display:grid;place-items:center;padding:20px}
+.wh-lightbox img{max-width:100%;max-height:90vh;border-radius:14px;background:#fff}
+.wh-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.wh-stat{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.wh-stat .n{font-size:1.3rem;font-weight:900;line-height:1.1;font-variant-numeric:tabular-nums}
+.wh-stat .l{font-size:.76rem;color:var(--muted);margin-top:4px;font-weight:700}
+.wh-stat.warn .n{color:var(--danger)} .wh-stat.gold .n{color:var(--gold-deep)} .wh-stat.green .n{color:var(--ok)}
+.wh-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.wh-search{flex:1;min-width:150px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-family:inherit;font-weight:700;font-size:.95rem}
+.wh-search:focus{outline:none;border-color:var(--gold-strong)}
+.wh-sel{padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-family:inherit;font-weight:800;font-size:.85rem;color:var(--ink)}
+.wh-add{background:var(--ink);color:#fff;border-radius:12px;padding:11px 16px;font-weight:900;font-family:inherit;font-size:.9rem;white-space:nowrap}
+.wh-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.wh-chips::-webkit-scrollbar{display:none}
+.wh-chip{white-space:nowrap;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;font-size:.82rem;color:var(--muted);font-family:inherit}
+.wh-chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.wh-chip.warn{color:#9A3B00} .wh-chip.warn.active{background:#E8590C;border-color:#E8590C;color:#fff}
+.wh-order{background:#FFF8E1;border:1px solid #F1D97A;border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.wh-order h4{font-size:.98rem;font-weight:900;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.wh-order h4 .sbtn{padding:7px 12px;font-size:.8rem}
+.wh-order table{width:100%;border-collapse:collapse;margin-top:8px;font-size:.86rem}
+.wh-order td{padding:6px 4px;border-top:1px solid #F1E7BF;font-weight:700}
+.wh-order td.q{white-space:nowrap;font-weight:900;color:#9A3B00;text-align:center}
+.wh-order td.c{text-align:left;white-space:nowrap;color:var(--muted)}
+.wh-order tfoot td{font-weight:900;color:var(--ink);border-top:2px solid #E6D68F}
+.wh-list{display:grid;gap:10px}
+.wh-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;border-inline-start:5px solid var(--ok)}
+.wh-item.st-mid{border-inline-start-color:#E7B70B}
+.wh-item.st-low{border-inline-start-color:#E8590C;background:#FFF9F5}
+.wh-item.st-out{border-inline-start-color:var(--danger);background:#FDF3F3}
+.wh-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.wh-name{flex:1;min-width:0}
+.wh-name b{font-size:1.02rem;display:block;line-height:1.3}
+.wh-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.wh-tag{font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.wh-tag.hot{background:#FFE9D6;color:#B4400B;border-color:#F5C9A6}
+.wh-tag.out{background:var(--danger-soft);color:#991B1B;border-color:#F3C2C2}
+.wh-tag.low{background:#FFEBDD;color:#9A3B00;border-color:#F5C9A6}
+.wh-tag.ok{background:var(--ok-soft);color:#166534;border-color:#BBE5C6}
+.wh-tag.mid{background:#FFF3C4;color:#7a5f00;border-color:#F1D97A}
+.wh-qty{text-align:center;min-width:62px}
+.wh-qty b{font-size:1.6rem;font-weight:900;line-height:1;display:block;font-variant-numeric:tabular-nums}
+.wh-qty small{color:var(--muted);font-weight:700;font-size:.72rem}
+.wh-bar{height:9px;border-radius:999px;background:#EDE8DA;margin-top:10px;overflow:hidden}
+.wh-bar i{display:block;height:100%;border-radius:999px;background:var(--ok);min-width:2px}
+.wh-bar.none i{background:#D6D0C0}
+.st-mid .wh-bar i{background:#E7B70B} .st-low .wh-bar i{background:#E8590C} .st-out .wh-bar i{background:var(--danger)}
+.wh-meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);font-weight:700;margin-top:5px}
+.wh-meta b{color:var(--ink);font-variant-numeric:tabular-nums}
+.wh-pct{font-weight:900;font-size:.85rem;color:var(--ink)}
+.st-low .wh-pct{color:#B4400B} .st-out .wh-pct{color:var(--danger)}
+.wh-price{font-size:.8rem;color:var(--muted);font-weight:700;margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
+.wh-price .pos{color:var(--ok)} .wh-price .neg{color:var(--danger)}
+.wh-empty{text-align:center;color:var(--muted);padding:26px 10px;font-weight:700}
+.wh-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:flex;align-items:flex-end;justify-content:center}
+.wh-modal{background:#fff;border-radius:22px 22px 0 0;width:100%;max-width:520px;max-height:92vh;overflow:auto;padding:18px 18px 28px}
+.wh-modal h3{font-size:1.1rem;font-weight:900;margin-bottom:12px}
+.wh-f{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wh-f label{display:flex;flex-direction:column;gap:4px;font-size:.78rem;font-weight:800;color:var(--muted)}
+.wh-f label.full{grid-column:1/-1}
+.wh-f input,.wh-f select{padding:11px 12px;border-radius:11px;border:1.5px solid var(--line);font-family:inherit;font-weight:800;font-size:1rem;color:var(--ink);background:#fff;width:100%}
+.wh-f input:focus,.wh-f select:focus{outline:none;border-color:var(--gold-strong)}
+.wh-hint{grid-column:1/-1;font-size:.76rem;color:var(--muted);font-weight:600;background:var(--bg);border-radius:10px;padding:8px 10px}
+.wh-actions{display:flex;gap:8px;margin-top:14px} .wh-actions .sbtn{flex:1;padding:13px;font-size:.95rem}
+.wh-item .inv-ctl{gap:6px;flex-wrap:nowrap}
+.wh-item .inv-ctl .inv-amt{width:58px;padding:9px 6px;flex:0 0 auto}
+.wh-item .inv-ctl .sbtn{padding:9px 9px;font-size:.82rem;white-space:nowrap}
+.wh-item .inv-ctl .sbtn.ok{flex:1}
+@media(max-width:600px){ .wh-stats{grid-template-columns:repeat(2,1fr)} }
+
 html,body{touch-action:manipulation}
 </style>
 </head>
@@ -358,15 +439,19 @@ async function openMedia(v){
   }catch(e){ console.warn('media:', e.message||e); toast('تعذّر فتح الملف'); }
 }
 /* هل المستخدم الحالي أدمن؟ (يسأل قاعدة البيانات — لا يعتمد على المتصفح) */
-async function isAdminUser(){ try{ const { data }=await sb.rpc('staff_role'); return data==='admin'; }catch(e){ return false; } }
+async function isAdminUser(){ try{ const { data, error }=await sb.rpc('staff_role'); if(error) return 'err'; return data==='admin'; }catch(e){ return 'err'; } }
+let remChoice=true;
 async function initCloud(){
   try{
     if(window.supabase && SUPABASE_URL){
       sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON); cloudReady=true;
       const { data:{ session } }=await sb.auth.getSession();
       if(session){
-        if(await isAdminUser()){ loggedIn=true; loadAll(); subscribe(); return; }
-        try{ await sb.auth.signOut(); }catch(e){}   // جلسة بلا صلاحية أدمن
+        if(localStorage.getItem('khafet_remember')==='0'){ try{ await sb.auth.signOut(); }catch(e){} render(); return; }   // اختار عدم البقاء مسجّلاً
+        const ok=await isAdminUser();
+        // ندخل لو الفحص نجح، أو لو تعذّر الاتصال والحساب سبق التحقق منه (ما نطلع المستخدم بسبب انقطاع الشبكة)
+        if(ok===true || (ok==='err' && localStorage.getItem('khafet_admin_ok')==='1')){ if(ok===true) localStorage.setItem('khafet_admin_ok','1'); loggedIn=true; loadAll(); subscribe(); return; }
+        if(ok===false){ try{ await sb.auth.signOut(); }catch(e){} localStorage.removeItem('khafet_admin_ok'); }   // جلسة بلا صلاحية أدمن
       }
       render(); return;
     }
@@ -549,43 +634,202 @@ async function logStock(it, delta, reason, actor){
   if(cloudReady){ try{ const r=await sb.from('khafet_stock_log').insert(entry).select().single(); if(!r.error&&r.data){ LOG.unshift(r.data); return; } }catch(e){} }
   LOG.unshift(Object.assign({created_at:new Date().toISOString()},entry));
 }
-/* ---- المخزن ---- */
-async function invAddItem(){
-  const g=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
-  const name=g('inv_new_name'); if(!name){ toast('اكتب اسم الصنف'); return; }
-  const unit=g('inv_new_unit')||'حبة'; const qty=Math.abs(+g('inv_new_qty')||0);
-  const data={ name, unit, qty };
-  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').insert(data).select().single(); if(!r.error&&r.data){ INV.unshift(r.data); if(qty>0) await logStock(r.data,qty,'شراء','المؤسسة'); } }catch(e){ toast('تعذّر الحفظ'); return; } }
-  toast('✅ أُضيف الصنف للمخزن'); render();
+/* ---- المستودع ---- */
+/* ضغط صورة الصنف قبل الرفع: أقصى بُعد 800px، JPEG 82% */
+function compressImage(file, max, q){ return new Promise((res,rej)=>{ const img=new Image(); const url=URL.createObjectURL(file);
+  img.onload=()=>{ const r=Math.min(1,(max||800)/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*r); c.height=Math.round(img.height*r);
+    const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+    c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',q||0.82); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('img')); }; img.src=url; }); }
+async function uploadPartPhoto(itemId, file){
+  const blob=await compressImage(file,800,0.82);
+  const path=itemId+'.jpg';
+  const { error }=await sb.storage.from('khafet-parts').upload(path, blob, { upsert:true, contentType:'image/jpeg' });
+  if(error) throw error;
+  const { data }=sb.storage.from('khafet-parts').getPublicUrl(path);
+  const url=data.publicUrl+'?v='+Date.now();
+  const r=await sb.from('khafet_inventory').update({image_url:url}).eq('id',itemId); if(r.error) throw r.error;
+  return url;
+}
+
+let wfPhoto=null, wfPhotoUrl='';
+function whShowImg(url){ if(!url) return; document.body.insertAdjacentHTML('beforeend',`<div class="wh-lightbox" onclick="this.remove()"><img src="${esc(url)}" /></div>`); }
+async function wfPickPhoto(input){ const f=input.files&&input.files[0]; if(!f) return; try{ wfPhoto=await compressImage(f,800,0.82); wfPhotoUrl=URL.createObjectURL(wfPhoto); const im=document.getElementById('wf_img'); if(im) im.innerHTML='<img src="'+wfPhotoUrl+'" />'; toast('📷 الصورة جاهزة، اضغطي حفظ'); }catch(e){ toast('تعذّر قراءة الصورة'); } }
+async function wfRemovePhoto(id){ wfPhoto=null; wfPhotoUrl=''; const im=document.getElementById('wf_img'); if(im) im.innerHTML='📦'; if(id){ const it=INV.find(x=>x.id===id); if(it){ it.image_url=null; if(cloudReady){ try{ await sb.from('khafet_inventory').update({image_url:null}).eq('id',id); }catch(e){} } } toast('حُذفت الصورة'); } }
+
+const INV_CATS=['كهرباء','سباكة','عام'];
+const CAT_ICO={'كهرباء':'⚡','سباكة':'🔧','عام':'🛠️'};
+let invSearch='', invFilter='all', invSort='pct', invShowOrder=false;
+const n2=v=>(+v||0).toLocaleString('en',{maximumFractionDigits:2});
+function invUsage(id){ const now=Date.now(), d180=now-180*864e5, d30=now-30*864e5; let u6=0,u1=0;
+  LOG.forEach(e=>{ if(e.item_id!==id||+e.delta>=0) return; const t=new Date(e.created_at).getTime(), q=Math.abs(+e.delta||0); if(t>=d180) u6+=q; if(t>=d30) u1+=q; });
+  return {u6,u1,monthly:u6/6}; }
+function invPct(it){ const q=+it.qty||0, tg=+it.target_qty||0; if(!tg) return null; return Math.max(0,Math.min(100,Math.round(q/tg*100))); }
+function invState(it){ const q=+it.qty||0, mn=+it.min_qty||0, p=invPct(it); if(q<=0) return 'out'; if(mn&&q<=mn) return 'low'; if(p!==null&&p<50) return 'mid'; return 'ok'; }
+function invNeed(it){ const q=+it.qty||0, tg=+it.target_qty||0, mn=+it.min_qty||0; const goal=tg||(mn*3); return Math.max(0,goal-q); }
+function invHot(){ return INV.map(it=>({id:it.id,u:invUsage(it.id).u6})).filter(x=>x.u>0).sort((a,b)=>b.u-a.u).slice(0,5).map(x=>x.id); }
+function invStats(itemId){ let inn=0,out=0; LOG.forEach(e=>{ if(e.item_id===itemId){ const d=+e.delta||0; if(d>0) inn+=d; else out+=Math.abs(d); } }); return {inn,out}; }
+function setInvFilter(f){ invFilter=f; invRefresh(); }
+function setInvSort(v){ invSort=v; invRefresh(); }
+function setInvSearch(v){ invSearch=(v||'').trim(); invRefresh(true); }
+function toggleInvOrder(){ invShowOrder=!invShowOrder; invRefresh(); }
+function invRefresh(keepFocus){ const el=document.getElementById('whBody'); if(!el){ render(); return; } el.innerHTML=renderWhBody(); if(keepFocus){ const i=document.getElementById('whSearch'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length); } } }
+function invVisible(){
+  const hot=invHot(); const q=invSearch.toLowerCase();
+  let list=INV.filter(it=>{
+    if(q && !((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q)) return false;
+    const st=invState(it);
+    if(invFilter==='low') return st==='low'||st==='out';
+    if(invFilter==='out') return st==='out';
+    if(invFilter==='hot') return hot.includes(it.id);
+    if(INV_CATS.includes(invFilter)) return (it.category||'عام')===invFilter;
+    return true; });
+  const rank={out:0,low:1,mid:2,ok:3};
+  if(invSort==='pct') list.sort((a,b)=>{ const ra=rank[invState(a)], rb=rank[invState(b)]; if(ra!==rb) return ra-rb; const pa=invPct(a), pb=invPct(b); return (pa===null?101:pa)-(pb===null?101:pb); });
+  else if(invSort==='use') list.sort((a,b)=>invUsage(b.id).u6-invUsage(a.id).u6);
+  else if(invSort==='value') list.sort((a,b)=>(+b.qty*+b.buy_price||0)-(+a.qty*+a.buy_price||0));
+  else list.sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+  return list;
+}
+function renderInventory(){
+  const pieces=INV.reduce((a,it)=>a+(+it.qty||0),0);
+  const value=INV.reduce((a,it)=>a+(+it.qty||0)*(+it.buy_price||0),0);
+  const profit=INV.reduce((a,it)=>a+(+it.qty||0)*Math.max(0,(+it.sell_price||0)-(+it.buy_price||0)),0);
+  const need=INV.filter(it=>['low','out'].includes(invState(it)));
+  const stats=`<div class="wh-stats">
+    <div class="wh-stat"><div class="n">${ar(INV.length)}</div><div class="l">📦 ${LX('صنف بالمستودع','Items')}</div></div>
+    <div class="wh-stat gold"><div class="n">${ar(n2(pieces))}</div><div class="l">🔢 ${LX('قطعة متوفرة','Pieces in stock')}</div></div>
+    <div class="wh-stat green"><div class="n">${ar(n2(Math.round(value)))}</div><div class="l">💰 ${LX('قيمة المخزون بالشراء (ر.س)','Stock value at cost (SAR)')}</div></div>
+    <div class="wh-stat ${need.length?'warn':''}"><div class="n">${ar(need.length)}</div><div class="l">${need.length?'🚨':'✅'} ${LX('تحتاج طلب الآن','Need reorder')}</div></div>
+  </div>`;
+  const tools=`<div class="wh-tools">
+    <input id="whSearch" class="wh-search" placeholder="🔍 ${LX('ابحث باسم الصنف أو الكود','Search by name or code')}" value="${esc(invSearch)}" oninput="setInvSearch(this.value)" />
+    <select class="wh-sel" onchange="setInvSort(this.value)">
+      <option value="pct" ${invSort==='pct'?'selected':''}>${LX('الأكثر نقصًا أولًا','Lowest first')}</option>
+      <option value="use" ${invSort==='use'?'selected':''}>${LX('الأكثر استخدامًا','Most used')}</option>
+      <option value="value" ${invSort==='value'?'selected':''}>${LX('الأعلى قيمة','Highest value')}</option>
+      <option value="name" ${invSort==='name'?'selected':''}>${LX('الاسم','Name')}</option>
+    </select>
+    <button class="wh-add" onclick="invForm('')">➕ ${LX('صنف جديد','New item')}</button>
+  </div>`;
+  return stats+tools+`<div id="whBody">${renderWhBody()}</div>`;
+}
+function renderWhBody(){
+  const hot=invHot();
+  const cnt={low:INV.filter(it=>['low','out'].includes(invState(it))).length, out:INV.filter(it=>invState(it)==='out').length};
+  const chip=(k,l,cls)=>`<button class="wh-chip ${cls||''} ${invFilter===k?'active':''}" onclick="setInvFilter('${k}')">${l}</button>`;
+  const chips=`<div class="wh-chips">
+    ${chip('all',LX('الكل','All')+' ('+ar(INV.length)+')')}
+    ${chip('low','⚠️ '+LX('تحتاج طلب','Reorder')+' ('+ar(cnt.low)+')','warn')}
+    ${chip('out','⛔ '+LX('نفدت','Out')+' ('+ar(cnt.out)+')','warn')}
+    ${chip('hot','🔥 '+LX('الأكثر استخدامًا','Most used'))}
+    ${INV_CATS.map(c=>chip(c,CAT_ICO[c]+' '+c)).join('')}
+  </div>`;
+  const need=INV.filter(it=>['low','out'].includes(invState(it)));
+  let orderBox='';
+  if(need.length){
+    const rows=need.map(it=>({it,q:invNeed(it),c:invNeed(it)*(+it.buy_price||0)})).filter(r=>r.q>0);
+    const tot=rows.reduce((a,r)=>a+r.c,0);
+    orderBox=`<div class="wh-order"><h4><span>🛒 ${LX('قائمة الطلب المقترحة','Suggested purchase list')} · ${ar(rows.length)} ${LX('صنف','items')}</span>
+      <span style="display:flex;gap:6px"><button class="sbtn" onclick="copyOrderList()">📋 ${LX('نسخ','Copy')}</button><button class="sbtn" onclick="toggleInvOrder()">${invShowOrder?LX('إخفاء','Hide'):LX('عرض','Show')}</button></span></h4>
+      ${invShowOrder?`<table><tbody>${rows.map(r=>`<tr><td>${esc(r.it.name)}<br><small style="color:var(--muted)">${LX('المتوفر','Have')} ${ar(n2(r.it.qty))} · ${LX('المستهدف','Target')} ${ar(n2(+r.it.target_qty||(+r.it.min_qty*3)))}</small></td><td class="q">${ar(n2(r.q))} ${esc(r.it.unit||'')}</td><td class="c">${r.c?ar(n2(Math.round(r.c)))+' ر.س':''}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td>${LX('التكلفة التقديرية','Estimated cost')}</td><td></td><td class="c">${ar(n2(Math.round(tot)))} ر.س</td></tr></tfoot></table>`:''}
+    </div>`;
+  }
+  const list=invVisible();
+  if(!INV.length) return chips+`<div class="wh-empty">${LX('المستودع فارغ. أضف أول صنف من زر «صنف جديد».','Warehouse is empty. Add your first item.')}</div>`;
+  if(!list.length) return chips+orderBox+`<div class="wh-empty">${LX('لا نتائج بهذا الفلتر.','No results for this filter.')}</div>`;
+  const cards=list.map(it=>{
+    const st=invState(it), p=invPct(it), u=invUsage(it.id), q=+it.qty||0;
+    const buy=+it.buy_price||0, sell=+it.sell_price||0, prof=sell-buy;
+    const stLbl={out:'⛔ '+LX('نفد','Out'),low:'⚠️ '+LX('اطلب الآن','Reorder now'),mid:'🟡 '+LX('أقل من النصف','Below half'),ok:'✅ '+LX('متوفر','In stock')}[st];
+    const months=u.monthly>0?q/u.monthly:null;
+    const enough=(months===null||q<=0)?'':(months>=12?LX('يكفي أكثر من سنة','Lasts over a year'):LX('يكفي نحو '+ar(n2(Math.round(months*10)/10))+' شهر','Lasts about '+n2(Math.round(months*10)/10)+' mo'));
+    return `<div class="wh-item st-${st}">
+      <div class="wh-top">
+        <div class="wh-thumb" onclick="${it.image_url?`whShowImg('${esc(it.image_url)}')`:`invForm('${it.id}')`}">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:(CAT_ICO[it.category]||'📦')}</div>
+        <div class="wh-name"><b>${esc(it.name)}</b>
+          <div class="wh-tags"><span class="wh-tag ${st}">${stLbl}</span>${hot.includes(it.id)?`<span class="wh-tag hot">🔥 ${LX('الأكثر استخدامًا','Most used')}</span>`:''}<span class="wh-tag">${CAT_ICO[it.category]||'🛠️'} ${esc(it.category||'عام')}</span>${it.code?`<span class="wh-tag">${esc(it.code)}</span>`:''}</div>
+        </div>
+        <div class="wh-qty"><b>${ar(n2(q))}</b><small>${esc(it.unit||'حبة')}</small></div>
+      </div>
+      <div class="wh-bar ${p===null?'none':''}"><i style="width:${p===null?100:p}%"></i></div>
+      <div class="wh-meta">
+        <span class="wh-pct">${p===null?LX('حدد الكمية المستهدفة ✏️','Set a target ✏️'):ar(p)+'%'}</span>
+        <span>${p===null?'':LX('المستهدف','Target')+' <b>'+ar(n2(it.target_qty))+'</b> · '}${LX('حد الطلب','Reorder at')} <b>${ar(n2(it.min_qty||0))}</b></span>
+      </div>
+      <div class="wh-meta"><span>📉 ${LX('استُخدم','Used')} <b>${ar(n2(u.u6))}</b> ${LX('خلال 6 أشهر','in 6 mo')} · <b>${ar(n2(u.u1))}</b> ${LX('هذا الشهر','this month')}</span><span>${enough}</span></div>
+      <div class="wh-price"><span>${LX('شراء','Buy')} <b>${ar(n2(buy))}</b></span><span>${LX('بيع','Sell')} <b>${ar(n2(sell))}</b></span>${sell?`<span class="${prof>=0?'pos':'neg'}">${prof>=0?LX('ربح','Profit'):LX('خسارة','Loss')} <b>${ar(n2(Math.abs(prof)))}</b>${buy?' ('+ar(Math.round(prof/buy*100))+'%)':''}</span>`:''}</div>
+      <div class="inv-ctl">
+        <input type="number" class="inv-amt" inputmode="numeric" placeholder="${LX('كمية','qty')}" />
+        <button class="sbtn ok" onclick="invAdd('${it.id}',this)">${LX('شراء','Buy')} ＋</button>
+        <button class="sbtn" onclick="invGive('${it.id}',this)">${LX('صرف','Issue')} －</button>
+        <button class="sbtn" onclick="invForm('${it.id}')">✏️</button>
+        <button class="sbtn danger" onclick="invDelete('${it.id}')">🗑</button>
+      </div></div>`; }).join('');
+  return chips+orderBox+`<div class="wh-list">${cards}</div>`;
+}
+function copyOrderList(){
+  const need=INV.filter(it=>['low','out'].includes(invState(it))).map(it=>({it,q:invNeed(it)})).filter(r=>r.q>0);
+  const txt='طلب شراء · مؤسسة خافت للسباكة والكهرباء\n'+need.map((r,i)=>(i+1)+'. '+r.it.name+' : '+n2(r.q)+' '+(r.it.unit||'')).join('\n');
+  try{ navigator.clipboard.writeText(txt); toast('📋 نُسخت قائمة الطلب'); }catch(e){ prompt('انسخ القائمة:',txt); }
+}
+/* نموذج إضافة/تعديل صنف */
+function invForm(id){
+  const it=id?INV.find(x=>x.id===id):null;
+  const v=it||{name:'',code:'',category:'كهرباء',unit:'حبة',qty:0,buy_price:0,sell_price:0,min_qty:0,target_qty:0};
+  const old=document.getElementById('whOv'); if(old) old.remove();
+  wfPhoto=null; wfPhotoUrl='';
+  document.body.insertAdjacentHTML('beforeend',`<div class="wh-ov" id="whOv" onclick="if(event.target===this) invFormClose()"><div class="wh-modal">
+    <h3>${it?'✏️ '+LX('تعديل الصنف','Edit item'):'➕ '+LX('صنف جديد','New item')}</h3>
+    <div class="wh-f">
+      <div class="wf-photo"><div class="wh-thumb" id="wf_img">${v.image_url?`<img src="${esc(v.image_url)}" />`:'📦'}</div>
+        <div class="btns"><label class="sbtn ok" style="text-align:center;cursor:pointer">📷 ${LX('صورة الصنف','Item photo')}<input type="file" accept="image/*" hidden onchange="wfPickPhoto(this)" /></label>
+        <button class="sbtn" onclick="wfRemovePhoto('${id||''}')">🗑 ${LX('بدون صورة','Remove')}</button></div>
+        <small style="color:var(--muted);font-weight:600;font-size:.74rem">${LX('تظهر للفني عند اختيار القطعة وللعميل في طلباتي','Shown to technicians and customers')}</small></div>
+      <label class="full">${LX('اسم الصنف','Item name')}<input id="wf_name" value="${esc(v.name)}" placeholder="لمبة 9 وات أصفر" /></label>
+      <label>${LX('الفئة','Category')}<select id="wf_cat">${INV_CATS.map(c=>`<option ${(v.category||'عام')===c?'selected':''}>${c}</option>`).join('')}</select></label>
+      <label>${LX('الوحدة','Unit')}<input id="wf_unit" value="${esc(v.unit||'حبة')}" placeholder="حبة / متر / لفة" /></label>
+      <label>${LX('الكود (اختياري)','Code (optional)')}<input id="wf_code" value="${esc(v.code||'')}" placeholder="lb9yra" /></label>
+      ${it?'':`<label>${LX('الكمية الحالية','Current qty')}<input id="wf_qty" type="number" inputmode="decimal" value="${v.qty}" /></label>`}
+      <label>${LX('سعر الشراء للوحدة','Buy price')}<input id="wf_buy" type="number" inputmode="decimal" step="0.01" value="${v.buy_price||0}" /></label>
+      <label>${LX('سعر البيع للوحدة','Sell price')}<input id="wf_sell" type="number" inputmode="decimal" step="0.01" value="${v.sell_price||0}" /></label>
+      <label>${LX('حد الطلب (تنبيه)','Reorder at')}<input id="wf_min" type="number" inputmode="decimal" value="${v.min_qty||0}" /></label>
+      <label>${LX('الكمية المستهدفة','Target qty')}<input id="wf_target" type="number" inputmode="decimal" value="${v.target_qty||0}" /></label>
+      <div class="wh-hint">${LX('النسبة بالمستودع تُحسب من الكمية المستهدفة، ولما تنزل الكمية إلى حد الطلب يطلع الصنف في قائمة الطلب تلقائيًا.','The bar is qty ÷ target. When qty hits the reorder level the item joins the purchase list.')}</div>
+    </div>
+    <div class="wh-actions"><button class="sbtn" onclick="invFormClose()">${LX('إلغاء','Cancel')}</button><button class="sbtn ok" onclick="invFormSave('${id||''}')">💾 ${LX('حفظ','Save')}</button></div>
+  </div></div>`);
+  setTimeout(()=>{ const e=document.getElementById('wf_name'); if(e&&!it) e.focus(); },50);
+}
+function invFormClose(){ const o=document.getElementById('whOv'); if(o) o.remove(); }
+async function invFormSave(id){
+  const g=k=>{ const e=document.getElementById(k); return e?e.value.trim():''; };
+  const num=k=>Math.abs(+g(k)||0);
+  const name=g('wf_name'); if(!name){ toast('اكتب اسم الصنف'); return; }
+  const patch={ name, code:g('wf_code'), category:g('wf_cat')||'عام', unit:g('wf_unit')||'حبة', buy_price:num('wf_buy'), sell_price:num('wf_sell'), min_qty:num('wf_min'), target_qty:num('wf_target') };
+  if(id){
+    const it=INV.find(x=>x.id===id); if(!it) return;
+    Object.assign(it,patch);
+    if(cloudReady){ try{ const r=await sb.from('khafet_inventory').update(patch).eq('id',id); if(r.error) throw r.error; }catch(e){ toast('تعذّر الحفظ'); return; } }
+    if(wfPhoto&&cloudReady){ try{ it.image_url=await uploadPartPhoto(id, wfPhoto); }catch(e){ toast('⚠️ الصنف انحفظ لكن الصورة ما انرفعت'); } }
+    toast('✅ تعدّل الصنف');
+  } else {
+    const qty=num('wf_qty'); const data=Object.assign({qty},patch);
+    if(cloudReady){ try{ const r=await sb.from('khafet_inventory').insert(data).select().single(); if(r.error) throw r.error; INV.unshift(r.data); if(qty>0) await logStock(r.data,qty,'رصيد افتتاحي','المؤسسة'); if(wfPhoto){ try{ r.data.image_url=await uploadPartPhoto(r.data.id, wfPhoto); }catch(e){ toast('⚠️ الصنف انحفظ لكن الصورة ما انرفعت'); } } }catch(e){ toast('تعذّر الحفظ'); return; } }
+    else INV.unshift(Object.assign({id:'tmp'+Date.now()},data));
+    toast('✅ أُضيف الصنف للمستودع');
+  }
+  invFormClose(); render();
 }
 async function invSave(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
 function invReadAmt(btn){ const inp=btn.parentElement.querySelector('.inv-amt'); const v=Math.abs(+((inp||{}).value)||0); return {inp,v}; }
-async function invAdd(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invReadAmt(btn); if(!v){ toast('اكتب الكمية'); return; } it.qty=(+it.qty||0)+v; if(inp) inp.value=''; await invSave(it); await logStock(it,v,'شراء','المؤسسة'); toast('➕ أُضيف للمخزن'); render(); }
-async function invGive(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invReadAmt(btn); if(!v){ toast('اكتب الكمية'); return; } it.qty=Math.max(0,(+it.qty||0)-v); if(inp) inp.value=''; await invSave(it); await logStock(it,-v,'صرف','المؤسسة'); toast('➖ صُرف للعميل'); render(); }
-async function invDelete(id){ if(!confirm('حذف الصنف من المخزن؟')) return; if(cloudReady){ try{ await sb.from('khafet_inventory').delete().eq('id',id); }catch(e){} } INV=INV.filter(x=>x.id!==id); toast('حُذف'); render(); }
-function invStats(itemId){ let inn=0,out=0; LOG.forEach(e=>{ if(e.item_id===itemId){ const d=+e.delta||0; if(d>0) inn+=d; else out+=Math.abs(d); } }); return {inn,out}; }
-function renderInventory(){
-  const add=`<div class="inv-add-row">
-    <input id="inv_new_name" placeholder="اسم الصنف (لمبة LED، ماسورة...)" />
-    <input id="inv_new_unit" placeholder="الوحدة" value="حبة" />
-    <input id="inv_new_qty" type="number" inputmode="numeric" placeholder="الكمية" />
-    <button class="sbtn ok" onclick="invAddItem()">➕ إضافة صنف</button>
-  </div>`;
-  if(!INV.length) return add+`<p style="color:var(--muted);margin-top:10px">المخزن فارغ — أضف أصنافك.</p>`;
-  const rows=INV.map(it=>{
-    const low=(+it.qty||0)<=3;
-    const s=invStats(it.id); const expected=s.inn-s.out; const mismatch=(expected!==(+it.qty||0));
-    return `<div class="inv-item ${low?'low':''} ${mismatch?'mismatch':''}">
-    <div class="inv-info"><b>${esc(it.name)}</b><span class="inv-qty">المتوفر: ${ar(+it.qty||0)} ${esc(it.unit||'')}${low?' ⚠️':''}</span></div>
-    <div class="inv-recon">اشتُري: <b>${ar(s.inn)}</b> · صُرف: <b>${ar(s.out)}</b> · المفروض: <b>${ar(expected)}</b>${mismatch?` <span class="recon-warn">⚠️ فرق ${ar(Math.abs(expected-(+it.qty||0)))}! راجعي</span>`:' <span class="recon-ok">✅ مطابق</span>'}</div>
-    <div class="inv-ctl">
-      <input type="number" class="inv-amt" inputmode="numeric" placeholder="كمية" />
-      <button class="sbtn ok" onclick="invAdd('${it.id}',this)">شراء ＋</button>
-      <button class="sbtn" onclick="invGive('${it.id}',this)">صرف －</button>
-      <button class="sbtn danger" onclick="invDelete('${it.id}')">🗑</button>
-    </div></div>`; }).join('');
-  return add+`<div class="inv-list">${rows}</div>`;
-}
+async function invAdd(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invReadAmt(btn); if(!v){ toast('اكتب الكمية'); return; } it.qty=(+it.qty||0)+v; if(inp) inp.value=''; await invSave(it); await logStock(it,v,'شراء','المؤسسة'); toast('➕ أُضيف للمستودع'); render(); }
+async function invGive(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invReadAmt(btn); if(!v){ toast('اكتب الكمية'); return; }
+  if(v>(+it.qty||0)){ toast('⚠️ الكمية أكثر من المتوفر'); return; }
+  const why=prompt('صرف '+v+' '+(it.unit||'')+' من «'+it.name+'»\nاكتب السبب (اسم العميل أو رقم الطلب):'); if(why===null) return;
+  it.qty=Math.max(0,(+it.qty||0)-v); if(inp) inp.value=''; await invSave(it); await logStock(it,-v,'صرف · '+(why.trim()||'بدون سبب'),'المؤسسة'); toast('➖ صُرف وسُجّل'); render(); }
+async function invDelete(id){ if(!confirm('حذف الصنف من المستودع؟')) return; if(cloudReady){ try{ await sb.from('khafet_inventory').delete().eq('id',id); }catch(e){} } INV=INV.filter(x=>x.id!==id); toast('حُذف'); render(); }
 function renderStockLog(){
   if(!LOG.length) return `<p style="color:var(--muted)">لا توجد حركات بعد.</p>`;
   // تجميع حسب اليوم
@@ -637,13 +881,14 @@ function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textCon
 function resetOtp(){ otpSent=false; otpPhone=''; showLogin(); }
 function showLogin(){ const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   document.getElementById('app').innerHTML=`<div class="login"><div class="ic">🏢</div><h1>لوحة المؤسسة</h1>
-    <p>${otpSent?LX('أدخل الرمز المُرسل إلى '+otpPhone,'Enter the code sent to '+otpPhone):LX('ادخلي برقم جوالك — يوصلك رمز برسالة','Enter your mobile number — a code will be sent by SMS')}</p>
+    <p>${otpSent?LX('أدخل الرمز المُرسل إلى '+otpPhone,'Enter the code sent to '+otpPhone):LX('ادخلي برقم جوالك، يوصلك رمز برسالة','Enter your mobile number, a code will be sent by SMS')}</p>
     ${otpSent?`
     <input id="ac" inputmode="numeric" maxlength="6" placeholder="رمز التحقق" style="letter-spacing:.4em;text-align:center;font-weight:900" />
     <button class="btn" onclick="verifyAdminOtp()">تأكيد ودخول</button>
     <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.25);margin-top:8px" onclick="resetOtp()">تغيير الرقم</button>`
     :`
     <input id="au" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
+    <label class="rememberme"><input type="checkbox" id="lg_rem" ${localStorage.getItem('khafet_remember')==='0'?'':'checked'}> ${LX('ابقَ مسجّل الدخول','Stay signed in')}<small>${LX('ما تحتاجين رمز مرة ثانية إلا لو ضغطتي خروج','No new code needed unless you sign out')}</small></label>
     <button class="btn" onclick="sendAdminOtp()">أرسل الرمز</button>`}
     <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول</div></div>`;
   const f=document.getElementById(otpSent?'ac':'au');
@@ -655,6 +900,7 @@ async function sendAdminOtp(){
   if(!cloudReady){ lgFail('لا يوجد اتصال بالخادم'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
+    remChoice=!!((document.getElementById('lg_rem')||{checked:true}).checked);
     const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ channel:'sms' } });
     if(error) throw error;
     otpPhone='+'+d; otpSent=true; showLogin();
@@ -667,11 +913,14 @@ async function verifyAdminOtp(){
   try{
     const { error }=await sb.auth.verifyOtp({ phone:otpPhone, token:code, type:'sms' });
     if(error) throw error;
-    if(!(await isAdminUser())){ await sb.auth.signOut(); throw new Error('no-admin'); }
+    const ok=await isAdminUser();
+    if(ok==='err') throw new Error('net');
+    if(ok!==true){ await sb.auth.signOut(); throw new Error('no-admin'); }
+    try{ localStorage.setItem('khafet_admin_ok','1'); localStorage.setItem('khafet_remember', remChoice?'1':'0'); }catch(e){}
     otpSent=false; loggedIn=true; loadAll(); subscribe();
-  }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : 'الرمز غير صحيح'); }
+  }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : (e&&e.message==='net') ? 'تعذّر الاتصال بالخادم، حاولي مرة ثانية' : 'الرمز غير صحيح'); }
 }
-async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_admin_auth'); render(); }
+async function logout(){ if(!confirm('تسجيل الخروج؟ بتحتاجين رمز جديد بالرسائل عند الدخول القادم.')) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_admin_auth'); localStorage.removeItem('khafet_admin_ok'); render(); }
 
 /* ---- العرض ---- */
 function setAdminFilter(f){ adminFilter=f; render(); }
@@ -895,14 +1144,14 @@ function render(){
     ['orders','📥 الطلبات', cnt('new')],
     ['team','👥 الفريق', pendingProv],
     ['cust','💬 العملاء', newSugs+newSubs],
-    ['store','📦 المخزن', 0],
+    ['store','📦 المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length],
     ['prices','🏷️ الأسعار', 0],
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
     ['team','👥','الفريق', pendingProv, 'الفنيّون · المزوّدون · المستحقات', true],
     ['cust','💬','العملاء', newSugs+newSubs, 'الرسائل · الاشتراكات · مقالات السلامة', false],
-    ['store','📦','المخزن', 0, LX(ar(INV.length)+' صنف · سجل الحركة', INV.length+' items · Movement log'), true],
+    ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
     ['prices','🏷️','الأسعار', 0, 'تعديل أسعار الخدمات', false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
@@ -928,12 +1177,12 @@ function render(){
       ${block(LX(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`,`🛡️ Subscription requests (${newSubs} new)`), renderSubs())}
       ${block(LX(`📰 مقالات السلامة (${ar(ARTICLES.length)})`,`📰 Safety articles (${ARTICLES.length})`), renderArticles())}`;
   } else if(adminSection==='store'){
-    body=`${block(LX(`📦 المخزن (${ar(INV.length)} صنف)`,`📦 Stock (${INV.length} items)`), renderInventory())}
+    body=`${block(LX('📦 المستودع','📦 Warehouse'), renderInventory())}
       ${block(LX('📋 سجل حركة المخزن (يومي)','📋 Stock movement log (daily)'), renderStockLog())}`;
   } else if(adminSection==='prices'){
     body=block(LX('🏷️ أسعار الخدمات','🏷️ Service prices'), renderPriceEditor());
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المخزن',prices:'🏷️ الأسعار'})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:'🏷️ الأسعار'})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
@@ -970,8 +1219,8 @@ function exportSection(k){
       downloadCSV('الطلبات-'+d, ['رقم','العميل','الجوال','المدينة','الخدمة','التاريخ','الوقت','الحالة','الإجمالي'],
         ORDERS.map(o=>[o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',(o.address&&o.address.city)||'',(o.items||[]).map(i=>i.name).join(' + '),o.date||'',fmtTime(o.startMin||0),statusAr(o.status),o.finalPrice||o.price||0]));
     } else if(k==='store'){
-      downloadCSV('المخزن-'+d, ['الصنف','الكمية','الوحدة','سعر الشراء','سعر البيع'],
-        INV.map(it=>[it.name,it.qty,it.unit||'',it.buy_price||0,it.sell_price||0]));
+      downloadCSV('المستودع-'+d, ['الصنف','الفئة','الكود','الكمية','الوحدة','سعر الشراء','سعر البيع','حد الطلب','المستهدف','النسبة','استخدام 6 أشهر'],
+        INV.map(it=>[it.name,it.category||'',it.code||'',it.qty,it.unit||'',it.buy_price||0,it.sell_price||0,it.min_qty||0,it.target_qty||0,(invPct(it)===null?'':invPct(it)+'%'),invUsage(it.id).u6]));
     } else if(k==='team'){
       const done=ORDERS.filter(o=>o.status==='done'&&o.providerPhone); const byP={};
       done.forEach(o=>{ byP[o.providerPhone]=(byP[o.providerPhone]||0)+1; });

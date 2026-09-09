@@ -243,6 +243,18 @@
   .ifl.on{background:var(--gold);border-color:var(--gold);color:#141414}
   .ilist{display:flex;flex-direction:column;gap:9px;margin-top:11px}
 
+  .ii-thumb{width:54px;height:54px;border-radius:11px;object-fit:cover;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:1.4rem;overflow:hidden}
+  .ii-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .ib.cam{position:relative;overflow:hidden} .ib.cam input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .sp-wrap{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:8px}
+  .sp-search{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);font-family:inherit;font-weight:700;margin-bottom:8px;background:#fff}
+  .sp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-height:46vh;overflow:auto}
+  .sp-it{background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px;text-align:center;cursor:pointer;font-family:inherit}
+  .sp-it:active{transform:scale(.97)} .sp-it.out{opacity:.45}
+  .sp-it .im{width:100%;aspect-ratio:1;border-radius:9px;background:#F3EDE0;display:grid;place-items:center;font-size:1.6rem;overflow:hidden}
+  .sp-it .im img{width:100%;height:100%;object-fit:cover;display:block}
+  .sp-it b{display:block;font-size:.76rem;line-height:1.25;margin-top:5px;max-height:2.5em;overflow:hidden}
+  .sp-it small{display:block;font-size:.68rem;color:var(--muted);font-weight:700}
   .iitem{background:var(--card);border:1px solid var(--line);border-right:3px solid var(--line);border-radius:13px;padding:12px 13px}
   .iitem.ok{border-right-color:var(--ok, #22C55E)} .iitem.low{border-right-color:var(--amber)} .iitem.out{border-right-color:var(--red)}
   .ii-top{display:flex;align-items:flex-start;gap:10px}
@@ -651,8 +663,10 @@ async function initCloud(){
         // «تذكرني» غير مفعّل — ننهي الجلسة القديمة ويسجّل من جديد
         try{ await sb.auth.signOut(); }catch(e){}
       } else if(session){
-        const { data:role }=await sb.rpc('staff_role');
-        if(role){ loggedIn=true; await loadMyName(); } else { try{ await sb.auth.signOut(); }catch(e){} }
+        let r=null; try{ r=await sb.rpc('staff_role'); }catch(e){ r={ error:e }; }
+        if(r && r.data){ loggedIn=true; try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} await loadMyName(); }
+        else if(r && r.error && localStorage.getItem('khafet_staff_ok')==='1'){ loggedIn=true; try{ await loadMyName(); }catch(e){} }   // انقطاع شبكة: نبقيه داخل
+        else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} }
       }
       loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn) initPush();
       return;
@@ -919,11 +933,36 @@ function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(
 function openInvoice(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   invEditing=id;
-  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0})) : [];
+  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||''})) : [];
   renderInvoice();
 }
 /* قطعة من المستودع: تدخل الفاتورة بسعر البيع، وتنخصم عند الحفظ */
-function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:+it.sell_price||0,deducted:0}); } renderInvoice(); }
+
+/* ضغط صورة الصنف قبل الرفع: أقصى بُعد 800px، JPEG 82% */
+function compressImage(file, max, q){ return new Promise((res,rej)=>{ const img=new Image(); const url=URL.createObjectURL(file);
+  img.onload=()=>{ const r=Math.min(1,(max||800)/Math.max(img.width,img.height)); const c=document.createElement('canvas'); c.width=Math.round(img.width*r); c.height=Math.round(img.height*r);
+    const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+    c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',q||0.82); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('img')); }; img.src=url; }); }
+async function uploadPartPhoto(itemId, file){
+  const blob=await compressImage(file,800,0.82);
+  const path=itemId+'.jpg';
+  const { error }=await sb.storage.from('khafet-parts').upload(path, blob, { upsert:true, contentType:'image/jpeg' });
+  if(error) throw error;
+  const { data }=sb.storage.from('khafet-parts').getPublicUrl(path);
+  const url=data.publicUrl+'?v='+Date.now();
+  const r=await sb.from('khafet_inventory').update({image_url:url}).eq('id',itemId); if(r.error) throw r.error;
+  return url;
+}
+
+let stockPickOpen=false, stockPickQ='';
+function toggleStockPick(){ stockPickOpen=!stockPickOpen; stockPickQ=''; renderInvoice(); }
+function stockPickSearch(v){ stockPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('spGrid'); if(g) g.innerHTML=stockPickGrid(); }
+function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ));
+  if(!list.length) return `<div class="sl-empty" style="grid-column:1/-1">${A?'ما فيه صنف بهالاسم':'No match'}</div>`;
+  return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(it.name)}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(+it.sell_price||0)} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
+async function invPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+(lang==='ar'?'انحفظت الصورة':'Photo saved')); render(); }catch(e){ toast('⚠️ '+(e.message||'')); } }
+function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:+it.sell_price||0,deducted:0,img:it.image_url||''}); } stockPickOpen=false; renderInvoice(); }
 function closeInvoice(){ invEditing=null; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
 function captureInvPrices(){
   document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; });
@@ -953,7 +992,7 @@ async function saveInvoice(){
       }
     }
   }
-  const invoice={ items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0})), subtotal:invTotal(), discountPct:invPct(), total:invNet(), createdAt:Date.now() };
+  const invoice={ items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||''})), subtotal:invTotal(), discountPct:invPct(), total:invNet(), createdAt:Date.now() };
   o.invoice=invoice;
   if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({invoice:invoice}).eq('id',o.dbId); }catch(e){} }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===o.id); if(tt){ tt.invoice=invoice; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
@@ -1004,10 +1043,11 @@ function renderInvoice(){
     <div class="inv-head"><b>🧾 ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
     <div class="inv-add">
       <select onchange="addInvItem(this.value);this.value=''"><option value="">${t('addService')}</option>${opts}</select>
-      ${invOpts?`<select class="stock-sel" onchange="addStockPart(this.value);this.value=''"><option value="">📦 ${A?'قطعة من المستودع':'From stock'}</option>${invOpts}</select>`:''}
+      ${(INV||[]).length?`<button class="cust" onclick="toggleStockPick()">📦 ${A?'قطعة من المستودع':'From stock'}</button>`:''}
       <button class="cust" onclick="addPart()">${t('addPart')}</button>
       <button class="cust" onclick="addCustomItem()">${t('customItem')}</button>
     </div>
+    ${stockPickOpen?`<div class="sp-wrap"><input class="sp-search" placeholder="🔍 ${A?'ابحث عن القطعة':'Search part'}" oninput="stockPickSearch(this.value)" /><div class="sp-grid" id="spGrid">${stockPickGrid()}</div></div>`:''}
     <div class="inv-items">${rows}</div>
     ${invPct()>0?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل — ينطبق تلقائياً</div>`:''}
     <div class="inv-total"><span>${t('total')}</span><b>${ar(invNet())} ر.س</b></div>
@@ -1039,7 +1079,7 @@ function showLogin(){
       <input id="wu" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
       <input id="wp" type="password" placeholder="كلمة المرور · Password" autocomplete="current-password" />
       <button class="btn" onclick="doLogin()">دخول · Login</button>
-      <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني · Remember me</label>
+      <label class="rememberme"><input type="checkbox" id="lg_rem" ${localStorage.getItem('khafet_remember')==='0'?'':'checked'}> ابقَ مسجّل الدخول · Stay signed in</label>
       <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟ · Forgot password?</button>
       <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول · Sign-in failed</div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
@@ -1126,14 +1166,14 @@ async function doLogin(){
     const { data:role }=await sb.rpc('staff_role');
     if(!role){ await sb.auth.signOut(); throw new Error('no-role'); }
     await loadMyName();
-    try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){}
+    try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); localStorage.setItem('khafet_staff_ok','1'); }catch(e){}
     loggedIn=true; render(); loadOrders(); initPush();
   }catch(e){
     if(btn){ btn.disabled=false; btn.textContent='دخول · Login'; }
     lgFail((e&&e.message==='no-role') ? 'هذا الرقم غير مسجّل كفني — راجع الإدارة' : 'الرقم أو كلمة المرور غير صحيحة');
   }
 }
-async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); render(); }
+async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); localStorage.removeItem('khafet_staff_ok'); render(); }
 /* 🏠 الرئيسية = صفحة حسابه الرئيسية (طلباته)، مو اختيار البوابات */
 function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
 /* إعدادات الحساب */
@@ -1294,6 +1334,7 @@ function renderInvTab(){
     const stTx={ok:'🟢 '+(A?'متوفّر':'In'),low:'🟡 '+(A?'قارب':'Low'),out:'🔴 '+(A?'نفد':'Out')}[st];
     return `<div class="iitem ${st}">
       <div class="ii-top">
+        <div class="ii-thumb">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div>
         <div class="ii-name"><b>${esc(it.name)}</b>${(+it.min_qty)?`<span class="ii-min">${A?'الحد الأدنى':'Min'}: ${ar(+it.min_qty)}${st!=='ok'?` · <em>${st==='out'?(A?'نفد — اطلب!':'Out — reorder'):(A?'أقل من الحد':'below min')}</em>`:''}</span>`:''}</div>
         <div class="ii-qty"><div class="ii-num ${st}">${ar(q)}</div><div class="ii-u">${esc(it.unit||'')}</div><span class="ii-badge ${st}">${stTx}</span></div>
       </div>
@@ -1306,6 +1347,7 @@ function renderInvTab(){
         <button class="ib in" onclick="invAdd('${it.id}',this)">＋ ${A?'إدخال':'In'}</button>
         <button class="ib out" ${q<=0?'disabled':''} onclick="invGive('${it.id}',this)">− ${A?'صرف':'Out'}</button>
         <button class="ib edit" onclick="invEdit('${it.id}')">✎</button>
+        <label class="ib cam">📷<input type="file" accept="image/*" capture="environment" onchange="invPhoto('${it.id}',this)" /></label>
       </div>
     </div>`;
   }).join('') : `<div class="sl-empty">${invSearch?(A?'ما فيه صنف بهالاسم':'No match'):(A?'ما فيه أصناف بهالحالة':'None in this state')}</div>`;
