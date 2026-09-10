@@ -666,7 +666,7 @@ async function initCloud(){
         let r=null; try{ r=await sb.rpc('staff_role'); }catch(e){ r={ error:e }; }
         if(r && r.data){ loggedIn=true; try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} await loadMyName(); }
         else if(r && r.error && localStorage.getItem('khafet_staff_ok')==='1'){ loggedIn=true; try{ await loadMyName(); }catch(e){} }   // انقطاع شبكة: نبقيه داخل
-        else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} }
+        else { const st=await techState(); if(st&&st.exists){ PENDING=st; } else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} } }
       }
       loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn) initPush();
       return;
@@ -702,6 +702,42 @@ async function initPush(){
 }
 /* اسم الفني الحالي — لنسب الإجراءات إليه */
 let myName='', myPhone='', myCode='';
+let PENDING=null;   // حالة الفني غير المعتمد: {status, org_name, code}
+async function techState(){ try{ const { data }=await sb.rpc('my_tech_state'); return data; }catch(e){ return null; } }
+function showJoin(msg){
+  const A=lang==='ar'; const st=PENDING||{}; const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
+  const waiting = st.status==='pending';
+  document.getElementById('app').innerHTML=`<div class="login">
+    <div class="ic">${waiting?'⏳':'🔑'}</div>
+    <h1>${waiting?(A?'بانتظار الاعتماد':'Awaiting approval'):(A?'كود جهة العمل':'Workplace code')}</h1>
+    ${waiting
+      ? `<p>${A?'طلبك وصل إلى':'Your request was sent to'} <b>${esc(st.org_name||'')}</b>. ${A?'بعد ما يعتمدك صاحب العمل اضغط «تحقق الآن».':'Once approved, tap Check now.'}</p>
+         <button class="btn" onclick="recheckJoin()">🔄 ${A?'تحقق الآن':'Check now'}</button>
+         <a class="reg2" style="cursor:pointer;display:block;margin-top:14px" onclick="PENDING.status='unassigned';render()">${A?'تغيير الكود':'Change code'}</a>`
+      : `<p>${st.status==='rejected'?(A?'طلبك السابق ما اعتُمد. ':'Your previous request was not approved. '):''}${A?'اطلب الكود من مديرك في خافت أو من مزوّدك ثم اكتبه هنا.':'Ask your manager at Khafet or your provider for the code.'}</p>
+         <input id="jc" placeholder="${A?'مثال':'e.g.'}: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoin()" />
+         <button class="btn" onclick="submitJoin()">${A?'انضمام':'Join'}</button>`}
+    <div id="lgerr" class="lgerr" style="display:${msg?'block':'none'}">${esc(msg||'')}</div>
+    <a class="reg2" style="cursor:pointer;display:block;margin-top:18px;color:var(--muted)" onclick="leaveJoin()">${A?'خروج من الحساب':'Sign out'}</a>
+  </div>`;
+}
+async function submitJoin(){
+  const A=lang==='ar'; const code=((document.getElementById('jc')||{}).value||'').trim();
+  if(code.length<4){ showJoin(A?'اكتب الكود كاملًا':'Enter the full code'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{ const { data }=await sb.rpc('join_org',{ p_code:code });
+    if(!data||!data.ok){ showJoin(data&&data.reason==='bad_code'?(A?'الكود غير صحيح، تأكد منه من صاحب العمل':'Wrong code'):(A?'تعذّر، حاول مرة ثانية':'Failed, try again')); return; }
+    PENDING={ status:'pending', org_name:data.org_name, org:data.org }; toast('📨 '+(A?'أُرسل طلبك إلى ':'Request sent to ')+data.org_name); render();
+  }catch(e){ showJoin(A?'تعذّر الاتصال':'Connection failed'); }
+}
+async function recheckJoin(){
+  const A=lang==='ar';
+  try{ const { data:role }=await sb.rpc('staff_role');
+    if(role){ PENDING=null; await loadMyName(); try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} loggedIn=true; toast('✅ '+(A?'تم اعتمادك، أهلًا بك':'Approved, welcome')); render(); loadOrders(); initPush(); return; }
+    const st=await techState(); if(st&&st.exists) PENDING=st; toast(A?'ما زال بانتظار الاعتماد':'Still awaiting approval'); render();
+  }catch(e){ toast('⚠️'); }
+}
+async function leaveJoin(){ try{ await sb.auth.signOut(); }catch(e){} PENDING=null; loggedIn=false; render(); }
 async function loadMyName(){
   try{ const { data:{ user } }=await sb.auth.getUser();
     if(user){ myPhone = user.phone ? ('0'+String(user.phone).replace(/^\+?966/,'')) : '';
@@ -1164,7 +1200,10 @@ async function doLogin(){
     const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:p });
     if(error) throw new Error('bad');
     const { data:role }=await sb.rpc('staff_role');
-    if(!role){ await sb.auth.signOut(); throw new Error('no-role'); }
+    if(!role){
+      const st=await techState();
+      if(st&&st.exists){ PENDING=st; try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){} render(); return; }
+      await sb.auth.signOut(); throw new Error('no-role'); }
     await loadMyName();
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); localStorage.setItem('khafet_staff_ok','1'); }catch(e){}
     loggedIn=true; render(); loadOrders(); initPush();
@@ -1570,7 +1609,7 @@ function jobAgo(o){
 }
 function render(){
   document.documentElement.setAttribute('dir', isRTL()?'rtl':'ltr');
-  if(!loggedIn){ showLogin(); return; }
+  if(!loggedIn){ if(PENDING) showJoin(); else showLogin(); return; }
   const _sj=seenJobs(); window._sj=_sj;
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='';
   const ab1=document.getElementById('acctBtn'); if(ab1) ab1.style.display='';

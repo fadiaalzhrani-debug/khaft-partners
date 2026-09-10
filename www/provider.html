@@ -143,6 +143,11 @@
   .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 15px;text-align:center;flex:0 0 auto;min-width:96px}
   .stat b{display:block;font-size:1.45rem;font-weight:900;color:var(--gold-deep);line-height:1.2}
   .stat small{color:var(--muted);font-size:.78rem;font-weight:700}
+.jcode{font-family:ui-monospace,Consolas,monospace;font-size:1.7rem;letter-spacing:.22em;font-weight:900;background:#FFF8DD;border:1.5px dashed #E7B70B;border-radius:12px;padding:10px 14px;text-align:center;direction:ltr;user-select:all}
+.jrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.jpend{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.jpend:last-child{border-bottom:0}
+.jpend .t{flex:1;min-width:0} .jpend .t b{display:block} .jpend .t small{color:var(--muted);font-size:.8rem}
   .mpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
   .mpanel h3{font-size:1rem;font-weight:900;margin-bottom:6px}
   .mpanel .hint{color:var(--muted);font-size:.84rem;margin-bottom:10px;line-height:1.7}
@@ -595,6 +600,7 @@ async function login(){
     if(!p){
       // مو مزوّد؟ نشوف هل هو فني تحت مزوّد
       try{ const { data:info }=await sb.rpc('my_staff_info'); if(info && info.role==='tech'){ await enterTechMode(info, d); return; } }catch(e2){}
+      try{ const { data:st }=await sb.rpc('my_tech_state'); if(st&&st.exists){ try{ localStorage.setItem('khafet_provider_phone', local05); }catch(e3){} if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; } }catch(e2){}
       try{ await sb.auth.signOut(); }catch(e2){} showLogin('❌ الرقم غير مسجّل — سجّل كمزوّد أو كفني بكودك.'); return; }
     if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
     me=p; localStorage.setItem('khafet_provider_phone',p.phone);
@@ -620,6 +626,8 @@ async function autoLogin(){
     // مو مزوّد؟ جرّب فني
     const { data:info }=await sb.rpc('my_staff_info');
     if(info && info.role==='tech'){ await enterTechMode(info, normPhone(saved)); return; }
+    const { data:st }=await sb.rpc('my_tech_state');
+    if(st&&st.exists){ if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; }
   }catch(e){}
   // ما نفعت الجلسة المحفوظة — امسح العلامة واعرض شاشة الدخول (وإلا تعلق شاشة التحقق)
   try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){}
@@ -961,6 +969,38 @@ async function verifySignupOtp(){
 }
 /* ---- تسجيل فني بكود مزوّد ---- */
 let techCtx=null;
+function showJoinCode(msg){
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('acctBtn').style.display='none';
+  document.getElementById('app').innerHTML=`<div class="login">
+    <div class="ic">🔑</div><h1>كود جهة العمل</h1>
+    <p>حسابك جاهز${techCtx&&techCtx.code?' وكودك الشخصي <b>'+esc(techCtx.code)+'</b>':''}. اطلب <b>كود الانضمام</b> من مديرك في خافت أو من مزوّدك واكتبه هنا.</p>
+    <input id="jc" placeholder="مثال: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoinCode()" />
+    <button class="btn" onclick="submitJoinCode()">انضمام ✅</button>
+    ${msg?`<div class="msg">${msg}</div>`:''}
+    <a class="reg2" onclick="doLogout()" style="cursor:pointer">خروج من الحساب</a>
+  </div>`;
+}
+function showJoinWait(orgName){
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('acctBtn').style.display='none';
+  document.getElementById('app').innerHTML=`<div class="login">
+    <div class="ic">⏳</div><h1>بانتظار الاعتماد</h1>
+    <p>طلبك وصل إلى <b>${esc(orgName||'')}</b>. بعد الاعتماد افتح تطبيق <b>رزق</b> وسجّل الدخول برقمك وكلمة مرورك.</p>
+    <button class="btn" onclick="location.reload()">🔄 تحقق الآن</button>
+    <a class="reg2" onclick="showJoinCode('')" style="cursor:pointer;display:block;margin-top:12px">تغيير الكود</a>
+    <a class="reg2" onclick="doLogout()" style="cursor:pointer;display:block;margin-top:8px;color:var(--muted)">خروج من الحساب</a>
+  </div>`;
+}
+async function submitJoinCode(){
+  const code=((document.getElementById('jc')||{}).value||'').trim(); if(code.length<4){ showJoinCode('اكتب الكود كاملًا'); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{ const { data }=await sb.rpc('join_org',{ p_code:code });
+    if(!data||!data.ok){ showJoinCode(data&&data.reason==='bad_code'?'❌ الكود غير صحيح، تأكد منه من صاحب العمل':'تعذّر، حاول مرة ثانية'); return; }
+    showJoinWait(data.org_name);
+  }catch(e){ showJoinCode('تعذّر الاتصال، حاول مرة ثانية'); }
+}
+async function doLogout(){ try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){} me=null; location.reload(); }
 function showTechReg(msg){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
@@ -1015,9 +1055,8 @@ async function verifyTechReg(){
     if(techCtx.existing){ try{ await sb.auth.updateUser({ password:techCtx.pass }); }catch(e){} }
     const { data }=await sb.rpc('register_tech', { p_name:techCtx.name, p_phone:techCtx.local });
     if(!data || data.ok!==true){ showTechOtp(data && data.reason==='is_admin' ? '⚠️ هذا الرقم حساب مدير — لا يُسجّل كفني. استخدم رقماً آخر.' : 'تعذّر التسجيل، حاول ثانية'); return; }
-    const info={ role:'tech', name:techCtx.name, code:data.code, cities:[] };
-    try{ const r=await sb.rpc('my_staff_info'); if(r.data) Object.assign(info, r.data); }catch(e){}
-    await enterTechMode(info, techCtx.e164.slice(1));
+    techCtx.code=data.code; try{ localStorage.setItem('khafet_provider_phone', techCtx.local); }catch(e){}
+    showJoinCode('');
   }catch(e){ showTechOtp('تعذّر الإكمال — حاول مرة ثانية'); }
 }
 /* ---- مدن الخدمة: المزوّد يحدّدها بنفسه، وأي طلب منها يوصله ---- */
@@ -1338,7 +1377,7 @@ function renderNumbers(){
 }
 /* ═══════════ فريقي (مربّع بالرئيسية) ═══════════ */
 function renderTeam(){
-  return `<div class="mpanel"><h3>🧑‍🔧 فريقي ${TECHS.length?`(${ar(TECHS.length)})`:''}</h3>
+  return `${renderJoinPanel()}<div class="mpanel"><h3>🧑‍🔧 فريقي ${TECHS.length?`(${ar(TECHS.length)})`:''}</h3>
     <div class="hint">فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل <b>كوده أو رقم جواله</b> هنا فينضم لفريقك.</div>
     <div style="display:flex;gap:8px">
       <input id="add_tech_code" placeholder="كود الفني أو جواله" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-align:center" />
@@ -1624,8 +1663,27 @@ async function skipOffer(id){
 }
 
 /* ---- فريق المزوّد (فنيّوه) ---- */
-let techsOpen=false, TECHS=[];
-async function loadTechs(){ if(!me||!cloudReady) return; try{ const { data }=await sb.rpc('my_techs'); TECHS=data||[]; }catch(e){ TECHS=[]; } }
+let techsOpen=false, TECHS=[], PENDING_TECHS=[];
+async function loadTechs(){ if(!me||!cloudReady) return; try{ const { data }=await sb.rpc('my_techs'); TECHS=data||[]; }catch(e){ TECHS=[]; } try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
+function renderJoinPanel(){
+  const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · كوده ${esc(t.code||'')}</small></div>
+      <button class="tbtn done" style="padding:8px 14px" onclick="approveTechP('${t.user_id}',true)">✔️ اعتماد</button><button class="x-btn" onclick="approveTechP('${t.user_id}',false)">رفض</button></div>`).join('') : '';
+  return `<div class="mpanel"><h3>🔑 كود انضمام فريقك</h3>
+    <div class="hint">أعطِ هذا الكود لعمالك. الفني يسجّل في رزق، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.</div>
+    <div class="jcode" id="jcodeBox">${esc(me.code||'')}</div>
+    <div class="jrow"><button class="tbtn inv" style="flex:1" onclick="copyJoinCodeP()">📋 نسخ</button><button class="tbtn inv" style="flex:1" onclick="regenJoinCodeP()">🎲 كود جديد عشوائي</button></div>
+  </div>
+  ${pend?`<div class="mpanel"><h3>⏳ بانتظار اعتمادك (${ar(PENDING_TECHS.length)})</h3>${pend}</div>`:''}`;
+}
+async function approveTechP(uid, ok){
+  if(!ok && !confirm('رفض هذا الفني؟')) return;
+  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?'✅ اعتُمد '+(data.name||''):'تم الرفض'); await loadTechs(); renderSafe(); }catch(e){ toast('⚠️ تعذّر'); }
+}
+async function regenJoinCodeP(){
+  if(!confirm('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفريقك الحالي يبقى كما هو.')) return;
+  try{ const { data }=await sb.rpc('regenerate_join_code'); if(!data) throw new Error(); me.code=data; toast('🎲 الكود الجديد: '+data); renderSafe(); }catch(e){ toast('⚠️ تعذّر'); }
+}
+function copyJoinCodeP(){ const c=me.code||''; try{ navigator.clipboard.writeText(c); toast('📋 نُسخ الكود '+c); }catch(e){ prompt('انسخ الكود:', c); } }
 async function toggleTechs(){ techsOpen=!techsOpen; if(techsOpen) await loadTechs(); render(); }
 function copyMyCode(){ const c=(me&&me.code)||''; try{ navigator.clipboard.writeText(c); toast('📋 نُسخ كودك: '+c); }catch(e){ toast('كودك: '+c); } }
 async function removeTech(uid,name){ if(!confirm('إزالة الفني '+(name||'')+' من فريقك؟')) return; try{ await sb.rpc('remove_my_tech',{ p_uid:uid }); }catch(e){} await loadTechs(); toast('تمت الإزالة'); render(); }
