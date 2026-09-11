@@ -314,6 +314,43 @@
 .wh-item .inv-ctl .sbtn{padding:9px 9px;font-size:.82rem;white-space:nowrap}
 .wh-item .inv-ctl .sbtn.ok{flex:1}
 @media(max-width:600px){ .wh-stats{grid-template-columns:repeat(2,1fr)} }
+/* ═ المستودع v2: تصنيف، بطاقات أكبر، أزرار أقل ═ */
+.wh-tools+.wh-tools{margin-top:-2px}
+.wh-tools .wh-add{flex:1;text-align:center;padding:12px 8px}
+.wh-add.danger{background:var(--danger-soft);color:var(--danger)}
+.wh-add.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.wh-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 8px}
+.wh-cat{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:10px 4px;text-align:center;font-weight:900;font-size:.9rem;color:var(--muted);font-family:inherit;cursor:pointer;line-height:1.2}
+.wh-cat small{display:block;font-size:.72rem;font-weight:700;margin-top:3px}
+.wh-cat.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.wh-cat.active small{color:var(--gold)}
+.wh-sub{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.wh-group{margin-top:14px}
+.wh-group-h{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:1.08rem;padding:6px 4px 8px;border-bottom:2px solid var(--gold);margin-bottom:10px}
+.wh-group-h small{color:var(--muted);font-weight:700;font-size:.8rem}
+.wh-list{gap:12px}
+.wh-item{position:relative;padding:14px;border-radius:16px}
+.wh-thumb{width:96px;height:96px;border-radius:14px;font-size:2.2rem}
+.wh-name b{font-size:1.12rem}
+.wh-qty b{font-size:1.9rem}
+.wh-qty small{font-size:.8rem}
+.wh-bar{height:10px}
+.wh-price{font-size:.86rem;background:var(--bg);border-radius:12px;padding:8px 10px;margin-top:9px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center}
+.wh-price span{display:flex;flex-direction:column;gap:1px;align-items:center}
+.wh-price small{font-size:.68rem;color:var(--muted);font-weight:700}
+.wh-price b{font-size:1.02rem}
+.wh-btns{display:flex;gap:8px;margin-top:10px}
+.wh-btns .sbtn{flex:1;padding:11px 6px;font-size:.92rem;font-weight:900;white-space:nowrap}
+.wh-btns .sbtn.in{background:var(--ok-soft);color:var(--ok);border-color:#BBE5C6}
+.wh-btns .sbtn.out{background:#FFF3E6;color:#9A3B00;border-color:#F5C9A6}
+.wh-item.selectable{cursor:pointer}
+.wh-item.selected{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+.wh-check{position:absolute;top:10px;inset-inline-start:10px;width:28px;height:28px;border-radius:9px;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-weight:900;color:#fff;z-index:1}
+.wh-item.selected .wh-check{background:var(--danger);border-color:var(--danger)}
+.wh-del-bar{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--ink);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;justify-content:space-between;font-weight:800}
+.wh-del-bar .sbtn{padding:10px 14px;color:var(--ink)} .wh-del-bar .sbtn.danger{color:var(--danger)}
+@media(max-width:600px){ .wh-cat{font-size:.82rem;padding:9px 3px} .wh-thumb{width:88px;height:88px} .wh-btns .sbtn{font-size:.86rem;padding:10px 4px} }
+
 
 html,body{touch-action:manipulation}
 </style>
@@ -758,7 +795,7 @@ async function wfRemovePhoto(id){ wfPhoto=null; wfPhotoUrl=''; const im=document
 
 const INV_CATS=['كهرباء','سباكة','عام'];
 const CAT_ICO={'كهرباء':'⚡','سباكة':'🔧','عام':'🛠️'};
-let invSearch='', invFilter='all', invSort='pct', invShowOrder=false;
+let invSearch='', invFilter='all', invSort='name', invShowOrder=false, invCat='all', invDelMode=false, invDelSel=new Set();
 const n2=v=>(+v||0).toLocaleString('en',{maximumFractionDigits:2});
 function invUsage(id){ const now=Date.now(), d180=now-180*864e5, d30=now-30*864e5; let u6=0,u1=0;
   LOG.forEach(e=>{ if(e.item_id!==id||+e.delta>=0) return; const t=new Date(e.created_at).getTime(), q=Math.abs(+e.delta||0); if(t>=d180) u6+=q; if(t>=d30) u1+=q; });
@@ -777,11 +814,11 @@ function invVisible(){
   const hot=invHot(); const q=invSearch.toLowerCase();
   let list=INV.filter(it=>{
     if(q && !((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q)) return false;
+    if(invCat!=='all' && (it.category||'عام')!==invCat) return false;
     const st=invState(it);
     if(invFilter==='low') return st==='low'||st==='out';
     if(invFilter==='out') return st==='out';
     if(invFilter==='hot') return hot.includes(it.id);
-    if(INV_CATS.includes(invFilter)) return (it.category||'عام')===invFilter;
     return true; });
   const rank={out:0,low:1,mid:2,ok:3};
   if(invSort==='pct') list.sort((a,b)=>{ const ra=rank[invState(a)], rb=rank[invState(b)]; if(ra!==rb) return ra-rb; const pa=invPct(a), pb=invPct(b); return (pa===null?101:pa)-(pb===null?101:pb); });
@@ -790,44 +827,95 @@ function invVisible(){
   else list.sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
   return list;
 }
+function setInvCat(c){ invCat=c; invRefresh(); }
+function toggleDelMode(){ invDelMode=!invDelMode; invDelSel=new Set(); render(); }
+function toggleDelSel(id){ if(invDelSel.has(id)) invDelSel.delete(id); else invDelSel.add(id); invRefresh(); }
+async function deleteSelected(){
+  const ids=[...invDelSel]; if(!ids.length){ toast('اختاري صنفًا أو أكثر أولًا'); return; }
+  const names=INV.filter(x=>ids.includes(x.id)).map(x=>x.name).slice(0,5).join('، ');
+  if(!confirm('حذف '+ids.length+' صنف نهائيًا من المستودع؟\n'+names+(ids.length>5?' …':''))) return;
+  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').delete().in('id',ids); if(r.error) throw r.error; }catch(e){ toast('تعذّر الحذف'); return; } }
+  INV=INV.filter(x=>!ids.includes(x.id)); invDelMode=false; invDelSel=new Set(); toast('🗑 حُذف '+ids.length+' صنف'); render();
+}
 function renderInventory(){
   const pieces=INV.reduce((a,it)=>a+(+it.qty||0),0);
   const value=INV.reduce((a,it)=>a+(+it.qty||0)*(+it.buy_price||0),0);
-  const profit=INV.reduce((a,it)=>a+(+it.qty||0)*Math.max(0,(+it.sell_price||0)-(+it.buy_price||0)),0);
   const need=INV.filter(it=>['low','out'].includes(invState(it)));
   const stats=`<div class="wh-stats">
     <div class="wh-stat"><div class="n">${ar(INV.length)}</div><div class="l">📦 ${LX('صنف بالمستودع','Items')}</div></div>
     <div class="wh-stat gold"><div class="n">${ar(n2(pieces))}</div><div class="l">🔢 ${LX('قطعة متوفرة','Pieces in stock')}</div></div>
-    <div class="wh-stat green"><div class="n">${ar(n2(Math.round(value)))}</div><div class="l">💰 ${LX('قيمة المخزون بالشراء (ر.س)','Stock value at cost (SAR)')}</div></div>
+    <div class="wh-stat green"><div class="n">${ar(n2(Math.round(value)))}</div><div class="l">💰 ${LX('قيمة المخزون بالجملة (ر.س)','Stock value at cost (SAR)')}</div></div>
     <div class="wh-stat ${need.length?'warn':''}"><div class="n">${ar(need.length)}</div><div class="l">${need.length?'🚨':'✅'} ${LX('تحتاج طلب الآن','Need reorder')}</div></div>
   </div>`;
   const tools=`<div class="wh-tools">
     <input id="whSearch" class="wh-search" placeholder="🔍 ${LX('ابحث باسم الصنف أو الكود','Search by name or code')}" value="${esc(invSearch)}" oninput="setInvSearch(this.value)" />
     <select class="wh-sel" onchange="setInvSort(this.value)">
+      <option value="name" ${invSort==='name'?'selected':''}>${LX('الاسم','Name')}</option>
       <option value="pct" ${invSort==='pct'?'selected':''}>${LX('الأكثر نقصًا أولًا','Lowest first')}</option>
       <option value="use" ${invSort==='use'?'selected':''}>${LX('الأكثر استخدامًا','Most used')}</option>
       <option value="value" ${invSort==='value'?'selected':''}>${LX('الأعلى قيمة','Highest value')}</option>
-      <option value="name" ${invSort==='name'?'selected':''}>${LX('الاسم','Name')}</option>
     </select>
+  </div>
+  <div class="wh-tools">
     <button class="wh-add" onclick="invForm('')">➕ ${LX('صنف جديد','New item')}</button>
-    <button class="wh-add" style="background:var(--gold);color:var(--ink)" onclick="openImgLinker()">🖼️ ${LX('ربط الصور','Link images')}</button>
+    <button class="wh-add ${invDelMode?'danger':'ghost'}" onclick="toggleDelMode()">🗑 ${invDelMode?LX('إلغاء الحذف','Cancel delete'):LX('حذف صنف','Delete item')}</button>
+    <button class="wh-add ghost" onclick="openImgLinker()">🖼️ ${LX('ربط الصور','Link images')}</button>
   </div>`;
-  return stats+tools+`<div id="whBody">${renderWhBody()}</div>`;
+  const cnt=c=>INV.filter(it=>c==='all'||(it.category||'عام')===c).length;
+  const cats=`<div class="wh-cats">
+    <button class="wh-cat ${invCat==='all'?'active':''}" onclick="setInvCat('all')">📦 ${LX('الكل','All')}<small>${ar(cnt('all'))}</small></button>
+    ${INV_CATS.map(c=>`<button class="wh-cat ${invCat===c?'active':''}" onclick="setInvCat('${c}')">${CAT_ICO[c]} ${c}<small>${ar(cnt(c))}</small></button>`).join('')}
+  </div>`;
+  return stats+tools+cats+`<div id="whBody">${renderWhBody()}</div>`;
+}
+function whCard(it, hot){
+  const st=invState(it), p=invPct(it), u=invUsage(it.id), q=+it.qty||0;
+  const buy=+it.buy_price||0, sell=+it.sell_price||0, prof=sell-buy;
+  const stLbl={out:'⛔ '+LX('نفد','Out'),low:'⚠️ '+LX('اطلب الآن','Reorder now'),mid:'🟡 '+LX('أقل من النصف','Below half'),ok:'✅ '+LX('متوفر','In stock')}[st];
+  const months=u.monthly>0?q/u.monthly:null;
+  const enough=(months===null||q<=0)?'':(months>=12?LX('يكفي أكثر من سنة','Lasts over a year'):LX('يكفي نحو '+ar(n2(Math.round(months*10)/10))+' شهر','Lasts about '+n2(Math.round(months*10)/10)+' mo'));
+  const sel=invDelSel.has(it.id);
+  const thumbClick=invDelMode?'':(it.image_url?`onclick="whShowImg('${esc(it.image_url)}')"`:`onclick="invForm('${it.id}')"`);
+  return `<div class="wh-item st-${st} ${invDelMode?'selectable':''} ${sel?'selected':''}" ${invDelMode?`onclick="toggleDelSel('${it.id}')"`:''}>
+    ${invDelMode?`<div class="wh-check">${sel?'✓':''}</div>`:''}
+    <div class="wh-top">
+      <div class="wh-thumb" ${thumbClick}>${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:(CAT_ICO[it.category]||'📦')}</div>
+      <div class="wh-name"><b>${esc(it.name)}</b>
+        <div class="wh-tags"><span class="wh-tag ${st}">${stLbl}</span>${hot.includes(it.id)?`<span class="wh-tag hot">🔥 ${LX('الأكثر استخدامًا','Most used')}</span>`:''}${it.code?`<span class="wh-tag">${esc(it.code)}</span>`:''}</div>
+      </div>
+      <div class="wh-qty"><b>${ar(n2(q))}</b><small>${esc(it.unit||'حبة')}</small></div>
+    </div>
+    <div class="wh-bar ${p===null?'none':''}"><i style="width:${p===null?100:p}%"></i></div>
+    <div class="wh-meta">
+      <span class="wh-pct">${p===null?LX('حدد الكمية المستهدفة ✏️','Set a target ✏️'):ar(p)+'%'}</span>
+      <span>${p===null?'':LX('المستهدف','Target')+' <b>'+ar(n2(it.target_qty))+'</b> · '}${LX('حد الطلب','Reorder at')} <b>${ar(n2(it.min_qty||0))}</b></span>
+    </div>
+    <div class="wh-meta"><span>📉 ${LX('استُخدم','Used')} <b>${ar(n2(u.u6))}</b> ${LX('خلال 6 أشهر','in 6 mo')} · <b>${ar(n2(u.u1))}</b> ${LX('هذا الشهر','this month')}</span><span>${enough}</span></div>
+    <div class="wh-price">
+      <span><small>${LX('شراء بالجملة','Wholesale cost')}</small><b>${ar(n2(buy))}</b></span>
+      <span><small>${LX('بيع مقترح','Suggested price')}</small><b>${ar(n2(sell))}</b></span>
+      <span class="${prof>=0?'pos':'neg'}"><small>${prof>=0?LX('ربح الحبة','Profit each'):LX('خسارة الحبة','Loss each')}</small><b>${sell?ar(n2(Math.abs(prof)))+(buy?' <i style="font-style:normal;font-size:.72rem">('+ar(Math.round(prof/buy*100))+'%)</i>':''):'…'}</b></span>
+    </div>
+    ${invDelMode?'':`<div class="wh-btns">
+      <button class="sbtn in" onclick="invAddQ('${it.id}')">＋ ${LX('إدخال','Stock in')}</button>
+      <button class="sbtn out" onclick="invGiveQ('${it.id}')">－ ${LX('صرف','Issue')}</button>
+      <button class="sbtn" onclick="invForm('${it.id}')">✏️ ${LX('تعديل','Edit')}</button>
+    </div>`}
+  </div>`;
 }
 function renderWhBody(){
   const hot=invHot();
   const cnt={low:INV.filter(it=>['low','out'].includes(invState(it))).length, out:INV.filter(it=>invState(it)==='out').length};
   const chip=(k,l,cls)=>`<button class="wh-chip ${cls||''} ${invFilter===k?'active':''}" onclick="setInvFilter('${k}')">${l}</button>`;
-  const chips=`<div class="wh-chips">
-    ${chip('all',LX('الكل','All')+' ('+ar(INV.length)+')')}
+  const chips=`<div class="wh-sub">
+    ${chip('all',LX('بدون فلتر','No filter'))}
     ${chip('low','⚠️ '+LX('تحتاج طلب','Reorder')+' ('+ar(cnt.low)+')','warn')}
     ${chip('out','⛔ '+LX('نفدت','Out')+' ('+ar(cnt.out)+')','warn')}
     ${chip('hot','🔥 '+LX('الأكثر استخدامًا','Most used'))}
-    ${INV_CATS.map(c=>chip(c,CAT_ICO[c]+' '+c)).join('')}
   </div>`;
   const need=INV.filter(it=>['low','out'].includes(invState(it)));
   let orderBox='';
-  if(need.length){
+  if(need.length && !invDelMode){
     const rows=need.map(it=>({it,q:invNeed(it),c:invNeed(it)*(+it.buy_price||0)})).filter(r=>r.q>0);
     const tot=rows.reduce((a,r)=>a+r.c,0);
     orderBox=`<div class="wh-order"><h4><span>🛒 ${LX('قائمة الطلب المقترحة','Suggested purchase list')} · ${ar(rows.length)} ${LX('صنف','items')}</span>
@@ -836,38 +924,16 @@ function renderWhBody(){
       <tfoot><tr><td>${LX('التكلفة التقديرية','Estimated cost')}</td><td></td><td class="c">${ar(n2(Math.round(tot)))} ر.س</td></tr></tfoot></table>`:''}
     </div>`;
   }
+  const delBar=invDelMode?`<div class="wh-del-bar" id="whDelBar"><span>🗑 ${LX('اختاري الأصناف ثم احذفي','Select items, then delete')} · <b>${ar(invDelSel.size)}</b></span><span style="display:flex;gap:8px"><button class="sbtn" onclick="toggleDelMode()">${LX('إلغاء','Cancel')}</button><button class="sbtn danger" onclick="deleteSelected()">${LX('حذف المحدد','Delete selected')}</button></span></div>`:'';
   const list=invVisible();
-  if(!INV.length) return chips+`<div class="wh-empty">${LX('المستودع فارغ. أضف أول صنف من زر «صنف جديد».','Warehouse is empty. Add your first item.')}</div>`;
-  if(!list.length) return chips+orderBox+`<div class="wh-empty">${LX('لا نتائج بهذا الفلتر.','No results for this filter.')}</div>`;
-  const cards=list.map(it=>{
-    const st=invState(it), p=invPct(it), u=invUsage(it.id), q=+it.qty||0;
-    const buy=+it.buy_price||0, sell=+it.sell_price||0, prof=sell-buy;
-    const stLbl={out:'⛔ '+LX('نفد','Out'),low:'⚠️ '+LX('اطلب الآن','Reorder now'),mid:'🟡 '+LX('أقل من النصف','Below half'),ok:'✅ '+LX('متوفر','In stock')}[st];
-    const months=u.monthly>0?q/u.monthly:null;
-    const enough=(months===null||q<=0)?'':(months>=12?LX('يكفي أكثر من سنة','Lasts over a year'):LX('يكفي نحو '+ar(n2(Math.round(months*10)/10))+' شهر','Lasts about '+n2(Math.round(months*10)/10)+' mo'));
-    return `<div class="wh-item st-${st}">
-      <div class="wh-top">
-        <div class="wh-thumb" onclick="${it.image_url?`whShowImg('${esc(it.image_url)}')`:`invForm('${it.id}')`}">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:(CAT_ICO[it.category]||'📦')}</div>
-        <div class="wh-name"><b>${esc(it.name)}</b>
-          <div class="wh-tags"><span class="wh-tag ${st}">${stLbl}</span>${hot.includes(it.id)?`<span class="wh-tag hot">🔥 ${LX('الأكثر استخدامًا','Most used')}</span>`:''}<span class="wh-tag">${CAT_ICO[it.category]||'🛠️'} ${esc(it.category||'عام')}</span>${it.code?`<span class="wh-tag">${esc(it.code)}</span>`:''}</div>
-        </div>
-        <div class="wh-qty"><b>${ar(n2(q))}</b><small>${esc(it.unit||'حبة')}</small></div>
-      </div>
-      <div class="wh-bar ${p===null?'none':''}"><i style="width:${p===null?100:p}%"></i></div>
-      <div class="wh-meta">
-        <span class="wh-pct">${p===null?LX('حدد الكمية المستهدفة ✏️','Set a target ✏️'):ar(p)+'%'}</span>
-        <span>${p===null?'':LX('المستهدف','Target')+' <b>'+ar(n2(it.target_qty))+'</b> · '}${LX('حد الطلب','Reorder at')} <b>${ar(n2(it.min_qty||0))}</b></span>
-      </div>
-      <div class="wh-meta"><span>📉 ${LX('استُخدم','Used')} <b>${ar(n2(u.u6))}</b> ${LX('خلال 6 أشهر','in 6 mo')} · <b>${ar(n2(u.u1))}</b> ${LX('هذا الشهر','this month')}</span><span>${enough}</span></div>
-      <div class="wh-price"><span>${LX('شراء','Buy')} <b>${ar(n2(buy))}</b></span><span>${LX('بيع','Sell')} <b>${ar(n2(sell))}</b></span>${sell?`<span class="${prof>=0?'pos':'neg'}">${prof>=0?LX('ربح','Profit'):LX('خسارة','Loss')} <b>${ar(n2(Math.abs(prof)))}</b>${buy?' ('+ar(Math.round(prof/buy*100))+'%)':''}</span>`:''}</div>
-      <div class="inv-ctl">
-        <input type="number" class="inv-amt" inputmode="numeric" placeholder="${LX('كمية','qty')}" />
-        <button class="sbtn ok" onclick="invAdd('${it.id}',this)">${LX('شراء','Buy')} ＋</button>
-        <button class="sbtn" onclick="invGive('${it.id}',this)">${LX('صرف','Issue')} －</button>
-        <button class="sbtn" onclick="invForm('${it.id}')">✏️</button>
-        <button class="sbtn danger" onclick="invDelete('${it.id}')">🗑</button>
-      </div></div>`; }).join('');
-  return chips+orderBox+`<div class="wh-list">${cards}</div>`;
+  if(!INV.length) return chips+`<div class="wh-empty">${LX('المستودع فارغ. أضف أول صنف من زر «صنف جديد».','Warehouse is empty. Add your first item.')}</div>`+delBar;
+  if(!list.length) return chips+orderBox+`<div class="wh-empty">${LX('لا نتائج بهذا الفلتر.','No results for this filter.')}</div>`+delBar;
+  let body='';
+  if(invCat==='all'){
+    for(const c of INV_CATS){ const g=list.filter(it=>(it.category||'عام')===c); if(!g.length) continue;
+      body+=`<div class="wh-group"><div class="wh-group-h"><span>${CAT_ICO[c]} ${c}</span><small>${ar(g.length)} ${LX('صنف','items')}</small></div><div class="wh-list">${g.map(it=>whCard(it,hot)).join('')}</div></div>`; }
+  } else body=`<div class="wh-list" style="margin-top:6px">${list.map(it=>whCard(it,hot)).join('')}</div>`;
+  return chips+orderBox+body+delBar+(invDelMode?'<div style="height:70px"></div>':'');
 }
 function copyOrderList(){
   const need=INV.filter(it=>['low','out'].includes(invState(it))).map(it=>({it,q:invNeed(it)})).filter(r=>r.q>0);
@@ -893,13 +959,13 @@ function invForm(id){
       <label>${LX('الوحدة','Unit')}<input id="wf_unit" value="${esc(v.unit||'حبة')}" placeholder="حبة / متر / لفة" /></label>
       <label>${LX('الكود (اختياري)','Code (optional)')}<input id="wf_code" value="${esc(v.code||'')}" placeholder="lb9yra" /></label>
       ${it?'':`<label>${LX('الكمية الحالية','Current qty')}<input id="wf_qty" type="number" inputmode="decimal" value="${v.qty}" /></label>`}
-      <label>${LX('سعر الشراء للوحدة','Buy price')}<input id="wf_buy" type="number" inputmode="decimal" step="0.01" value="${v.buy_price||0}" /></label>
-      <label>${LX('سعر البيع للوحدة','Sell price')}<input id="wf_sell" type="number" inputmode="decimal" step="0.01" value="${v.sell_price||0}" /></label>
+      <label>${LX('سعر الشراء بالجملة للوحدة','Wholesale cost per unit')}<input id="wf_buy" type="number" inputmode="decimal" step="0.01" value="${v.buy_price||0}" /></label>
+      <label>${LX('سعر البيع المقترح للوحدة','Suggested sell price')}<input id="wf_sell" type="number" inputmode="decimal" step="0.01" value="${v.sell_price||0}" /></label>
       <label>${LX('حد الطلب (تنبيه)','Reorder at')}<input id="wf_min" type="number" inputmode="decimal" value="${v.min_qty||0}" /></label>
       <label>${LX('الكمية المستهدفة','Target qty')}<input id="wf_target" type="number" inputmode="decimal" value="${v.target_qty||0}" /></label>
       <div class="wh-hint">${LX('النسبة بالمستودع تُحسب من الكمية المستهدفة، ولما تنزل الكمية إلى حد الطلب يطلع الصنف في قائمة الطلب تلقائيًا.','The bar is qty ÷ target. When qty hits the reorder level the item joins the purchase list.')}</div>
     </div>
-    <div class="wh-actions"><button class="sbtn" onclick="invFormClose()">${LX('إلغاء','Cancel')}</button><button class="sbtn ok" onclick="invFormSave('${id||''}')">💾 ${LX('حفظ','Save')}</button></div>
+    <div class="wh-actions">${it?`<button class="sbtn danger" onclick="invDelete('${id}')">🗑 ${LX('حذف','Delete')}</button>`:''}<button class="sbtn" onclick="invFormClose()">${LX('إلغاء','Cancel')}</button><button class="sbtn ok" onclick="invFormSave('${id||''}')">💾 ${LX('حفظ','Save')}</button></div>
   </div></div>`);
   setTimeout(()=>{ const e=document.getElementById('wf_name'); if(e&&!it) e.focus(); },50);
 }
@@ -924,13 +990,26 @@ async function invFormSave(id){
   invFormClose(); render();
 }
 async function invSave(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
-function invReadAmt(btn){ const inp=btn.parentElement.querySelector('.inv-amt'); const v=Math.abs(+((inp||{}).value)||0); return {inp,v}; }
-async function invAdd(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invReadAmt(btn); if(!v){ toast('اكتب الكمية'); return; } it.qty=(+it.qty||0)+v; if(inp) inp.value=''; await invSave(it); await logStock(it,v,'شراء','المؤسسة'); toast('➕ أُضيف للمستودع'); render(); }
-async function invGive(id,btn){ const it=INV.find(x=>x.id===id); if(!it) return; const {inp,v}=invReadAmt(btn); if(!v){ toast('اكتب الكمية'); return; }
+async function invAddQ(id){
+  const it=INV.find(x=>x.id===id); if(!it) return;
+  const s=prompt('إدخال شراء لـ «'+it.name+'»\nكم '+(it.unit||'حبة')+' دخلت المستودع؟','');
+  if(s===null) return; const v=Math.abs(+String(s).replace(/[^\d.]/g,'')||0); if(!v){ toast('اكتبي الكمية'); return; }
+  it.qty=(+it.qty||0)+v; await invSave(it); await logStock(it,v,'شراء','المؤسسة'); toast('➕ أُضيف '+n2(v)+' '+(it.unit||'')+' إلى '+it.name); invRefresh();
+}
+async function invGiveQ(id){
+  const it=INV.find(x=>x.id===id); if(!it) return;
+  const s=prompt('صرف من «'+it.name+'» (المتوفر '+n2(it.qty||0)+' '+(it.unit||'')+')\nكم '+(it.unit||'حبة')+' تصرفين؟','');
+  if(s===null) return; const v=Math.abs(+String(s).replace(/[^\d.]/g,'')||0); if(!v){ toast('اكتبي الكمية'); return; }
   if(v>(+it.qty||0)){ toast('⚠️ الكمية أكثر من المتوفر'); return; }
-  const why=prompt('صرف '+v+' '+(it.unit||'')+' من «'+it.name+'»\nاكتب السبب (اسم العميل أو رقم الطلب):'); if(why===null) return;
-  it.qty=Math.max(0,(+it.qty||0)-v); if(inp) inp.value=''; await invSave(it); await logStock(it,-v,'صرف · '+(why.trim()||'بدون سبب'),'المؤسسة'); toast('➖ صُرف وسُجّل'); render(); }
-async function invDelete(id){ if(!confirm('حذف الصنف من المستودع؟')) return; if(cloudReady){ try{ await sb.from('khafet_inventory').delete().eq('id',id); }catch(e){} } INV=INV.filter(x=>x.id!==id); toast('حُذف'); render(); }
+  const why=prompt('لمين؟ اكتبي اسم العميل أو رقم الطلب:'); if(why===null) return;
+  it.qty=Math.max(0,(+it.qty||0)-v); await invSave(it); await logStock(it,-v,'صرف · '+(why.trim()||'بدون سبب'),'المؤسسة'); toast('➖ صُرف وسُجّل'); invRefresh();
+}
+async function invDelete(id){
+  const it=INV.find(x=>x.id===id); if(!it) return;
+  if(!confirm('حذف «'+it.name+'» نهائيًا من المستودع؟')) return;
+  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').delete().eq('id',id); if(r.error) throw r.error; }catch(e){ toast('تعذّر الحذف'); return; } }
+  INV=INV.filter(x=>x.id!==id); invFormClose(); toast('🗑 حُذف '+it.name); render();
+}
 function renderStockLog(){
   if(!LOG.length) return `<p style="color:var(--muted)">لا توجد حركات بعد.</p>`;
   // تجميع حسب اليوم

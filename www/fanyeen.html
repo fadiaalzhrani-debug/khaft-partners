@@ -296,6 +296,10 @@
   .sl-t{color:var(--muted);font-size:.68rem;font-weight:600;text-align:end;flex-shrink:0;white-space:nowrap}
 
   /* ===== قسم: حجز لعميل ===== */
+  .bk-loc{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .bk-loc .tbtn{flex:1;font-size:.95rem;padding:13px 10px}
+  .bk-loc-ok{font-size:.85rem;font-weight:800;color:#16a34a}
+  .bk-loc-ok a{color:#16a34a}
   .bookf{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px;display:flex;flex-direction:column;gap:11px}
   /* اختيار اليوم ونافذة الوصول — منسوخ حرفياً من تطبيق خافت */
   .bkpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:16px}
@@ -1367,9 +1371,9 @@ function renderInvTab(){
     const s=invStatus(it); if(s==='low')nLow++; if(s==='out')nOut++; });
   const profit=valSell-valBuy;
   const worth=`<div class="worth">
-    <div><div class="w-lbl">${A?'قيمة المخزون (بسعر البيع)':'Stock value (sell)'}</div><div class="w-big">${invMoney(valSell)} <span>${A?'ر.س':'SAR'}</span></div></div>
+    <div><div class="w-lbl">${A?'الأصناف بالمستودع':'Items in stock'}</div><div class="w-big">${ar(INV.length)} <span>${A?'صنف':'items'}</span></div></div>
     <div class="w-side">
-      <b>${A?'ربح متوقّع':'Est. profit'}: ${invMoney(profit)}</b>
+      <b>${A?'القطع المتوفرة':'Pieces'}: ${ar(INV.reduce((t,x)=>t+(+x.qty||0),0))}</b>
       <div>${nLow?`<span class="w-chip a">${ar(nLow)} ${A?'قاربت':'low'}</span>`:''}${nOut?`<span class="w-chip r">${ar(nOut)} ${A?'نفد':'out'}</span>`:''}${(!nLow&&!nOut)?`<span class="w-chip g">${A?'الكل متوفّر':'all in stock'}</span>`:''}</div>
     </div></div>`;
 
@@ -1395,8 +1399,7 @@ function renderInvTab(){
         <div class="ii-qty"><div class="ii-num ${st}">${ar(q)}</div><div class="ii-u">${esc(it.unit||'')}</div><span class="ii-badge ${st}">${stTx}</span></div>
       </div>
       <div class="ii-mid">
-        <div class="iprice"><small>${A?'شراء':'Buy'}</small><b>${invMoney(bp)}</b></div>
-        <div class="iprice sell"><small>${A?'بيع':'Sell'}</small><b>${invMoney(sp)}${mar>0?` <span class="imar">+${ar(mar)}٪</span>`:''}</b></div>
+        <div class="iprice sell"><small>${A?'سعر البيع':'Sell price'}</small><b>${invMoney(sp)}</b></div>
       </div>
       <div class="ii-acts">
         <input type="number" class="inv-amt" inputmode="numeric" placeholder="${A?'كمية':'qty'}" />
@@ -1422,7 +1425,7 @@ async function invAddPrompt(){
   const name=prompt(A?'اسم الصنف:':'Item name:'); if(!name||!name.trim()) return;
   const unit=prompt(A?'الوحدة (حبة/متر/كرتون):':'Unit:','حبة')||'حبة';
   const qty=Math.abs(+prompt(A?'الكمية الحالية:':'Current qty:','0')||0);
-  const buy=Math.abs(+prompt(A?'سعر الشراء (ر.س):':'Buy price:','0')||0);
+  const buy=0;
   const sell=Math.abs(+prompt(A?'سعر البيع (ر.س):':'Sell price:','0')||0);
   const mn=Math.abs(+prompt(A?'الحد الأدنى للتنبيه:':'Min alert qty:','3')||3);
   const data={ name:name.trim(), unit, qty, buy_price:buy, sell_price:sell, min_qty:mn };
@@ -1433,8 +1436,8 @@ async function invAddPrompt(){
 /* تعديل صنف (الأسعار/الحد الأدنى/الوحدة) */
 async function invEdit(id){
   const A=lang==='ar'; const it=INV.find(x=>x.id===id); if(!it) return;
-  const buy=prompt(A?('سعر شراء «'+it.name+'»:'):'Buy price:', it.buy_price||0); if(buy===null) return;
-  const sell=prompt(A?'سعر البيع:':'Sell price:', it.sell_price||0); if(sell===null) return;
+  const buy=it.buy_price||0;
+  const sell=prompt(A?('سعر بيع «'+it.name+'»:'):'Sell price:', it.sell_price||0); if(sell===null) return;
   const mn=prompt(A?'الحد الأدنى للتنبيه:':'Min alert:', it.min_qty||3); if(mn===null) return;
   const patch={ buy_price:Math.abs(+buy||0), sell_price:Math.abs(+sell||0), min_qty:Math.abs(+mn||0) };
   Object.assign(it, patch);
@@ -1557,9 +1560,24 @@ function renderBookTab(){
     <p style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:10px">${A?'المنقّط = محجوز، اضغطيه تشوفين تفاصيله · الأخضر = حجز جديد ما شفته بعد':'Dashed = booked, tap for details · Green = new unseen booking'}</p>
   </div>
   <div class="bookf">
-    <div class="fu-field"><label>${A?'العنوان':'Address'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'حي · شارع · رقم المبنى':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
+    <div class="fu-field"><label>${A?'العنوان (الحي والشارع)':'Address (district, street)'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'مثال: حي العقربية، شارع الأمير تركي':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
+    <div class="fu-field"><label>${A?'رقم المنزل أو الشقة':'House / flat number'}</label><input id="bk_house" value="${esc(bkVals.house||'')}" oninput="bkVals.house=this.value" placeholder="${A?'مثال: فيلا 12 أو شقة 5':'e.g. Villa 12'}" /></div>
+    <div class="fu-field"><label>${A?'موقع المنزل على الخريطة':'Home location'}</label>
+      <div class="bk-loc"><button type="button" class="tbtn inv" onclick="bkLocate()">📍 ${bkVals.lat?(A?'تحديث الموقع':'Update location'):(A?'تحديد موقعي الحالي':'Use my current location')}</button>
+      <span id="bk_loc_ok" class="bk-loc-ok">${bkVals.lat?`✅ ${A?'تم تحديد الموقع':'Located'} · <a href="${esc(bkVals.mapUrl)}" target="_blank" rel="noopener">${A?'افتح الخريطة':'Open map'}</a>`:''}</span></div>
+      <p style="color:var(--muted);font-size:.78rem;font-weight:700;margin:6px 0 0">${A?'وأنت عند العميل اضغط الزر فيُحفظ موقع المنزل بدقة للزيارات القادمة.':'Tap while at the customer to save the exact home location.'}</p></div>
     <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">✅ ${A?'أكّد الحجز':'Confirm booking'}${bkTime!=null?' — '+bkWindowLabel(bkTime):''}</button>
   </div>`;
+}
+function bkLocate(){
+  const A=lang==='ar';
+  if(!navigator.geolocation){ toast('⚠️ '+(A?'الجهاز ما يدعم تحديد الموقع':'No geolocation')); return; }
+  const ok=document.getElementById('bk_loc_ok'); if(ok) ok.textContent='⏳ '+(A?'جارٍ تحديد الموقع…':'Locating…');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const la=+pos.coords.latitude.toFixed(6), ln=+pos.coords.longitude.toFixed(6);
+    bkVals.lat=la; bkVals.lng=ln; bkVals.mapUrl='https://www.google.com/maps?q='+la+','+ln;
+    toast('📍 '+(A?'تم تحديد الموقع':'Located')); render();
+  }, function(){ if(ok) ok.textContent='⚠️ '+(A?'تعذّر تحديد الموقع، فعّل GPS وأذونات الموقع':'Could not locate, enable GPS'); }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
 }
 async function createBooking(){
   const A=lang==='ar';
@@ -1568,7 +1586,8 @@ async function createBooking(){
   if(!name||!phone){ toast('⚠️ '+(A?'عبّي الاسم والجوال':'Fill name & phone')); return; }
   if(!date||bkTime==null){ toast('🕐 '+(A?'اختر اليوم والوقت':'Pick a day & time')); return; }
   const startMin=bkTime, duration=60;
-  const payload={ customer_name:name, customer_phone:phone, address:{ street:addr },
+  const house=g('bk_house');
+  const payload={ customer_name:name, customer_phone:phone, address:{ street:addr, house:house, lat:bkVals.lat||'', lng:bkVals.lng||'', mapUrl:bkVals.mapUrl||'' },
     items:[{id:'custom',name:svc||(A?'خدمة':'Service'),ico:'🔧',qty:1,price:0,custom:true}],
     service_date:date, start_min:startMin, duration:duration, end_min:startMin+duration,
     price:0, final_price:0, free:false, status:'confirmed', rating:0, reminded:false,
@@ -1579,7 +1598,7 @@ async function createBooking(){
     catch(e){ toast('⚠️ '+(e.message||'')); if(btn){ btn.disabled=false; btn.textContent='📅'; } return; }
   }
   toast('✅ '+(A?'تم الحجز':'Booked'));
-  bkTime=null; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr='';
+  bkTime=null; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr=''; bkVals.house=''; bkVals.lat=''; bkVals.lng=''; bkVals.mapUrl='';
   tab='orders'; calFilter=date;
   if(cloudReady) loadOrders(); else render();
 }
