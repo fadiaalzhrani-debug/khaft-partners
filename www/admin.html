@@ -217,6 +217,27 @@
 .jpend{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
 .jpend:last-child{border-bottom:0}
 .jpend .t{flex:1;min-width:0} .jpend .t b{display:block} .jpend .t small{color:var(--muted);font-size:.8rem}
+/* ═ ربط الصور ═ */
+.il-ov{position:fixed;inset:0;background:var(--bg);z-index:85;overflow:auto;padding:0 0 40px}
+.il-top{position:sticky;top:0;z-index:2;background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;align-items:center;gap:10px}
+.il-top b{flex:1;font-size:1.05rem}
+.il-top .sbtn{padding:8px 12px}
+.il-wrap{max-width:560px;margin:0 auto;padding:0 14px}
+.il-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px}
+.il-head{display:flex;align-items:center;gap:10px}
+.il-head .wh-thumb{width:52px;height:52px}
+.il-head b{display:block;font-size:.98rem;line-height:1.3}
+.il-head small{color:var(--muted);font-size:.76rem}
+.il-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.il-opt{position:relative;border:2px solid var(--line);border-radius:10px;overflow:hidden;aspect-ratio:1;background:#fff;cursor:pointer}
+.il-opt img{width:100%;height:100%;object-fit:contain;display:block}
+.il-opt.sel{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok-soft)}
+.il-opt.sel::after{content:'✓';position:absolute;top:4px;inset-inline-start:4px;background:var(--ok);color:#fff;border-radius:999px;width:22px;height:22px;display:grid;place-items:center;font-weight:900;font-size:.8rem}
+.il-acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.il-acts .sbtn{padding:8px 11px;font-size:.8rem;position:relative;overflow:hidden}
+.il-acts .sbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.il-pager{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:14px}
+.il-empty{color:var(--muted);font-size:.8rem;margin-top:8px}
 /* ═ المستودع ═ */
 .wh-thumb{width:58px;height:58px;border-radius:12px;object-fit:cover;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:1.5rem;overflow:hidden;cursor:pointer}
 .wh-thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -312,6 +333,22 @@ html,body{touch-action:manipulation}
 <script>
 const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
+/* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
+const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
+const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
+const KH_STORE={
+  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} return null; },
+  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} },
+  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} }
+};
+const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
+try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
+  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} };
+  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); }catch(e){} };
+}catch(e){}
+/* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
+async function khRestore(){ if(!_khPrefs) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ localStorage.setItem(k,r.value); back.push(k); } }catch(e){} } return back; }
+
 const BRAND='خافِت'; const COMMISSION=3;
 /* ---- دخول لوحة المؤسسة ----
    الحساب محفوظ في Supabase → Authentication (ما فيه كلمة مرور مكتوبة هنا).
@@ -321,6 +358,39 @@ let loggedIn=false;                     // تُحدَّد من جلسة Supabase
 
 let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='';
 let JOIN_CODE='', PENDING_TECHS=[];
+let IMGOPTS={}, ilPage=0, ilFilter='all';
+async function loadImgOpts(){ try{ const io=await sb.from('khafet_item_images').select('item_id,url,sort').order('sort'); IMGOPTS={}; (io.data||[]).forEach(r=>{ (IMGOPTS[r.item_id]=IMGOPTS[r.item_id]||[]).push(r.url); }); }catch(e){} }
+function ilItems(){ let list=INV.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar')); if(ilFilter==='none') list=list.filter(it=>!it.image_url); return list; }
+function openImgLinker(){ ilPage=0; const old=document.getElementById('ilOv'); if(old) old.remove(); document.body.insertAdjacentHTML('beforeend','<div class="il-ov" id="ilOv"></div>'); renderImgLinker(); window.scrollTo(0,0); }
+function closeImgLinker(){ const o=document.getElementById('ilOv'); if(o) o.remove(); render(); }
+function setIlFilter(f){ ilFilter=f; ilPage=0; renderImgLinker(); }
+function ilGo(d){ ilPage=Math.max(0,ilPage+d); renderImgLinker(); const o=document.getElementById('ilOv'); if(o) o.scrollTo(0,0); }
+function ilCard(it){
+  const opts=IMGOPTS[it.id]||[]; const cur=it.image_url||'';
+  const known=opts.some(u=>u===cur);
+  const grid=(cur&&!known?`<div class="il-opt sel" onclick="pickImg('${it.id}','${esc(cur)}')"><img src="${esc(cur)}" loading="lazy" /></div>`:'')+opts.map(u=>`<div class="il-opt ${u===cur?'sel':''}" onclick="pickImg('${it.id}','${esc(u)}')"><img src="${esc(u)}" loading="lazy" /></div>`).join('');
+  return `<div class="il-item" id="il-${it.id}">
+    <div class="il-head"><div class="wh-thumb">${cur?`<img src="${esc(cur)}" />`:(CAT_ICO[it.category]||'📦')}</div><div style="flex:1;min-width:0"><b>${esc(it.name)}</b><small>${esc(it.code||'')} · ${cur?LX('لها صورة، اضغطي أخرى لتغييرها','Has image, tap another to change'):LX('بدون صورة، اختاري وحدة','No image yet, pick one')}</small></div></div>
+    ${grid?`<div class="il-grid">${grid}</div>`:`<div class="il-empty">${LX('ما فيه خيارات جاهزة لهذا الصنف، صوّريه من الجوال','No ready options, take a photo')}</div>`}
+    <div class="il-acts"><label class="sbtn ok">📷 ${LX('صورة من الجوال','Phone photo')}<input type="file" accept="image/*" onchange="ilPhoto('${it.id}',this)" /></label><button class="sbtn" onclick="pickImg('${it.id}','')">🚫 ${LX('بدون صورة','No image')}</button></div>
+  </div>`;
+}
+function renderImgLinker(){
+  const o=document.getElementById('ilOv'); if(!o) return;
+  const list=ilItems(); const PER=8; const pages=Math.max(1,Math.ceil(list.length/PER)); if(ilPage>=pages) ilPage=pages-1;
+  const withImg=INV.filter(it=>it.image_url).length;
+  o.innerHTML=`<div class="il-top"><b>🖼️ ${LX('ربط الصور بالأصناف','Link images')} <small style="color:var(--muted);font-weight:700">${ar(withImg)}/${ar(INV.length)}</small></b>
+      <button class="wh-chip ${ilFilter==='all'?'active':''}" onclick="setIlFilter('all')">${LX('الكل','All')}</button><button class="wh-chip ${ilFilter==='none'?'active':''}" onclick="setIlFilter('none')">${LX('بدون صورة','No image')}</button>
+      <button class="sbtn" onclick="closeImgLinker()">✕</button></div>
+    <div class="il-wrap">${list.slice(ilPage*PER,ilPage*PER+PER).map(ilCard).join('')||`<div class="il-empty" style="margin-top:20px">${LX('كل الأصناف لها صور 🎉','All items have images 🎉')}</div>`}
+    <div class="il-pager"><button class="sbtn" ${ilPage<=0?'disabled':''} onclick="ilGo(-1)">‹ ${LX('السابق','Prev')}</button><span style="font-weight:800">${ar(ilPage+1)} / ${ar(pages)}</span><button class="sbtn" ${ilPage>=pages-1?'disabled':''} onclick="ilGo(1)">${LX('التالي','Next')} ›</button></div></div>`;
+}
+async function pickImg(id,url){
+  const it=INV.find(x=>x.id===id); if(!it) return; it.image_url=url||null;
+  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').update({image_url:it.image_url}).eq('id',id); if(r.error) throw r.error; }catch(e){ toast('تعذّر الحفظ'); return; } }
+  toast(url?'✅ رُبطت الصورة بـ'+it.name:'🚫 بدون صورة'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); const top=document.querySelector('.il-top small'); if(top) top.textContent=ar(INV.filter(x=>x.image_url).length)+'/'+ar(INV.length);
+}
+async function ilPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳ جارٍ الرفع...'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ انحفظت صورتك'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); }catch(e){ toast('⚠️ تعذّر الرفع'); } }
 async function loadJoin(){ try{ const jc=await sb.rpc('get_join_code'); JOIN_CODE=jc.data||''; }catch(e){} try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
 function renderJoinPanelA(){
   const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · ${new Date(t.created_at).toLocaleDateString('ar-SA')}</small></div>
@@ -469,9 +539,10 @@ async function openMedia(v){
 async function isAdminUser(){ try{ const { data, error }=await sb.rpc('staff_role'); if(error) return 'err'; return data==='admin'; }catch(e){ return 'err'; } }
 let remChoice=true;
 async function initCloud(){
+  try{ await khRestore(); }catch(e){}
   try{
     if(window.supabase && SUPABASE_URL){
-      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON); cloudReady=true;
+      sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true;
       const { data:{ session } }=await sb.auth.getSession();
       if(session){
         if(localStorage.getItem('khafet_remember')==='0'){ try{ await sb.auth.signOut(); }catch(e){} render(); return; }   // اختار عدم البقاء مسجّلاً
@@ -499,7 +570,7 @@ async function loadAll(){
   try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); INV=iv.data||[]; }catch(e){}
   try{ const lg=await sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000); LOG=lg.data||[]; }catch(e){}
   try{ const st=await sb.from('khafet_staff').select('*'); STAFF=st.data||[]; }catch(e){}
-  await loadJoin();
+  await loadJoin(); await loadImgOpts();
   try{ const ar=await sb.from('khafet_articles').select('*').order('sort'); ARTICLES=ar.data||[]; }catch(e){}
   try{ const sg=await sb.from('khafet_suggestions').select('*').order('created_at',{ascending:false}).limit(300); SUGS=sg.data||[]; }catch(e){}
   render();
@@ -739,6 +810,7 @@ function renderInventory(){
       <option value="name" ${invSort==='name'?'selected':''}>${LX('الاسم','Name')}</option>
     </select>
     <button class="wh-add" onclick="invForm('')">➕ ${LX('صنف جديد','New item')}</button>
+    <button class="wh-add" style="background:var(--gold);color:var(--ink)" onclick="openImgLinker()">🖼️ ${LX('ربط الصور','Link images')}</button>
   </div>`;
   return stats+tools+`<div id="whBody">${renderWhBody()}</div>`;
 }
@@ -815,6 +887,7 @@ function invForm(id){
         <div class="btns"><label class="sbtn ok" style="text-align:center;cursor:pointer">📷 ${LX('صورة الصنف','Item photo')}<input type="file" accept="image/*" hidden onchange="wfPickPhoto(this)" /></label>
         <button class="sbtn" onclick="wfRemovePhoto('${id||''}')">🗑 ${LX('بدون صورة','Remove')}</button></div>
         <small style="color:var(--muted);font-weight:600;font-size:.74rem">${LX('تظهر للفني عند اختيار القطعة وللعميل في طلباتي','Shown to technicians and customers')}</small></div>
+      ${(id&&(IMGOPTS[id]||[]).length)?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${LX('خيارات جاهزة، اضغطي وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${(IMGOPTS[id]||[]).map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" onclick="pickImg('${id}','${esc(u)}');const im=document.getElementById('wf_img');if(im)im.innerHTML='<img src=&quot;'+'${esc(u)}'+'&quot; />';this.parentElement.querySelectorAll('.il-opt').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')"><img src="${esc(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
       <label class="full">${LX('اسم الصنف','Item name')}<input id="wf_name" value="${esc(v.name)}" placeholder="لمبة 9 وات أصفر" /></label>
       <label>${LX('الفئة','Category')}<select id="wf_cat">${INV_CATS.map(c=>`<option ${(v.category||'عام')===c?'selected':''}>${c}</option>`).join('')}</select></label>
       <label>${LX('الوحدة','Unit')}<input id="wf_unit" value="${esc(v.unit||'حبة')}" placeholder="حبة / متر / لفة" /></label>
