@@ -466,6 +466,9 @@ const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط — ليس سرّا
 let loggedIn=(()=>{ try{ return localStorage.getItem('khafet_admin_ok')==='1' && localStorage.getItem('khafet_remember')!=='0'; }catch(e){ return false; } })();   // دخول فوري لو الحساب محفوظ، والتحقق يصير بالخلفية                     // تُحدَّد من جلسة Supabase
 
 let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='';
+const KH_FROM_TECH=/^#(store|po)$/.test(location.hash);   // جاء من تطبيق الفني إلى المستودع مباشرة
+if(KH_FROM_TECH) adminSection='store';
+try{ const c=JSON.parse(localStorage.getItem('kh_inv_cache')||'null'); if(Array.isArray(c)&&c.length) INV=c; }catch(e){}   // الأصناف تظهر فورًا من آخر نسخة محفوظة
 let JOIN_CODE='', PENDING_TECHS=[];
 let IMGOPTS={}, ilPage=0, ilFilter='all';
 async function loadImgOpts(){ try{ const io=await sb.from('khafet_item_images').select('item_id,url,sort').order('sort'); IMGOPTS={}; (io.data||[]).forEach(r=>{ (IMGOPTS[r.item_id]=IMGOPTS[r.item_id]||[]).push(r.url); }); }catch(e){} }
@@ -681,7 +684,7 @@ async function loadAll(){
     Q(sb.from('khafet_providers').select('*').order('created_at',{ascending:false}), p=>{ PROVIDERS=p.data||[]; }),
     Q(sb.from('khafet_prices').select('*'), pr=>{ PRICES={}; (pr.data||[]).forEach(r=>{ PRICES[r.sid]=Number(r.price); }); }),
     Q(sb.from('khafet_subscriptions').select('*').order('created_at',{ascending:false}), x=>{ SUBS=x.data||[]; }),
-    Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ INV=iv.data||[]; }),
+    Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
     Q(sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000), lg=>{ LOG=lg.data||[]; }),
     Q(sb.from('khafet_staff').select('*'), st=>{ STAFF=st.data||[]; }),
     Q(sb.from('khafet_articles').select('*').order('sort'), a=>{ ARTICLES=a.data||[]; }),
@@ -690,6 +693,7 @@ async function loadAll(){
     Promise.resolve().then(()=>loadImgOpts()).catch(()=>{}),
   ]);
   render();
+  if(location.hash==='#po' && !poOpen){ try{ history.replaceState(null,'',location.pathname); }catch(e){} openPO(); }
 }
 /* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
 async function callStaffAdmin(body){
@@ -1203,7 +1207,7 @@ async function invFormSave(id){
   }
   invFormClose(); invAfterChange();
 }
-async function invSave(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
+async function invSave(it){ try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
 async function invDelete(id){
   const it=INV.find(x=>x.id===id); if(!it) return;
   if(!confirm(LX('حذف «'+it.name+'» نهائيًا من المستودع؟','Delete “'+it.name+'” permanently?'))) return;
@@ -1574,7 +1578,7 @@ function render(){
     ${adminSection===''
       ? homeCards
       : `<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
-           <button class="backbtn" style="margin:0" onclick="setAdminSection('')">‹ القائمة</button>
+           ${KH_FROM_TECH?`<button class="backbtn" style="margin:0" onclick="location.href='fanyeen.html'">‹ ${LX('تطبيق الفني','Tech app')}</button>`:''}<button class="backbtn" style="margin:0" onclick="setAdminSection('')">‹ القائمة</button>
            <b style="font-size:1.15rem;font-weight:900;flex:1">${secTitle}</b>
            ${['orders','team','store'].includes(adminSection)?`<button class="backbtn" style="margin:0" onclick="exportSection('${adminSection}')">⤓ Excel</button>`:''}
            <button class="backbtn" style="margin:0" onclick="printReport()">🖨️ طباعة</button>
