@@ -1024,9 +1024,9 @@ async function uploadPartPhoto(itemId, file){
 let stockPickOpen=false, stockPickQ='';
 function toggleStockPick(){ stockPickOpen=!stockPickOpen; stockPickQ=''; renderInvoice(); }
 function stockPickSearch(v){ stockPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('spGrid'); if(g) g.innerHTML=stockPickGrid(); }
-function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ));
+function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ));
   if(!list.length) return `<div class="sl-empty" style="grid-column:1/-1">${A?'ما فيه صنف بهالاسم':'No match'}</div>`;
-  return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(it.name)}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(+it.sell_price||0)} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
+  return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(whName(it))}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(+it.sell_price||0)} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
 async function invPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+(lang==='ar'?'انحفظت الصورة':'Photo saved')); render(); }catch(e){ toast('⚠️ '+(e.message||'')); } }
 function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:+it.sell_price||0,deducted:0,img:it.image_url||''}); } stockPickOpen=false; renderInvoice(); }
 function closeInvoice(){ invEditing=null; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }

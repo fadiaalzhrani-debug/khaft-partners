@@ -19,6 +19,11 @@ function whT(m){ whH().toast(m); }
 function whInv(){ return whH().inv()||[]; }
 function whFind(id){ return whInv().find(x=>String(x.id)===String(id)); }
 function whCat(it){ return INV_CATS.includes(it.category)?it.category:'عام'; }
+/* الاسم والوحدة بلغة الواجهة: العربية من name، وغيرها من name_en إن وُجد */
+function whEN(){ return whL('a','e')==='e'; }
+function whName(it){ return (whEN()&&it.name_en)?it.name_en:(it.name||''); }
+const WH_UNITS={'حبة':'pc','متر':'m','باكيت':'pack','علبة':'box','لفة':'roll','أنبوبة':'tube','كرتون':'carton','عود':'length','كيلو':'kg','لتر':'L'};
+function whUnit(u){ u=u||'حبة'; return whEN()?(WH_UNITS[u]||u):u; }
 function whCatLbl(c){ return whL(c,CAT_EN[c]||c); }
 function whByCat(a,b){ return (INV_CATS.indexOf(whCat(a))-INV_CATS.indexOf(whCat(b)))||String(a.name||'').localeCompare(String(b.name||''),'ar'); }
 function whPoOpen(){ return whState.poOpen; }
@@ -40,7 +45,7 @@ function whRefresh(keepFocus){ const el=document.getElementById('whBody'); if(!e
 function whVisible(){
   const q=whState.search.toLowerCase();
   return whInv().filter(it=>{
-    if(q && !((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q)) return false;
+    if(q && !((it.name||'')+' '+(it.name_en||'')+' '+(it.code||'')).toLowerCase().includes(q)) return false;
     if(whState.cat!=='all' && whCat(it)!==whState.cat) return false;
     const st=invState(it);
     if(whState.filter==='low') return st==='low'||st==='out';
@@ -67,11 +72,11 @@ function whCard(it){
   return `<div class="ws-item st-${st}" id="ws-${it.id}">
     <div class="ws-thumb" ${thumbClick}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
     <div class="ws-body">
-      <div class="ws-name">${whE(it.name)}</div>
-      <div class="ws-sub">${badge}<span>${whL('الوحدة','Unit')}: ${whE(it.unit||whL('حبة','pc'))}</span>${(+it.min_qty)?`<span>· ${whL('حد الطلب','Reorder at')} ${whNx(it.min_qty)}</span>`:''}</div>
+      <div class="ws-name">${whE(whName(it))}</div>
+      <div class="ws-sub">${badge}<span>${whL('الوحدة','Unit')}: ${whE(whUnit(it.unit))}</span>${(+it.min_qty)?`<span>· ${whL('حد الطلب','Reorder at')} ${whNx(it.min_qty)}</span>`:''}</div>
       <div class="ws-step">
         <button class="ws-btn minus" id="wsm-${it.id}" onclick="whStep('${it.id}',-1)" ${q<=0?'disabled':''} aria-label="${whL('صرف','Issue')}">−</button>
-        <button class="ws-num" onclick="whType('${it.id}')"><span id="wsn-${it.id}">${whNx(q)}</span><small>${whE(it.unit||'')}</small></button>
+        <button class="ws-num" onclick="whType('${it.id}')"><span id="wsn-${it.id}">${whNx(q)}</span><small>${whE(whUnit(it.unit))}</small></button>
         <button class="ws-btn plus" onclick="whStep('${it.id}',1)" aria-label="${whL('إدخال','Stock in')}">+</button>
       </div>
       <div class="ws-hint"><span>− ${whL('صرف','issue')}</span><span>${whL('اضغط الرقم لكتابة الكمية','tap the number to type')}</span><span>+ ${whL('إدخال','stock in')}</span></div>
@@ -112,11 +117,11 @@ async function whCommit(id){
     reason='صرف · '+why.trim();
   }
   await whH().saveQty(it); await whH().logStock(it,d,reason);
-  whT((d>0?'➕ ':'➖ ')+whNx(Math.abs(d))+' '+(it.unit||'')+' · '+it.name); whH().refreshLog();
+  whT((d>0?'➕ ':'➖ ')+whNx(Math.abs(d))+' '+whUnit(it.unit)+' · '+whName(it)); whH().refreshLog();
 }
 async function whType(id){
   const it=whFind(id); if(!it) return;
-  const s=prompt(whL('الكمية الحالية لـ «'+it.name+'»:','Current quantity of “'+it.name+'”:'), String(+it.qty||0));
+  const s=prompt(whL('الكمية الحالية لـ «'+it.name+'»:','Current quantity of “'+whName(it)+'”:'), String(+it.qty||0));
   if(s===null) return; const v=Math.abs(+String(s).replace(/[^\d.]/g,'')||0); const d=v-(+it.qty||0); if(!d) return;
   let reason='تعديل الكمية';
   if(d<0 && whH().needReason()){ const why=prompt(whL('اكتب السبب (اسم العميل أو رقم الطلب):','Reason (customer or job #):')); if(why===null||!why.trim()){ whT('↩️ '+whL('أُلغي','Cancelled')); return; } reason='صرف · '+why.trim(); }
@@ -129,7 +134,7 @@ function whCloseEdit(){ whState.editOpen=false; const o=document.getElementById(
 function whSetEditSearch(v){ whState.editSearch=(v||'').trim(); const box=document.getElementById('weList'); if(box) box.innerHTML=whEditList(); }
 function whEditList(){
   const q=whState.editSearch.toLowerCase();
-  const list=whInv().filter(it=>!q||((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q)).sort(whByCat);
+  const list=whInv().filter(it=>!q||((it.name||'')+' '+(it.name_en||'')+' '+(it.code||'')).toLowerCase().includes(q)).sort(whByCat);
   if(!list.length) return `<div class="wh-empty">${whL('لا أصناف','No items')}</div>`;
   return INV_CATS.map(c=>{ const g=list.filter(it=>whCat(it)===c); if(!g.length) return ''; return `<div class="wh-group-h" style="margin-top:14px"><span>${CAT_ICO[c]} ${whCatLbl(c)}</span><small>${whNx(g.length)}</small></div>`+g.map(whRow).join(''); }).join('');
 }
@@ -149,14 +154,15 @@ function whRow(it){
     <div class="we-thumb-wrap"><div class="we-thumb" ${it.image_url?`onclick="whZoom('${whE(it.image_url)}')"`:''}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
       <label class="we-cam" title="${whL('صورة','Photo')}">📷<input type="file" accept="image/*" onchange="whRowPhoto('${it.id}',this)" /></label></div>
     <div class="we-fields">
-      <input class="we-name" value="${whE(it.name)}" placeholder="${whL('اسم الصنف','Item name')}" onchange="whSave('${it.id}','name',this.value)" />
+      <input class="we-name" value="${whE(it.name)}" placeholder="${whL('اسم الصنف','Item name (Arabic)')}" onchange="whSave('${it.id}','name',this.value)" />
+      <input class="we-name we-name-en" dir="ltr" value="${whE(it.name_en||'')}" placeholder="${whL('الاسم بالإنجليزي (اختياري)','English name (optional)')}" onchange="whSave('${it.id}','name_en',this.value)" />
       <div class="we-grid">
         <label>${whL('شراء بالجملة','Wholesale cost')}<input type="number" inputmode="decimal" step="0.01" value="${+it.buy_price||0}" onchange="whSave('${it.id}','buy_price',this.value)" /></label>
         <label>${whL('بيع مقترح','Suggested price')}<input type="number" inputmode="decimal" step="0.01" value="${+it.sell_price||0}" onchange="whSave('${it.id}','sell_price',this.value)" /></label>
         <label>${whL('حد الطلب','Reorder at')}<input type="number" inputmode="decimal" value="${+it.min_qty||0}" onchange="whSave('${it.id}','min_qty',this.value)" /></label>
         <label>${whL('الفئة','Category')}<select onchange="whSave('${it.id}','category',this.value)">${INV_CATS.map(c=>`<option value="${c}" ${whCat(it)===c?'selected':''}>${whCatLbl(c)}</option>`).join('')}</select></label>
       </div>
-      <div class="we-acts"><span class="we-meta">${whL('الكمية','Qty')} <b>${whNx(it.qty||0)}</b> ${whE(it.unit||'')}</span><button class="wh-btn" onclick="whForm('${it.id}')">⚙️ ${whL('المزيد','More')}</button><button class="wh-btn danger" onclick="whDelete('${it.id}')">🗑 ${whL('حذف','Delete')}</button></div>
+      <div class="we-acts"><span class="we-meta">${whL('الكمية','Qty')} <b>${whNx(it.qty||0)}</b> ${whE(whUnit(it.unit))}</span><button class="wh-btn" onclick="whForm('${it.id}')">⚙️ ${whL('المزيد','More')}</button><button class="wh-btn danger" onclick="whDelete('${it.id}')">🗑 ${whL('حذف','Delete')}</button></div>
     </div>
   </div>`;
 }
@@ -191,12 +197,12 @@ function whPoBar(){ const b=document.getElementById('poBar'); if(!b) return; con
   b.querySelector('.go').disabled=!ids.length; }
 function whPoList(){
   const q=whState.poSearch.toLowerCase();
-  const list=whInv().filter(it=>(!q||((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q))&&(whState.poCat==='all'||whCat(it)===whState.poCat)).sort(whByCat);
+  const list=whInv().filter(it=>(!q||((it.name||'')+' '+(it.name_en||'')+' '+(it.code||'')).toLowerCase().includes(q))&&(whState.poCat==='all'||whCat(it)===whState.poCat)).sort(whByCat);
   if(!list.length) return `<div class="wh-empty">${whL('لا أصناف','No items')}</div>`;
   const row=it=>{ const v=whState.PO[String(it.id)]||0, st=invState(it);
     return `<div class="po-row ${v?'sel':''}" id="po-${it.id}">
       <div class="we-thumb po-thumb">${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
-      <div class="po-info"><b>${whE(it.name)}</b><small>${whL('المتوفر','Have')} ${whNx(it.qty||0)} ${whE(it.unit||'')}${st==='out'?' · ⛔ '+whL('نفد','out'):st==='low'?' · ⚠️ '+whL('ناقص','low'):''}</small></div>
+      <div class="po-info"><b>${whE(whName(it))}</b><small>${whL('المتوفر','Have')} ${whNx(it.qty||0)} ${whE(whUnit(it.unit))}${st==='out'?' · ⛔ '+whL('نفد','out'):st==='low'?' · ⚠️ '+whL('ناقص','low'):''}</small></div>
       <div class="po-step"><button class="ws-btn minus" onclick="whPoStep('${it.id}',-1)">−</button><input id="poq-${it.id}" type="number" inputmode="numeric" placeholder="0" value="${v||''}" oninput="whPoSet('${it.id}',this.value)" /><button class="ws-btn plus" onclick="whPoStep('${it.id}',1)">+</button></div>
     </div>`; };
   if(whState.poCat!=='all') return list.map(row).join('');
@@ -315,7 +321,8 @@ function whForm(id){
         <button class="wh-btn" onclick="whRemovePhoto('${it?it.id:''}')">🗑 ${whL('بدون صورة','Remove')}</button></div>
         <small style="color:var(--muted,#6E685B);font-weight:600;font-size:.74rem">${whL('تظهر للفني عند اختيار القطعة وللعميل في طلباتي','Shown to technicians and customers')}</small></div>
       ${opts.length?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${whL('خيارات جاهزة، اضغط وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${opts.map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" onclick="whH().pickImg('${it.id}','${whE(u)}');const im=document.getElementById('wf_img');if(im)im.innerHTML='<img src=&quot;'+'${whE(u)}'+'&quot; />';this.parentElement.querySelectorAll('.il-opt').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')"><img src="${whE(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
-      <label class="full">${whL('اسم الصنف','Item name')}<input id="wf_name" value="${whE(v.name)}" placeholder="${whL('لمبة 9 وات أصفر','9W bulb warm')}" /></label>
+      <label class="full">${whL('اسم الصنف بالعربي','Item name (Arabic)')}<input id="wf_name" value="${whE(v.name)}" placeholder="لمبة 9 وات أصفر" /></label>
+      <label class="full">${whL('الاسم بالإنجليزي (يظهر للفنيين غير العرب)','English name (shown to non-Arabic technicians)')}<input id="wf_name_en" dir="ltr" value="${whE(v.name_en||'')}" placeholder="9W bulb warm" /></label>
       <label>${whL('الفئة','Category')}<select id="wf_cat">${INV_CATS.map(c=>`<option value="${c}" ${whCat(v)===c?'selected':''}>${whCatLbl(c)}</option>`).join('')}</select></label>
       <label>${whL('الوحدة','Unit')}<input id="wf_unit" value="${whE(v.unit||'حبة')}" placeholder="${whL('حبة / متر / لفة','pc / m / roll')}" /></label>
       <label>${whL('الكود (اختياري)','Code (optional)')}<input id="wf_code" value="${whE(v.code||'')}" placeholder="lb9yra" /></label>
@@ -336,7 +343,7 @@ async function whFormSave(id){
   const g=k=>{ const e=document.getElementById(k); return e?e.value.trim():''; };
   const num=k=>Math.abs(+g(k)||0);
   const name=g('wf_name'); if(!name){ whT(whL('اكتب اسم الصنف','Enter the item name')); return; }
-  const patch={ name, code:g('wf_code'), category:g('wf_cat')||'عام', unit:g('wf_unit')||'حبة', buy_price:num('wf_buy'), sell_price:num('wf_sell'), min_qty:num('wf_min'), target_qty:num('wf_target') };
+  const patch={ name, name_en:g('wf_name_en'), code:g('wf_code'), category:g('wf_cat')||'عام', unit:g('wf_unit')||'حبة', buy_price:num('wf_buy'), sell_price:num('wf_sell'), min_qty:num('wf_min'), target_qty:num('wf_target') };
   const H=whH();
   if(id){
     const it=whFind(id); if(!it) return;
@@ -354,7 +361,7 @@ async function whFormSave(id){
 }
 async function whDelete(id){
   const it=whFind(id); if(!it) return; const H=whH();
-  if(!confirm(whL('حذف «'+it.name+'» نهائيًا من المستودع؟','Delete “'+it.name+'” permanently?'))) return;
+  if(!confirm(whL('حذف «'+it.name+'» نهائيًا من المستودع؟','Delete “'+whName(it)+'” permanently?'))) return;
   if(H.cloud()){ try{ const r=await H.sb().from(H.table).delete().eq('id',it.id); if(r.error) throw r.error; }catch(e){ whT(whL('تعذّر الحذف','Could not delete')); return; } }
   H.setInv(H.inv().filter(x=>String(x.id)!==String(id))); delete whState.PO[String(id)]; whFormClose(); whT('🗑 '+whL('حُذف','Deleted')+' '+it.name); whAfter();
 }
