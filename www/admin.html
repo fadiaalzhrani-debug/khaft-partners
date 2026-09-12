@@ -987,7 +987,7 @@ async function verifyAdminOtp(){
     otpSent=false; loggedIn=true; loadAll(); subscribe();
   }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : (e&&e.message==='net') ? 'تعذّر الاتصال بالخادم، حاولي مرة ثانية' : 'الرمز غير صحيح'); }
 }
-async function logout(){ if(!confirm('تسجيل الخروج؟ بتحتاجين رمز جديد بالرسائل عند الدخول القادم.')) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_admin_auth'); localStorage.removeItem('khafet_admin_ok'); render(); }
+async function logout(){ if(!confirm('تسجيل الخروج؟ بتحتاجين رمز جديد بالرسائل عند الدخول القادم.')) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_inv_cache'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); render(); }
 
 /* ---- العرض ---- */
 function setAdminFilter(f){ adminFilter=f; render(); }

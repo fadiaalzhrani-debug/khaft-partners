@@ -758,7 +758,7 @@ async function submitJoin(){
 async function recheckJoin(){
   const A=lang==='ar';
   try{ const { data:role }=await sb.rpc('staff_role');
-    if(role){ PENDING=null; await loadMyName(); try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} loggedIn=true; toast('✅ '+(A?'تم اعتمادك، أهلًا بك':'Approved, welcome')); render(); loadOrders(); initPush(); return; }
+    if(role){ PENDING=null; MYROLE=String(role); try{ localStorage.setItem('khafet_role',MYROLE); }catch(e){} await loadMyName(); try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} loggedIn=true; toast('✅ '+(A?'تم اعتمادك، أهلًا بك':'Approved, welcome')); render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush(); return; }
     const st=await techState(); if(st&&st.exists) PENDING=st; toast(A?'ما زال بانتظار الاعتماد':'Still awaiting approval'); render();
   }catch(e){ toast('⚠️'); }
 }
@@ -1234,15 +1234,19 @@ async function doLogin(){
       const st=await techState();
       if(st&&st.exists){ PENDING=st; try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){} render(); return; }
       await sb.auth.signOut(); throw new Error('no-role'); }
+    MYROLE=String(role); try{ localStorage.setItem('khafet_role',MYROLE); }catch(e){}
     await loadMyName();
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); localStorage.setItem('khafet_staff_ok','1'); }catch(e){}
-    loggedIn=true; render(); loadOrders(); initPush();
+    loggedIn=true; render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush();   // المستودع والأسعار تُحمَّل بعد الدخول لا قبله
   }catch(e){
     if(btn){ btn.disabled=false; btn.textContent='دخول · Login'; }
     lgFail((e&&e.message==='no-role') ? 'هذا الرقم غير مسجّل كفني — راجع الإدارة' : 'الرقم أو كلمة المرور غير صحيحة');
   }
 }
-async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); localStorage.removeItem('khafet_staff_ok'); render(); }
+async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false;
+  // امسح كل ما يخص الحساب من الجهاز حتى لا يرى الفني التالي بيانات سابقه
+  ['khafet_worker_auth','khafet_staff_ok','khafet_role','khafet_org','kh_inv_cache','khafet_tech_seen',SAVE_KEY].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  MYROLE=''; MYORG=''; INV=[]; STOCKLOG=[]; ORDERS=[]; invLoaded=false; myName=''; myCode=''; render(); }
 /* 🏠 الرئيسية = صفحة حسابه الرئيسية (طلباته)، مو اختيار البوابات */
 function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
 /* إعدادات الحساب */
