@@ -245,36 +245,6 @@
 
   .ii-thumb{width:78px;height:78px;border-radius:13px;object-fit:cover;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:1.4rem;overflow:hidden}
   .ii-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  /* ═ المستودع v3 ═ */
-  .wh-top3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 12px}
-  .wh-big{border:0;border-radius:16px;padding:14px 10px;font-family:inherit;font-weight:900;font-size:1rem;line-height:1.25;text-align:center;cursor:pointer;color:#fff;background:var(--ink)}
-  .wh-big small{display:block;font-weight:700;font-size:.72rem;opacity:.8;margin-top:4px}
-  .wh-big.po{background:var(--gold);color:var(--ink)} .wh-big.po small{opacity:.75}
-  .wh-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 8px}
-  .wh-cat{border:1.5px solid var(--line);background:var(--card);border-radius:14px;padding:9px 3px;text-align:center;font-weight:900;font-size:.84rem;color:var(--muted);font-family:inherit;cursor:pointer;line-height:1.2}
-  .wh-cat small{display:block;font-size:.72rem;font-weight:700;margin-top:3px}
-  .wh-cat.active{background:var(--ink);color:#fff;border-color:var(--ink)} .wh-cat.active small{color:var(--gold)}
-  .wh-group-h{display:flex;align-items:center;justify-content:space-between;font-weight:900;font-size:1.05rem;padding:6px 4px 8px;border-bottom:2px solid var(--gold);margin:14px 0 10px}
-  .wh-group-h small{color:var(--muted);font-weight:700;font-size:.8rem}
-  .ws-list{display:grid;gap:12px}
-  .ws-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px;border-inline-start:6px solid var(--ok)}
-  .ws-item.st-low{border-inline-start-color:#E8590C;background:#FFF9F5}
-  .ws-item.st-out{border-inline-start-color:var(--danger);background:#FDF3F3}
-  .ws-thumb{width:112px;height:112px;border-radius:16px;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:2.4rem;overflow:hidden;cursor:pointer}
-  .ws-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-  .ws-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
-  .ws-name{font-size:1.08rem;font-weight:900;line-height:1.3;word-break:break-word}
-  .ws-sub{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.78rem;color:var(--muted);font-weight:700}
-  .ws-badge{font-size:.72rem;font-weight:900;padding:2px 9px;border-radius:999px;border:1px solid}
-  .ws-badge.out{background:#FEE2E2;color:#991B1B;border-color:#F3C2C2} .ws-badge.low{background:#FFEBDD;color:#9A3B00;border-color:#F5C9A6}
-  .ws-step{display:flex;align-items:center;gap:8px}
-  .ws-btn{width:46px;height:46px;border-radius:13px;border:0;font-family:inherit;font-size:1.5rem;font-weight:900;line-height:1;cursor:pointer;flex-shrink:0;-webkit-user-select:none;user-select:none}
-  .ws-btn.minus{background:#FFF3E6;color:#9A3B00} .ws-btn.plus{background:var(--ok-soft);color:var(--ok)} .ws-btn:disabled{opacity:.35}
-  .ws-num{flex:1;min-width:0;height:46px;border-radius:13px;border:1.5px solid var(--line);background:var(--bg);font-family:inherit;font-weight:900;font-size:1.3rem;color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:5px}
-  .ws-num small{font-size:.7rem;color:var(--muted);font-weight:700}
-  .ws-hint{font-size:.68rem;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;padding:0 4px}
-  .ws-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:90;display:grid;place-items:center;padding:20px}
-  .ws-lightbox img{max-width:100%;max-height:90vh;border-radius:14px;background:#fff}
 
   .ib.cam{position:relative;overflow:hidden} .ib.cam input{position:absolute;inset:0;opacity:0;cursor:pointer}
   .sp-wrap{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:8px}
@@ -488,6 +458,8 @@ html,body{touch-action:manipulation}
 <div id="invModal" class="inv-modal"></div>
 <div id="toast"></div>
 
+<link rel="stylesheet" href="warehouse.css" />
+<script src="warehouse.js"></script>
 <script defer src="vendor/supabase.min.js"></script>
 <script>
 /* ============================================================
@@ -812,16 +784,18 @@ let invSearch='', invFilter='all';   // all | ok | low | out
 function invStatus(it){ const q=+it.qty||0, mn=+it.min_qty||0; if(q<=0) return 'out'; if(q<=mn) return 'low'; return 'ok'; }
 function setInvSearch(v){ invSearch=(v||'').trim(); render(); }
 function setInvFilter(f){ invFilter=f; render(); }
-async function loadInv(){ if(!cloudReady) return; try{ const iv=await sb.from('khafet_inventory').select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; } }
+async function loadOrg(){ if(!cloudReady) return; try{ const r=await sb.rpc('my_org'); if(!r.error){ const v=r.data||''; if(v!==MYORG){ MYORG=v; try{ localStorage.setItem('khafet_org',MYORG); }catch(e){} INV=[]; invLoaded=false; } }
+    const p=/^provider:(.+)$/.exec(MYORG||''); if(p){ try{ const pr=await sb.from('khafet_providers').select('name').eq('id',p[1]).maybeSingle(); window.MYORG_NAME=(pr.data&&pr.data.name)||''; }catch(e){} } }catch(e){} }
+async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const src=invSrc(); const iv=await sb.from(src.table).select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; invCache3(); } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; } }
 function toggleInv(){ showInv=!showInv; render(); }
-async function invSaveQty(it){ if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
-async function logStock(it, delta, reason){ const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(cloudReady){ try{ await sb.from('khafet_stock_log').insert(entry); }catch(e){} } loadStockLog(); }
+async function invSaveQty(it){ invCache3(); if(cloudReady&&it.id){ try{ await sb.from(invSrc().table).update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
+async function logStock(it, delta, reason){ const src=invSrc(); const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(src.pid) entry.provider_id=src.pid; if(cloudReady){ try{ await sb.from(src.log).insert(entry); }catch(e){} } loadStockLog(); }
 /* ---- سجل حركة المستودع: كل زيادة ونقص مسجّل باسم صاحبه — يشوفه الفني والمدير ---- */
 let STOCKLOG=[];
 async function loadStockLog(){
   if(!cloudReady) return;
   try{
-    const r=await sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(60);
+    const r=await sb.from(invSrc().log).select('*').order('created_at',{ascending:false}).limit(60);
     STOCKLOG=r.data||[];
     if(loggedIn && tab==='inv') render();
   }catch(e){}
@@ -861,7 +835,7 @@ async function invAddItem(){
   const g=id=>{const e=document.getElementById(id);return e?e.value.trim():'';};
   const name=g('inv_new_name'); if(!name){ toast('⚠️'); return; }
   const data={ name, unit:g('inv_new_unit')||'حبة', qty:Math.abs(+g('inv_new_qty')||0) };
-  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').insert(data).select().single(); if(!r.error&&r.data){ INV.unshift(r.data); if(data.qty>0) await logStock(r.data,data.qty,'شراء'); } }catch(e){ toast('⚠️'); return; } }
+  if(cloudReady){ try{ const r=await sb.from(invSrc().table).insert(Object.assign({},data,WH_HOST.extra())).select().single(); if(!r.error&&r.data){ INV.unshift(r.data); if(data.qty>0) await logStock(r.data,data.qty,'شراء'); } }catch(e){ toast('⚠️'); return; } }
   toast(t('invSaved')); render();
 }
 function renderInvPanel(){
@@ -1036,13 +1010,14 @@ function compressImage(file, max, q){ return new Promise((res,rej)=>{ const img=
     c.toBlob(b=>b?res(b):rej(new Error('blob')),'image/jpeg',q||0.82); };
   img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('img')); }; img.src=url; }); }
 async function uploadPartPhoto(itemId, file){
+  const src=invSrc();
   const blob=await compressImage(file,800,0.82);
-  const path=itemId+'.jpg';
+  const path=(src.pid?('p/'+src.pid+'/'):'')+itemId+'.jpg';
   const { error }=await sb.storage.from('khafet-parts').upload(path, blob, { upsert:true, contentType:'image/jpeg' });
   if(error) throw error;
   const { data }=sb.storage.from('khafet-parts').getPublicUrl(path);
   const url=data.publicUrl+'?v='+Date.now();
-  const r=await sb.from('khafet_inventory').update({image_url:url}).eq('id',itemId); if(r.error) throw r.error;
+  const r=await sb.from(src.table).update({image_url:url}).eq('id',itemId); if(r.error) throw r.error;
   return url;
 }
 
@@ -1397,77 +1372,29 @@ function renderTabs(){
 }
 /* ---- قسم المستودع ---- */
 function invMoney(n){ return ar(Math.round(+n||0)); }
-function renderInvTab(){
-  const L=(a,e)=>lang==='ar'?a:e;
-  const isAdm=MYROLE==='admin';
-  const nLow=INV.filter(i=>invStatus(i)==='low').length, nOut=INV.filter(i=>invStatus(i)==='out').length;
-  const top=isAdm
-    ? `<div class="wh-top3"><button class="wh-big edit" onclick="location.href='admin.html#store'">✏️ ${L('تعديل المستودع','Edit warehouse')}<small>${L('الأسعار · إضافة · حذف · الصور','Prices · add · delete · photos')}</small></button><button class="wh-big po" onclick="location.href='admin.html#po'">🛒 ${L('طلب شراء','Purchase order')}<small>${(nLow+nOut)?ar(nLow+nOut)+' '+L('صنف تحتاج طلب','items to reorder'):L('اختر الأصناف واطلع PDF','Pick items, get a PDF')}</small></button></div>`
-    : `<button class="inv-add-toggle" onclick="invAddPrompt()">＋ ${L('صنف جديد','New item')}</button>`;
-  const search=`<div class="isearch"><i>🔍</i><input id="inv_search" placeholder="${L('ابحث عن صنف…','Search item…')}" value="${esc(invSearch)}" oninput="setInvSearch(this.value)" /></div>`;
-  const CATS=['كهرباء','سباكة','عام'], ICO={'كهرباء':'⚡','سباكة':'🔧','عام':'🛠️'}, EN={'كهرباء':'Electrical','سباكة':'Plumbing','عام':'General'};
-  const cnt=c=>INV.filter(it=>c==='all'||(it.category||'عام')===c).length;
-  const cats=`<div class="wh-cats"><button class="wh-cat ${invCat3==='all'?'active':''}" onclick="setInvCat3('all')">📦 ${L('الكل','All')}<small>${ar(cnt('all'))}</small></button>${CATS.map(c=>`<button class="wh-cat ${invCat3===c?'active':''}" onclick="setInvCat3('${c}')">${ICO[c]} ${L(c,EN[c])}<small>${ar(cnt(c))}</small></button>`).join('')}</div>`;
-  const F=[['all',L('الكل','All')],['low','⚠️ '+L('تحتاج طلب','Reorder')+' '+ar(nLow+nOut)],['out','⛔ '+L('نفدت','Out')+' '+ar(nOut)]];
-  if(!['all','low','out'].includes(invFilter)) invFilter='all';
-  const filters=`<div class="ifilters">${F.map(([k,lb])=>`<button class="ifl ${invFilter===k?'on':''}" onclick="setInvFilter('${k}')">${lb}</button>`).join('')}</div>`;
-  let items=INV.filter(it=>{ const st=invStatus(it); if(invFilter==='low') return st!=='ok'; if(invFilter==='out') return st==='out'; return true; });
-  if(invCat3!=='all') items=items.filter(it=>(it.category||'عام')===invCat3);
-  if(invSearch){ const q=invSearch.toLowerCase(); items=items.filter(it=>(it.name||'').toLowerCase().includes(q)); }
-  items.sort((a,b)=>(CATS.indexOf(a.category||'عام')-CATS.indexOf(b.category||'عام'))||String(a.name||'').localeCompare(String(b.name||''),'ar'));
-  let list;
-  if(!INV.length) list=`<div class="sl-empty">${invLoaded?L('ما فيه أصناف بعد','No items yet'):'⏳ '+L('جارٍ تحميل الأصناف…','Loading items…')}</div>`;
-  else if(!items.length) list=`<div class="sl-empty">${L('لا نتائج','No results')}</div>`;
-  else if(invCat3==='all') list=CATS.map(c=>{ const g=items.filter(it=>(it.category||'عام')===c); if(!g.length) return ''; return `<div class="wh-group-h"><span>${ICO[c]} ${L(c,EN[c])}</span><small>${ar(g.length)} ${L('صنف','items')}</small></div><div class="ws-list">${g.map(invCard3).join('')}</div>`; }).join('');
-  else list=`<div class="ws-list">${items.map(invCard3).join('')}</div>`;
-  return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>
-    ${top}${search}${cats}${filters}${list}
-    <div class="sl-head">📋 ${L('سجل الحركة','Movement log')}<span>${L('كل زيادة ونقص باسم صاحبه','Every change, logged')}</span></div>
-    <div class="sl-list">${renderStockLog()}</div>`;
-}
-function setInvCat3(c){ invCat3=c; render(); }
-function invZoom3(url){ if(!url) return; document.body.insertAdjacentHTML('beforeend',`<div class="ws-lightbox" onclick="this.remove()"><img src="${esc(url)}" /></div>`); }
-function invCard3(it){
-  const L=(a,e)=>lang==='ar'?a:e; const st=invStatus(it), q=+it.qty||0;
-  const badge=st==='out'?`<span class="ws-badge out">⛔ ${L('نفد','Out')}</span>`:st==='low'?`<span class="ws-badge low">⚠️ ${L('اطلب','Reorder')}</span>`:'';
-  const ico={'كهرباء':'⚡','سباكة':'🔧'}[it.category]||'📦';
-  return `<div class="ws-item st-${st}" id="ws-${it.id}">
-    <div class="ws-thumb" ${it.image_url?`onclick="invZoom3('${esc(it.image_url)}')"`:''}>${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:ico}</div>
-    <div class="ws-body">
-      <div class="ws-name">${esc(it.name)}</div>
-      <div class="ws-sub">${badge}<span>${L('الوحدة','Unit')}: ${esc(it.unit||L('حبة','pc'))}</span>${(+it.min_qty)?`<span>· ${L('حد الطلب','Reorder at')} ${ar(+it.min_qty)}</span>`:''}</div>
-      <div class="ws-step">
-        <button class="ws-btn minus" id="wsm-${it.id}" onclick="invStep3('${it.id}',-1)" ${q<=0?'disabled':''} aria-label="${L('صرف','Issue')}">−</button>
-        <button class="ws-num" onclick="invType3('${it.id}')"><span id="wsn-${it.id}">${ar(q)}</span><small>${esc(it.unit||'')}</small></button>
-        <button class="ws-btn plus" onclick="invStep3('${it.id}',1)" aria-label="${L('إدخال','Stock in')}">+</button>
-      </div>
-      <div class="ws-hint"><span>− ${L('صرف','issue')}</span><span>${L('اضغط الرقم لكتابة الكمية','tap the number to type')}</span><span>+ ${L('إدخال','stock in')}</span></div>
-    </div>
-  </div>`;
-}
-/* الكمية بالأزرار: الرقم يتحدّث فورًا، والحركة تُسجَّل مرة واحدة بعد التوقف عن الضغط. الفني يكتب سبب الصرف، والمدير لا */
-const _sp3={};
-function invPaint3(it){ const n=document.getElementById('wsn-'+it.id); if(n) n.textContent=ar(+it.qty||0); const m=document.getElementById('wsm-'+it.id); if(m) m.disabled=(+it.qty||0)<=0; const c=document.getElementById('ws-'+it.id); if(c) c.className='ws-item st-'+invStatus(it); }
-function invStep3(id,d){ const it=INV.find(x=>x.id===id); if(!it) return; const q=+it.qty||0; if(d<0&&q<=0) return; it.qty=Math.max(0,q+d); invPaint3(it); const p=_sp3[id]||(_sp3[id]={delta:0,timer:null}); p.delta+=d; clearTimeout(p.timer); p.timer=setTimeout(()=>invCommit3(id),1400); }
+/* ═ المستودع: الوحدة المشتركة warehouse.js. خافت → khafet_inventory، المزوّد وفنيّوه → provider_inventory ═ */
+let MYORG=(()=>{ try{ return localStorage.getItem('khafet_org')||''; }catch(e){ return ''; } })();   // 'khafet' | 'provider:<uuid>' | ''
+function invSrc(){ const p=/^provider:(.+)$/.exec(MYORG||''); return p?{table:'provider_inventory',log:'provider_stock_log',pid:p[1]}:{table:'khafet_inventory',log:'khafet_stock_log',pid:null}; }
+const WH_HOST={
+  L:(a,e)=>lang==='ar'?a:e, num:n=>ar(n), esc, toast,
+  inv:()=>INV, setInv:v=>{ INV=v; }, log:()=>STOCKLOG, sb:()=>sb, cloud:()=>cloudReady,
+  get table(){ return invSrc().table; }, get logTable(){ return invSrc().log; }, extra:()=>{ const p=invSrc().pid; return p?{provider_id:p}:{}; },
+  loaded:()=>invLoaded,
+  saveQty:async it=>invSaveQty(it),
+  logStock:(it,d,reason)=>logStock(it,d,reason),
+  afterChange:()=>render(), refreshLog:()=>{},
+  upload:(id,f)=>uploadPartPhoto(id,f), clearImage:async id=>{ if(cloudReady){ try{ await sb.from(invSrc().table).update({image_url:null}).eq('id',id); }catch(e){} } },
+  canEdit:()=>!!MYORG, needReason:()=>MYROLE!=='admin',
+  get org(){ return MYORG==='khafet'?{ name:'مؤسسة خافت للسباكة والكهرباء', city:'الخبر', phone:'0590497866' }:{ name:(window.MYORG_NAME||'المزوّد'), city:'', phone:myPhone||'' }; },
+  imgOpts:()=>[], pickImg:()=>{}, linker:null,
+  cacheSave:()=>invCache3()
+};
 function invCache3(){ try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} }
-async function invCommit3(id){
-  const p=_sp3[id]; if(!p) return; const d=p.delta; delete _sp3[id]; if(!d) return;
-  const it=INV.find(x=>x.id===id); if(!it) return; const L=(a,e)=>lang==='ar'?a:e;
-  let reason=d>0?'إدخال':'صرف';
-  if(d<0 && MYROLE!=='admin'){
-    const why=prompt(L('صرف '+ar(Math.abs(d))+' '+(it.unit||'')+' من «'+it.name+'»\nاكتب السبب (اسم العميل أو رقم الطلب):','Issuing '+Math.abs(d)+' × '+it.name+'\nReason (customer or job #):'));
-    if(why===null||!why.trim()){ it.qty=(+it.qty||0)-d; invPaint3(it); toast('↩️ '+L('أُلغي الصرف','Cancelled')); return; }
-    reason='صرف · '+why.trim();
-  }
-  await invSaveQty(it); invCache3(); await logStock(it,d,reason); toast((d>0?'➕ ':'➖ ')+ar(Math.abs(d))+' '+(it.unit||'')+' · '+it.name);
-}
-async function invType3(id){
-  const it=INV.find(x=>x.id===id); if(!it) return; const L=(a,e)=>lang==='ar'?a:e;
-  const sv=prompt(L('الكمية الحالية لـ «'+it.name+'»:','Current quantity of “'+it.name+'”:'), String(+it.qty||0)); if(sv===null) return;
-  const v=Math.abs(+String(sv).replace(/[^\d.]/g,'')||0); const d=v-(+it.qty||0); if(!d) return;
-  let reason='تعديل الكمية';
-  if(d<0 && MYROLE!=='admin'){ const why=prompt(L('اكتب السبب (اسم العميل أو رقم الطلب):','Reason (customer or job #):')); if(why===null||!why.trim()){ toast('↩️ '+L('أُلغي','Cancelled')); return; } reason='صرف · '+why.trim(); }
-  it.qty=v; invPaint3(it); await invSaveQty(it); invCache3(); await logStock(it,d,reason); toast('✅ '+L('تعدّلت الكمية','Quantity updated'));
+function renderInvTab(){
+  return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>
+    ${whMain()}
+    <div class="sl-head">📋 ${lang==='ar'?'سجل الحركة':'Movement log'}<span>${lang==='ar'?'كل زيادة ونقص باسم صاحبه':'Every change, logged'}</span></div>
+    <div class="sl-list">${renderStockLog()}</div>`;
 }
 /* إضافة صنف جديد (باسم + وحدة + كمية + أسعار + حد أدنى) */
 async function invAddPrompt(){
@@ -1479,7 +1406,7 @@ async function invAddPrompt(){
   const sell=Math.abs(+prompt(A?'سعر البيع (ر.س):':'Sell price:','0')||0);
   const mn=Math.abs(+prompt(A?'الحد الأدنى للتنبيه:':'Min alert qty:','3')||3);
   const data={ name:name.trim(), unit, qty, buy_price:buy, sell_price:sell, min_qty:mn };
-  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').insert(data).select().single();
+  if(cloudReady){ try{ const r=await sb.from(invSrc().table).insert(Object.assign({},data,WH_HOST.extra())).select().single();
     if(!r.error&&r.data){ INV.unshift(r.data); if(qty>0) await logStock(r.data,qty,A?'رصيد افتتاحي':'opening'); } }catch(e){ toast('⚠️ '+(e.message||'')); return; } }
   toast('✅ '+(A?'انضاف':'Added')); render();
 }
@@ -1491,7 +1418,7 @@ async function invEdit(id){
   const mn=prompt(A?'الحد الأدنى للتنبيه:':'Min alert:', it.min_qty||3); if(mn===null) return;
   const patch={ buy_price:Math.abs(+buy||0), sell_price:Math.abs(+sell||0), min_qty:Math.abs(+mn||0) };
   Object.assign(it, patch);
-  if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update(patch).eq('id',it.id); }catch(e){} }
+  if(cloudReady&&it.id){ try{ await sb.from(invSrc().table).update(patch).eq('id',it.id); }catch(e){} }
   toast('✅ '+(A?'تعدّل':'Updated')); render();
 }
 /* ---- قسم: حجز لعميل ---- */

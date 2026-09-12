@@ -438,6 +438,8 @@ html,body{touch-action:manipulation}
 <div class="wrap"><div id="app"></div></div>
 <div id="toast"></div>
 
+<link rel="stylesheet" href="warehouse.css" />
+<script src="warehouse.js"></script>
 <script defer src="vendor/supabase.min.js"></script>
 <script>
 const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
@@ -684,7 +686,7 @@ async function loadAll(){
     Q(sb.from('khafet_providers').select('*').order('created_at',{ascending:false}), p=>{ PROVIDERS=p.data||[]; }),
     Q(sb.from('khafet_prices').select('*'), pr=>{ PRICES={}; (pr.data||[]).forEach(r=>{ PRICES[r.sid]=Number(r.price); }); }),
     Q(sb.from('khafet_subscriptions').select('*').order('created_at',{ascending:false}), x=>{ SUBS=x.data||[]; }),
-    Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
+    Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ invLoaded=true; if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
     Q(sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000), lg=>{ LOG=lg.data||[]; }),
     Q(sb.from('khafet_staff').select('*'), st=>{ STAFF=st.data||[]; }),
     Q(sb.from('khafet_articles').select('*').order('sort'), a=>{ ARTICLES=a.data||[]; }),
@@ -693,7 +695,7 @@ async function loadAll(){
     Promise.resolve().then(()=>loadImgOpts()).catch(()=>{}),
   ]);
   render();
-  if(location.hash==='#po' && !poOpen){ try{ history.replaceState(null,'',location.pathname); }catch(e){} openPO(); }
+  if(location.hash==='#po' && !whPoOpen()){ try{ history.replaceState(null,'',location.pathname); }catch(e){} whOpenPO(); }
 }
 /* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
 async function callStaffAdmin(body){
@@ -876,344 +878,25 @@ function whShowImg(url){ if(!url) return; document.body.insertAdjacentHTML('befo
 async function wfPickPhoto(input){ const f=input.files&&input.files[0]; if(!f) return; try{ wfPhoto=await compressImage(f,800,0.82); wfPhotoUrl=URL.createObjectURL(wfPhoto); const im=document.getElementById('wf_img'); if(im) im.innerHTML='<img src="'+wfPhotoUrl+'" />'; toast('📷 الصورة جاهزة، اضغطي حفظ'); }catch(e){ toast('تعذّر قراءة الصورة'); } }
 async function wfRemovePhoto(id){ wfPhoto=null; wfPhotoUrl=''; const im=document.getElementById('wf_img'); if(im) im.innerHTML='📦'; if(id){ const it=INV.find(x=>x.id===id); if(it){ it.image_url=null; if(cloudReady){ try{ await sb.from('khafet_inventory').update({image_url:null}).eq('id',id); }catch(e){} } } toast('حُذفت الصورة'); } }
 
-const INV_CATS=['كهرباء','سباكة','عام'];
-const CAT_ICO={'كهرباء':'⚡','سباكة':'🔧','عام':'🛠️'};
-const CAT_EN={'كهرباء':'Electrical','سباكة':'Plumbing','عام':'General'};
-function catLbl(c){ return LX(c, CAT_EN[c]||c); }
-let invSearch='', invFilter='all', invSort='name', invCat='all';
-let invEditOpen=false, invEditSearch='', poOpen=false, poSearch='', poCat='all', PO={};
-const n2=v=>(+v||0).toLocaleString('en',{maximumFractionDigits:2});
-const nx=v=>_uiEN()?n2(v):ar(n2(v));
-const byCatName=(a,b)=>(INV_CATS.indexOf(a.category||'عام')-INV_CATS.indexOf(b.category||'عام'))||String(a.name||'').localeCompare(String(b.name||''),'ar');
-function invUsage(id){ const now=Date.now(), d180=now-180*864e5, d30=now-30*864e5; let u6=0,u1=0;
-  LOG.forEach(e=>{ if(e.item_id!==id||+e.delta>=0) return; const t=new Date(e.created_at).getTime(), q=Math.abs(+e.delta||0); if(t>=d180) u6+=q; if(t>=d30) u1+=q; });
-  return {u6,u1,monthly:u6/6}; }
-function invPct(it){ const q=+it.qty||0, tg=+it.target_qty||0; if(!tg) return null; return Math.max(0,Math.min(100,Math.round(q/tg*100))); }
-function invState(it){ const q=+it.qty||0, mn=+it.min_qty||0, p=invPct(it); if(q<=0) return 'out'; if(mn&&q<=mn) return 'low'; if(p!==null&&p<50) return 'mid'; return 'ok'; }
-function invNeed(it){ const q=+it.qty||0, tg=+it.target_qty||0, mn=+it.min_qty||0; const goal=tg||(mn*3); return Math.max(0,goal-q); }
-function invHot(){ return INV.map(it=>({id:it.id,u:invUsage(it.id).u6})).filter(x=>x.u>0).sort((a,b)=>b.u-a.u).slice(0,5).map(x=>x.id); }
-function invStats(itemId){ let inn=0,out=0; LOG.forEach(e=>{ if(e.item_id===itemId){ const d=+e.delta||0; if(d>0) inn+=d; else out+=Math.abs(d); } }); return {inn,out}; }
-function setInvFilter(f){ invFilter=f; invRefresh(); }
-function setInvSort(v){ invSort=v; invRefresh(); }
-function setInvSearch(v){ invSearch=(v||'').trim(); invRefresh(true); }
-function setInvCat(c){ invCat=c; invRefresh(); }
-function invRefresh(keepFocus){ const el=document.getElementById('whBody'); if(!el){ render(); return; } el.innerHTML=renderWhBody(); if(keepFocus){ const i=document.getElementById('whSearch'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length); } } }
-function invVisible(){
-  const q=invSearch.toLowerCase();
-  let list=INV.filter(it=>{
-    if(q && !((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q)) return false;
-    if(invCat!=='all' && (it.category||'عام')!==invCat) return false;
-    const st=invState(it);
-    if(invFilter==='low') return st==='low'||st==='out';
-    if(invFilter==='out') return st==='out';
-    return true; });
-  list.sort(byCatName);
-  return list;
-}
-function refreshStockLogBox(){ const b=document.getElementById('stockLogBox'); if(b) b.innerHTML=renderStockLog(); }
-
-/* ═ الصفحة الرئيسية للمستودع: صورة كبيرة + اسم + كمية ± ═ */
-function renderInventory(){
-  const need=INV.filter(it=>['low','out'].includes(invState(it)));
-  const top=`<div class="wh-top3">
-    <button class="wh-big edit" onclick="openInvEdit()">✏️ ${LX('تعديل المستودع','Edit warehouse')}<small>${LX('الأسعار · إضافة · حذف · الصور','Prices · add · delete · photos')}</small></button>
-    <button class="wh-big po" onclick="openPO()">🛒 ${LX('طلب شراء','Purchase order')}<small>${need.length?nx(need.length)+' '+LX('صنف تحتاج طلب','items to reorder'):LX('اختر الأصناف واطلع PDF','Pick items, get a PDF')}</small></button>
-  </div>
-  <div class="wh-tools"><input id="whSearch" class="wh-search" placeholder="🔍 ${LX('ابحث باسم الصنف','Search items')}" value="${esc(invSearch)}" oninput="setInvSearch(this.value)" /></div>`;
-  const cnt=c=>INV.filter(it=>c==='all'||(it.category||'عام')===c).length;
-  const cats=`<div class="wh-cats">
-    <button class="wh-cat ${invCat==='all'?'active':''}" onclick="setInvCat('all')">📦 ${LX('الكل','All')}<small>${nx(cnt('all'))}</small></button>
-    ${INV_CATS.map(c=>`<button class="wh-cat ${invCat===c?'active':''}" onclick="setInvCat('${c}')">${CAT_ICO[c]} ${catLbl(c)}<small>${nx(cnt(c))}</small></button>`).join('')}
-  </div>`;
-  return top+cats+`<div id="whBody">${renderWhBody()}</div>`;
-}
-function whCard(it){
-  const st=invState(it), q=+it.qty||0;
-  const badge=st==='out'?`<span class="ws-badge out">⛔ ${LX('نفد','Out')}</span>`:st==='low'?`<span class="ws-badge low">⚠️ ${LX('اطلب','Reorder')}</span>`:'';
-  return `<div class="ws-item st-${st}" id="ws-${it.id}">
-    <div class="ws-thumb" ${it.image_url?`onclick="whShowImg('${esc(it.image_url)}')"`:`onclick="invForm('${it.id}')"`}>${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:(CAT_ICO[it.category]||'📦')}</div>
-    <div class="ws-body">
-      <div class="ws-name">${esc(it.name)}</div>
-      <div class="ws-sub">${badge}<span>${LX('الوحدة','Unit')}: ${esc(it.unit||LX('حبة','pc'))}</span>${(+it.min_qty)?`<span>· ${LX('حد الطلب','Reorder at')} ${nx(it.min_qty)}</span>`:''}</div>
-      <div class="ws-step">
-        <button class="ws-btn minus" id="wsm-${it.id}" onclick="invStep('${it.id}',-1)" ${q<=0?'disabled':''} aria-label="${LX('صرف','Issue')}">−</button>
-        <button class="ws-num" onclick="invTypeQty('${it.id}')"><span id="wsn-${it.id}">${nx(q)}</span><small>${esc(it.unit||'')}</small></button>
-        <button class="ws-btn plus" onclick="invStep('${it.id}',1)" aria-label="${LX('إدخال','Stock in')}">+</button>
-      </div>
-      <div class="ws-hint"><span>− ${LX('صرف','issue')}</span><span>${LX('اضغط الرقم لكتابة الكمية','tap the number to type')}</span><span>+ ${LX('إدخال','stock in')}</span></div>
-    </div>
-  </div>`;
-}
-function renderWhBody(){
-  const cnt={low:INV.filter(it=>['low','out'].includes(invState(it))).length, out:INV.filter(it=>invState(it)==='out').length};
-  const chip=(k,l,cls)=>`<button class="wh-chip ${cls||''} ${invFilter===k?'active':''}" onclick="setInvFilter('${k}')">${l}</button>`;
-  const chips=`<div class="wh-sub">
-    ${chip('all',LX('الكل','All'))}
-    ${chip('low','⚠️ '+LX('تحتاج طلب','Reorder')+' ('+nx(cnt.low)+')','warn')}
-    ${chip('out','⛔ '+LX('نفدت','Out')+' ('+nx(cnt.out)+')','warn')}
-  </div>`;
-  const list=invVisible();
-  if(!INV.length) return chips+`<div class="wh-empty">${LX('المستودع فارغ. اضغط «تعديل المستودع» ثم «صنف» لإضافة أول صنف.','Warehouse is empty. Tap “Edit warehouse” then “Add”.')}</div>`;
-  if(!list.length) return chips+`<div class="wh-empty">${LX('لا نتائج.','No results.')}</div>`;
-  let body='';
-  if(invCat==='all'){
-    for(const c of INV_CATS){ const g=list.filter(it=>(it.category||'عام')===c); if(!g.length) continue;
-      body+=`<div class="wh-group"><div class="wh-group-h"><span>${CAT_ICO[c]} ${catLbl(c)}</span><small>${nx(g.length)} ${LX('صنف','items')}</small></div><div class="ws-list">${g.map(whCard).join('')}</div></div>`; }
-  } else body=`<div class="ws-list" style="margin-top:6px">${list.map(whCard).join('')}</div>`;
-  return chips+body;
-}
-/* الكمية بالأزرار: كل ضغطة تحدّث الرقم فورًا، وتُسجَّل الحركة مرة واحدة بعد التوقف عن الضغط */
-const _stepPend={};
-function invPaintQty(it){ const n=document.getElementById('wsn-'+it.id); if(n) n.textContent=nx(+it.qty||0); const m=document.getElementById('wsm-'+it.id); if(m) m.disabled=(+it.qty||0)<=0; const card=document.getElementById('ws-'+it.id); if(card){ card.className='ws-item st-'+invState(it); } }
-function invStep(id,d){
-  const it=INV.find(x=>x.id===id); if(!it) return;
-  const q=+it.qty||0; if(d<0&&q<=0) return;
-  it.qty=Math.max(0,q+d); invPaintQty(it);
-  const p=_stepPend[id]||(_stepPend[id]={delta:0,timer:null}); p.delta+=d; clearTimeout(p.timer);
-  p.timer=setTimeout(()=>invCommitStep(id),1400);
-}
-async function invCommitStep(id){
-  const p=_stepPend[id]; if(!p) return; const d=p.delta; delete _stepPend[id]; if(!d) return;
-  const it=INV.find(x=>x.id===id); if(!it) return;
-  await invSave(it);
-  await logStock(it,d,d>0?'إدخال':'صرف','المؤسسة');
-  toast((d>0?'➕ ':'➖ ')+nx(Math.abs(d))+' '+(it.unit||'')+' · '+it.name);
-  refreshStockLogBox();
-}
-async function invTypeQty(id){
-  const it=INV.find(x=>x.id===id); if(!it) return;
-  const s=prompt(LX('الكمية الحالية لـ «'+it.name+'»:','Current quantity of “'+it.name+'”:'), String(+it.qty||0));
-  if(s===null) return; const v=Math.abs(+String(s).replace(/[^\d.]/g,'')||0); const d=v-(+it.qty||0); if(!d) return;
-  it.qty=v; invPaintQty(it); await invSave(it); await logStock(it,d,'تعديل الكمية','المؤسسة'); toast('✅ '+LX('تعدّلت الكمية','Quantity updated')); refreshStockLogBox();
-}
-
-/* ═ صفحة تعديل المستودع: الأسماء والأسعار تتعدّل مباشرة، وإضافة وحذف وصور ═ */
-function openInvEdit(){ invEditOpen=true; invEditSearch=''; const old=document.getElementById('weOv'); if(old) old.remove(); document.body.insertAdjacentHTML('beforeend','<div class="il-ov" id="weOv"></div>'); renderInvEdit(); window.scrollTo(0,0); }
-function closeInvEdit(){ invEditOpen=false; const o=document.getElementById('weOv'); if(o) o.remove(); render(); }
-function setInvEditSearch(v){ invEditSearch=(v||'').trim(); const box=document.getElementById('weList'); if(box) box.innerHTML=weListHtml(); }
-function weListHtml(){
-  const q=invEditSearch.toLowerCase();
-  const list=INV.filter(it=>!q||((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q)).sort(byCatName);
-  if(!list.length) return `<div class="wh-empty">${LX('لا أصناف','No items')}</div>`;
-  return INV_CATS.map(c=>{ const g=list.filter(it=>(it.category||'عام')===c); if(!g.length) return ''; return `<div class="wh-group-h" style="margin-top:14px"><span>${CAT_ICO[c]} ${catLbl(c)}</span><small>${nx(g.length)}</small></div>`+g.map(weRow).join(''); }).join('');
-}
-function renderInvEdit(){
-  const o=document.getElementById('weOv'); if(!o) return;
-  o.innerHTML=`<div class="il-top"><button class="sbtn" onclick="closeInvEdit()">‹ ${LX('رجوع','Back')}</button><b>✏️ ${LX('تعديل المستودع','Edit warehouse')}</b><button class="sbtn ok" onclick="invForm('')">➕ ${LX('صنف','Add')}</button></div>
-  <div class="il-wrap">
-    <div class="we-tools"><input class="wh-search" placeholder="🔍 ${LX('ابحث','Search')}" value="${esc(invEditSearch)}" oninput="setInvEditSearch(this.value)" /><button class="sbtn" onclick="openImgLinker()">🖼️ ${LX('ربط الصور','Images')}</button></div>
-    <p class="we-hint">${LX('عدّل الاسم أو الأسعار مباشرة وتنحفظ لما تطلع من الخانة. «المزيد» للوحدة والكود والكمية المستهدفة.','Edit names and prices inline; they save when you leave the field. “More” for unit, code and target qty.')}</p>
-    <div id="weList">${weListHtml()}</div>
-    <button class="sbtn ok we-new" onclick="invForm('')">➕ ${LX('إضافة صنف جديد','Add a new item')}</button>
-  </div>`;
-}
-function weRow(it){
-  return `<div class="we-row" id="we-${it.id}">
-    <div class="we-thumb-wrap"><div class="wh-thumb we-thumb" ${it.image_url?`onclick="whShowImg('${esc(it.image_url)}')"`:''}>${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:(CAT_ICO[it.category]||'📦')}</div>
-      <label class="we-cam" title="${LX('صورة','Photo')}">📷<input type="file" accept="image/*" onchange="weRowPhoto('${it.id}',this)" /></label></div>
-    <div class="we-fields">
-      <input class="we-name" value="${esc(it.name)}" placeholder="${LX('اسم الصنف','Item name')}" onchange="weSave('${it.id}','name',this.value)" />
-      <div class="we-grid">
-        <label>${LX('شراء بالجملة','Wholesale cost')}<input type="number" inputmode="decimal" step="0.01" value="${+it.buy_price||0}" onchange="weSave('${it.id}','buy_price',this.value)" /></label>
-        <label>${LX('بيع مقترح','Suggested price')}<input type="number" inputmode="decimal" step="0.01" value="${+it.sell_price||0}" onchange="weSave('${it.id}','sell_price',this.value)" /></label>
-        <label>${LX('حد الطلب','Reorder at')}<input type="number" inputmode="decimal" value="${+it.min_qty||0}" onchange="weSave('${it.id}','min_qty',this.value)" /></label>
-        <label>${LX('الفئة','Category')}<select onchange="weSave('${it.id}','category',this.value)">${INV_CATS.map(c=>`<option value="${c}" ${(it.category||'عام')===c?'selected':''}>${catLbl(c)}</option>`).join('')}</select></label>
-      </div>
-      <div class="we-acts"><span class="we-meta">${LX('الكمية','Qty')} <b>${nx(it.qty||0)}</b> ${esc(it.unit||'')}</span><button class="sbtn" onclick="invForm('${it.id}')">⚙️ ${LX('المزيد','More')}</button><button class="sbtn danger" onclick="invDelete('${it.id}')">🗑 ${LX('حذف','Delete')}</button></div>
-    </div>
-  </div>`;
-}
-async function weSave(id, field, val){
-  const it=INV.find(x=>x.id===id); if(!it) return;
-  let v; if(['buy_price','sell_price','min_qty','target_qty'].includes(field)) v=Math.abs(+val||0); else v=String(val==null?'':val).trim();
-  if(field==='name'&&!v){ toast(LX('اكتب اسم الصنف','Enter a name')); return; }
-  if(it[field]===v) return;
-  it[field]=v;
-  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').update({[field]:v}).eq('id',id); if(r.error) throw r.error; }catch(e){ toast(LX('تعذّر الحفظ','Could not save')); return; } }
-  toast('✅ '+LX('انحفظ','Saved'));
-  if(field==='category'){ const box=document.getElementById('weList'); if(box) box.innerHTML=weListHtml(); }
-}
-async function weRowPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳ '+LX('جارٍ رفع الصورة…','Uploading photo…')); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+LX('انحفظت الصورة','Photo saved')); const row=document.getElementById('we-'+id); if(row) row.outerHTML=weRow(it); }catch(e){ toast('⚠️ '+LX('تعذّر رفع الصورة','Upload failed')); } }
-
-/* ═ طلب شراء: اختر الأصناف والكميات ثم PDF لتعطيه المحل ═ */
-function openPO(){
-  poOpen=true; poSearch=''; poCat='all'; PO={};
-  INV.forEach(it=>{ if(['low','out'].includes(invState(it))){ const n=invNeed(it); if(n>0) PO[it.id]=n; } });
-  const old=document.getElementById('poOv'); if(old) old.remove();
-  document.body.insertAdjacentHTML('beforeend','<div class="il-ov po-ov" id="poOv"></div>'); renderPO(); window.scrollTo(0,0);
-}
-function closePO(){ poOpen=false; const o=document.getElementById('poOv'); if(o) o.remove(); }
-function setPoSearch(v){ poSearch=(v||'').trim(); const b=document.getElementById('poList'); if(b) b.innerHTML=poListHtml(); }
-function setPoCat(c){ poCat=c; renderPO(); }
-function poSet(id,v){ v=Math.max(0,Math.round(+v||0)); if(v) PO[id]=v; else delete PO[id]; const n=document.getElementById('poq-'+id); if(n&&document.activeElement!==n) n.value=v||''; const row=document.getElementById('po-'+id); if(row) row.classList.toggle('sel',!!v); poUpdateBar(); }
-function poStep(id,d){ poSet(id,(PO[id]||0)+d); }
-function poClear(){ PO={}; renderPO(); }
-function poUpdateBar(){ const b=document.getElementById('poBar'); if(!b) return; const ids=Object.keys(PO); const tot=ids.reduce((a,id)=>a+PO[id],0);
-  b.querySelector('.po-sum').innerHTML=ids.length?`<b>${nx(ids.length)}</b> ${LX('صنف','items')} · <b>${nx(tot)}</b> ${LX('قطعة','pcs')}`:LX('اختر الأصناف والكميات','Pick items and quantities');
-  b.querySelector('.go').disabled=!ids.length; }
-function poListHtml(){
-  const q=poSearch.toLowerCase();
-  const list=INV.filter(it=>(!q||((it.name||'')+' '+(it.code||'')).toLowerCase().includes(q))&&(poCat==='all'||(it.category||'عام')===poCat)).sort(byCatName);
-  if(!list.length) return `<div class="wh-empty">${LX('لا أصناف','No items')}</div>`;
-  const row=it=>{ const v=PO[it.id]||0, st=invState(it);
-    return `<div class="po-row ${v?'sel':''}" id="po-${it.id}">
-      <div class="wh-thumb po-thumb">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:(CAT_ICO[it.category]||'📦')}</div>
-      <div class="po-info"><b>${esc(it.name)}</b><small>${LX('المتوفر','Have')} ${nx(it.qty||0)} ${esc(it.unit||'')}${st==='out'?' · ⛔ '+LX('نفد','out'):st==='low'?' · ⚠️ '+LX('ناقص','low'):''}</small></div>
-      <div class="po-step"><button class="ws-btn minus" onclick="poStep('${it.id}',-1)">−</button><input id="poq-${it.id}" type="number" inputmode="numeric" placeholder="0" value="${v||''}" oninput="poSet('${it.id}',this.value)" /><button class="ws-btn plus" onclick="poStep('${it.id}',1)">+</button></div>
-    </div>`; };
-  if(poCat!=='all') return list.map(row).join('');
-  return INV_CATS.map(c=>{ const g=list.filter(it=>(it.category||'عام')===c); if(!g.length) return ''; return `<div class="wh-group-h" style="margin-top:14px"><span>${CAT_ICO[c]} ${catLbl(c)}</span><small>${nx(g.length)}</small></div>`+g.map(row).join(''); }).join('');
-}
-function renderPO(){
-  const o=document.getElementById('poOv'); if(!o) return;
-  const cnt=c=>INV.filter(it=>c==='all'||(it.category||'عام')===c).length;
-  o.innerHTML=`<div class="il-top"><button class="sbtn" onclick="closePO()">‹ ${LX('رجوع','Back')}</button><b>🛒 ${LX('طلب شراء','Purchase order')}</b><button class="sbtn" onclick="poClear()">${LX('مسح','Clear')}</button></div>
-  <div class="il-wrap">
-    <p class="we-hint">${LX('الأصناف الناقصة محطوطة تلقائيًا بالكمية المقترحة. عدّل الكميات أو أضف أصنافًا ثم اضغط «إنشاء PDF».','Low items are pre-filled with a suggested quantity. Adjust, add more, then tap “Create PDF”.')}</p>
-    <div class="wh-tools" style="margin-top:8px"><input class="wh-search" placeholder="🔍 ${LX('ابحث','Search')}" value="${esc(poSearch)}" oninput="setPoSearch(this.value)" /></div>
-    <div class="wh-cats" style="margin-top:6px">
-      <button class="wh-cat ${poCat==='all'?'active':''}" onclick="setPoCat('all')">📦 ${LX('الكل','All')}<small>${nx(cnt('all'))}</small></button>
-      ${INV_CATS.map(c=>`<button class="wh-cat ${poCat===c?'active':''}" onclick="setPoCat('${c}')">${CAT_ICO[c]} ${catLbl(c)}<small>${nx(cnt(c))}</small></button>`).join('')}
-    </div>
-    <div id="poList">${poListHtml()}</div>
-    <div id="poOut"></div>
-  </div>
-  <div class="po-bar" id="poBar"><span class="po-sum"></span><button class="sbtn" onclick="closePO()">${LX('إلغاء','Cancel')}</button><button class="sbtn go" onclick="poMakePDF()">📄 ${LX('إنشاء PDF','Create PDF')}</button></div>`;
-  poUpdateBar();
-}
-function poNumber(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return 'PO-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes()); }
-function loadJsPDF(){ return new Promise((res,rej)=>{ if(window.jspdf&&window.jspdf.jsPDF) return res(); const s=document.createElement('script'); s.src='vendor/jspdf.umd.min.js'; s.onload=()=>res(); s.onerror=()=>rej(new Error('jspdf')); document.head.appendChild(s); }); }
-/* رسم صفحات A4 على canvas (العربية تُشكَّل تلقائيًا في canvas) */
-function poDrawPages(rows, meta){
-  const W=1240, H=1754, M=80, ROW=54, HEAD=330, FOOT=170, perPage=Math.floor((H-HEAD-FOOT-M)/ROW);
-  const font=f=>f+' Cairo, "Segoe UI", Tahoma, "Noto Sans Arabic", sans-serif';
-  const pages=[]; const total=Math.max(1,Math.ceil(rows.length/perPage));
-  for(let pg=0; pg<total; pg++){
-    const c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
-    x.fillStyle='#fff'; x.fillRect(0,0,W,H); x.direction='rtl'; x.textBaseline='middle';
-    x.fillStyle='#F5C518'; x.fillRect(0,0,W,16);
-    x.fillStyle='#1A1712'; x.textAlign='right'; x.font=font('900 44px'); x.fillText('طلب شراء',W-M,86);
-    x.font=font('700 24px'); x.fillStyle='#6E685B'; x.fillText('Purchase Order',W-M,132);
-    x.textAlign='left'; x.fillStyle='#1A1712'; x.font=font('900 30px'); x.fillText(meta.org,M,86);
-    x.font=font('700 22px'); x.fillStyle='#6E685B'; x.fillText(meta.city+' · '+meta.phone,M,128);
-    x.fillStyle='#EBE5D6'; x.fillRect(M,170,W-2*M,2);
-    x.textAlign='right'; x.fillStyle='#1A1712'; x.font=font('800 24px');
-    x.fillText('رقم الطلب: '+meta.no,W-M,208); x.fillText('التاريخ: '+meta.date,W-M-420,208);
-    x.textAlign='left'; x.fillText(total>1?('صفحة '+(pg+1)+' / '+total):'',M,208);
-    const cols=[{k:'i',w:70,l:'#'},{k:'name',w:600,l:'الصنف'},{k:'qty',w:150,l:'الكمية'},{k:'unit',w:130,l:'الوحدة'},{k:'price',w:130,l:'السعر'}];
-    let y=HEAD-40; x.fillStyle='#1A1712'; x.fillRect(M,y-ROW/2,W-2*M,ROW);
-    let cx=W-M; x.fillStyle='#F5C518'; x.font=font('900 24px'); x.textAlign='center';
-    cols.forEach(cl=>{ x.fillText(cl.l,cx-cl.w/2,y); cx-=cl.w; });
-    const slice=rows.slice(pg*perPage,(pg+1)*perPage);
-    slice.forEach((r,i)=>{ y+=ROW; const idx=pg*perPage+i+1;
-      x.fillStyle=i%2?'#FAF7EF':'#fff'; x.fillRect(M,y-ROW/2,W-2*M,ROW);
-      x.fillStyle='#1A1712'; x.font=font('800 25px'); cx=W-M;
-      cols.forEach(cl=>{ let v=cl.k==='i'?String(idx):cl.k==='qty'?String(r.qty):cl.k==='price'?'':String(r[cl.k]||'');
-        if(cl.k==='name'){ x.textAlign='right'; let t=v; while(x.measureText(t).width>cl.w-24&&t.length>3) t=t.slice(0,-2); if(t!==v) t+='…'; x.fillText(t,cx-12,y); }
-        else { x.textAlign='center'; x.fillText(v,cx-cl.w/2,y); }
-        cx-=cl.w; });
-      x.fillStyle='#EBE5D6'; x.fillRect(M,y+ROW/2-1,W-2*M,1); });
-    if(pg===total-1){
-      const totQ=rows.reduce((a,r)=>a+r.qty,0); y+=ROW+30;
-      x.textAlign='right'; x.fillStyle='#1A1712'; x.font=font('900 26px'); x.fillText('الإجمالي: '+rows.length+' صنف · '+totQ+' قطعة',W-M,y);
-      y+=48; x.font=font('700 22px'); x.fillStyle='#6E685B'; x.fillText('نرجو تزويدنا بأفضل سعر وموعد التوفر. أرقام الكميات بالأرقام الإنجليزية.',W-M,y);
-      y+=40; x.fillText('للتواصل: '+meta.phone+(meta.vat?' · الرقم الضريبي: '+meta.vat:''),W-M,y);
-    }
-    x.fillStyle='#EBE5D6'; x.fillRect(M,H-90,W-2*M,2); x.textAlign='center'; x.fillStyle='#6E685B'; x.font=font('700 20px'); x.fillText(meta.org+' · '+meta.no,W/2,H-58);
-    pages.push(c);
-  }
-  return pages;
-}
-async function shareFile(file){ try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:file.name}); return true; } }catch(e){ if(e&&e.name==='AbortError') return true; } return false; }
-async function poMakePDF(){
-  const rows=INV.filter(it=>PO[it.id]>0).sort(byCatName).map(it=>({name:it.name||'',qty:PO[it.id],unit:it.unit||'حبة'}));
-  if(!rows.length){ toast(LX('اختر صنفًا واحدًا على الأقل','Pick at least one item')); return; }
-  const go=document.querySelector('#poBar .go'); if(go){ go.disabled=true; go.textContent='⏳'; }
-  try{
-    try{ await document.fonts.ready; }catch(e){}
-    const d=new Date(); const meta={ org:'مؤسسة خافت للسباكة والكهرباء', city:'الخبر', phone:'0590497866', no:poNumber(), date:d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0') };
-    const pages=poDrawPages(rows,meta); const name='طلب-شراء-'+meta.no+'.pdf';
-    let blob=null;
-    try{ await loadJsPDF(); const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4',compress:true});
-      pages.forEach((c,i)=>{ if(i) doc.addPage(); doc.addImage(c.toDataURL('image/jpeg',0.9),'JPEG',0,0,210,297); });
-      blob=doc.output('blob'); }catch(e){ blob=null; }
-    if(blob){
-      const ok=await shareFile(new File([blob],name,{type:'application/pdf'}));
-      if(!ok){ const url=URL.createObjectURL(blob); poShowResult(url,name,pages[0]); }
-      else toast('✅ '+LX('جاهز، اختر التطبيق اللي تبي ترسله له','Ready, pick where to send it'));
-    } else {
-      const jpg=await new Promise(r=>pages[0].toBlob(r,'image/jpeg',0.9));
-      const ok=await shareFile(new File([jpg],name.replace('.pdf','.jpg'),{type:'image/jpeg'}));
-      if(!ok) poShowResult(URL.createObjectURL(jpg),name.replace('.pdf','.jpg'),pages[0]);
-    }
-  }catch(e){ toast('⚠️ '+LX('تعذّر إنشاء الملف','Could not create the file')); }
-  if(go){ go.disabled=false; go.textContent='📄 '+LX('إنشاء PDF','Create PDF'); }
-}
-function poShowResult(url,name,canvas){
-  const out=document.getElementById('poOut'); if(!out) return;
-  const isPdf=/\.pdf$/i.test(name);
-  out.innerHTML=`<p class="po-note">📄 <b>${esc(name)}</b> · ${LX('اضغط «حفظ» أو افتحه بالمشاركة','Tap “Save” or open it to share')} <a class="sbtn ok" style="display:inline-block;margin-inline-start:6px" href="${url}" download="${esc(name)}" target="_blank" rel="noopener">⤓ ${LX('حفظ','Save')}</a></p>
-    <div class="po-result">${isPdf?`<iframe src="${url}"></iframe>`:''}<img src="${canvas.toDataURL('image/jpeg',0.85)}" alt="" ${isPdf?'style="display:none"':''} /></div>`;
-  setTimeout(()=>{ try{ out.scrollIntoView({behavior:'smooth'}); }catch(e){} },100);
-}
-
-/* نموذج إضافة/تعديل صنف (التفاصيل الكاملة) */
-function invForm(id){
-  const it=id?INV.find(x=>x.id===id):null;
-  const v=it||{name:'',code:'',category:invCat!=='all'?invCat:'كهرباء',unit:'حبة',qty:0,buy_price:0,sell_price:0,min_qty:0,target_qty:0};
-  const old=document.getElementById('whOv'); if(old) old.remove();
-  wfPhoto=null; wfPhotoUrl='';
-  document.body.insertAdjacentHTML('beforeend',`<div class="wh-ov" id="whOv" onclick="if(event.target===this) invFormClose()"><div class="wh-modal">
-    <h3>${it?'✏️ '+LX('تعديل الصنف','Edit item'):'➕ '+LX('صنف جديد','New item')}</h3>
-    <div class="wh-f">
-      <div class="wf-photo"><div class="wh-thumb" id="wf_img">${v.image_url?`<img src="${esc(v.image_url)}" />`:'📦'}</div>
-        <div class="btns"><label class="sbtn ok camlbl" style="text-align:center">📷 ${LX('صورة الصنف','Item photo')}<input type="file" accept="image/*" onchange="wfPickPhoto(this)" /></label>
-        <button class="sbtn" onclick="wfRemovePhoto('${id||''}')">🗑 ${LX('بدون صورة','Remove')}</button></div>
-        <small style="color:var(--muted);font-weight:600;font-size:.74rem">${LX('تظهر للفني عند اختيار القطعة وللعميل في طلباتي','Shown to technicians and customers')}</small></div>
-      ${(id&&(IMGOPTS[id]||[]).length)?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${LX('خيارات جاهزة، اضغط وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${(IMGOPTS[id]||[]).map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" onclick="pickImg('${id}','${esc(u)}');const im=document.getElementById('wf_img');if(im)im.innerHTML='<img src=&quot;'+'${esc(u)}'+'&quot; />';this.parentElement.querySelectorAll('.il-opt').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')"><img src="${esc(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
-      <label class="full">${LX('اسم الصنف','Item name')}<input id="wf_name" value="${esc(v.name)}" placeholder="${LX('لمبة 9 وات أصفر','9W bulb warm')}" /></label>
-      <label>${LX('الفئة','Category')}<select id="wf_cat">${INV_CATS.map(c=>`<option value="${c}" ${(v.category||'عام')===c?'selected':''}>${catLbl(c)}</option>`).join('')}</select></label>
-      <label>${LX('الوحدة','Unit')}<input id="wf_unit" value="${esc(v.unit||'حبة')}" placeholder="${LX('حبة / متر / لفة','pc / m / roll')}" /></label>
-      <label>${LX('الكود (اختياري)','Code (optional)')}<input id="wf_code" value="${esc(v.code||'')}" placeholder="lb9yra" /></label>
-      ${it?'':`<label>${LX('الكمية الحالية','Current qty')}<input id="wf_qty" type="number" inputmode="decimal" value="${v.qty}" /></label>`}
-      <label>${LX('سعر الشراء بالجملة للوحدة','Wholesale cost per unit')}<input id="wf_buy" type="number" inputmode="decimal" step="0.01" value="${v.buy_price||0}" /></label>
-      <label>${LX('سعر البيع المقترح للوحدة','Suggested sell price')}<input id="wf_sell" type="number" inputmode="decimal" step="0.01" value="${v.sell_price||0}" /></label>
-      <label>${LX('حد الطلب (تنبيه)','Reorder at')}<input id="wf_min" type="number" inputmode="decimal" value="${v.min_qty||0}" /></label>
-      <label>${LX('الكمية المستهدفة','Target qty')}<input id="wf_target" type="number" inputmode="decimal" value="${v.target_qty||0}" /></label>
-      <div class="wh-hint">${LX('لما تنزل الكمية إلى حد الطلب يطلع الصنف في طلب الشراء تلقائيًا بكمية تكمّل المستهدف.','When qty reaches the reorder level the item is pre-filled in the purchase order up to the target.')}</div>
-    </div>
-    <div class="wh-actions">${it?`<button class="sbtn danger" onclick="invDelete('${id}')">🗑 ${LX('حذف','Delete')}</button>`:''}<button class="sbtn" onclick="invFormClose()">${LX('إلغاء','Cancel')}</button><button class="sbtn ok" onclick="invFormSave('${id||''}')">💾 ${LX('حفظ','Save')}</button></div>
-  </div></div>`);
-  setTimeout(()=>{ const e=document.getElementById('wf_name'); if(e&&!it) e.focus(); },50);
-}
-function invFormClose(){ const o=document.getElementById('whOv'); if(o) o.remove(); }
-function invAfterChange(){ if(invEditOpen){ const box=document.getElementById('weList'); if(box) box.innerHTML=weListHtml(); } if(poOpen) renderPO(); render(); }
-async function invFormSave(id){
-  const g=k=>{ const e=document.getElementById(k); return e?e.value.trim():''; };
-  const num=k=>Math.abs(+g(k)||0);
-  const name=g('wf_name'); if(!name){ toast(LX('اكتب اسم الصنف','Enter the item name')); return; }
-  const patch={ name, code:g('wf_code'), category:g('wf_cat')||'عام', unit:g('wf_unit')||'حبة', buy_price:num('wf_buy'), sell_price:num('wf_sell'), min_qty:num('wf_min'), target_qty:num('wf_target') };
-  if(id){
-    const it=INV.find(x=>x.id===id); if(!it) return;
-    Object.assign(it,patch);
-    if(cloudReady){ try{ const r=await sb.from('khafet_inventory').update(patch).eq('id',id); if(r.error) throw r.error; }catch(e){ toast(LX('تعذّر الحفظ','Could not save')); return; } }
-    if(wfPhoto&&cloudReady){ try{ it.image_url=await uploadPartPhoto(id, wfPhoto); }catch(e){ toast('⚠️ '+LX('الصنف انحفظ لكن الصورة ما انرفعت','Saved, but the photo failed to upload')); } }
-    toast('✅ '+LX('تعدّل الصنف','Item updated'));
-  } else {
-    const qty=num('wf_qty'); const data=Object.assign({qty},patch);
-    if(cloudReady){ try{ const r=await sb.from('khafet_inventory').insert(data).select().single(); if(r.error) throw r.error; INV.unshift(r.data); if(qty>0) await logStock(r.data,qty,'رصيد افتتاحي','المؤسسة'); if(wfPhoto){ try{ r.data.image_url=await uploadPartPhoto(r.data.id, wfPhoto); }catch(e){ toast('⚠️ '+LX('الصنف انحفظ لكن الصورة ما انرفعت','Saved, but the photo failed to upload')); } } }catch(e){ toast(LX('تعذّر الحفظ','Could not save')); return; } }
-    else INV.unshift(Object.assign({id:'tmp'+Date.now()},data));
-    toast('✅ '+LX('أُضيف الصنف للمستودع','Item added'));
-  }
-  invFormClose(); invAfterChange();
-}
-async function invSave(it){ try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
-async function invDelete(id){
-  const it=INV.find(x=>x.id===id); if(!it) return;
-  if(!confirm(LX('حذف «'+it.name+'» نهائيًا من المستودع؟','Delete “'+it.name+'” permanently?'))) return;
-  if(cloudReady){ try{ const r=await sb.from('khafet_inventory').delete().eq('id',id); if(r.error) throw r.error; }catch(e){ toast(LX('تعذّر الحذف','Could not delete')); return; } }
-  INV=INV.filter(x=>x.id!==id); delete PO[id]; invFormClose(); toast('🗑 '+LX('حُذف','Deleted')+' '+it.name); invAfterChange();
-}
+/* ═ المستودع: الوحدة المشتركة warehouse.js + محوّل الصفحة ═ */
+const WH_HOST={
+  L:(a,e)=>LX(a,e), num:n=>_uiEN()?String(n):ar(n), esc, toast,
+  inv:()=>INV, setInv:v=>{ INV=v; }, log:()=>LOG, sb:()=>sb, cloud:()=>cloudReady,
+  table:'khafet_inventory', logTable:'khafet_stock_log', extra:()=>({}),
+  loaded:()=>invLoaded,
+  saveQty:async it=>{ WH_HOST.cacheSave(); if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } },
+  logStock:(it,d,reason)=>logStock(it,d,reason,'المؤسسة'),
+  afterChange:()=>render(), refreshLog:()=>{ const b=document.getElementById('stockLogBox'); if(b) b.innerHTML=renderStockLog(); },
+  upload:(id,f)=>uploadPartPhoto(id,f), clearImage:async id=>{ if(cloudReady){ try{ await sb.from('khafet_inventory').update({image_url:null}).eq('id',id); }catch(e){} } },
+  canEdit:()=>true, needReason:()=>false,
+  org:{ name:'مؤسسة خافت للسباكة والكهرباء', city:'الخبر', phone:'0590497866' },
+  imgOpts:id=>IMGOPTS[id]||[], pickImg:(id,u)=>pickImg(id,u), linker:()=>openImgLinker(),
+  cacheSave:()=>{ try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} }
+};
+let invLoaded=false;
+function renderInventory(){ return whMain(); }
+function invRefresh(){ whRefresh(); }
+function invForm(id){ whForm(id||''); }
 function renderStockLog(){
   if(!LOG.length) return `<p style="color:var(--muted)">لا توجد حركات بعد.</p>`;
   // تجميع حسب اليوم
