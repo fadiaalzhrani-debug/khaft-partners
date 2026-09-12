@@ -303,7 +303,7 @@ html,body{touch-action:manipulation}
 <div id="invModal" class="inv-modal"></div>
 <div id="toast"></div>
 
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="vendor/supabase.min.js"></script>
 <script>
 const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
@@ -1940,7 +1940,7 @@ initialScreen();
 _startI18n();
 if(_uiEN()) applyLang();
 syncLangBtn();
-if(window.supabase) initCloud(); else window.addEventListener('load', initCloud);
+(function(){ function go(){ if(window.supabase){ initCloud(); return true; } return false; } if(!go()){ document.addEventListener('DOMContentLoaded',function(){ if(!go()) window.addEventListener('load',go); }); } })();
 
 /* 👁 إظهار/إخفاء كلمة المرور — يُطبَّق تلقائياً على أي حقل كلمة مرور يظهر بالصفحة */
 const _EYE_OPEN='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';

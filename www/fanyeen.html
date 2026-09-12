@@ -243,7 +243,7 @@
   .ifl.on{background:var(--gold);border-color:var(--gold);color:#141414}
   .ilist{display:flex;flex-direction:column;gap:9px;margin-top:11px}
 
-  .ii-thumb{width:54px;height:54px;border-radius:11px;object-fit:cover;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:1.4rem;overflow:hidden}
+  .ii-thumb{width:78px;height:78px;border-radius:13px;object-fit:cover;background:#F3EDE0;border:1px solid var(--line);flex-shrink:0;display:grid;place-items:center;font-size:1.4rem;overflow:hidden}
   .ii-thumb img{width:100%;height:100%;object-fit:cover;display:block}
   .ib.cam{position:relative;overflow:hidden} .ib.cam input{position:absolute;inset:0;opacity:0;cursor:pointer}
   .sp-wrap{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:8px}
@@ -457,7 +457,7 @@ html,body{touch-action:manipulation}
 <div id="invModal" class="inv-modal"></div>
 <div id="toast"></div>
 
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="vendor/supabase.min.js"></script>
 <script>
 /* ============================================================
    خافِت — بوابة الفنيين (صفحة مستقلة)
@@ -488,7 +488,7 @@ const BRAND='خافِت'; const PHONE='0590497866';
    حساب الفنيين محفوظ في Supabase → Authentication (ما فيه كلمة مرور بالكود).
    لتغيير كلمة المرور: Supabase → Authentication → Users → tech@khafet.app */
 const WORKER_EMAIL='tech@khafet.app';   // معرّف فقط — ليس سرّاً
-let loggedIn=false;                     // تُحدَّد من جلسة Supabase
+let loggedIn=(()=>{ try{ return localStorage.getItem('khafet_staff_ok')==='1' && localStorage.getItem('khafet_remember')!=='0'; }catch(e){ return false; } })();   // دخول فوري لو محفوظ، والتحقق من جلسة Supabase بالخلفية
 
 /* كتالوج الخدمات (للفاتورة) — الأسماء بالعربي تُطبع للعميل */
 const SERVICES=[
@@ -674,6 +674,7 @@ async function openMedia(v){
 }
 async function initCloud(){
   try{ await khRestore(); }catch(e){}
+  try{ if(!loggedIn && localStorage.getItem('khafet_staff_ok')==='1' && localStorage.getItem('khafet_remember')!=='0'){ loggedIn=true; render(); } }catch(e){}
   try{
     if(window.supabase && SUPABASE_URL && !/YOUR_/.test(SUPABASE_URL)){
       sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, KH_AUTH_OPTS);
@@ -687,8 +688,8 @@ async function initCloud(){
         let r=null; try{ r=await sb.rpc('staff_role'); }catch(e){ r={ error:e }; }
         if(r && r.data){ loggedIn=true; try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} await loadMyName(); }
         else if(r && r.error && localStorage.getItem('khafet_staff_ok')==='1'){ loggedIn=true; try{ await loadMyName(); }catch(e){} }   // انقطاع شبكة: نبقيه داخل
-        else { const st=await techState(); if(st&&st.exists){ PENDING=st; } else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} } }
-      }
+        else { loggedIn=false; const st=await techState(); if(st&&st.exists){ PENDING=st; } else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} } render(); }
+      } else if(loggedIn){ loggedIn=false; try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} render(); }   // ما فيه جلسة محفوظة
       loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn) initPush();
       return;
     }
@@ -1796,8 +1797,7 @@ function toast(m){ const el=document.getElementById('toast'); el.textContent=m; 
 
 document.querySelectorAll('.langsw button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.l)));
 loadLocal(); render();                 // اعرض فوراً من المحلي
-if(window.supabase) initCloud();        // ثم من السحابة
-else window.addEventListener('load', initCloud);
+(function(){ function go(){ if(window.supabase){ initCloud(); return true; } return false; } if(!go()){ document.addEventListener('DOMContentLoaded',function(){ if(!go()) window.addEventListener('load',go); }); } })();   // ثم من السحابة، أول ما تجهز المكتبة المحلية
 
 /* 👁 إظهار/إخفاء كلمة المرور — يُطبَّق تلقائياً على أي حقل كلمة مرور يظهر بالصفحة */
 const _EYE_OPEN='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';

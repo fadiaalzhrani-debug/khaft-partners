@@ -7,13 +7,27 @@
 <meta name="robots" content="noindex" />
 <meta name="theme-color" content="#141414" />
 <script>
-/* دخول مباشر: لو مسجل دخول من قبل، ودّه على صفحته فوراً (زي تويتر) — index.html#stay يوقف التحويل */
-try{
-  if(location.hash!=='#stay'){
-    if(localStorage.getItem('khafet_worker_auth')) location.replace('fanyeen.html');
-    else if(localStorage.getItem('khafet_provider_phone') && localStorage.getItem('khafet_remember')!=='0') location.replace('provider.html');
-  }
-}catch(e){}
+/* دخول مباشر: لو الحساب محفوظ نودّيه على صفحته فوراً، ولو المتصفح مسح التخزين المحلي نسترجعه من مخزن النظام (Capacitor Preferences)
+   index.html#stay يوقف التحويل */
+(function khBootRestore(){
+  if(location.hash==='#stay') return;
+  function target(){ try{ var g=function(k){ return localStorage.getItem(k); };
+    if(g('khafet_worker_auth')||g('khafet_staff_ok')==='1') return 'fanyeen.html';
+    if(g('khafet_remember')==='0') return null;
+    if(g('khafet_provider_phone')) return 'provider.html';
+    if(g('khafet_admin_ok')==='1') return 'admin.html';
+  }catch(e){} return null; }
+  var t=target(); if(t){ location.replace(t); return; }
+  var C=window.Capacitor; if(!(C&&C.isNativePlatform&&C.isNativePlatform())) return;
+  var P=null; try{ P=(typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; }catch(e){}
+  if(!P) return;
+  document.documentElement.classList.add('boot');
+  var done=false; function finish(){ if(done) return; done=true; document.documentElement.classList.remove('boot'); }
+  setTimeout(finish,2500);
+  var KEYS=['khafet_worker_auth','khafet_staff_ok','khafet_provider_phone','khafet_admin_ok','khafet_remember','khafet_uilang','khafet_lang'];
+  Promise.all(KEYS.map(function(k){ return P.get({key:k}).then(function(r){ if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} } }).catch(function(){}); }))
+    .then(function(){ var t2=target(); if(t2){ location.replace(t2); } else finish(); }).catch(finish);
+})();
 </script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23141414'/><text y='.9em' x='18' font-size='58'>🤝</text></svg>" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -62,9 +76,15 @@ try{
   .foot{text-align:center;color:var(--muted);font-size:.78rem;font-weight:700;margin-top:26px;opacity:.8}
 
 html,body{touch-action:manipulation}
+  /* شاشة بداية قصيرة أثناء استرجاع الحساب المحفوظ */
+  html.boot .wrap{visibility:hidden}
+  .boot-splash{display:none;position:fixed;inset:0;background:var(--bg);place-items:center;z-index:9}
+  html.boot .boot-splash{display:grid}
+  .boot-splash .logo{margin:0}
 </style>
 </head>
 <body>
+  <div class="boot-splash"><div class="logo">🤝</div></div>
   <div class="safe-top"></div>
   <div class="wrap">
 
