@@ -1188,6 +1188,8 @@ function headLabel(iso, todayISO){
 }
 function render(){
   if(!loggedIn){ showLogin(); return; }
+  // لا نعيد رسم الصفحة وهي تكتب نص الإشعار (تحديثات الطلبات اللحظية تنتظر حتى تخرج من الحقل)
+  if(adminSection==='notify'){ const ae=document.activeElement; if(ae && ['INPUT','TEXTAREA'].includes(ae.tagName) && ae.closest && ae.closest('#bcBox')){ window._bcPending=true; return; } }
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='';
   const todayISO=dateISO(new Date());
   const cnt=st=>ORDERS.filter(o=>o.status===st).length;
@@ -1220,6 +1222,7 @@ function render(){
     ['cust','💬','العملاء', newSugs+newSubs, 'الرسائل · الاشتراكات · مقالات السلامة', false],
     ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
     ['prices','🏷️','الأسعار', 0, 'تعديل أسعار الخدمات', false],
+    ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
     <div class="hcard" onclick="setAdminSection('${k}')">
@@ -1248,8 +1251,10 @@ function render(){
       ${block(LX('📋 سجل حركة المخزن (يومي)','📋 Stock movement log (daily)'), '<div id="stockLogBox">'+renderStockLog()+'</div>')}`;
   } else if(adminSection==='prices'){
     body=block(LX('🏷️ أسعار الخدمات','🏷️ Service prices'), renderPriceEditor());
+  } else if(adminSection==='notify'){
+    body=renderBroadcast();
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:'🏷️ الأسعار'})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:'🏷️ الأسعار',notify:'📣 إشعار للكل'})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
@@ -1269,7 +1274,158 @@ function render(){
          <div style="margin-top:12px">${body}</div>`}
   </div>`;
 }
-function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); }
+
+/* ═══════ 📣 إشعار للكل: معاينة بشكل الجوال، تجربة على جوالي، تأكيد قبل الإرسال، وإشعار واحد باليوم (يفرضه الخادم) ═══════ */
+const BC_MAX_T=60, BC_MAX_B=180;
+let BC={ title:'', body:'', audience:'all', view:'ios', counts:null, today:null, history:[], busy:false, loaded:false };
+async function callBroadcast(payload){
+  try{
+    const { data:{ session } }=await sb.auth.getSession();
+    if(!session) return { ok:false, reason:'no_session' };
+    const r=await fetch(SUPABASE_URL+'/functions/v1/broadcast',{ method:'POST',
+      headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' },
+      body:JSON.stringify(payload) });
+    return await r.json();
+  }catch(e){ return { ok:false, reason:'network' }; }
+}
+async function loadBroadcast(){
+  if(!cloudReady) return;
+  const c=await callBroadcast({ mode:'count' });
+  if(c&&c.ok){ BC.counts={ customers:c.customers, staff:c.staff, all:c.all }; BC.today=c.today||null; }
+  try{ const { data }=await sb.from('khafet_broadcasts').select('*').order('created_at',{ascending:false}).limit(10); BC.history=data||[]; }catch(e){}
+  BC.loaded=true; if(adminSection==='notify') render();
+}
+const BC_AUD={ all:['الكل','العملاء والفريق'], customers:['العملاء','تطبيق خافت'], staff:['الفريق','تطبيق رزق'] };
+function bcTime(ts){ try{ return new Date(ts).toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function bcDate(ts){ try{ return new Date(ts).toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return ''; } }
+function bcPreviewHtml(){
+  const t=BC.title.trim()||'عنوان الإشعار', b=BC.body.trim()||'نص الإشعار يظهر هنا كما يشوفه الناس على جوالاتهم.';
+  const app=BC.audience==='staff'?'رزق':'خافِت';
+  const ios=`<div class="bc-ios"><div class="bc-ios-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">الآن</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
+  const and=`<div class="bc-and"><div class="bc-and-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">· الآن</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
+  return `<div class="bc-phone ${BC.view}"><div class="bc-clock">${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>${BC.view==='ios'?ios:and}</div>`;
+}
+function bcPaint(){
+  const pv=document.getElementById('bcPreview'); if(pv) pv.innerHTML=bcPreviewHtml();
+  const ct=document.getElementById('bcCountT'); if(ct){ ct.textContent=ar(BC.title.length)+' / '+ar(BC_MAX_T); ct.classList.toggle('warn',BC.title.length>=BC_MAX_T-5); }
+  const cb=document.getElementById('bcCountB'); if(cb){ cb.textContent=ar(BC.body.length)+' / '+ar(BC_MAX_B); cb.classList.toggle('warn',BC.body.length>=BC_MAX_B-15); }
+  const ok=BC.title.trim()&&BC.body.trim()&&!BC.today&&!BC.busy;
+  const sb1=document.getElementById('bcSend'); if(sb1) sb1.disabled=!ok;
+  const tb=document.getElementById('bcTest'); if(tb) tb.disabled=!(BC.title.trim()&&BC.body.trim())||BC.busy;
+}
+function bcInput(k,v){ BC[k]=v; bcPaint(); }
+function bcBlur(){ if(window._bcPending){ window._bcPending=false; setTimeout(()=>{ const ae=document.activeElement; if(!(ae&&['INPUT','TEXTAREA'].includes(ae.tagName)&&ae.closest&&ae.closest('#bcBox'))) render(); },150); } }
+function bcSetAud(a){ BC.audience=a; render(); }
+function bcSetView(v){ BC.view=v; render(); }
+function renderBroadcast(){
+  const n=BC.counts; const num=k=>n?ar(n[k])+' جهاز':'…';
+  const today=BC.today;
+  const hist=BC.history.length?BC.history.map(h=>`<div class="bc-h"><div class="bc-h-top"><b>${esc(h.title)}</b><small>${bcDate(h.created_at)} · ${bcTime(h.created_at)}</small></div><p dir="auto">${esc(h.body)}</p><small>${(BC_AUD[h.audience]||['',''])[0]} · وصل ${ar(h.sent)} من ${ar(h.total)} جهاز</small></div>`).join('')
+    : `<p style="color:var(--muted)">ما أُرسل أي إشعار بعد.</p>`;
+  return `<style>
+  #bcBox .bc-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
+  @media(max-width:760px){#bcBox .bc-grid{grid-template-columns:1fr}}
+  #bcBox .bc-aud{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  #bcBox .bc-chip{flex:1;min-width:120px;text-align:right;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-family:inherit;cursor:pointer}
+  #bcBox .bc-chip b{display:block;font-size:.95rem;color:var(--ink)} #bcBox .bc-chip small{color:var(--muted);font-weight:700;font-size:.76rem}
+  #bcBox .bc-chip.on{border-color:var(--gold-strong);background:var(--gold-tint);box-shadow:0 0 0 3px rgba(245,197,24,.18)}
+  #bcBox label.bc-l{display:flex;justify-content:space-between;font-weight:800;font-size:.86rem;margin:10px 2px 6px}
+  #bcBox label.bc-l span{color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums} #bcBox label.bc-l span.warn{color:var(--danger)}
+  #bcBox input,#bcBox textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#FBF9F3;font-family:inherit;font-size:1rem;font-weight:700;color:var(--ink)}
+  #bcBox textarea{min-height:96px;resize:vertical;line-height:1.6}
+  #bcBox input:focus,#bcBox textarea:focus{outline:none;border-color:var(--gold-strong);box-shadow:0 0 0 3px rgba(245,197,24,.2)}
+  #bcBox .bc-btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  #bcBox .bc-btns button{flex:1;min-width:150px;padding:13px 14px;border-radius:13px;font-weight:900;font-family:inherit;font-size:.98rem;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+  #bcBox .bc-btns button.go{background:var(--gold);border-color:var(--gold);color:#141414}
+  #bcBox .bc-btns button:disabled{opacity:.45;cursor:not-allowed}
+  #bcBox .bc-note{margin-top:10px;color:var(--muted);font-size:.8rem;font-weight:700;line-height:1.6}
+  #bcBox .bc-done{background:var(--ok-soft);border:1px solid #bfe6c9;color:#14532d;border-radius:14px;padding:12px 14px;margin-bottom:12px;font-weight:700;line-height:1.7}
+  #bcBox .bc-views{display:flex;gap:6px;justify-content:center;margin-bottom:10px}
+  #bcBox .bc-views button{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:800;font-family:inherit;cursor:pointer;font-size:.82rem}
+  #bcBox .bc-views button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .bc-phone{position:relative;border-radius:34px;padding:54px 14px 40px;min-height:300px;background:linear-gradient(160deg,#3b3326 0%,#6b5a2e 45%,#c9a227 100%);box-shadow:inset 0 0 0 8px #141414,0 12px 30px rgba(0,0,0,.18)}
+  .bc-phone.android{border-radius:26px;background:linear-gradient(160deg,#1f2a36 0%,#2e4a5f 55%,#6d8fa3 100%)}
+  .bc-clock{position:absolute;top:18px;left:0;right:0;text-align:center;color:#fff;font-weight:800;font-size:1.05rem;letter-spacing:.02em;direction:ltr;opacity:.95}
+  .bc-ios{background:rgba(245,245,247,.86);backdrop-filter:blur(8px);border-radius:20px;padding:11px 13px;color:#111;text-align:right}
+  .bc-ios-top,.bc-and-top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  .bc-ios-top img{width:22px;height:22px;border-radius:6px;object-fit:cover}
+  .bc-and-top img{width:16px;height:16px;border-radius:50%;object-fit:cover}
+  .bc-app{font-size:.74rem;font-weight:700;color:#555;flex:1}
+  .bc-now{font-size:.72rem;color:#777;font-weight:600}
+  .bc-t{font-weight:800;font-size:.93rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bc-b{font-size:.88rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;color:#222}
+  .bc-and{background:#fff;border-radius:18px;padding:12px 14px;color:#111;text-align:right;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .bc-h{border-top:1px solid var(--line);padding:10px 2px}
+  .bc-h:first-child{border-top:none}
+  .bc-h-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .bc-h-top small,.bc-h>small{color:var(--muted);font-weight:700;font-size:.78rem}
+  .bc-h p{margin:3px 0;color:#3a352c;font-size:.9rem}
+  .bc-modal{position:fixed;inset:0;background:rgba(20,17,10,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:18px}
+  .bc-card{background:#fff;border-radius:22px;max-width:430px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:92vh;overflow:auto}
+  .bc-card h3{font-size:1.2rem;font-weight:900;margin-bottom:6px}
+  .bc-card .bc-to{background:var(--gold-tint);border:1px solid var(--gold-soft);border-radius:12px;padding:10px 12px;margin:10px 0;font-weight:800}
+  .bc-card .bc-warn{color:#8a1c1c;background:var(--danger-soft);border-radius:12px;padding:10px 12px;font-weight:700;font-size:.86rem;line-height:1.6;margin-top:10px}
+  .bc-card .bc-btns{display:flex;gap:10px;margin-top:14px}
+  .bc-card .bc-btns button{flex:1;padding:13px;border-radius:13px;font-weight:900;font-family:inherit;font-size:1rem;cursor:pointer;border:1.5px solid var(--line);background:#fff}
+  .bc-card .bc-btns button.go{background:var(--ok);border-color:var(--ok);color:#fff}
+  </style>
+  <div id="bcBox">
+    <div class="panel" style="margin-top:6px">
+      ${today?`<div class="bc-done">✅ أُرسل إشعار اليوم ${bcTime(today.created_at)} إلى ${(BC_AUD[today.audience]||['',''])[0]}: «${esc(today.title)}». وصل ${ar(today.sent)} من ${ar(today.total)} جهاز.<br>الإشعار الجاي متاح بكرة، وتقدرين تجهّزينه وتجربينه على جوالك الحين.</div>`:''}
+      <div class="bc-grid">
+        <div>
+          <b style="display:block;margin-bottom:8px">لمين يوصل؟</b>
+          <div class="bc-aud">${Object.keys(BC_AUD).map(k=>`<button type="button" class="bc-chip ${BC.audience===k?'on':''}" onclick="bcSetAud('${k}')"><b>${BC_AUD[k][0]}</b><small>${BC_AUD[k][1]} · ${num(k)}</small></button>`).join('')}</div>
+          <label class="bc-l" for="bcT">العنوان <span id="bcCountT">${ar(BC.title.length)} / ${ar(BC_MAX_T)}</span></label>
+          <input id="bcT" maxlength="${BC_MAX_T}" placeholder="مثال: إجازة اليوم الوطني" value="${esc(BC.title)}" oninput="bcInput('title',this.value)" onblur="bcBlur()" />
+          <label class="bc-l" for="bcB">النص <span id="bcCountB">${ar(BC.body.length)} / ${ar(BC_MAX_B)}</span></label>
+          <textarea id="bcB" maxlength="${BC_MAX_B}" placeholder="مثال: فريق خافت في خدمتكم طول أيام الإجازة، احجزوا من التطبيق." oninput="bcInput('body',this.value)" onblur="bcBlur()">${esc(BC.body)}</textarea>
+          <div class="bc-btns">
+            <button type="button" id="bcTest" onclick="bcTest()">📱 جرّب على جوالي</button>
+            <button type="button" id="bcSend" class="go" onclick="bcConfirm()">📣 إرسال</button>
+          </div>
+          <p class="bc-note">مسموح بإشعار واحد فقط لكل يوم. «جرّب على جوالي» يوصل لجوالك أنتِ فقط في تطبيق رزق، وما يحسب من إشعار اليوم.</p>
+        </div>
+        <div>
+          <div class="bc-views"><button type="button" class="${BC.view==='ios'?'on':''}" onclick="bcSetView('ios')">آيفون</button><button type="button" class="${BC.view==='android'?'on':''}" onclick="bcSetView('android')">أندرويد</button></div>
+          <div id="bcPreview">${bcPreviewHtml()}</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><h3 style="font-size:1.05rem;font-weight:900;margin-bottom:8px">🕓 الإشعارات السابقة</h3>${hist}</div>
+  </div>`;
+}
+async function bcTest(){
+  if(!BC.title.trim()||!BC.body.trim()) return;
+  BC.busy=true; bcPaint(); toast('⏳ جاري الإرسال لجوالك…');
+  const r=await callBroadcast({ mode:'test', title:BC.title.trim(), body:BC.body.trim() });
+  BC.busy=false; bcPaint();
+  if(r&&r.ok) toast(r.total?('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')'):'ما فيه جوال مسجّل لحسابك. افتحي تطبيق رزق مرة ووافقي على الإشعارات');
+  else toast('⚠️ '+bcReason(r));
+}
+function bcReason(r){ const k=(r&&r.reason)||''; return ({no_session:'انتهت الجلسة، سجّلي دخول',network:'ما فيه اتصال',daily_limit:'أُرسل إشعار اليوم، الإشعار الجاي بكرة',too_long:'النص أطول من المسموح',empty:'اكتبي العنوان والنص',not_admin:'الإرسال للمدير فقط',no_devices:'ما فيه أجهزة مسجلة لهذا الجمهور',send_failed:'ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي'})[k]||'تعذّر الإرسال'; }
+function bcConfirm(){
+  if(!BC.title.trim()||!BC.body.trim()||BC.today||BC.busy) return;
+  const n=BC.counts?BC.counts[BC.audience]:null;
+  document.body.insertAdjacentHTML('beforeend',`<div class="bc-modal" id="bcModal" onclick="if(event.target===this)this.remove()"><div class="bc-card">
+    <h3>تأكيد إرسال الإشعار</h3>
+    <div class="bc-to">إلى: ${BC_AUD[BC.audience][0]} · ${BC_AUD[BC.audience][1]}${n!=null?' · '+ar(n)+' جهاز':''}</div>
+    ${bcPreviewHtml()}
+    <div class="bc-warn">⚠️ بعد الإرسال ما يمكن سحب الإشعار، ومسموح بإشعار واحد فقط اليوم.</div>
+    <div class="bc-btns"><button type="button" onclick="document.getElementById('bcModal').remove()">إلغاء</button><button type="button" class="go" id="bcGo" onclick="bcSend()">نعم، أرسل الآن</button></div>
+  </div></div>`);
+}
+async function bcSend(){
+  const go=document.getElementById('bcGo'); if(go){ go.disabled=true; go.textContent='⏳ جاري الإرسال…'; }
+  BC.busy=true;
+  const r=await callBroadcast({ mode:'send', audience:BC.audience, title:BC.title.trim(), body:BC.body.trim() });
+  BC.busy=false;
+  const m=document.getElementById('bcModal'); if(m) m.remove();
+  if(r&&r.ok){ toast('✅ أُرسل الإشعار، وصل '+ar(r.sent)+' من '+ar(r.total)+' جهاز'); BC.title=''; BC.body=''; }
+  else toast('⚠️ '+bcReason(r));
+  await loadBroadcast();
+}
 /* ═ تصدير إلى Excel (CSV بترميز عربي) ═ */
 function csvCell(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
 function downloadCSV(name, headers, rows){
