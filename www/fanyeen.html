@@ -460,6 +460,8 @@ html,body{touch-action:manipulation}
 
 <link rel="stylesheet" href="warehouse.css" />
 <script src="warehouse.js"></script>
+<link rel="stylesheet" href="tour.css" />
+<script src="tour.js"></script>
 <script defer src="vendor/supabase.min.js"></script>
 <script>
 /* ============================================================
@@ -471,7 +473,7 @@ const SUPABASE_URL  = 'https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
-const KH_MIRROR=new Set(['siyanah_v1','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
+const KH_MIRROR=new Set(['khafet_techlang','kh_tour_done','siyanah_v1','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
 const KH_STORE={
   async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} return null; },
   async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} },
@@ -693,7 +695,7 @@ async function initCloud(){
         else if(r && r.error && localStorage.getItem('khafet_staff_ok')==='1'){ loggedIn=true; try{ await loadMyName(); }catch(e){} }   // انقطاع شبكة: نبقيه داخل
         else { loggedIn=false; const st=await techState(); if(st&&st.exists){ PENDING=st; } else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} } render(); }
       } else if(loggedIn){ loggedIn=false; try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} render(); }   // ما فيه جلسة محفوظة
-      loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn) initPush();
+      loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn){ initPush(); khMaybeTour(); }
       return;
     }
   }catch(e){}
@@ -786,7 +788,7 @@ async function submitJoin(){
 async function recheckJoin(){
   const A=lang==='ar';
   try{ const { data:role }=await sb.rpc('staff_role');
-    if(role){ PENDING=null; MYROLE=String(role); try{ localStorage.setItem('khafet_role',MYROLE); }catch(e){} await loadMyName(); try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} loggedIn=true; toast('✅ '+(A?'تم اعتمادك، أهلًا بك':'Approved, welcome')); render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush(); return; }
+    if(role){ PENDING=null; MYROLE=String(role); try{ localStorage.setItem('khafet_role',MYROLE); }catch(e){} await loadMyName(); try{ localStorage.setItem('khafet_staff_ok','1'); }catch(e){} loggedIn=true; toast('✅ '+(A?'تم اعتمادك، أهلًا بك':'Approved, welcome')); render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush(); khMaybeTour(); return; }
     const st=await techState(); if(st&&st.exists) PENDING=st; toast(A?'ما زال بانتظار الاعتماد':'Still awaiting approval'); render();
   }catch(e){ toast('⚠️'); }
 }
@@ -850,7 +852,7 @@ function renderStockLog(){
     const when=jobDate(dateISO(d))+' · '+jobTime(d.getHours()*60+d.getMinutes());
     return `<div class="slog">
       <span class="sl-d ${plus?'in':'out'}">${plus?'+':'−'}${ar(Math.abs(dv))}</span>
-      <span class="sl-m"><b>${esc(e.item_name||'')}</b><span>${esc(e.reason||'')} · 👤 ${esc(e.actor||'')}</span></span>
+      <span class="sl-m"><b>${esc(e.item_name||'')}</b><span>${esc(reasonTxt(e.reason))} · 👤 ${esc(e.actor||'')}</span></span>
       <span class="sl-t">${when}</span>
     </div>`;
   }).join('');
@@ -945,7 +947,7 @@ async function markOnWay(id){
   let ok=true;
   if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{on_the_way:true, handled_by_name:myName}}); }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.onTheWay=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  if(ok) toast(lang==='ar'?'🚗 أُبلغ العميل إنك في الطريق':'🚗 Customer notified you are on the way'); render();
+  if(ok) toast(lg('onwayToast')); render();
   // العميل يستلم إشعاراً مختصراً من التطبيق تلقائياً — بدون رسائل واتساب
 }
 async function markArrived(id){
@@ -1139,7 +1141,7 @@ function printInvoiceDoc(o){
    +'<div class="ft">شكراً لتعاملك مع '+BRAND+' · '+PHONE+'</div>'
    +'<div class="noprint" style="text-align:center;margin-top:18px"><button onclick="print()" style="padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer">🖨️ طباعة</button></div>'
    +'</body></html>';
-  const w=window.open('','_blank'); if(!w){ toast('اسمح بالنوافذ المنبثقة'); return; } w.document.write(html); w.document.close();
+  const w=window.open('','_blank'); if(!w){ toast(lg('popup')); return; } w.document.write(html); w.document.close();
 }
 function renderInvoice(){
   const m=document.getElementById('invModal');
@@ -1170,7 +1172,7 @@ function renderInvoice(){
     ${stockPickOpen?`<div class="sp-wrap"><input class="sp-search" placeholder="🔍 ${A?'ابحث عن القطعة':'Search part'}" oninput="stockPickSearch(this.value)" /><div class="sp-grid" id="spGrid">${stockPickGrid()}</div></div>`:''}
     <div class="inv-items">${rows}</div>
     ${invPct()>0?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل — ينطبق تلقائياً</div>`:''}
-    <div class="inv-total"><span>${t('total')}</span><b>${ar(invNet())} ر.س</b></div>
+    <div class="inv-total"><span>${t('total')}</span><b>${ar(invNet())} ${lg('cur')}</b></div>
     <div class="inv-acts">
       <button class="tbtn done" onclick="saveInvoice()">${t('saveSend')}</button>
       <button class="tbtn inv" onclick="printInv()">${t('print')}</button>
@@ -1197,7 +1199,45 @@ const LG={
   hi:{title:'तकनीशियन लॉगिन',sub:'अपना मोबाइल नंबर और पासवर्ड डालें',phone:'मोबाइल · 05xxxxxxxx',pass:'पासवर्ड',login:'लॉगिन',stay:'लॉगिन रहें',forgot:'पासवर्ड भूल गए?',fail:'लॉगिन विफल',newq:'नए तकनीशियन? रजिस्टर करें और अपना कोड पाएं 👇',newbtn:'🤝 नया तकनीशियन रजिस्टर',badphone:'मोबाइल नंबर गलत है',nopass:'पासवर्ड लिखें',noconn:'सर्वर से कनेक्शन नहीं है',notreg:'यह नंबर तकनीशियन के रूप में रजिस्टर नहीं है, प्रबंधन से संपर्क करें',wrong:'नंबर या पासवर्ड गलत है'},
   ur:{title:'ٹیکنیشن لاگ ان',sub:'اپنا موبائل نمبر اور پاس ورڈ درج کریں',phone:'موبائل · 05xxxxxxxx',pass:'پاس ورڈ',login:'لاگ ان',stay:'لاگ ان رہیں',forgot:'پاس ورڈ بھول گئے؟',fail:'لاگ ان ناکام',newq:'نئے ٹیکنیشن؟ رجسٹر کریں اور اپنا کوڈ حاصل کریں 👇',newbtn:'🤝 نیا ٹیکنیشن رجسٹر',badphone:'موبائل نمبر درست نہیں',nopass:'پاس ورڈ لکھیں',noconn:'سرور سے رابطہ نہیں',notreg:'یہ نمبر ٹیکنیشن کے طور پر رجسٹرڈ نہیں، انتظامیہ سے رابطہ کریں',wrong:'نمبر یا پاس ورڈ غلط ہے'}
 };
+/* نصوص إضافية بخمس لغات: استعادة كلمة المرور، الهيدر، أزرار ورسائل صغيرة */
+const LG2={
+  ar:{fgTitle:'استعادة كلمة المرور',fgSub:'اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد.',fgSend:'📲 أرسل كود التأكيد',fgBack:'‹ رجوع لتسجيل الدخول',fgSending:'⏳ جاري الإرسال...',fgNotReg:'❌ الرقم غير مسجّل، أو تعذّر الإرسال، حاول بعد قليل',fgFail:'تعذّر الإرسال، حاول مرة ثانية',
+      fcTitle:'تعيين كلمة مرور جديدة',fcSent:'أرسلنا كودًا إلى',fcNew:'كلمة المرور الجديدة (٦ فأكثر)',fcRepeat:'أعد كتابة كلمة المرور',fcSave:'✅ حفظ ودخول',fcResend:'لم يصلك الكود؟ إعادة الإرسال',fcNoCode:'اكتب كود التأكيد المرسل لجوالك',fcShort:'كلمة المرور ٦ خانات على الأقل',fcMismatch:'كلمتا المرور غير متطابقتين',fcBadCode:'❌ الكود غير صحيح أو انتهت صلاحيته',fcSaveFail:'تعذّر حفظ كلمة المرور، جرّب كلمة مختلفة',fcDone:'✅ تم تغيير كلمة المرور',tryAgain:'تعذّر، حاول مرة ثانية',
+      showPass:'إظهار كلمة المرور',hidePass:'إخفاء كلمة المرور',acct:'👤 حسابي',out:'خروج',brand:'خافِت',brandSub:'بوابة الفنيين',home:'الرئيسية',onway:'🚗 أنا في الطريق',onwayDone:'🚗 في الطريق، أُبلغ العميل',onwayToast:'🚗 أُبلغ العميل إنك في الطريق',popup:'اسمح بالنوافذ المنبثقة',cur:'ر.س',tour:'📘 شرح التطبيق'},
+  en:{fgTitle:'Reset password',fgSub:'Enter your registered mobile number and we will send you a code.',fgSend:'📲 Send code',fgBack:'‹ Back to sign in',fgSending:'⏳ Sending...',fgNotReg:'❌ Number not registered, or sending failed. Try again shortly',fgFail:'Sending failed, try again',
+      fcTitle:'Set a new password',fcSent:'We sent a code to',fcNew:'New password (6+ characters)',fcRepeat:'Repeat the password',fcSave:'✅ Save and sign in',fcResend:'No code? Resend',fcNoCode:'Enter the code sent to your phone',fcShort:'Password must be at least 6 characters',fcMismatch:'Passwords do not match',fcBadCode:'❌ Wrong or expired code',fcSaveFail:'Could not save the password, try a different one',fcDone:'✅ Password changed',tryAgain:'Failed, try again',
+      showPass:'Show password',hidePass:'Hide password',acct:'👤 Account',out:'Log out',brand:'Khafet',brandSub:'Technicians portal',home:'Home',onway:'🚗 On my way',onwayDone:'🚗 On the way, customer notified',onwayToast:'🚗 Customer notified you are on the way',popup:'Allow pop-ups',cur:'SAR',tour:'📘 App tour'},
+  ne:{fgTitle:'पासवर्ड रिसेट',fgSub:'दर्ता भएको मोबाइल नम्बर लेख्नुहोस्, हामी कोड पठाउँछौं।',fgSend:'📲 कोड पठाउनुहोस्',fgBack:'‹ लगइनमा फर्कनुहोस्',fgSending:'⏳ पठाउँदै...',fgNotReg:'❌ नम्बर दर्ता छैन वा पठाउन सकिएन, केही बेरपछि प्रयास गर्नुहोस्',fgFail:'पठाउन सकिएन, फेरि प्रयास गर्नुहोस्',
+      fcTitle:'नयाँ पासवर्ड राख्नुहोस्',fcSent:'कोड पठाइयो',fcNew:'नयाँ पासवर्ड (६ वा बढी)',fcRepeat:'पासवर्ड फेरि लेख्नुहोस्',fcSave:'✅ सेभ गरी लगइन',fcResend:'कोड आएन? फेरि पठाउनुहोस्',fcNoCode:'फोनमा आएको कोड लेख्नुहोस्',fcShort:'पासवर्ड कम्तीमा ६ अक्षर',fcMismatch:'पासवर्ड मेल खाएन',fcBadCode:'❌ कोड गलत वा म्याद सकियो',fcSaveFail:'पासवर्ड सेभ भएन, अर्को प्रयास गर्नुहोस्',fcDone:'✅ पासवर्ड परिवर्तन भयो',tryAgain:'सकिएन, फेरि प्रयास गर्नुहोस्',
+      showPass:'पासवर्ड देखाउनुहोस्',hidePass:'पासवर्ड लुकाउनुहोस्',acct:'👤 खाता',out:'लगआउट',brand:'Khafet',brandSub:'प्राविधिक पोर्टल',home:'गृहपृष्ठ',onway:'🚗 बाटोमा छु',onwayDone:'🚗 बाटोमा, ग्राहकलाई सूचना गरियो',onwayToast:'🚗 ग्राहकलाई तपाईं बाटोमा हुनुभएको सूचना गरियो',popup:'पप-अप अनुमति दिनुहोस्',cur:'SAR',tour:'📘 एप परिचय'},
+  hi:{fgTitle:'पासवर्ड रीसेट करें',fgSub:'अपना रजिस्टर्ड मोबाइल नंबर लिखें, हम कोड भेजेंगे।',fgSend:'📲 कोड भेजें',fgBack:'‹ लॉगिन पर वापस',fgSending:'⏳ भेज रहे हैं...',fgNotReg:'❌ नंबर रजिस्टर नहीं है या भेजना विफल रहा, थोड़ी देर बाद कोशिश करें',fgFail:'भेजना विफल, फिर कोशिश करें',
+      fcTitle:'नया पासवर्ड सेट करें',fcSent:'हमने कोड भेजा',fcNew:'नया पासवर्ड (6 या अधिक)',fcRepeat:'पासवर्ड दोबारा लिखें',fcSave:'✅ सेव करके लॉगिन',fcResend:'कोड नहीं आया? दोबारा भेजें',fcNoCode:'फोन पर आया कोड लिखें',fcShort:'पासवर्ड कम से कम 6 अक्षर',fcMismatch:'पासवर्ड मेल नहीं खाते',fcBadCode:'❌ कोड गलत या समाप्त',fcSaveFail:'पासवर्ड सेव नहीं हुआ, दूसरा आज़माएँ',fcDone:'✅ पासवर्ड बदल गया',tryAgain:'विफल, फिर कोशिश करें',
+      showPass:'पासवर्ड दिखाएँ',hidePass:'पासवर्ड छिपाएँ',acct:'👤 खाता',out:'लॉग आउट',brand:'Khafet',brandSub:'तकनीशियन पोर्टल',home:'होम',onway:'🚗 रास्ते में हूँ',onwayDone:'🚗 रास्ते में, ग्राहक को सूचना दी',onwayToast:'🚗 ग्राहक को बताया कि आप रास्ते में हैं',popup:'पॉप-अप की अनुमति दें',cur:'SAR',tour:'📘 ऐप परिचय'},
+  ur:{fgTitle:'پاس ورڈ بحال کریں',fgSub:'اپنا رجسٹرڈ موبائل نمبر لکھیں، ہم کوڈ بھیجیں گے۔',fgSend:'📲 کوڈ بھیجیں',fgBack:'‹ لاگ ان پر واپس',fgSending:'⏳ بھیج رہے ہیں...',fgNotReg:'❌ نمبر رجسٹرڈ نہیں یا بھیجنا ناکام رہا، تھوڑی دیر بعد کوشش کریں',fgFail:'بھیجنا ناکام، دوبارہ کوشش کریں',
+      fcTitle:'نیا پاس ورڈ رکھیں',fcSent:'ہم نے کوڈ بھیجا',fcNew:'نیا پاس ورڈ (6 یا زیادہ)',fcRepeat:'پاس ورڈ دوبارہ لکھیں',fcSave:'✅ محفوظ کر کے لاگ ان',fcResend:'کوڈ نہیں آیا؟ دوبارہ بھیجیں',fcNoCode:'فون پر آیا کوڈ لکھیں',fcShort:'پاس ورڈ کم از کم 6 حروف',fcMismatch:'پاس ورڈ مماثل نہیں',fcBadCode:'❌ کوڈ غلط یا ختم ہو گیا',fcSaveFail:'پاس ورڈ محفوظ نہیں ہوا، دوسرا آزمائیں',fcDone:'✅ پاس ورڈ تبدیل ہو گیا',tryAgain:'ناکام، دوبارہ کوشش کریں',
+      showPass:'پاس ورڈ دکھائیں',hidePass:'پاس ورڈ چھپائیں',acct:'👤 اکاؤنٹ',out:'لاگ آؤٹ',brand:'خافت',brandSub:'ٹیکنیشن پورٹل',home:'ہوم',onway:'🚗 راستے میں ہوں',onwayDone:'🚗 راستے میں، گاہک کو اطلاع دی',onwayToast:'🚗 گاہک کو بتایا کہ آپ راستے میں ہیں',popup:'پاپ اپ کی اجازت دیں',cur:'SAR',tour:'📘 ایپ کا تعارف'}
+};
+Object.keys(LG2).forEach(k=>{ Object.assign(LG[k],LG2[k]); });
 function lg(k){ const d=LG[lang]||LG.ar; return d[k]||LG.ar[k]||''; }
+/* الشرح التعريفي: مرة وحدة بعد أول دخول على هذا الجهاز؛ لو اللغة ما اختيرت قبل يبدأ باختيار اللغة */
+function khMaybeTour(){
+  try{ if(localStorage.getItem('kh_tour_done')==='1') return; }catch(e){ return; }
+  setTimeout(()=>{ if(!loggedIn||!window.khTour||document.querySelector('.kt-layer')) return;
+    let chosen=null; try{ chosen=localStorage.getItem('khafet_techlang'); }catch(e){}
+    khTour.start(chosen?{lang:lang,step:0}:{}); },1200);
+}
+/* سجل المستودع: أسباب الحركة محفوظة بالعربي، نعرضها مترجمة لغير العربي */
+const REASON_EN=[['صرف — فاتورة','Issued, invoice'],['صرف · طلب','Issued · job'],['صرف','Issued'],['إدخال','Stock in'],['شراء','Purchase'],['تصحيح حسب فاتورة','Correction per invoice'],['تعديل','Adjustment'],['فاتورة','invoice'],['طلب','job'],['عميل','customer']];
+function reasonTxt(r){ r=String(r||''); if(lang==='ar') return r; REASON_EN.forEach(([a,b])=>{ r=r.split(a).join(b); }); return r; }
+/* الهيدر: الشعار والأزرار بلغة الفني */
+function applyChrome(){
+  const br=document.querySelector('header.top .brand > span:last-child'); if(br) br.innerHTML=esc(lg('brand'))+'<small>'+esc(lg('brandSub'))+'</small>';
+  const hl=document.querySelector('header.top .home-link .ht'); if(hl) hl.textContent=lg('home');
+  const ab=document.getElementById('acctBtn'); if(ab) ab.textContent=lg('acct');
+  const lo=document.getElementById('logoutBtn'); if(lo) lo.textContent=lg('out');
+  document.querySelectorAll('.langsw button').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
+  document.documentElement.lang=lang;
+}
 function showLogin(){
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   const ab0=document.getElementById('acctBtn'); if(ab0) ab0.style.display='none';
@@ -1224,39 +1264,39 @@ function showForgot(msg){
   const pre=((document.getElementById('wu')||{}).value)||'';
   document.getElementById('app').innerHTML=`
     <div class="login">
-      <div class="ic">🔑</div><h1>استعادة كلمة المرور</h1>
-      <p>اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد.</p>
-      <input id="fg_phone" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" value="${pre}" />
-      <button class="btn" onclick="sendForgotCode()">📲 أرسل كود التأكيد</button>
+      <div class="ic">🔑</div><h1>${lg('fgTitle')}</h1>
+      <p>${lg('fgSub')}</p>
+      <input id="fg_phone" inputmode="tel" placeholder="${lg('phone')}" autocomplete="tel" value="${esc(pre)}" />
+      <button class="btn" onclick="sendForgotCode()">${lg('fgSend')}</button>
       ${msg?`<div class="lgerr" style="display:block">${msg}</div>`:''}
-      <button type="button" class="forgot-link" onclick="showLogin()">‹ رجوع لتسجيل الدخول</button>
+      <button type="button" class="forgot-link" onclick="showLogin()">${lg('fgBack')}</button>
     </div>`;
   const el=document.getElementById('fg_phone');
   if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') sendForgotCode(); });
 }
 async function sendForgotCode(){
   const d=normPhone((document.getElementById('fg_phone')||{}).value||'');
-  if(d.length<12){ showForgot('❌ رقم الجوال غير صحيح'); return; }
-  if(!cloudReady){ showForgot('لا يوجد اتصال بالخادم'); return; }
-  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ جاري الإرسال...'; }
+  if(d.length<12){ showForgot('❌ '+lg('badphone')); return; }
+  if(!cloudReady){ showForgot(lg('noconn')); return; }
+  const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent=lg('fgSending'); }
   try{
     const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ shouldCreateUser:false } });
-    if(error){ showForgot('❌ الرقم غير مسجّل، أو تعذّر الإرسال — حاول بعد قليل'); return; }
+    if(error){ showForgot(lg('fgNotReg')); return; }
     _fgPhone='+'+d; showForgotCode('');
-  }catch(e){ showForgot('تعذّر الإرسال، حاول مرة ثانية'); }
+  }catch(e){ showForgot(lg('fgFail')); }
 }
 function showForgotCode(msg){
   document.getElementById('app').innerHTML=`
     <div class="login">
-      <div class="ic">✉️</div><h1>تعيين كلمة مرور جديدة</h1>
-      <p>أرسلنا كوداً إلى <b style="direction:ltr;display:inline-block">${_fgPhone||''}</b></p>
+      <div class="ic">✉️</div><h1>${lg('fcTitle')}</h1>
+      <p>${lg('fcSent')} <b style="direction:ltr;display:inline-block">${esc(_fgPhone||'')}</b></p>
       <input id="fg_code" inputmode="numeric" maxlength="8" placeholder="••••" style="text-align:center;letter-spacing:6px;font-size:1.3rem" />
-      <input id="fg_p1" type="password" placeholder="كلمة المرور الجديدة (٦ فأكثر)" autocomplete="new-password" />
-      <input id="fg_p2" type="password" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password" />
-      <button class="btn" onclick="confirmForgot()">✅ حفظ ودخول</button>
+      <input id="fg_p1" type="password" placeholder="${lg('fcNew')}" autocomplete="new-password" />
+      <input id="fg_p2" type="password" placeholder="${lg('fcRepeat')}" autocomplete="new-password" />
+      <button class="btn" onclick="confirmForgot()">${lg('fcSave')}</button>
       ${msg?`<div class="lgerr" style="display:block">${msg}</div>`:''}
-      <button type="button" class="forgot-link" onclick="sendForgotCode()">لم يصلك الكود؟ إعادة الإرسال</button>
-      <button type="button" class="forgot-link" onclick="showLogin()">‹ رجوع لتسجيل الدخول</button>
+      <button type="button" class="forgot-link" onclick="sendForgotCode()">${lg('fcResend')}</button>
+      <button type="button" class="forgot-link" onclick="showLogin()">${lg('fgBack')}</button>
     </div>`;
   setTimeout(()=>{ const c=document.getElementById('fg_code'); if(c) c.focus(); },80);
   const p2=document.getElementById('fg_p2');
@@ -1265,21 +1305,21 @@ function showForgotCode(msg){
 async function confirmForgot(){
   const code=((document.getElementById('fg_code')||{}).value||'').trim();
   const a=((document.getElementById('fg_p1')||{}).value)||'', b=((document.getElementById('fg_p2')||{}).value)||'';
-  if(code.length<4){ showForgotCode('اكتب كود التأكيد المرسل لجوالك'); return; }
-  if(a.length<6){ showForgotCode('كلمة المرور ٦ خانات على الأقل'); return; }
-  if(a!==b){ showForgotCode('كلمتا المرور غير متطابقتين'); return; }
+  if(code.length<4){ showForgotCode(lg('fcNoCode')); return; }
+  if(a.length<6){ showForgotCode(lg('fcShort')); return; }
+  if(a!==b){ showForgotCode(lg('fcMismatch')); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
     const { error:ve }=await sb.auth.verifyOtp({ phone:_fgPhone, token:code, type:'sms' });
-    if(ve){ showForgotCode('❌ الكود غير صحيح أو انتهت صلاحيته'); return; }
+    if(ve){ showForgotCode(lg('fcBadCode')); return; }
     const { error:ue }=await sb.auth.updateUser({ password:a });
-    if(ue){ showForgotCode('تعذّر حفظ كلمة المرور — جرّب كلمة مختلفة'); return; }
+    if(ue){ showForgotCode(lg('fcSaveFail')); return; }
     _fgPhone=null;
-    toast('✅ تم تغيير كلمة المرور');
-    const { data:info }=await sb.rpc('my_staff_info');
-    if(info && info.role){ loggedIn=true; TECH=info; render(); loadOrders(); initPush(); }
+    toast(lg('fcDone'));
+    const { data:role }=await sb.rpc('staff_role');
+    if(role){ MYROLE=String(role); try{ localStorage.setItem('khafet_role',MYROLE); localStorage.setItem('khafet_staff_ok','1'); }catch(e){} await loadMyName(); loggedIn=true; render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush(); khMaybeTour(); }
     else showLogin();
-  }catch(e){ showForgotCode('تعذّر، حاول مرة ثانية'); }
+  }catch(e){ showForgotCode(lg('tryAgain')); }
 }
 async function doLogin(){
   const d=normPhone((document.getElementById('wu')||{}).value||'');
@@ -1300,7 +1340,7 @@ async function doLogin(){
     MYROLE=String(role); try{ localStorage.setItem('khafet_role',MYROLE); }catch(e){}
     await loadMyName();
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); localStorage.setItem('khafet_staff_ok','1'); }catch(e){}
-    loggedIn=true; render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush();   // المستودع والأسعار تُحمَّل بعد الدخول لا قبله
+    loggedIn=true; render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush(); khMaybeTour();   // المستودع والأسعار تُحمَّل بعد الدخول لا قبله
   }catch(e){
     if(btn){ btn.disabled=false; btn.textContent=lg('login'); }
     lgFail((e&&e.message==='no-role') ? lg('notreg') : lg('wrong'));
@@ -1419,6 +1459,7 @@ function renderAccountTab(){
       <div class="acc-langs">${langBtns}</div>
     </div>
     <div class="acc-panel">
+      <div class="set-row" onclick="khTour&&khTour.start({lang:lang,step:0})"><div class="sr-l"><span class="sr-ic">📘</span> ${lg('tour').replace('📘 ','')}</div><span class="sr-ar">›</span></div>
       <div class="set-row" onclick="toggleSet('pass')"><div class="sr-l"><span class="sr-ic">🔑</span> ${x.chpass}</div><span class="sr-ar">›</span></div>
       <div id="set_pass" class="set-body" style="display:none">
         <input id="np1" type="password" placeholder="${x.newpass}" autocomplete="new-password" />
@@ -1689,6 +1730,7 @@ function jobAgo(o){
 }
 function render(){
   document.documentElement.setAttribute('dir', isRTL()?'rtl':'ltr');
+  try{ applyChrome(); }catch(e){}
   if(!loggedIn){ if(PENDING) showJoin(); else showLogin(); return; }
   const _sj=seenJobs(); window._sj=_sj;
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='';
@@ -1720,8 +1762,8 @@ function render(){
     } else if(!o.arrived){
       // التسلسل: (في الطريق اختياري) → وصلت الموقع → بدء → إنهاء
       const onway = o.onTheWay
-        ? `<div class="tbtn onwaylbl">${lang==='ar'?'🚗 في الطريق — أُبلغ العميل':'🚗 On the way — notified'}</div>`
-        : `<button class="tbtn onway" onclick="markOnWay('${o.id}')">${lang==='ar'?'🚗 أنا في الطريق':'🚗 On my way'}</button>`;
+        ? `<div class="tbtn onwaylbl">${lg('onwayDone')}</div>`
+        : `<button class="tbtn onway" onclick="markOnWay('${o.id}')">${lg('onway')}</button>`;
       acts=onway+`<button class="tbtn arrive" onclick="markArrived('${o.id}')">${t('arrived')}</button>`;
     } else if(o.status==='new'||o.status==='confirmed'){
       acts=`<div class="tbtn arrivedlbl">${t('arrivedDone')}</div><button class="tbtn start" onclick="setJobStatus('${o.id}','progress')">${t('start')}</button>`;
@@ -1851,7 +1893,7 @@ function _pwToggle(btn){
   const show = inp.type==='password';
   inp.type = show?'text':'password';
   btn.innerHTML = show?_EYE_OFF:_EYE_OPEN;
-  btn.setAttribute('aria-label', show?'إخفاء كلمة المرور':'إظهار كلمة المرور');
+  btn.setAttribute('aria-label', show?lg('hidePass'):lg('showPass'));
   try{ inp.focus({preventScroll:true}); }catch(e){}
 }
 function applyPwEyes(){
@@ -1861,7 +1903,7 @@ function applyPwEyes(){
     inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
     const b=document.createElement('button');
     b.type='button'; b.className='pweye'; b.innerHTML=_EYE_OPEN;
-    b.setAttribute('aria-label','إظهار كلمة المرور');
+    b.setAttribute('aria-label',(typeof lg==='function'?lg('showPass'):'إظهار كلمة المرور'));
     b.setAttribute('tabindex','-1');
     b.onclick=function(e){ e.preventDefault(); e.stopPropagation(); _pwToggle(b); };
     w.appendChild(b);

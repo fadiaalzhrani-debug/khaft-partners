@@ -24,7 +24,7 @@
   document.documentElement.classList.add('boot');
   var done=false; function finish(){ if(done) return; done=true; document.documentElement.classList.remove('boot'); }
   setTimeout(finish,2500);
-  var KEYS=['khafet_worker_auth','khafet_staff_ok','khafet_provider_phone','khafet_admin_ok','khafet_remember','khafet_uilang','khafet_lang'];
+  var KEYS=['khafet_techlang','kh_lang_chosen','khafet_worker_auth','khafet_staff_ok','khafet_provider_phone','khafet_admin_ok','khafet_remember','khafet_uilang','khafet_lang'];
   Promise.all(KEYS.map(function(k){ return P.get({key:k}).then(function(r){ if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} } }).catch(function(){}); }))
     .then(function(){ var t2=target(); if(t2){ location.replace(t2); } else finish(); }).catch(finish);
 })();
@@ -73,6 +73,16 @@
   .card.soon{opacity:.72;border-style:dashed}
   .tag{background:rgba(245,197,24,.15);border:1px solid rgba(245,197,24,.35);color:var(--gold-deep);font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:999px}
 
+  .langbar{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px}
+  .langbar button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-family:inherit;font-weight:800;font-size:.86rem;color:var(--text);cursor:pointer}
+  .langbar button.on{background:var(--gold);border-color:var(--gold)}
+  .lp{position:fixed;inset:0;z-index:50;background:rgba(14,11,5,.72);display:flex;align-items:center;justify-content:center;padding:22px}
+  .lp-card{background:#fff;border-radius:24px;padding:22px 18px;max-width:420px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  .lp-card .lp-ic{font-size:2.4rem} .lp-card h2{font-size:1.5rem;font-weight:900;margin-top:2px} .lp-card p{color:var(--muted);font-size:.92rem;font-weight:700;margin:4px 0 14px}
+  .lp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .lp-grid button{padding:14px 10px;border-radius:15px;border:1.5px solid var(--line);background:#FBF9F3;font-family:inherit;cursor:pointer}
+  .lp-grid button:first-child{grid-column:1 / -1;background:#FDF8E7;border-color:var(--gold)}
+  .lp-grid b{display:block;font-size:1.2rem;font-weight:900;color:var(--text)} .lp-grid small{color:var(--muted);font-weight:700}
   .foot{text-align:center;color:var(--muted);font-size:.78rem;font-weight:700;margin-top:26px;opacity:.8}
 
 html,body{touch-action:manipulation}
@@ -90,53 +100,54 @@ html,body{touch-action:manipulation}
 
     <div class="head">
       <div class="logo" id="logoMark">🤝</div>
-      <h1>رزق</h1>
-      <p>منصّة الشركاء</p>
-      <span class="biz">بوابة العمل — للفريق فقط</span>
+      <h1 data-i="title">رزق</h1>
+      <p data-i="sub">منصّة الشركاء</p>
+      <span class="biz" data-i="biz">بوابة العمل · للفريق فقط</span>
+      <div class="langbar" id="langbar"></div>
     </div>
 
     <div class="cards">
 
-      <div class="sec-label">🔧 خافِت — الصيانة</div>
+      <div class="sec-label" data-i="secK">🔧 خافِت · الصيانة</div>
 
       <a class="card tech" href="fanyeen.html">
         <div class="ic">🔧</div>
         <div class="tx">
-          <h3>فنيّو خافِت</h3>
-          <p>استقبل الطلبات، سجّل وصولك، وأنجز أعمالك</p>
+          <h3 data-i="techT">فنيّو خافِت</h3>
+          <p data-i="techP">استقبل الطلبات، سجّل وصولك، وأنجز أعمالك</p>
         </div>
-        <div class="arrow">‹</div>
+        <div class="arrow" data-arrow>‹</div>
       </a>
 
       <a class="card prov" href="provider.html">
         <div class="ic">🧰</div>
         <div class="tx">
-          <h3>مزوّدو خافِت</h3>
-          <p>تابع طلبات خدماتك وأدِرها بسهولة</p>
+          <h3 data-i="provT">مزوّدو خافِت</h3>
+          <p data-i="provP">تابع طلبات خدماتك وأدِرها بسهولة</p>
         </div>
-        <div class="arrow">‹</div>
+        <div class="arrow" data-arrow>‹</div>
       </a>
 
-      <div class="sec-label">🍲 سُفرة — الأكل</div>
+      <div class="sec-label" data-i="secS">🍲 سُفرة · الأكل</div>
 
       <button class="card sufrah soon" onclick="soonMsg()">
         <div class="ic">🍲</div>
         <div class="tx">
-          <h3>أسر سُفرة <span class="tag">قريباً</span></h3>
-          <p>الأسر المنتجة — قيد التجهيز</p>
+          <h3><span data-i="sufT">أسر سُفرة</span> <span class="tag" data-i="soon">قريبًا</span></h3>
+          <p data-i="sufP">الأسر المنتجة · قيد التجهيز</p>
         </div>
-        <div class="arrow">‹</div>
+        <div class="arrow" data-arrow>‹</div>
       </button>
 
     </div>
 
-    <div class="foot">رزق © 2026 — منصّة شركاء الأعمال</div>
+    <div class="foot" data-i="foot">رزق © 2026 · منصّة شركاء الأعمال</div>
 
   </div>
 
 <script>
   function soonMsg(){
-    alert('🍲 أسر سُفرة — قريباً\n\nجاري التجهيز، وبتكون هنا أول ما تجهز.');
+    alert(T('soonMsg'));
   }
 
   /* دخول الإدارة مخفي: اضغط على الشعار ٥ مرات متتالية */
@@ -151,6 +162,37 @@ html,body{touch-action:manipulation}
       if(taps >= 5){ taps = 0; window.location.href = 'admin.html'; }
     });
   })();
+</script>
+
+<script>
+/* اختيار اللغة من أول صفحة: يُحفظ للفني (khafet_techlang) وللمزوّد والإدارة (khafet_uilang) */
+var I18={"ar":{"dir":"rtl","title":"رزق","sub":"منصّة الشركاء","biz":"بوابة العمل · للفريق فقط","secK":"🔧 خافِت · الصيانة","techT":"فنيّو خافِت","techP":"استقبل الطلبات، سجّل وصولك، وأنجز أعمالك","provT":"مزوّدو خافِت","provP":"تابع طلبات خدماتك وأدِرها بسهولة","secS":"🍲 سُفرة · الأكل","sufT":"أسر سُفرة","soon":"قريبًا","sufP":"الأسر المنتجة · قيد التجهيز","foot":"رزق © 2026 · منصّة شركاء الأعمال","soonMsg":"🍲 أسر سُفرة قريبًا\n\nجاري التجهيز، وبتكون هنا أول ما تجهز."},"en":{"dir":"ltr","title":"Rizq","sub":"Partners platform","biz":"Work portal · team only","secK":"🔧 Khafet · Maintenance","techT":"Khafet technicians","techP":"Receive jobs, check in on site, and finish your work","provT":"Khafet providers","provP":"Track and manage your service jobs easily","secS":"🍲 Sufrah · Food","sufT":"Sufrah home cooks","soon":"Soon","sufP":"Home cooks · coming soon","foot":"Rizq © 2026 · Business partners platform","soonMsg":"🍲 Sufrah home cooks, coming soon\n\nWe are getting it ready."},"ne":{"dir":"ltr","title":"Rizq","sub":"साझेदार प्लेटफर्म","biz":"काम पोर्टल · टोलीका लागि मात्र","secK":"🔧 Khafet · मर्मत","techT":"Khafet प्राविधिकहरू","techP":"काम प्राप्त गर्नुहोस्, पुगेको दर्ता गर्नुहोस् र काम सक्नुहोस्","provT":"Khafet प्रदायकहरू","provP":"आफ्ना सेवा कामहरू सजिलै हेर्नुहोस् र व्यवस्थापन गर्नुहोस्","secS":"🍲 Sufrah · खाना","sufT":"Sufrah घरेलु भान्से","soon":"छिट्टै","sufP":"घरेलु भान्से · छिट्टै आउँदैछ","foot":"Rizq © 2026 · व्यापार साझेदार प्लेटफर्म","soonMsg":"🍲 Sufrah छिट्टै आउँदैछ"},"hi":{"dir":"ltr","title":"Rizq","sub":"पार्टनर प्लेटफ़ॉर्म","biz":"वर्क पोर्टल · सिर्फ़ टीम के लिए","secK":"🔧 Khafet · मेंटेनेंस","techT":"Khafet तकनीशियन","techP":"काम पाएँ, साइट पर पहुँचना दर्ज करें और काम पूरा करें","provT":"Khafet प्रदाता","provP":"अपनी सर्विस के काम आसानी से देखें और संभालें","secS":"🍲 Sufrah · खाना","sufT":"Sufrah घरेलू रसोइए","soon":"जल्द","sufP":"घरेलू रसोइए · जल्द आ रहा है","foot":"Rizq © 2026 · बिज़नेस पार्टनर प्लेटफ़ॉर्म","soonMsg":"🍲 Sufrah जल्द आ रहा है"},"ur":{"dir":"rtl","title":"رزق","sub":"پارٹنر پلیٹ فارم","biz":"ورک پورٹل · صرف ٹیم کے لیے","secK":"🔧 خافت · مرمت","techT":"خافت ٹیکنیشن","techP":"کام وصول کریں، سائٹ پر پہنچنا درج کریں اور کام مکمل کریں","provT":"خافت فراہم کنندگان","provP":"اپنے سروس کے کام آسانی سے دیکھیں اور سنبھالیں","secS":"🍲 سفرہ · کھانا","sufT":"سفرہ گھریلو باورچی","soon":"جلد","sufP":"گھریلو باورچی · جلد آ رہا ہے","foot":"رزق © 2026 · کاروباری شراکت دار پلیٹ فارم","soonMsg":"🍲 سفرہ جلد آ رہا ہے"}};
+var LANGS=[["ar","عربي","Arabic"],["en","English","English"],["ne","नेपाली","Nepali"],["hi","हिन्दी","Hindi"],["ur","اردو","Urdu"]];
+function curLang(){ try{ return localStorage.getItem("khafet_techlang")||"ar"; }catch(e){ return "ar"; } }
+function T(k){ var d=I18[curLang()]||I18.ar; return d[k]||I18.ar[k]||""; }
+function applyI18(){
+  var l=curLang(), d=I18[l]||I18.ar;
+  document.documentElement.lang=l; document.documentElement.dir=d.dir;
+  document.querySelectorAll("[data-i]").forEach(function(el){ var v=d[el.getAttribute("data-i")]; if(v) el.textContent=v; });
+  document.querySelectorAll("[data-arrow]").forEach(function(el){ el.textContent=d.dir==="rtl"?"‹":"›"; });
+  document.querySelectorAll(".card").forEach(function(el){ el.style.textAlign=d.dir==="rtl"?"right":"left"; });
+  document.title=d.title;
+  var bar=document.getElementById("langbar");
+  if(bar) bar.innerHTML=LANGS.map(function(x){ return '<button type="button" class="'+(x[0]===l?'on':'')+'" onclick="setLang(\''+x[0]+'\')">'+x[1]+'</button>'; }).join("");
+}
+function setLang(l){
+  try{ localStorage.setItem("khafet_techlang",l); localStorage.setItem("khafet_uilang",l==="ar"?"ar":"en"); localStorage.setItem("kh_lang_chosen","1"); }catch(e){}
+  try{ var C=window.Capacitor, P=C&&(typeof C.registerPlugin==="function"?C.registerPlugin("Preferences"):null); if(P){ P.set({key:"khafet_techlang",value:l}); P.set({key:"khafet_uilang",value:l==="ar"?"ar":"en"}); P.set({key:"kh_lang_chosen",value:"1"}); } }catch(e){}
+  var lp=document.getElementById("lp"); if(lp) lp.remove();
+  applyI18();
+}
+function langPicker(){
+  if(document.getElementById("lp")) return;
+  document.body.insertAdjacentHTML("beforeend",'<div class="lp" id="lp"><div class="lp-card"><div class="lp-ic">🌐</div><h2>اختر لغتك</h2><p>Choose your language · भाषा छान्नुहोस्</p><div class="lp-grid">'+LANGS.map(function(x){ return '<button type="button" onclick="setLang(\''+x[0]+'\')"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>'; }).join("")+'</div></div></div>');
+}
+function hasLang(){ try{ return !!(localStorage.getItem("kh_lang_chosen")||localStorage.getItem("khafet_techlang")); }catch(e){ return true; } }
+applyI18();
+(function waitBoot(){ if(document.documentElement.classList.contains("boot")){ setTimeout(waitBoot,150); return; } applyI18(); if(!hasLang()) langPicker(); })();
 </script>
 </body>
 </html>

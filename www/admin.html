@@ -421,6 +421,10 @@
 .camlbl{position:relative;overflow:hidden}
 .camlbl input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:0}
 .wh-ov{z-index:96} .wh-lightbox{z-index:97}
+/* الواجهة الإنجليزية (LTR): محاذاة النص لبداية السطر بدل اليمين الثابت */
+html[dir="ltr"] .hcard{text-align:left}
+html[dir="ltr"] #bcBox .bc-chip{text-align:left}
+html[dir="ltr"] .bc-ios,html[dir="ltr"] .bc-and{text-align:start}
 
 
 
@@ -484,7 +488,7 @@ function ilCard(it){
   const known=opts.some(u=>u===cur);
   const grid=(cur&&!known?`<div class="il-opt sel" onclick="pickImg('${it.id}','${esc(cur)}')"><img src="${esc(cur)}" loading="lazy" /></div>`:'')+opts.map(u=>`<div class="il-opt ${u===cur?'sel':''}" onclick="pickImg('${it.id}','${esc(u)}')"><img src="${esc(u)}" loading="lazy" /></div>`).join('');
   return `<div class="il-item" id="il-${it.id}">
-    <div class="il-head"><div class="wh-thumb">${cur?`<img src="${esc(cur)}" />`:(CAT_ICO[it.category]||'📦')}</div><div style="flex:1;min-width:0"><b>${esc(it.name)}</b><small>${esc(it.code||'')} · ${cur?LX('لها صورة، اضغطي أخرى لتغييرها','Has image, tap another to change'):LX('بدون صورة، اختاري وحدة','No image yet, pick one')}</small></div></div>
+    <div class="il-head"><div class="wh-thumb">${cur?`<img src="${esc(cur)}" />`:(CAT_ICO[it.category]||'📦')}</div><div style="flex:1;min-width:0"><b>${esc(_enUI()?whName(it):it.name)}</b><small>${esc(it.code||'')} · ${cur?LX('لها صورة، اضغطي أخرى لتغييرها','Has image, tap another to change'):LX('بدون صورة، اختاري وحدة','No image yet, pick one')}</small></div></div>
     ${grid?`<div class="il-grid">${grid}</div>`:`<div class="il-empty">${LX('ما فيه خيارات جاهزة لهذا الصنف، صوّريه من الجوال','No ready options, take a photo')}</div>`}
     <div class="il-acts"><label class="sbtn ok">📷 ${LX('صورة من الجوال','Phone photo')}<input type="file" accept="image/*" onchange="ilPhoto('${it.id}',this)" /></label><button class="sbtn" onclick="pickImg('${it.id}','')">🚫 ${LX('بدون صورة','No image')}</button></div>
   </div>`;
@@ -502,12 +506,12 @@ function renderImgLinker(){
 async function pickImg(id,url){
   const it=INV.find(x=>x.id===id); if(!it) return; it.image_url=url||null;
   if(cloudReady){ try{ const r=await sb.from('khafet_inventory').update({image_url:it.image_url}).eq('id',id); if(r.error) throw r.error; }catch(e){ toast('تعذّر الحفظ'); return; } }
-  toast(url?'✅ رُبطت الصورة بـ'+it.name:'🚫 بدون صورة'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); const top=document.querySelector('.il-top small'); if(top) top.textContent=ar(INV.filter(x=>x.image_url).length)+'/'+ar(INV.length);
+  toast(url?LX('✅ رُبطت الصورة بـ'+it.name,'✅ Image linked to '+whName(it)):'🚫 بدون صورة'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); const top=document.querySelector('.il-top small'); if(top) top.textContent=ar(INV.filter(x=>x.image_url).length)+'/'+ar(INV.length);
 }
 async function ilPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳ جارٍ الرفع...'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ انحفظت صورتك'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); }catch(e){ toast('⚠️ تعذّر الرفع'); } }
 async function loadJoin(){ try{ const jc=await sb.rpc('get_join_code'); JOIN_CODE=jc.data||''; }catch(e){} try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
 function renderJoinPanelA(){
-  const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · ${new Date(t.created_at).toLocaleDateString('ar-SA')}</small></div>
+  const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||LX('فني','Technician'))}</b><small>📱 ${esc(t.phone||'')} · ${new Date(t.created_at).toLocaleDateString(uiLocale())}</small></div>
       <button class="sbtn ok" onclick="approveTechA('${t.user_id}',true)">✔️ اعتماد</button><button class="sbtn danger" onclick="approveTechA('${t.user_id}',false)">رفض</button></div>`).join('') : '';
   return `<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:14px">
     <b style="display:block;margin-bottom:6px">🔑 ${LX('كود انضمام فنيّي خافت','Khafet team join code')}</b>
@@ -518,24 +522,42 @@ function renderJoinPanelA(){
   ${pend?`<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px"><b style="display:block;margin-bottom:4px">⏳ ${LX('فنيون بانتظار اعتمادك','Technicians awaiting approval')} (${ar(PENDING_TECHS.length)})</b>${pend}</div>`:''}`;
 }
 async function approveTechA(uid, ok){
-  if(!ok && !confirm('رفض هذا الفني؟ ما راح يشوف أي طلب.')) return;
-  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?'✅ اعتُمد '+(data.name||''):'تم الرفض'); await loadStaff(); await loadJoin(); render(); }catch(e){ toast('⚠️ تعذّر'); }
+  if(!ok && !confirm(LX('رفض هذا الفني؟ ما راح يشوف أي طلب.','Reject this technician? They will not see any orders.'))) return;
+  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?LX('✅ اعتُمد '+(data.name||''),'✅ Approved '+(data.name||'')):'تم الرفض'); await loadStaff(); await loadJoin(); render(); }catch(e){ toast('⚠️ تعذّر'); }
 }
 async function regenJoinCodeA(){
-  if(!confirm('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفنيّوك المعتمدون يبقون كما هم.')) return;
-  try{ const { data }=await sb.rpc('regenerate_join_code'); if(!data) throw new Error(); JOIN_CODE=data; toast('🎲 الكود الجديد: '+data); render(); }catch(e){ toast('⚠️ تعذّر'); }
+  if(!confirm(LX('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفنيّوك المعتمدون يبقون كما هم.','Create a new code? The current code stops working now. Approved technicians stay as they are.'))) return;
+  try{ const { data }=await sb.rpc('regenerate_join_code'); if(!data) throw new Error(); JOIN_CODE=data; toast(LX('🎲 الكود الجديد: ','🎲 New code: ')+data); render(); }catch(e){ toast('⚠️ تعذّر'); }
 }
-function copyJoinCodeA(){ try{ navigator.clipboard.writeText(JOIN_CODE); toast('📋 نُسخ الكود '+JOIN_CODE); }catch(e){ prompt('انسخي الكود:', JOIN_CODE); } }
+function copyJoinCodeA(){ try{ navigator.clipboard.writeText(JOIN_CODE); toast(LX('📋 نُسخ الكود ','📋 Code copied ')+JOIN_CODE); }catch(e){ prompt(LX('انسخي الكود:','Copy the code:'), JOIN_CODE); } }
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
-function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
-function money(n){ return ar(n)+' ر.س'; }
+function _enUI(){ try{ return _uiEN(); }catch(e){ return false; } }   // آمنة حتى قبل تهيئة UILANG
+function arDigits(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }   // دائمًا أرقام عربية (للمعرّفات الثابتة مثل رقم الطلب)
+function ar(n){ if(_enUI()) return String(n); return arDigits(n); }
+function money(n){ if(_enUI()) return n+' SAR'; return ar(n)+' ر.س'; }
+function uiLocale(){ return _enUI()?'en-GB':'ar-SA'; }
+/* قيم بيانات ثابتة تُحفظ بالعربي (مدن التسجيل، خدمات المزوّدين، نوع رسالة العميل، سبب حركة المخزن) ومقابلها الإنجليزي */
+const DATA_EN={
+  'مكة':'Makkah','المدينة':'Madinah','عنيزة':'Unaizah','عرعر':'Arar','سكاكا':'Sakaka','الباحة':'Al Baha','حفر الباطن':'Hafar Al Batin',
+  'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','دهان':'Painting','أجهزة منزلية':'Appliances','تنظيف':'Cleaning',
+  'مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum and decor','ألمنيوم':'Aluminium','زجاج ومرايا':'Glass and mirrors',
+  'حدادة':'Metalwork','سيراميك وبلاط':'Ceramics and tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras',
+  'مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Pools','أعمال عامة':'General work',
+  'اقتراح':'Suggestion','شكوى':'Complaint','شكر':'Thanks','رسالة':'Message','سلامة':'Safety',
+  'المؤسسة':'Company','إدخال':'Stock in','صرف':'Issued','تعديل الكمية':'Quantity edit','رصيد افتتاحي':'Opening stock'
+};
+/* ترجمة قيمة بيانات معروفة بالإنجليزي فقط، وإلا تبقى كما هي (مثل ما كتبها العميل) */
+function trData(v){ if(!_enUI()||v==null) return v; const k=String(v).trim(), own=Object.prototype.hasOwnProperty;
+  if(own.call(DATA_EN,k)) return DATA_EN[k]; if(own.call(T_DICT,k)) return T_DICT[k]; return v; }
+function ordersN(n){ return LX(ar(n)+' طلب', n+(n===1?' order':' orders')); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function parseISO(s){ const [y,m,d]=String(s).split('-').map(Number); return new Date(y,m-1,d); }
 function dayLabel(s){ const d=parseISO(s); if(typeof _uiEN==='function'&&_uiEN()) return EN_DAYS[d.getDay()]+' '+d.getDate()+' '+EN_MON[d.getMonth()]; return AR_DAYS[d.getDay()]+' '+ar(d.getDate())+' '+AR_MON[d.getMonth()]; }
-function fmtTime(mins){ let h=Math.floor(mins/60),m=mins%60; const ap=h<12?'ص':'م'; let h12=h%12||12; return ar(h12)+':'+ar(String(m).padStart(2,'0'))+' '+ap; }
-function fmtDur(mins){ if(!mins) return 'حسب المعاينة'; const h=Math.floor(mins/60),m=mins%60,p=[]; if(h===1)p.push('ساعة');else if(h===2)p.push('ساعتان');else if(h>2)p.push(ar(h)+' ساعات'); if(m)p.push(ar(m)+' دقيقة'); return p.join(' و'); }
+function fmtTime(mins){ let h=Math.floor(mins/60),m=mins%60; if(_enUI()) return (h%12||12)+':'+String(m).padStart(2,'0')+' '+(h<12?'AM':'PM'); const ap=h<12?'ص':'م'; let h12=h%12||12; return ar(h12)+':'+ar(String(m).padStart(2,'0'))+' '+ap; }
+function fmtDur(mins){ if(_enUI()){ if(!mins) return 'After inspection'; const H=Math.floor(mins/60),M=mins%60,q=[]; if(H) q.push(H+(H===1?' hour':' hours')); if(M) q.push(M+' min'); return q.join(' '); }
+  if(!mins) return 'حسب المعاينة'; const h=Math.floor(mins/60),m=mins%60,p=[]; if(h===1)p.push('ساعة');else if(h===2)p.push('ساعتان');else if(h>2)p.push(ar(h)+' ساعات'); if(m)p.push(ar(m)+' دقيقة'); return p.join(' و'); }
 function dateISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 const STATUS_AR={new:'قيد المراجعة',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل',cancelled:'ملغي'};
 const STATUS_CLS={new:'st-new',confirmed:'st-confirmed',progress:'st-progress',done:'st-done',cancelled:'st-cancelled'};
@@ -587,10 +609,13 @@ const SVC_TR={
   g4:{en:'Tile grouting',ne:'टायल ग्राउट',hi:'टाइल ग्राउट',ur:'ٹائل گراوٹ'},
 };
 const priceLangs=[['ar','عربي'],['ne','नेपाली'],['en','English'],['hi','हिन्दी'],['ur','اردو']];
-let priceLang='ar';
-function setPriceLang(l){ priceLang=l; render(); }
-function catLabel(k){ const c=CAT_I18N[k]; return (c&&c[priceLang])||(c&&c.ar)||k; }
-function psvcName(s){ if(priceLang==='ar') return s.name; const tr=SVC_TR[s.id]; return (tr&&tr[priceLang])?tr[priceLang]:s.name; }
+let priceLang='ar', priceLangPicked=false;   // واجهة إنجليزية: المحرّر يتبعها بالإنجليزي إلى أن تُختار لغة من أزراره
+function setPriceLang(l){ priceLang=l; priceLangPicked=true; render(); }
+function curPriceLang(){ return (_enUI() && !priceLangPicked) ? 'en' : priceLang; }
+function catLabel(k){ const c=CAT_I18N[k], pl=curPriceLang(); return (c&&c[pl])||(c&&c.ar)||k; }
+function psvcName(s){ const pl=curPriceLang(); if(pl==='ar') return s.name; const tr=SVC_TR[s.id]; return (tr&&tr[pl])?tr[pl]:s.name; }
+/* اسم الخدمة في بطاقة الطلب: الاسم الإنجليزي من الكتالوج لما تكون الواجهة إنجليزية */
+function itemName(i){ if(_enUI()){ const tr=Object.prototype.hasOwnProperty.call(SVC_TR,i.id)?SVC_TR[i.id]:null; if(tr&&tr.en) return tr.en; return trData(i.name); } return i.name; }
 const SERVICES=[
   {id:'p1',cat:'plumb',name:'تغيير شطّاف',price:80},{id:'p2',cat:'plumb',name:'تسليك مجاري/بالوعة',price:120},
   {id:'p3',cat:'plumb',name:'تغيير خلاط ماء',price:100},{id:'p4',cat:'plumb',name:'إصلاح تسريب مياه',price:150},
@@ -615,7 +640,8 @@ const SERVICES=[
 let PRICES={};
 function svcPrice(s){ return (PRICES[s.id]!=null)?PRICES[s.id]:s.price; }
 function renderPriceEditor(){
-  const sw=priceLangs.map(([l,n])=>`<button class="plang ${priceLang===l?'active':''}" onclick="setPriceLang('${l}')">${n}</button>`).join('');
+  const pl=curPriceLang();
+  const sw=priceLangs.map(([l,n])=>`<button class="plang ${pl===l?'active':''}" onclick="setPriceLang('${l}')">${n}</button>`).join('');
   const groups=Object.keys(CAT_I18N).map(k=>{
     const rows=SERVICES.filter(s=>s.cat===k).map(s=>`<div class="pr-edit-row"><span>${esc(psvcName(s))}</span><input type="number" inputmode="numeric" min="0" id="pr_${s.id}" value="${svcPrice(s)}" /><b>ر.س</b></div>`).join('');
     return rows?`<div class="pr-cat"><h4>${catLabel(k)}</h4>${rows}</div>`:'';
@@ -672,7 +698,7 @@ async function initCloud(){
   }catch(e){}
   render();
 }
-function rowToOrder(r){ return { id:'#'+ar(r.order_no), num:r.order_no, dbId:r.id, createdAt:r.created_at?new Date(r.created_at).getTime():Date.now(),
+function rowToOrder(r){ return { id:'#'+arDigits(r.order_no), num:r.order_no, dbId:r.id, createdAt:r.created_at?new Date(r.created_at).getTime():Date.now(),
   items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
   date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, price:Number(r.price)||0, finalPrice:Number(r.final_price)||0,
   free:!!r.free, status:r.status||'new', rating:r.rating||0, reminded:!!r.reminded, quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', feedback:r.feedback||'', rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, reviewAnon:!!r.review_anon, reviewHidden:!!r.review_hidden, discountPct:+r.discount_pct||0, promoCode:r.promo_code||'',
@@ -713,7 +739,7 @@ function renderTechs(){
   const rows=techs.length? techs.map(t=>{
     const off=t.active===false;
     return `<div class="rline">
-      <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?'⛔ موقوف':'✅ فعّال'} · 📱 ${esc(t.phone||'—')}</small></div>
+      <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?LX('⛔ موقوف','⛔ Suspended'):LX('✅ فعّال','✅ Active')} · 📱 ${esc(t.phone||'—')}</small></div>
       <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
       <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
     </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
@@ -734,7 +760,7 @@ async function addTech(){
   if(password.length<6){ toast('كلمة المرور ٦ خانات فأكثر'); return; }
   toast('⏳ جارٍ إنشاء الحساب...');
   const d=await callStaffAdmin({ action:'create', name, phone, password, role:'tech' });
-  if(d&&d.ok){ toast('✅ تم — الفني يدخل برقم '+d.phone); await loadStaff(); }
+  if(d&&d.ok){ toast(LX('✅ تم — الفني يدخل برقم '+d.phone,'✅ Done, the technician signs in with '+d.phone)); await loadStaff(); }
   else toast('⚠️ '+((d&&d.error)||'تعذّر الإنشاء'));
 }
 async function toggleTechActive(uid, makeActive){
@@ -743,7 +769,7 @@ async function toggleTechActive(uid, makeActive){
   else toast('⚠️ '+((d&&d.error)||'تعذّر'));
 }
 async function resetTechPass(uid){
-  const p=prompt('كلمة المرور الجديدة (٦ خانات على الأقل):'); if(p==null) return;
+  const p=prompt(LX('كلمة المرور الجديدة (٦ خانات على الأقل):','New password (at least 6 characters):')); if(p==null) return;
   if(p.trim().length<6){ toast('٦ خانات على الأقل'); return; }
   const d=await callStaffAdmin({ action:'set_password', user_id:uid, password:p.trim() });
   toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
@@ -761,16 +787,16 @@ async function sugHandled(id, v){
   try{ await sb.from('khafet_suggestions').update({handled:v}).eq('id',id); await loadSugs(); }catch(e){ toast('⚠️'); }
 }
 async function sugDelete(id){
-  if(!confirm('حذف هذه الرسالة؟')) return;
+  if(!confirm(LX('حذف هذه الرسالة؟','Delete this message?'))) return;
   try{ await sb.from('khafet_suggestions').delete().eq('id',id); toast('حُذفت'); await loadSugs(); }catch(e){ toast('⚠️ تعذّر الحذف'); }
 }
 function renderSuggestions(){
   if(!SUGS.length) return `<p style="color:var(--muted)">ما وصلت رسائل بعد.</p>`;
   return SUGS.map(s=>{
-    const d=s.created_at? new Date(s.created_at).toLocaleDateString('ar-SA') : '';
+    const d=s.created_at? new Date(s.created_at).toLocaleDateString(uiLocale()) : '';
     return `<div class="rline" style="align-items:flex-start;${s.handled?'opacity:.55':''}">
       <div class="rl-t" style="flex:1">
-        <b>${SUG_ICON[s.kind]||'💬'} ${esc(s.kind||'رسالة')}${s.name?' — '+esc(s.name):''}</b>
+        <b>${SUG_ICON[s.kind]||'💬'} ${_enUI()?esc(trData(s.kind||'رسالة'))+(s.name?' · '+esc(s.name):''):esc(s.kind||'رسالة')+(s.name?' — '+esc(s.name):'')}</b>
         <div style="white-space:pre-wrap;margin:6px 0;font-size:.93rem;line-height:1.7">${esc(s.body||'')}</div>
         <small>${d}${s.phone?' · <a href="tel:'+esc(s.phone)+'">📞 '+esc(s.phone)+'</a>':''}</small>
       </div>
@@ -805,7 +831,7 @@ async function artSave(){
   }catch(e){ toast('⚠️ '+(e.message||'تعذّر الحفظ')); }
 }
 async function artDelete(id){
-  if(!confirm('حذف هذا المقال نهائياً؟')) return;
+  if(!confirm(LX('حذف هذا المقال نهائياً؟','Delete this article for good?'))) return;
   try{ const { error }=await sb.from('khafet_articles').delete().eq('id',id); if(error) throw error; toast('حُذف'); await loadArticles(); }
   catch(e){ toast('⚠️ تعذّر الحذف'); }
 }
@@ -843,7 +869,7 @@ function renderArticles(){
   }
   const rows=ARTICLES.length? ARTICLES.map(a=>`
     <div class="rline">
-      <div class="rl-t"><b>${esc(a.emoji||'')} ${esc(a.title)}</b><small>${a.published===false?'⚪ مسودّة':'🟢 منشور'} · ${esc(a.category||'')}</small></div>
+      <div class="rl-t"><b>${esc(a.emoji||'')} ${esc(a.title)}</b><small>${a.published===false?LX('⚪ مسودّة','⚪ Draft'):LX('🟢 منشور','🟢 Published')} · ${esc(trData(a.category||''))}</small></div>
       <button class="sbtn" onclick="artEdit('${a.id}')">✏️</button>
       <button class="sbtn ${a.published===false?'ok':''}" onclick="artTogglePub('${a.id}',${a.published===false})">${a.published===false?'انشر':'إخفاء'}</button>
       <button class="sbtn danger" onclick="artDelete('${a.id}')">🗑️</button>
@@ -897,6 +923,10 @@ let invLoaded=false;
 function renderInventory(){ return whMain(); }
 function invRefresh(){ whRefresh(); }
 function invForm(id){ whForm(id||''); }
+/* سبب الحركة بالإنجليزي: «صرف · اسم العميل» → «Issued · اسم العميل» (الجزء المكتوب يدويًا يبقى كما هو) */
+function trReason(r){ if(!_enUI()) return r; const m=String(r).match(/^(.+?) · ([\s\S]*)$/); return m? trData(m[1])+' · '+m[2] : trData(r); }
+/* اسم الصنف في السجل: الاسم الإنجليزي من المستودع لما تكون الواجهة إنجليزية */
+function logItemName(e){ if(_enUI()&&e.item_id!=null){ const it=INV.find(x=>String(x.id)===String(e.item_id)); if(it&&it.name_en) return it.name_en; } return e.item_name||''; }
 function renderStockLog(){
   if(!LOG.length) return `<p style="color:var(--muted)">لا توجد حركات بعد.</p>`;
   // تجميع حسب اليوم
@@ -910,8 +940,8 @@ function renderStockLog(){
     const rows=items.map(e=>{ const t=new Date(e.created_at); const pos=+e.delta>0;
       return `<div class="log-row"><span class="log-t">${fmtTime(t.getHours()*60+t.getMinutes())}</span>
         <span class="log-d ${pos?'add':'sub'}">${pos?'➕':'➖'} ${ar(Math.abs(+e.delta))}</span>
-        <span class="log-n">${esc(e.item_name||'')}</span>
-        <span class="log-a">${esc(e.reason||'')} · ${esc(e.actor||'')}</span></div>`;
+        <span class="log-n">${esc(logItemName(e))}</span>
+        <span class="log-a">${esc(trReason(e.reason||''))} · ${esc(trData(e.actor||''))}</span></div>`;
     }).join('');
     return `<div class="log-day"><div class="log-day-h">📅 ${dayLabel(key)} <small>(＋${ar(addQ)} · －${ar(subQ)})</small></div>${rows}</div>`;
   }).join('');
@@ -920,15 +950,15 @@ async function subMark(id,status){ if(cloudReady){ try{ await sb.from('khafet_su
 function renderSubs(){
   if(!SUBS.length) return `<p style="color:var(--muted)">لا توجد طلبات اشتراك.</p>`;
   return SUBS.map(s=>`<div class="rline"><span style="font-size:1.3rem">🛡️</span>
-    <div class="rl-t"><b>${esc(s.name||'')}</b> — ${esc(s.plan||'')} (${money(+s.price||0)})<small>📞 ${esc(s.phone||'')} · ${(s.status==='active')?'✅ مفعّل':'🕐 جديد'}</small></div>
+    <div class="rl-t"><b>${esc(s.name||'')}</b> ${LX('—','·')} ${esc(s.plan||'')} (${money(+s.price||0)})<small>📞 ${esc(s.phone||'')} · ${(s.status==='active')?LX('✅ مفعّل','✅ Active'):LX('🕐 جديد','🕐 New')}</small></div>
     ${s.status==='active'?'':`<button class="sbtn ok" onclick="subMark('${s.id}','active')">تفعيل</button>`}</div>`).join('');
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_admin').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(loggedIn) loadAll(); }).subscribe(); }catch(e){} }
 async function patch(dbId,p){ if(!cloudReady||!dbId) return; try{ await sb.from('khafet_orders').update(p).eq('id',dbId); }catch(e){} }
-function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.status=st; patch(o.dbId,{status:st}); toast('تم تحديث الحالة: '+STATUS_AR[st]); render(); }
+function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.status=st; patch(o.dbId,{status:st}); toast(LX('تم تحديث الحالة: '+STATUS_AR[st],'Status updated: '+trData(STATUS_AR[st]))); render(); }
 // تعليم وصول الفني — يفعّل مرحلة «الفني وصل الموقع» ويُشعر العميل تلقائياً
 function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.arrived=true; patch(o.dbId,{arrived:true}); toast('🚪 تم إبلاغ العميل بوصول الفني'); render(); }
-function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast('📩 أُرسل تذكير إلى '+o.customer.name); render(); }
+function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
 function toggleReviewAnon(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewAnon=!o.reviewAnon; patch(o.dbId,{review_anon:o.reviewAnon}); toast(o.reviewAnon?'👤 أُخفي اسم العميل':'👤 يظهر اسم العميل'); render(); }
 function toggleReviewHidden(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewHidden=!o.reviewHidden; patch(o.dbId,{review_hidden:o.reviewHidden}); toast(o.reviewHidden?'🙈 أُخفي التقييم من الرئيسية':'👁️ يظهر التقييم في الرئيسية'); render(); }
 async function approveProvider(phone,status){ if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
@@ -987,7 +1017,7 @@ async function verifyAdminOtp(){
     otpSent=false; loggedIn=true; loadAll(); subscribe();
   }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : (e&&e.message==='net') ? 'تعذّر الاتصال بالخادم، حاولي مرة ثانية' : 'الرمز غير صحيح'); }
 }
-async function logout(){ if(!confirm('تسجيل الخروج؟ بتحتاجين رمز جديد بالرسائل عند الدخول القادم.')) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_inv_cache'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); render(); }
+async function logout(){ if(!confirm(LX('تسجيل الخروج؟ بتحتاجين رمز جديد بالرسائل عند الدخول القادم.','Sign out? You will need a new SMS code next time.'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_inv_cache'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); render(); }
 
 /* ---- العرض ---- */
 function setAdminFilter(f){ adminFilter=f; render(); }
@@ -997,7 +1027,7 @@ function renderCommission(){
   if(!done.length) return `<p style="color:var(--muted)">لا توجد طلبات منجزة عبر مزوّدين بعد.</p>`;
   const byP={}; done.forEach(o=>{ byP[o.providerPhone]=(byP[o.providerPhone]||0)+1; });
   const total=done.length*COMMISSION;
-  const rows=Object.keys(byP).map(ph=>`<div class="rline"><div class="rl-t"><b>${esc(provName(ph))}</b><small>${ar(byP[ph])} طلب · ${esc(ph)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(byP[ph]*COMMISSION)}</span></div>`).join('');
+  const rows=Object.keys(byP).map(ph=>`<div class="rline"><div class="rl-t"><b>${esc(provName(ph))}</b><small>${ordersN(byP[ph])} · ${esc(ph)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(byP[ph]*COMMISSION)}</span></div>`).join('');
   return rows+`<div class="rline" style="border-top:2px solid var(--line)"><div class="rl-t"><b>الإجمالي المستحق</b></div><span style="font-weight:900;font-size:1.15rem">${money(total)}</span></div>`;
 }
 /* ═ إدارة المزوّدين بالاستثناء: بحث + فلاتر + اعتماد جماعي + إيقاف/تفعيل ═ */
@@ -1007,9 +1037,9 @@ function provAllCities(){ const s=new Set(); PROVIDERS.forEach(p=>provCityList(p
 async function bulkApprove(){
   const pend=PROVIDERS.filter(p=>(p.status||'pending')==='pending');
   if(!pend.length){ toast('لا يوجد معلّقون'); return; }
-  if(!confirm('اعتماد كل المعلّقين ('+pend.length+')؟')) return;
+  if(!confirm(LX('اعتماد كل المعلّقين ('+pend.length+')؟','Approve all pending ('+pend.length+')?'))) return;
   try{ await sb.from('khafet_providers').update({status:'approved'}).eq('status','pending');
-    pend.forEach(p=>p.status='approved'); toast('✅ اعتُمد الجميع ('+pend.length+')');
+    pend.forEach(p=>p.status='approved'); toast(LX('✅ اعتُمد الجميع ('+pend.length+')','✅ All approved ('+pend.length+')'));
   }catch(e){ toast('⚠️ تعذّر الاعتماد الجماعي'); }
   render();
 }
@@ -1035,15 +1065,15 @@ function renderProviders(){
     return true;
   });
   const chips=[['all','الكل',PROVIDERS.length],['pending','معلّق',nPend],['approved','معتمد',cnt('approved')],['suspended','موقوف',cnt('suspended')],['rejected','مرفوض',cnt('rejected')]];
-  const cards=list.map(p=>{ const st=p.status||'pending'; const sv=Array.isArray(p.services)?p.services.join('، '):(p.services||'');
+  const cards=list.map(p=>{ const st=p.status||'pending'; const sv=Array.isArray(p.services)?p.services.map(trData).join(LX('، ',', ')):trData(p.services||'');
     let acts='';
     if(st==='pending') acts=`<button class="sbtn ok" onclick="approveProvider('${esc(p.phone)}','approved')">✔️ اعتماد</button><button class="sbtn danger" onclick="approveProvider('${esc(p.phone)}','rejected')">رفض</button>`;
     else if(st==='approved') acts=`<button class="sbtn danger" onclick="suspendProvider('${esc(p.phone)}','suspended')">⏸️ إيقاف</button>`;
     else acts=`<button class="sbtn ok" onclick="suspendProvider('${esc(p.phone)}','approved')">▶️ تفعيل</button>`;
     return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st)}</span>
-      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).join('، ')||'—')}</div></div>
+      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
-      <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)}${p.experience?' · خبرة '+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
+      <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)}${p.experience?LX(' · خبرة ',' · Experience: ')+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
       <div style="display:flex;gap:8px;margin-top:10px">${acts}</div></div>`;
   }).join('');
   return `
@@ -1052,7 +1082,7 @@ function renderProviders(){
         style="flex:1;min-width:180px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:var(--card);color:var(--ink)" />
       <select onchange="provCity=this.value;render()" style="padding:9px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:var(--card);color:var(--ink)">
         <option value="all">كل المدن</option>
-        ${provAllCities().map(c=>`<option value="${esc(c)}" ${provCity===c?'selected':''}>${esc(c)}</option>`).join('')}
+        ${provAllCities().map(c=>`<option value="${esc(c)}" ${provCity===c?'selected':''}>${esc(trData(c))}</option>`).join('')}
       </select>
       ${nPend>0?`<button class="sbtn ok" onclick="bulkApprove()">✔️ ${LX('اعتماد الكل','Approve all')} (${_uiEN()?nPend:ar(nPend)})</button>`:''}
     </div>
@@ -1062,34 +1092,35 @@ function renderProviders(){
     ${cards||'<p style="color:var(--muted)">لا نتائج بهذا الفلتر.</p>'}`;
 }
 function renderAdminOrder(o){
-  const itemsRows=o.items.map(i=>`<div class="li"><span>${esc(i.ico||'')} ${esc(i.name)}${i.qty>1?' ×'+ar(i.qty):''}</span><span>${i.custom?'—':money((i.price||0)*(i.qty||1))}</span></div>`).join('');
-  const created=new Date(o.createdAt); const cs=ar(created.getDate())+' '+AR_MON[created.getMonth()];
+  const itemsRows=o.items.map(i=>`<div class="li"><span>${esc(i.ico||'')} ${esc(itemName(i))}${i.qty>1?' ×'+ar(i.qty):''}</span><span>${i.custom?'—':money((i.price||0)*(i.qty||1))}</span></div>`).join('');
+  const created=new Date(o.createdAt); const cs=_enUI()? created.getDate()+' '+EN_MON[created.getMonth()] : ar(created.getDate())+' '+AR_MON[created.getMonth()];
   let acts='';
   if(o.status==='new') acts=`<button class="sbtn ok" onclick="setStatus('${o.id}','confirmed')">✔️ تأكيد</button><button class="sbtn danger" onclick="setStatus('${o.id}','cancelled')">إلغاء</button>`;
   else if(o.status==='confirmed' && !o.arrived) acts=`<button class="sbtn ok" onclick="markArrivedAdmin('${o.id}')">🚪 الفني وصل الموقع</button><button class="sbtn danger" onclick="setStatus('${o.id}','cancelled')">إلغاء</button>`;
   else if(o.status==='confirmed') acts=`<span class="mini-ok">🚪 وصل ✓</span><button class="sbtn ok" onclick="setStatus('${o.id}','progress')">🔧 بدء العمل</button><button class="sbtn danger" onclick="setStatus('${o.id}','cancelled')">إلغاء</button>`;
   else if(o.status==='progress') acts=`<button class="sbtn ok" onclick="setStatus('${o.id}','done')">✅ إنهاء</button>`;
-  else if(o.status==='done') acts=`<span style="color:var(--ok);font-weight:800">✅ مكتمل${o.rating?' · '+'⭐'.repeat(o.rating):''}</span>`;
+  else if(o.status==='done') acts=`<span style="color:var(--ok);font-weight:800">${LX('✅ مكتمل','✅ Completed')}${o.rating?' · '+'⭐'.repeat(o.rating):''}</span>`;
   else acts=`<span style="color:var(--danger);font-weight:700">ملغي</span>`;
   const a=o.address||{};
   // مراحل الطلب — شلنا «جارٍ العمل» لأنها ما تفيد العميل (يشوف الفني قدامه)،
   // وخلّينا «الفني وصل الموقع» مرحلة أساسية — هذي اللي تخلي العميل يستقبله.
   const done=o.status==='done', conf=['confirmed','progress','done'].includes(o.status);
+  const ARW=_enUI()?'→':'←';   // اتجاه السهم يتبع اتجاه الواجهة
   const flow = o.status==='cancelled' ? '' : `<div class="flow">
-    <i class="on">📥 وصلنا الطلب</i><span>←</span>
-    <i class="${conf?'on':''}">✔️ تأكيد الموعد</i><span>←</span>
-    <i class="${o.arrived&&!done?'arr':((o.arrived||done)?'on':'')}">🚪 الفني وصل الموقع</i><span>←</span>
+    <i class="on">📥 وصلنا الطلب</i><span>${ARW}</span>
+    <i class="${conf?'on':''}">✔️ تأكيد الموعد</i><span>${ARW}</span>
+    <i class="${o.arrived&&!done?'arr':((o.arrived||done)?'on':'')}">🚪 الفني وصل الموقع</i><span>${ARW}</span>
     <i class="${done?'on':''}">✅ تمت الخدمة</i>
   </div>`;
-  return `<div class="aorder ${STATUS_CLS[o.status]}"><div class="ah"><div class="who"><b>${o.id}</b> <span class="status ${STATUS_CLS[o.status]}">${STATUS_AR[o.status]}</span>${o.arrived&&!done?` <span class="status st-arrived">🚪 الفني وصل الموقع</span>`:''}${o.delayMin>0&&!done?` <span class="status st-delay">⏳ متأخّر ${ar(o.delayMin)} د</span>`:''}
+  return `<div class="aorder ${STATUS_CLS[o.status]}"><div class="ah"><div class="who"><b>${o.id}</b> <span class="status ${STATUS_CLS[o.status]}">${STATUS_AR[o.status]}</span>${o.arrived&&!done?` <span class="status st-arrived">🚪 الفني وصل الموقع</span>`:''}${o.delayMin>0&&!done?` <span class="status st-delay">${LX(`⏳ متأخّر ${ar(o.delayMin)} د`,`⏳ ${o.delayMin} min late`)}</span>`:''}
     <div style="margin-top:4px">👤 ${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></div></div>
     <div style="text-align:left;color:var(--muted);font-size:.8rem">${cs}</div></div>
     ${flow}
     <div class="abody">
       <div><div class="k">📅 الموعد</div>${dayLabel(o.date)} · ${fmtTime(o.startMin)}</div>
       <div><div class="k">⏱️ المدة</div>${fmtDur(o.duration)}</div>
-      <div><div class="k">📍 الموقع</div>${[[a.city,a.district].filter(Boolean).map(esc).join('، '), a.house?'منزل '+esc(a.house):''].filter(Boolean).join(' · ')||'📍 خريطة'}${a.mapUrl?` · <a href="${esc(a.mapUrl)}" target="_blank" style="color:#7c3aed;font-weight:800">🗺️</a>`:''}${a.photoUrl?` · <button onclick="openMedia('${esc(a.photoUrl)}')" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🏠 صورة المنزل</button>`:''}</div>
-      <div><div class="k">💰 الإجمالي</div>${o.free?'مجاني 🎁':money(o.finalPrice)}${o.discountPct>0?` <span style="color:#0b7a3b;font-weight:800">🎟️ خصم ${ar(o.discountPct)}٪${o.promoCode?' ('+esc(o.promoCode)+')':''}</span>`:''}</div>
+      <div><div class="k">📍 الموقع</div>${[[trData(a.city),a.district].filter(Boolean).map(esc).join(LX('، ',', ')), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||LX('📍 خريطة','📍 Map')}${a.mapUrl?` · <a href="${esc(a.mapUrl)}" target="_blank" style="color:#7c3aed;font-weight:800">🗺️</a>`:''}${a.photoUrl?` · <button onclick="openMedia('${esc(a.photoUrl)}')" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🏠 صورة المنزل</button>`:''}</div>
+      <div><div class="k">💰 الإجمالي</div>${o.free?LX('مجاني 🎁','Free 🎁'):money(o.finalPrice)}${o.discountPct>0?` <span style="color:#0b7a3b;font-weight:800">${LX(`🎟️ خصم ${ar(o.discountPct)}٪`,`🎟️ ${o.discountPct}% off`)}${o.promoCode?' ('+esc(o.promoCode)+')':''}</span>`:''}</div>
       ${o.providerPhone?`<div><div class="k">🤝 المزوّد</div>${esc(provName(o.providerPhone))}</div>`:''}
       ${o.note?`<div><div class="k">🛠️ المشكلة</div>${esc(o.note)}</div>`:''}
       ${o.videoUrl?`<div><div class="k">📷 صورة/مقطع</div><button onclick="openMedia('${esc(o.videoUrl)}')" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🎥 عرض</button></div>`:''}
@@ -1103,7 +1134,7 @@ function renderAdminOrder(o){
       ${o.rejectReason?`<div><div class="k">❌ رفض الفني</div><span style="color:var(--danger);font-weight:700">${esc(o.rejectReason)}</span></div>`:''}
       ${(o.wantsEarlier && !['done','cancelled'].includes(o.status))?`<div><div class="k">🔔 موعد أبكر</div><span style="color:#0b7a3b;font-weight:700">العميل يرحّب بموعد أبكر</span></div>`:''}
     </div>
-    <div class="aitems">${o.quick?'⚡ طلب سريع (معاينة)':itemsRows}</div>
+    <div class="aitems">${o.quick?LX('⚡ طلب سريع (معاينة)','⚡ Quick request (inspection)'):itemsRows}</div>
     <div class="actions">${acts}</div></div>`;
 }
 /* ---- لوحات قابلة للطي ----
@@ -1154,13 +1185,13 @@ function renderCalendar(todayISO){
     </button>`;
   }
   const filterBar = calFilter
-    ? `<div class="cal-filter"><span>📅 ${dayLabel(calFilter)} — ${ar(jobsOn(calFilter))} طلب</span><button onclick="calClear()">عرض كل الأيام</button></div>`
+    ? `<div class="cal-filter"><span>${LX(`📅 ${dayLabel(calFilter)} — ${ar(jobsOn(calFilter))} طلب`,`📅 ${dayLabel(calFilter)} · ${ordersN(jobsOn(calFilter))}`)}</span><button onclick="calClear()">عرض كل الأيام</button></div>`
     : '';
   return `<div class="calbar">
     <div class="cal-head">
-      <button class="cal-nav" onclick="calPrev()">›</button>
+      <button class="cal-nav" onclick="calPrev()">${_uiEN()?'‹':'›'}</button>
       <b>${_uiEN()?EN_MON[m]:AR_MON[m]} ${_uiEN()?y:ar(y)}</b>
-      <button class="cal-nav" onclick="calNext()">‹</button>
+      <button class="cal-nav" onclick="calNext()">${_uiEN()?'›':'‹'}</button>
     </div>
     <div class="cal-strip">${cells}</div>
     ${filterBar}
@@ -1177,13 +1208,13 @@ function groupByDay(list, todayISO){
   return [...future, ...past].map(d=>{
     const cls = d===todayISO ? 'today' : (d<todayISO ? 'past' : '');
     const cards=g[d].sort((a,b)=>a.startMin-b.startMin).map(renderAdminOrder).join('');
-    return `<div class="day-head ${cls}"><span>${headLabel(d, todayISO)}</span><span class="cnt">${ar(g[d].length)} طلب</span></div>${cards}`;
+    return `<div class="day-head ${cls}"><span>${headLabel(d, todayISO)}</span><span class="cnt">${ordersN(g[d].length)}</span></div>${cards}`;
   }).join('');
 }
 function headLabel(iso, todayISO){
   const tmr=new Date(); tmr.setDate(tmr.getDate()+1);
-  if(iso===todayISO) return '📅 اليوم · '+dayLabel(iso);
-  if(iso===dateISO(tmr)) return '⏭️ غداً · '+dayLabel(iso);
+  if(iso===todayISO) return LX('📅 اليوم · ','📅 Today · ')+dayLabel(iso);
+  if(iso===dateISO(tmr)) return LX('⏭️ غداً · ','⏭️ Tomorrow · ')+dayLabel(iso);
   return dayLabel(iso);
 }
 function render(){
@@ -1203,7 +1234,7 @@ function render(){
   const orderCards=groupByDay(list, todayISO);
   const tmr=new Date(); tmr.setDate(tmr.getDate()+1);
   const rem=ORDERS.filter(o=>['new','confirmed'].includes(o.status)&&(o.date===todayISO||o.date===dateISO(tmr))).sort((a,b)=>a.startMin-b.startMin);
-  const remHtml=rem.length?rem.map(o=>`<div class="rline"><span style="font-size:1.3rem">⏰</span><div class="rl-t"><b>${esc(o.customer.name)}</b> — ${o.id}<small>${dayLabel(o.date)} · ${fmtTime(o.startMin)} · ${esc(o.customer.phone)}</small></div><button class="sbtn ${o.reminded?'':'ok'}" onclick="sendReminder('${o.id}')">${o.reminded?'✓ أُرسل':'تذكير'}</button></div>`).join(''):`<p style="color:var(--muted)">لا مواعيد قريبة.</p>`;
+  const remHtml=rem.length?rem.map(o=>`<div class="rline"><span style="font-size:1.3rem">⏰</span><div class="rl-t"><b>${esc(o.customer.name)}</b> ${LX('—','·')} ${o.id}<small>${dayLabel(o.date)} · ${fmtTime(o.startMin)} · ${esc(o.customer.phone)}</small></div><button class="sbtn ${o.reminded?'':'ok'}" onclick="sendReminder('${o.id}')">${o.reminded?'✓ أُرسل':'تذكير'}</button></div>`).join(''):`<p style="color:var(--muted)">لا مواعيد قريبة.</p>`;
   const pendingProv=PROVIDERS.filter(p=>(p.status||'pending')==='pending').length;
   // ═ لوحة منظّمة بأقسام: كل شي له مكانه بدل صفحة وحدة طويلة ═
   const newSugs=SUGS.filter(s=>!s.handled).length;
@@ -1243,7 +1274,7 @@ function render(){
       ${block(LX(`🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
       ${block(LX(`💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`,`💰 Platform dues (${COMMISSION} SAR/order commission)`), renderCommission())}`;
   } else if(adminSection==='cust'){
-    body=`${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Client messages (${newSugs} new)`), renderSuggestions())}
+    body=`${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
       ${block(LX(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`,`🛡️ Subscription requests (${newSubs} new)`), renderSubs())}
       ${block(LX(`📰 مقالات السلامة (${ar(ARTICLES.length)})`,`📰 Safety articles (${ARTICLES.length})`), renderArticles())}`;
   } else if(adminSection==='store'){
@@ -1297,13 +1328,16 @@ async function loadBroadcast(){
   BC.loaded=true; if(adminSection==='notify') render();
 }
 const BC_AUD={ all:['الكل','العملاء والفريق'], customers:['العملاء','تطبيق خافت'], staff:['الفريق','تطبيق رزق'] };
-function bcTime(ts){ try{ return new Date(ts).toLocaleTimeString('ar-SA',{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
-function bcDate(ts){ try{ return new Date(ts).toLocaleDateString('ar-SA',{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return ''; } }
+const BC_AUD_EN={ all:['All','Customers and team'], customers:['Customers','Khafet app'], staff:['Team','Rizq app'] };
+function bcAud(k,i){ const a=(_enUI()?BC_AUD_EN:BC_AUD)[k]; return a?a[i]:''; }
+function bcDev(n){ return LX(ar(n)+' جهاز', n+(n===1?' device':' devices')); }
+function bcTime(ts){ try{ return new Date(ts).toLocaleTimeString(_enUI()?'en-US':'ar-SA',{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function bcDate(ts){ try{ return new Date(ts).toLocaleDateString(uiLocale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return ''; } }
 function bcPreviewHtml(){
-  const t=BC.title.trim()||'عنوان الإشعار', b=BC.body.trim()||'نص الإشعار يظهر هنا كما يشوفه الناس على جوالاتهم.';
-  const app=BC.audience==='staff'?'رزق':'خافِت';
-  const ios=`<div class="bc-ios"><div class="bc-ios-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">الآن</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
-  const and=`<div class="bc-and"><div class="bc-and-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">· الآن</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
+  const t=BC.title.trim()||LX('عنوان الإشعار','Notification title'), b=BC.body.trim()||LX('نص الإشعار يظهر هنا كما يشوفه الناس على جوالاتهم.','Your message shows here the way people see it on their phones.');
+  const app=BC.audience==='staff'?LX('رزق','Rizq'):LX('خافِت','Khafet');
+  const ios=`<div class="bc-ios"><div class="bc-ios-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">${LX('الآن','now')}</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
+  const and=`<div class="bc-and"><div class="bc-and-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">· ${LX('الآن','now')}</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
   return `<div class="bc-phone ${BC.view}"><div class="bc-clock">${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>${BC.view==='ios'?ios:and}</div>`;
 }
 function bcPaint(){
@@ -1319,10 +1353,10 @@ function bcBlur(){ if(window._bcPending){ window._bcPending=false; setTimeout(()
 function bcSetAud(a){ BC.audience=a; render(); }
 function bcSetView(v){ BC.view=v; render(); }
 function renderBroadcast(){
-  const n=BC.counts; const num=k=>n?ar(n[k])+' جهاز':'…';
+  const n=BC.counts; const num=k=>n?bcDev(n[k]):'…';
   const today=BC.today;
-  const hist=BC.history.length?BC.history.map(h=>`<div class="bc-h"><div class="bc-h-top"><b>${esc(h.title)}</b><small>${bcDate(h.created_at)} · ${bcTime(h.created_at)}</small></div><p dir="auto">${esc(h.body)}</p><small>${(BC_AUD[h.audience]||['',''])[0]} · وصل ${ar(h.sent)} من ${ar(h.total)} جهاز</small></div>`).join('')
-    : `<p style="color:var(--muted)">ما أُرسل أي إشعار بعد.</p>`;
+  const hist=BC.history.length?BC.history.map(h=>`<div class="bc-h"><div class="bc-h-top"><b>${esc(h.title)}</b><small>${bcDate(h.created_at)} · ${bcTime(h.created_at)}</small></div><p dir="auto">${esc(h.body)}</p><small>${bcAud(h.audience,0)} · ${LX(`وصل ${ar(h.sent)} من ${ar(h.total)} جهاز`,`Reached ${h.sent} of ${h.total} ${h.total===1?'device':'devices'}`)}</small></div>`).join('')
+    : `<p style="color:var(--muted)">${LX('ما أُرسل أي إشعار بعد.','No notifications sent yet.')}</p>`;
   return `<style>
   #bcBox .bc-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
   @media(max-width:760px){#bcBox .bc-grid{grid-template-columns:1fr}}
@@ -1372,57 +1406,59 @@ function renderBroadcast(){
   </style>
   <div id="bcBox">
     <div class="panel" style="margin-top:6px">
-      ${today?`<div class="bc-done">✅ أُرسل إشعار اليوم ${bcTime(today.created_at)} إلى ${(BC_AUD[today.audience]||['',''])[0]}: «${esc(today.title)}». وصل ${ar(today.sent)} من ${ar(today.total)} جهاز.<br>الإشعار الجاي متاح بكرة، وتقدرين تجهّزينه وتجربينه على جوالك الحين.</div>`:''}
+      ${today?`<div class="bc-done">${LX(`✅ أُرسل إشعار اليوم ${bcTime(today.created_at)} إلى ${bcAud(today.audience,0)}: «${esc(today.title)}». وصل ${ar(today.sent)} من ${ar(today.total)} جهاز.<br>الإشعار الجاي متاح بكرة، وتقدرين تجهّزينه وتجربينه على جوالك الحين.`,`✅ Today's notification went out at ${bcTime(today.created_at)} to ${bcAud(today.audience,0)}: "${esc(today.title)}". Reached ${today.sent} of ${today.total} ${today.total===1?'device':'devices'}.<br>The next one is available tomorrow. You can prepare it and test it on your phone now.`)}</div>`:''}
       <div class="bc-grid">
         <div>
-          <b style="display:block;margin-bottom:8px">لمين يوصل؟</b>
-          <div class="bc-aud">${Object.keys(BC_AUD).map(k=>`<button type="button" class="bc-chip ${BC.audience===k?'on':''}" onclick="bcSetAud('${k}')"><b>${BC_AUD[k][0]}</b><small>${BC_AUD[k][1]} · ${num(k)}</small></button>`).join('')}</div>
-          <label class="bc-l" for="bcT">العنوان <span id="bcCountT">${ar(BC.title.length)} / ${ar(BC_MAX_T)}</span></label>
-          <input id="bcT" maxlength="${BC_MAX_T}" placeholder="مثال: إجازة اليوم الوطني" value="${esc(BC.title)}" oninput="bcInput('title',this.value)" onblur="bcBlur()" />
-          <label class="bc-l" for="bcB">النص <span id="bcCountB">${ar(BC.body.length)} / ${ar(BC_MAX_B)}</span></label>
-          <textarea id="bcB" maxlength="${BC_MAX_B}" placeholder="مثال: فريق خافت في خدمتكم طول أيام الإجازة، احجزوا من التطبيق." oninput="bcInput('body',this.value)" onblur="bcBlur()">${esc(BC.body)}</textarea>
+          <b style="display:block;margin-bottom:8px">${LX('لمين يوصل؟','Who gets it?')}</b>
+          <div class="bc-aud">${Object.keys(BC_AUD).map(k=>`<button type="button" class="bc-chip ${BC.audience===k?'on':''}" onclick="bcSetAud('${k}')"><b>${bcAud(k,0)}</b><small>${bcAud(k,1)} · ${num(k)}</small></button>`).join('')}</div>
+          <label class="bc-l" for="bcT">${LX('العنوان','Title')} <span id="bcCountT">${ar(BC.title.length)} / ${ar(BC_MAX_T)}</span></label>
+          <input id="bcT" maxlength="${BC_MAX_T}" placeholder="${LX('مثال: إجازة اليوم الوطني','e.g. National Day holiday')}" value="${esc(BC.title)}" oninput="bcInput('title',this.value)" onblur="bcBlur()" />
+          <label class="bc-l" for="bcB">${LX('النص','Message')} <span id="bcCountB">${ar(BC.body.length)} / ${ar(BC_MAX_B)}</span></label>
+          <textarea id="bcB" maxlength="${BC_MAX_B}" placeholder="${LX('مثال: فريق خافت في خدمتكم طول أيام الإجازة، احجزوا من التطبيق.','e.g. The Khafet team is here for you all through the holiday. Book in the app.')}" oninput="bcInput('body',this.value)" onblur="bcBlur()">${esc(BC.body)}</textarea>
           <div class="bc-btns">
-            <button type="button" id="bcTest" onclick="bcTest()">📱 جرّب على جوالي</button>
-            <button type="button" id="bcSend" class="go" onclick="bcConfirm()">📣 إرسال</button>
+            <button type="button" id="bcTest" onclick="bcTest()">${LX('📱 جرّب على جوالي','📱 Test on my phone')}</button>
+            <button type="button" id="bcSend" class="go" onclick="bcConfirm()">${LX('📣 إرسال','📣 Send')}</button>
           </div>
-          <p class="bc-note">مسموح بإشعار واحد فقط لكل يوم. «جرّب على جوالي» يوصل لجوالك أنتِ فقط في تطبيق رزق، وما يحسب من إشعار اليوم.</p>
+          <p class="bc-note">${LX('مسموح بإشعار واحد فقط لكل يوم. «جرّب على جوالي» يوصل لجوالك أنتِ فقط في تطبيق رزق، وما يحسب من إشعار اليوم.','Only one notification is allowed per day. "Test on my phone" goes only to your own phone in the Rizq app and does not count as today\'s notification.')}</p>
         </div>
         <div>
-          <div class="bc-views"><button type="button" class="${BC.view==='ios'?'on':''}" onclick="bcSetView('ios')">آيفون</button><button type="button" class="${BC.view==='android'?'on':''}" onclick="bcSetView('android')">أندرويد</button></div>
+          <div class="bc-views"><button type="button" class="${BC.view==='ios'?'on':''}" onclick="bcSetView('ios')">${LX('آيفون','iPhone')}</button><button type="button" class="${BC.view==='android'?'on':''}" onclick="bcSetView('android')">${LX('أندرويد','Android')}</button></div>
           <div id="bcPreview">${bcPreviewHtml()}</div>
         </div>
       </div>
     </div>
-    <div class="panel"><h3 style="font-size:1.05rem;font-weight:900;margin-bottom:8px">🕓 الإشعارات السابقة</h3>${hist}</div>
+    <div class="panel"><h3 style="font-size:1.05rem;font-weight:900;margin-bottom:8px">${LX('🕓 الإشعارات السابقة','🕓 Past notifications')}</h3>${hist}</div>
   </div>`;
 }
 async function bcTest(){
   if(!BC.title.trim()||!BC.body.trim()) return;
-  BC.busy=true; bcPaint(); toast('⏳ جاري الإرسال لجوالك…');
+  BC.busy=true; bcPaint(); toast(LX('⏳ جاري الإرسال لجوالك…','⏳ Sending to your phone…'));
   const r=await callBroadcast({ mode:'test', title:BC.title.trim(), body:BC.body.trim() });
   BC.busy=false; bcPaint();
-  if(r&&r.ok) toast(r.total?('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')'):'ما فيه جوال مسجّل لحسابك. افتحي تطبيق رزق مرة ووافقي على الإشعارات');
+  if(r&&r.ok) toast(r.total?LX('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')','📱 Sent to your phone ('+r.sent+' of '+r.total+')'):LX('ما فيه جوال مسجّل لحسابك. افتحي تطبيق رزق مرة ووافقي على الإشعارات','No phone is linked to your account. Open the Rizq app once and allow notifications'));
   else toast('⚠️ '+bcReason(r));
 }
-function bcReason(r){ const k=(r&&r.reason)||''; return ({no_session:'انتهت الجلسة، سجّلي دخول',network:'ما فيه اتصال',daily_limit:'أُرسل إشعار اليوم، الإشعار الجاي بكرة',too_long:'النص أطول من المسموح',empty:'اكتبي العنوان والنص',not_admin:'الإرسال للمدير فقط',no_devices:'ما فيه أجهزة مسجلة لهذا الجمهور',send_failed:'ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي'})[k]||'تعذّر الإرسال'; }
+function bcReason(r){ const k=(r&&r.reason)||'';
+  const M={no_session:['انتهت الجلسة، سجّلي دخول','Session ended, please sign in'],network:['ما فيه اتصال','No connection'],daily_limit:['أُرسل إشعار اليوم، الإشعار الجاي بكرة','Today\'s notification was already sent, the next one is tomorrow'],too_long:['النص أطول من المسموح','The text is too long'],empty:['اكتبي العنوان والنص','Write the title and the message'],not_admin:['الإرسال للمدير فقط','Only the admin can send'],no_devices:['ما فيه أجهزة مسجلة لهذا الجمهور','No registered devices for this audience'],send_failed:['ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي','It did not reach any device and was not counted as today\'s notification. Try again in a bit']};
+  const m=Object.prototype.hasOwnProperty.call(M,k)?M[k]:['تعذّر الإرسال','Couldn\'t send']; return LX(m[0],m[1]); }
 function bcConfirm(){
   if(!BC.title.trim()||!BC.body.trim()||BC.today||BC.busy) return;
   const n=BC.counts?BC.counts[BC.audience]:null;
   document.body.insertAdjacentHTML('beforeend',`<div class="bc-modal" id="bcModal" onclick="if(event.target===this)this.remove()"><div class="bc-card">
-    <h3>تأكيد إرسال الإشعار</h3>
-    <div class="bc-to">إلى: ${BC_AUD[BC.audience][0]} · ${BC_AUD[BC.audience][1]}${n!=null?' · '+ar(n)+' جهاز':''}</div>
+    <h3>${LX('تأكيد إرسال الإشعار','Confirm notification')}</h3>
+    <div class="bc-to">${LX('إلى: ','To: ')}${bcAud(BC.audience,0)} · ${bcAud(BC.audience,1)}${n!=null?' · '+bcDev(n):''}</div>
     ${bcPreviewHtml()}
-    <div class="bc-warn">⚠️ بعد الإرسال ما يمكن سحب الإشعار، ومسموح بإشعار واحد فقط اليوم.</div>
-    <div class="bc-btns"><button type="button" onclick="document.getElementById('bcModal').remove()">إلغاء</button><button type="button" class="go" id="bcGo" onclick="bcSend()">نعم، أرسل الآن</button></div>
+    <div class="bc-warn">${LX('⚠️ بعد الإرسال ما يمكن سحب الإشعار، ومسموح بإشعار واحد فقط اليوم.','⚠️ Once sent, it cannot be taken back, and only one notification is allowed today.')}</div>
+    <div class="bc-btns"><button type="button" onclick="document.getElementById('bcModal').remove()">${LX('إلغاء','Cancel')}</button><button type="button" class="go" id="bcGo" onclick="bcSend()">${LX('نعم، أرسل الآن','Yes, send now')}</button></div>
   </div></div>`);
 }
 async function bcSend(){
-  const go=document.getElementById('bcGo'); if(go){ go.disabled=true; go.textContent='⏳ جاري الإرسال…'; }
+  const go=document.getElementById('bcGo'); if(go){ go.disabled=true; go.textContent=LX('⏳ جاري الإرسال…','⏳ Sending…'); }
   BC.busy=true;
   const r=await callBroadcast({ mode:'send', audience:BC.audience, title:BC.title.trim(), body:BC.body.trim() });
   BC.busy=false;
   const m=document.getElementById('bcModal'); if(m) m.remove();
-  if(r&&r.ok){ toast('✅ أُرسل الإشعار، وصل '+ar(r.sent)+' من '+ar(r.total)+' جهاز'); BC.title=''; BC.body=''; }
+  if(r&&r.ok){ toast(LX('✅ أُرسل الإشعار، وصل '+ar(r.sent)+' من '+ar(r.total)+' جهاز','✅ Notification sent, reached '+r.sent+' of '+r.total+' '+(r.total===1?'device':'devices'))); BC.title=''; BC.body=''; }
   else toast('⚠️ '+bcReason(r));
   await loadBroadcast();
 }
@@ -1434,20 +1470,20 @@ function downloadCSV(name, headers, rows){
   const a=document.createElement('a'); a.href=url; a.download=name+'.csv'; document.body.appendChild(a); a.click();
   setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },500);
 }
-function statusAr(s){ return ({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل',cancelled:'ملغي'})[s]||s; }
+function statusAr(s){ if(_enUI()) return ({new:'New',confirmed:'Confirmed',progress:'In progress',done:'Completed',cancelled:'Cancelled'})[s]||s; return ({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل',cancelled:'ملغي'})[s]||s; }
 function exportSection(k){
   try{
-    const d=dateISO(new Date());
+    const d=dateISO(new Date()), EN=_enUI();
     if(k==='orders'){
-      downloadCSV('الطلبات-'+d, ['رقم','العميل','الجوال','المدينة','الخدمة','التاريخ','الوقت','الحالة','الإجمالي'],
-        ORDERS.map(o=>[o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',(o.address&&o.address.city)||'',(o.items||[]).map(i=>i.name).join(' + '),o.date||'',fmtTime(o.startMin||0),statusAr(o.status),o.finalPrice||o.price||0]));
+      downloadCSV(EN?'Orders_'+d:'الطلبات-'+d, EN?['No.','Customer','Phone','City','Service','Date','Time','Status','Total']:['رقم','العميل','الجوال','المدينة','الخدمة','التاريخ','الوقت','الحالة','الإجمالي'],
+        ORDERS.map(o=>[EN?_west(o.id):o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',trData((o.address&&o.address.city)||''),(o.items||[]).map(itemName).join(' + '),o.date||'',fmtTime(o.startMin||0),statusAr(o.status),o.finalPrice||o.price||0]));
     } else if(k==='store'){
-      downloadCSV('المستودع-'+d, ['الصنف','الفئة','الكود','الكمية','الوحدة','سعر الشراء','سعر البيع','حد الطلب','المستهدف','النسبة','استخدام 6 أشهر'],
-        INV.map(it=>[it.name,it.category||'',it.code||'',it.qty,it.unit||'',it.buy_price||0,it.sell_price||0,it.min_qty||0,it.target_qty||0,(invPct(it)===null?'':invPct(it)+'%'),invUsage(it.id).u6]));
+      downloadCSV(EN?'Warehouse_'+d:'المستودع-'+d, EN?['Item','Category','Code','Qty','Unit','Buy price','Sell price','Reorder level','Target','Percent','Usage (6 months)']:['الصنف','الفئة','الكود','الكمية','الوحدة','سعر الشراء','سعر البيع','حد الطلب','المستهدف','النسبة','استخدام 6 أشهر'],
+        INV.map(it=>[EN?whName(it):it.name,EN?(CAT_EN[it.category]||it.category||''):(it.category||''),it.code||'',it.qty,EN?whUnit(it.unit):(it.unit||''),it.buy_price||0,it.sell_price||0,it.min_qty||0,it.target_qty||0,(invPct(it)===null?'':invPct(it)+'%'),invUsage(it.id).u6]));
     } else if(k==='team'){
       const done=ORDERS.filter(o=>o.status==='done'&&o.providerPhone); const byP={};
       done.forEach(o=>{ byP[o.providerPhone]=(byP[o.providerPhone]||0)+1; });
-      downloadCSV('مستحقات-المزوّدين-'+d, ['المزوّد','الجوال','طلبات منجزة','المستحق (ر.س)'],
+      downloadCSV(EN?'Provider_dues_'+d:'مستحقات-المزوّدين-'+d, EN?['Provider','Phone','Completed orders','Due (SAR)']:['المزوّد','الجوال','طلبات منجزة','المستحق (ر.س)'],
         Object.keys(byP).map(ph=>[provName(ph),ph,byP[ph],byP[ph]*COMMISSION]));
     }
     toast('⤓ تم تنزيل ملف Excel');
@@ -1469,17 +1505,17 @@ const T_DICT = {
   "🛠️ المشكلة":"🛠️ Problem","🏠 صورة المنزل":"🏠 House photo","📷 صورة/مقطع":"📷 Photo/clip","🎥 عرض":"🎥 View","⏱️ المدة":"⏱️ Duration","👤 العميل":"👤 Customer","🔧 المطلوب":"🔧 Needed",
   // الطلبات والحالات
   "📥 وصلنا الطلب":"📥 Order received","🔧 بدء العمل":"🔧 Start work","🚪 الفني وصل الموقع":"🚪 Technician arrived","🚪 وصل ✓":"🚪 Arrived ✓","✅ إنهاء":"✅ Finish","✅ تمت الخدمة":"✅ Service done",
-  "✔️ تأكيد الموعد":"✔️ Confirm appointment","✔️ تأكيد":"✔️ Confirm","✔️ اعتماد":"✔️ Approve","❌ رفض الفني":"❌ Reject technician","رفض":"Reject","ملغي":"Cancelled","🆕 بانتظار التأكيد":"🆕 Awaiting confirmation",
-  "العميل يرحّب بموعد أبكر":"Client welcomes an earlier slot","قيد التنفيذ":"In progress","مكتمل":"Completed","جديد":"New","مؤكد":"Confirmed",
+  "✔️ تأكيد الموعد":"✔️ Confirm appointment","✔️ تأكيد":"✔️ Confirm","✔️ اعتماد":"✔️ Approve","❌ رفض الفني":"❌ Declined by technician","رفض":"Reject","ملغي":"Cancelled","🆕 بانتظار التأكيد":"🆕 Awaiting confirmation",
+  "العميل يرحّب بموعد أبكر":"Customer is fine with an earlier slot","قيد التنفيذ":"In progress","مكتمل":"Completed","جديد":"New","مؤكد":"Confirmed",
   // الفنيّون
-  "➕ إضافة فني":"➕ Add technician","إنشاء حساب الفني":"Create technician account","لا يوجد فنيّون بعد — أضف أول فني تحت.":"No technicians yet — add the first below.",
+  "➕ إضافة فني":"➕ Add technician","إنشاء حساب الفني":"Create technician account","لا يوجد فنيّون بعد — أضف أول فني تحت.":"No technicians yet, add the first one below.",
   // المزوّدون
-  "لا يوجد مزوّدون مسجّلون بعد.":"No registered providers yet.","لا توجد طلبات منجزة عبر مزوّدين بعد.":"No orders completed via providers yet.","⏸️ إيقاف":"⏸️ Pause","▶️ تفعيل":"▶️ Activate","تفعيل":"Activate",
+  "لا يوجد مزوّدون مسجّلون بعد.":"No registered providers yet.","لا توجد طلبات منجزة عبر مزوّدين بعد.":"No orders completed via providers yet.","⏸️ إيقاف":"⏸️ Suspend","▶️ تفعيل":"▶️ Activate","تفعيل":"Activate",
   // المخزن
-  "➕ إضافة صنف":"➕ Add item","المخزن فارغ — أضف أصنافك.":"Stock is empty — add your items.","شراء ＋":"Buy ＋","صرف －":"Dispense －","اشتُري:":"Bought:","· المفروض:":"· Expected:","· صُرف:":"· Dispensed:","✅ مطابق":"✅ Matches","لا توجد حركات بعد.":"No movements yet.",
-  "اكتب الكمية":"Enter quantity","✅ أُضيف الصنف للمخزن":"✅ Item added to stock","➕ أُضيف للمخزن":"➕ Added to stock","➖ صُرف للعميل":"➖ Dispensed to client","الصنف":"Item","الكمية":"Qty",
+  "➕ إضافة صنف":"➕ Add item","المخزن فارغ — أضف أصنافك.":"Stock is empty, add your items.","شراء ＋":"Buy ＋","صرف －":"Dispense －","اشتُري:":"Bought:","· المفروض:":"· Expected:","· صُرف:":"· Dispensed:","✅ مطابق":"✅ Matches","لا توجد حركات بعد.":"No movements yet.",
+  "اكتب الكمية":"Enter quantity","✅ أُضيف الصنف للمخزن":"✅ Item added to stock","➕ أُضيف للمخزن":"➕ Added to stock","➖ صُرف للعميل":"➖ Issued to customer","الصنف":"Item","الكمية":"Qty",
   // المقالات
-  "➕ مقال جديد":"➕ New article","💾 حفظ المقال":"💾 Save article","صورة المقال":"Article image","المقال":"Article","الأيقونة والتصنيف":"Icon & category","العنوان *":"Title *","مقدّمة قصيرة (تظهر في القائمة)":"Short intro (shown in the list)","الترتيب":"Order","منشور للعملاء":"Published to clients","لا توجد مقالات بعد.":"No articles yet.","✅ رُفعت الصورة":"✅ Image uploaded",
+  "➕ مقال جديد":"➕ New article","💾 حفظ المقال":"💾 Save article","صورة المقال":"Article image","المقال":"Article","الأيقونة والتصنيف":"Icon & category","العنوان *":"Title *","مقدّمة قصيرة (تظهر في القائمة)":"Short intro (shown in the list)","الترتيب":"Order","منشور للعملاء":"Published to customers","لا توجد مقالات بعد.":"No articles yet.","✅ رُفعت الصورة":"✅ Image uploaded",
   "منشور":"Published","مسودة":"Draft",
   // شرائح وحالات المزوّدين/الطلبات
   "الكل":"All","قيد المراجعة":"Under review","معلّق":"Pending","معتمد":"Approved","موقوف":"Suspended","مرفوض":"Rejected",
@@ -1504,7 +1540,35 @@ const T_DICT = {
   "العملاء":"Customers","الرسائل · الاشتراكات · مقالات السلامة":"Messages · Subscriptions · Safety articles","المخزن":"Stock","سجل الحركة":"Movement log","الأسعار":"Prices","تعديل أسعار الخدمات":"Edit service prices",
   "الجوال":"Phone","الاسم":"Name","الخدمة":"Service","السعر":"Price","العدد":"Qty","الإجمالي":"Total","الحالة":"Status","التاريخ":"Date","الموعد":"Appointment",
   // الوحدات
-  "ر.س":"SAR","يوم":"day","دقيقة":"min"
+  "ر.س":"SAR","يوم":"day","دقيقة":"min",
+  // الأقسام الجديدة: المستودع وإشعار للكل
+  "المستودع":"Warehouse","إشعار للكل":"Notify everyone","رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم":"A message to customer or team phones · one per day",
+  // الدخول
+  "رقم الجوال · 05xxxxxxxx":"Mobile number · 05xxxxxxxx","رمز التحقق":"Verification code","رقم الجوال غير صحيح":"Invalid mobile number","لا يوجد اتصال بالخادم":"No connection to the server",
+  "تعذّر إرسال الرمز — تأكدي من الرقم":"Couldn't send the code, check the number","أدخلي الرمز":"Enter the code","هذا الرقم ليس له صلاحية إدارة":"This number has no admin access",
+  "تعذّر الاتصال بالخادم، حاولي مرة ثانية":"Couldn't reach the server, try again","الرمز غير صحيح":"Wrong code",
+  // الطلبات والتذكيرات
+  "تذكير":"Remind","✓ أُرسل":"✓ Sent","🚨 شكوى العميل":"🚨 Customer complaint","💬 ملاحظة العميل":"💬 Customer note",
+  "👤 إظهار الاسم":"👤 Show name","🕶️ إخفاء الاسم":"🕶️ Hide name","👁️ إظهار التقييم":"👁️ Show rating","🙈 إخفاء التقييم":"🙈 Hide rating",
+  "🚪 تم إبلاغ العميل بوصول الفني":"🚪 Customer notified that the technician arrived","👤 أُخفي اسم العميل":"👤 Customer name hidden","👤 يظهر اسم العميل":"👤 Customer name shown",
+  "🙈 أُخفي التقييم من الرئيسية":"🙈 Rating hidden from the home page","👁️ يظهر التقييم في الرئيسية":"👁️ Rating shown on the home page",
+  "✅ تم اعتماد المزوّد":"✅ Provider approved","تم التحديث":"Updated","تعذّر فتح الملف":"Couldn't open the file",
+  // الفريق
+  "الفني يدخل برقم جواله وكلمة المرور — بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.":"Technicians sign in with their mobile number and password. No SMS, so signing in costs nothing. The 🔑 button changes their password.",
+  "الاسم (مثال: أحمد علي)":"Name (e.g. Ahmed Ali)","رقم جواله (05xxxxxxxx)":"Mobile number (05xxxxxxxx)","كلمة المرور (٦ خانات فأكثر)":"Password (6 characters or more)","إيقاف":"Suspend",
+  "عبّي الاسم ورقم الجوال":"Fill in the name and mobile number","كلمة المرور ٦ خانات فأكثر":"Password must be 6 characters or more","⏳ جارٍ إنشاء الحساب...":"⏳ Creating the account...",
+  "تعذّر الإنشاء":"Couldn't create","تعذّر":"Failed","✅ فُعّل الفني":"✅ Technician activated","⛔ أُوقف الفني":"⛔ Technician suspended","٦ خانات على الأقل":"At least 6 characters",
+  "✅ تغيّرت كلمة المرور":"✅ Password changed","تم الرفض":"Rejected","انتهت الجلسة — سجّل دخول":"Session ended, please sign in",
+  "لا يوجد معلّقون":"No pending providers","⚠️ تعذّر الاعتماد الجماعي":"⚠️ Bulk approval failed","⏸️ أُوقف المزوّد — ما تصله طلبات":"⏸️ Provider suspended, no new orders","▶️ أُعيد تفعيله":"▶️ Reactivated",
+  // العملاء: الرسائل والاشتراكات والمقالات
+  "حُذفت":"Deleted","حُذف":"Deleted","تعذّر الحذف":"Couldn't delete","✅ فُعّل الاشتراك":"✅ Subscription activated",
+  "انشر":"Publish","إخفاء":"Hide","سلامة / سباكة / كهرباء":"Safety / Plumbing / Electrical","مثال: ٧ علامات تسريب مياه":"e.g. 7 signs of a water leak",
+  "اكتبي المقال هنا...":"Write the article here...","اكتب عنوان المقال":"Write the article title","✅ حُفظ المقال":"✅ Article saved","تعذّر الحفظ":"Couldn't save",
+  "⏳ جارٍ رفع الصورة...":"⏳ Uploading the image...","تعذّر رفع الصورة":"Couldn't upload the image",
+  // المستودع: ربط الصور
+  "🚫 بدون صورة":"🚫 No image","⏳ جارٍ الرفع...":"⏳ Uploading...","✅ انحفظت صورتك":"✅ Photo saved","⚠️ تعذّر الرفع":"⚠️ Upload failed",
+  // الأسعار
+  "💾 تم حفظ الأسعار — انطبقت على كل الصفحات":"💾 Prices saved and applied to all pages","تعذّر الحفظ — تأكد من تشغيل جدول khafet_prices":"Couldn't save, make sure the khafet_prices table exists"
 };
 /* ---- محرّك الترجمة (مطابق) ---- */
 function _west(s){ return String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
@@ -1563,10 +1627,13 @@ function applyLang(){
   _startI18n();
 }
 function syncLangBtn(){ const b=document.getElementById('langBtn'); if(b){ const s=b.querySelector('.ht'); if(s) s.textContent = _uiEN()?'ع':'EN'; } }
+function syncTitle(){ document.title = _uiEN()?'Khafet | Company Dashboard':'خافِت | لوحة المؤسسة'; }
 function setUILang(l){
   UILANG=l; try{localStorage.setItem('khafet_uilang',l);}catch(e){}
   document.documentElement.lang = l==='en'?'en':'ar';
   document.documentElement.dir  = l==='en'?'ltr':'rtl';
+  if(l==='en') priceLangPicked=false;   // محرّر الأسعار يتبع الواجهة الإنجليزية من جديد
+  syncTitle();
   render();
   if(l==='en') applyLang(); else _restoreEl(document.querySelector('header.top'));
   syncLangBtn();
@@ -1576,6 +1643,7 @@ function toggleLang(){ setUILang(_uiEN()?'ar':'en'); }
 
 document.documentElement.lang = UILANG==='en'?'en':'ar';
 document.documentElement.dir  = UILANG==='en'?'ltr':'rtl';
+if(UILANG==='en') syncTitle();
 render();
 _startI18n();
 if(_uiEN()) applyLang();

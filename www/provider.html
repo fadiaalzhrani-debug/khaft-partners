@@ -111,7 +111,7 @@
   /* ═ مربّعات الرئيسية (زي لوحة الإدارة) ═ */
   .hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
   @media(max-width:520px){.hgrid{grid-template-columns:repeat(2,1fr);gap:8px}}
-  .hcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 11px;text-align:right;cursor:pointer;box-shadow:var(--shadow-sm,var(--shadow));transition:.14s;display:flex;flex-direction:column;gap:1px}
+  .hcard{position:relative;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 11px;text-align:start;cursor:pointer;box-shadow:var(--shadow-sm,var(--shadow));transition:.14s;display:flex;flex-direction:column;gap:1px}
   .hcard:hover{border-color:var(--gold);transform:translateY(-2px)}
   .hcard:active{transform:scale(.98)}
   .hcard .hc-ic{font-size:1.3rem;line-height:1}
@@ -366,7 +366,7 @@ const METRIC_DEFS={
   net:{ic:'💵',label:'الصافي'}, owed:{ic:'💼',label:'المستحق'}, team:{ic:'🧑‍🔧',label:'فريقي'},
   kpi:{ic:'⭐',label:'رقمي المهم'}
 };
-function pvMoney(n){ return ar(Math.round(+n||0))+' ر.س'; }
+function pvMoney(n){ const v=Math.round(+n||0); return _uiEN()? v+' SAR' : ar(v)+' ر.س'; }
 /* تصدير Excel (CSV عربي) */
 function csvCell(v){ v=(v==null?'':String(v)); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
 function downloadCSV(name, headers, rows){
@@ -376,14 +376,15 @@ function downloadCSV(name, headers, rows){
   setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },500);
 }
 function exportInvoices(){
-  const done=myJobsList().filter(o=>o.status==='done');
-  downloadCSV('فواتيري', ['الطلب','العميل','الجوال','التاريخ','الإجمالي'],
-    done.map(o=>[o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',o.date||'',orderInvTotal(o)]));
+  const done=myJobsList().filter(o=>o.status==='done'), en=_uiEN();
+  downloadCSV(LX('فواتيري','invoices'), en?['Job','Customer','Phone','Date','Total']:['الطلب','العميل','الجوال','التاريخ','الإجمالي'],
+    done.map(o=>[en?_west(o.id):o.id,(o.customer&&o.customer.name)||'',(o.customer&&o.customer.phone)||'',o.date||'',orderInvTotal(o)]));
   toast('⤓ تم تنزيل الملف');
 }
 function exportStock(){
-  downloadCSV('مخزوني', ['الصنف','الكمية','سعر الشراء','سعر البيع','ربح/وحدة','النسبة٪','قيمة البيع'],
-    PINV.map(it=>{ const b=+it.buy_price||0,s=+it.sell_price||0,q=+it.qty||0; return [it.name,q,b,s,s-b, b>0?Math.round((s-b)/b*100):0, q*s]; }));
+  const en=_uiEN();
+  downloadCSV(LX('مخزوني','stock'), en?['Item','Qty','Buy price','Sell price','Profit per unit','Margin %','Sale value']:['الصنف','الكمية','سعر الشراء','سعر البيع','ربح/وحدة','النسبة٪','قيمة البيع'],
+    PINV.map(it=>{ const b=+it.buy_price||0,s=+it.sell_price||0,q=+it.qty||0; return [stockName(it),q,b,s,s-b, b>0?Math.round((s-b)/b*100):0, q*s]; }));
   toast('⤓ تم تنزيل الملف');
 }
 /* الطلبات المنجزة تنصفط في سطر واحد، تفتح بالضغط (زي الفنيّين) */
@@ -426,13 +427,13 @@ function renderPvCalendar(){
     </button>`;
   }
   const filterBar = pvCalFilter
-    ? `<div class="cal-filter"><span>📅 ${dayLabel(pvCalFilter)} — ${ar(pvJobsOn(pvCalFilter))} ${LX('من طلباتك','of your orders')}</span><button onclick="pvCalClear()">${LX('عرض كل الأيام','Show all days')}</button></div>`
+    ? `<div class="cal-filter"><span>📅 ${dayLabel(pvCalFilter)}${LX(` — ${ar(pvJobsOn(pvCalFilter))} من طلباتك`, ` · ${pvJobsOn(pvCalFilter)} ${pvJobsOn(pvCalFilter)===1?'job':'jobs'}`)}</span><button onclick="pvCalClear()">${LX('عرض كل الأيام','Show all days')}</button></div>`
     : '';
   return `<div class="calbar">
     <div class="cal-head">
-      <button class="cal-nav" onclick="pvCalPrev()">›</button>
+      <button class="cal-nav" onclick="pvCalPrev()">${LX('›','‹')}</button>
       <b>${_uiEN()?EN_MON[m]:AR_MON[m]} ${_uiEN()?y:ar(y)}</b>
-      <button class="cal-nav" onclick="pvCalNext()">‹</button>
+      <button class="cal-nav" onclick="pvCalNext()">${LX('‹','›')}</button>
     </div>
     <div class="cal-strip" id="pvCalStrip">${cells}</div>
     ${filterBar}
@@ -516,6 +517,7 @@ function openToOrder(r){
 function agoTxt(ts){
   if(!ts) return '';
   const m=Math.max(0, Math.round((Date.now()-new Date(ts).getTime())/60000));
+  if(_uiEN()){ if(m<1) return 'Just now'; if(m<60) return m+' min ago'; const hh=Math.round(m/60); if(hh<24) return hh+' hr ago'; const dd=Math.round(hh/24); return dd+(dd===1?' day ago':' days ago'); }
   if(m<1) return 'وصل الحين';
   if(m<60) return 'وصل قبل '+ar(m)+' د';
   const h=Math.round(m/60);
@@ -703,8 +705,8 @@ async function confirmPassOtp(){
   }catch(e){ const m=(e&&e.message)||''; toast(/different from the old/i.test(m)?'الجديدة لازم تكون مختلفة عن القديمة':'الكود غير صحيح أو انتهى'); }
 }
 async function deleteAccount(){
-  if(!confirm('حذف حسابك نهائياً؟ لن تستقبل طلبات بعدها.')) return;
-  if(!confirm('متأكد؟ هذا الإجراء لا يمكن التراجع عنه من التطبيق.')) return;
+  if(!confirm(LX('حذف حسابك نهائياً؟ لن تستقبل طلبات بعدها.','Delete your account for good? You will not get any more jobs.'))) return;
+  if(!confirm(LX('متأكد؟ هذا الإجراء لا يمكن التراجع عنه من التطبيق.','Are you sure? You cannot undo this from the app.'))) return;
   let ok=false; try{ const { data }=await sb.rpc('deactivate_my_account'); ok=!!data; }catch(e){}
   if(!ok){ toast('تعذّر حذف الحساب — تواصل مع الدعم'); return; }
   try{ if(sb) await sb.auth.signOut(); }catch(e){}
@@ -736,7 +738,7 @@ function settingsPanel(){
 /* ---- قبول الطلب ---- */
 async function acceptOrder(id){
   const o=OPEN.find(x=>x.id===id); if(!o) return;
-  if(!confirm('تأكيد قبول الطلب '+o.id+'؟')) return;
+  if(!confirm(LX('تأكيد قبول الطلب '+o.id+'؟','Accept job '+_west(o.id)+'?'))) return;
   try{
     // القبول يتم في الخادم (أول من يقبل يفوز) — ثم تظهر بيانات العميل
     const { data, error } = await sb.rpc('accept_order', { p_order_id:o.dbId });
@@ -755,7 +757,7 @@ async function acceptOrder(id){
 }
 async function setWarranty(dbId,days){
   try{ const { data }=await sb.rpc('set_order_warranty',{ p_order:dbId, p_days:+days||0 });
-    toast(+days?('🛡️ ضمان '+ar(days)+' يوم للعميل'):'أُلغي الضمان'); loadOrders(); }
+    toast(+days?LX('🛡️ ضمان '+ar(days)+' يوم للعميل','🛡️ Warranty set: '+(+days)+' days'):'أُلغي الضمان'); loadOrders(); }
   catch(e){ toast('تعذّر حفظ الضمان'); }
 }
 async function setJobStatus(id, st){
@@ -772,7 +774,7 @@ function openInvoice(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; invE
 function closeInvoice(){ invEditing=null; const m=document.getElementById('invModal'); m.classList.remove('show'); m.innerHTML=''; }
 function captureInvPrices(){ document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; }); }
 function addInvItem(id){ if(!id) return; captureInvPrices(); const s=svc(id); if(s) invItems.push({id:s.id,name:s.name,qty:1,price:s.price}); renderInvoice(); }
-function addCustomItem(){ captureInvPrices(); const nm=prompt('اسم الخدمة:'); if(!nm) return; const pr=+prompt('السعر:')||0; invItems.push({id:'custom',name:nm,qty:1,price:pr}); renderInvoice(); }
+function addCustomItem(){ captureInvPrices(); const nm=prompt(LX('اسم الخدمة:','Service name:')); if(!nm) return; const pr=+prompt(LX('السعر:','Price:'))||0; invItems.push({id:'custom',name:nm,qty:1,price:pr}); renderInvoice(); }
 function invQty(i,d){ captureInvPrices(); if(invItems[i]) invItems[i].qty=Math.max(1,(invItems[i].qty||1)+d); renderInvoice(); }
 function invRemove(i){ captureInvPrices(); invItems.splice(i,1); renderInvoice(); }
 function invTotal(){ return invItems.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
@@ -786,30 +788,32 @@ async function saveInvoice(){
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; printInvoiceDoc({...o,invoice:{items:invItems,total:invTotal()}}); }
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
-  const rows=(inv.items||[]).map(it=>`<tr><td>${esc(it.name)}</td><td>${ar(it.qty||1)}</td><td>${ar(+it.price||0)} ر.س</td><td>${ar((+it.price||0)*(+it.qty||1))} ر.س</td></tr>`).join('');
-  const d=new Date(); const ds=ar(d.getDate())+'/'+ar(d.getMonth()+1)+'/'+ar(d.getFullYear());
-  const html='<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>فاتورة '+o.id+'</title>'
-   +'<style>body{font-family:Cairo,Arial,sans-serif;padding:24px;color:#141414;max-width:520px;margin:0 auto}.h{display:flex;justify-content:space-between;border-bottom:3px solid #F5C518;padding-bottom:12px}.h .b{font-size:1.5rem;font-weight:900}.h .b span{background:#F5C518;padding:2px 10px;border-radius:8px}.meta{color:#555;font-size:.9rem;margin:12px 0}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:right;padding:9px 6px;border-bottom:1px solid #eee}th{background:#FBF3D0}.tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.2rem;margin-top:14px;border-top:2px solid #141414;padding-top:10px}.ft{margin-top:22px;text-align:center;color:#888;font-size:.85rem}@media print{.noprint{display:none}}</style></head><body>'
-   +'<div class="h"><div class="b">🔧 <span>'+BRAND+'</span></div><div style="text-align:left"><b>فاتورة</b><br>'+o.id+'</div></div>'
-   +'<div class="meta"><div>العميل: '+esc(o.customer.name)+' · '+esc(o.customer.phone)+'</div><div>المزوّد: '+esc(me?me.name:'')+'</div><div>التاريخ: '+ds+'</div></div>'
-   +'<table><thead><tr><th>الخدمة</th><th>العدد</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>'+rows+'</tbody></table>'
-   +'<div class="tot"><span>الإجمالي</span><span>'+ar(inv.total||0)+' ر.س</span></div>'
-   +'<div class="ft">شكراً لتعاملك مع '+BRAND+' · '+CONTACT+'</div>'
-   +'<div class="noprint" style="text-align:center;margin-top:18px"><button onclick="print()" style="padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer">🖨️ طباعة</button></div></body></html>';
+  const en=_uiEN(), num=en?(x=>String(x)):ar, cur=en?' SAR':' ر.س', brand=en?'Khafet':BRAND, oid=en?_west(o.id):o.id;
+  const rows=(inv.items||[]).map(it=>`<tr><td>${esc(svcName(it.name))}</td><td>${num(it.qty||1)}</td><td>${num(+it.price||0)}${cur}</td><td>${num((+it.price||0)*(+it.qty||1))}${cur}</td></tr>`).join('');
+  const d=new Date(); const ds=num(d.getDate())+'/'+num(d.getMonth()+1)+'/'+num(d.getFullYear());
+  const html='<!doctype html><html dir="'+(en?'ltr':'rtl')+'" lang="'+(en?'en':'ar')+'"><head><meta charset="utf-8"><title>'+LX('فاتورة ','Invoice ')+oid+'</title>'
+   +'<style>body{font-family:Cairo,Arial,sans-serif;padding:24px;color:#141414;max-width:520px;margin:0 auto}.h{display:flex;justify-content:space-between;border-bottom:3px solid #F5C518;padding-bottom:12px}.h .b{font-size:1.5rem;font-weight:900}.h .b span{background:#F5C518;padding:2px 10px;border-radius:8px}.meta{color:#555;font-size:.9rem;margin:12px 0}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:'+(en?'left':'right')+';padding:9px 6px;border-bottom:1px solid #eee}th{background:#FBF3D0}.tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.2rem;margin-top:14px;border-top:2px solid #141414;padding-top:10px}.ft{margin-top:22px;text-align:center;color:#888;font-size:.85rem}@media print{.noprint{display:none}}</style></head><body>'
+   +'<div class="h"><div class="b">🔧 <span>'+brand+'</span></div><div style="text-align:'+(en?'right':'left')+'"><b>'+LX('فاتورة','Invoice')+'</b><br>'+oid+'</div></div>'
+   +'<div class="meta"><div>'+LX('العميل: ','Customer: ')+esc(o.customer.name)+' · '+esc(o.customer.phone)+'</div><div>'+LX('المزوّد: ','Provider: ')+esc(me?me.name:'')+'</div><div>'+LX('التاريخ: ','Date: ')+ds+'</div></div>'
+   +'<table><thead><tr><th>'+LX('الخدمة','Service')+'</th><th>'+LX('العدد','Qty')+'</th><th>'+LX('السعر','Price')+'</th><th>'+LX('الإجمالي','Total')+'</th></tr></thead><tbody>'+rows+'</tbody></table>'
+   +'<div class="tot"><span>'+LX('الإجمالي','Total')+'</span><span>'+num(inv.total||0)+cur+'</span></div>'
+   +'<div class="ft">'+LX('شكراً لتعاملك مع ','Thank you for choosing ')+brand+' · '+CONTACT+'</div>'
+   +'<div class="noprint" style="text-align:center;margin-top:18px"><button onclick="print()" style="padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer">'+LX('🖨️ طباعة','🖨️ Print')+'</button></div></body></html>';
   const w=window.open('','_blank'); if(!w){ toast('اسمح بالنوافذ المنبثقة'); return; } w.document.write(html); w.document.close();
 }
 function renderInvoice(){
   const m=document.getElementById('invModal'); if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
-  const opts=SERVICES.map(s=>`<option value="${s.id}">${s.ico} ${s.name} — ${ar(s.price)}</option>`).join('');
+  const opts=SERVICES.map(s=>`<option value="${s.id}">${s.ico} ${LX(`${s.name} — ${ar(s.price)}`, `${svcName(s.name)} · ${s.price} SAR`)}</option>`).join('');
   const rows=invItems.length?invItems.map((it,i)=>`<div class="inv-row"><span class="ir-name">${esc(it.name)}</span>
     <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
     <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />
     <button class="ir-del" onclick="invRemove(${i})">🗑️</button></div>`).join('') : `<div class="inv-empty">＋ أضف خدمة</div>`;
-  m.innerHTML=`<div class="inv-card"><div class="inv-head"><b>🧾 فاتورة ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
-    <div class="inv-add"><select onchange="addInvItem(this.value);this.value=''"><option value="">＋ أضف خدمة</option>${opts}</select><button class="cust" onclick="addCustomItem()">بند مخصص</button></div>
+  m.innerHTML=`<div class="inv-card"><div class="inv-head"><b>🧾 ${LX('فاتورة','Invoice')} ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
+    <div class="inv-add"><select${_uiEN()?' style="min-width:0"':''} onchange="addInvItem(this.value);this.value=''"><option value="">＋ أضف خدمة</option>${opts}</select><button class="cust" onclick="addCustomItem()">بند مخصص</button></div>
     <div class="inv-items">${rows}</div>
     <div class="inv-total"><span>الإجمالي</span><b>${ar(invTotal())} ر.س</b></div>
     <div class="inv-acts"><button class="tbtn done" onclick="saveInvoice()">حفظ وإرسال للعميل</button><button class="tbtn inv" onclick="printInv()">🖨️ طباعة</button></div></div>`;
+  if(_uiEN()) _translateEl(m);   // النافذة خارج #app فلا يراقبها المترجم التلقائي
   m.classList.add('show');
 }
 
@@ -829,7 +833,7 @@ function showLogin(msg, wait){
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب مزوّد؟ سجّل الآن 👇</div>
       <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink)" onclick="showSignup('')">➕ تسجيل مزوّد جديد</button>
-      <div style="color:var(--muted);font-size:.8rem;margin-top:12px;line-height:1.5">الفنيّون يسجّلون من بوابة <b>فنيّو خافِت</b> ويأخذون كودهم، وتضيفهم أنت من <b>⚙️ الإدارة</b> بعد الدخول.</div>
+      <div style="color:var(--muted);font-size:.8rem;margin-top:12px;line-height:1.5">${LX('الفنيّون يسجّلون من بوابة <b>فنيّو خافِت</b> ويأخذون كودهم، وتضيفهم أنت من <b>⚙️ الإدارة</b> بعد الدخول.','Technicians sign up in the <b>Khafet Technicians</b> portal and get their code. You add them from <b>⚙️ Management</b> after you sign in.')}</div>
     </div>
     <a class="reg2" href="fanyeen.html">فني؟ دخول / تسجيل من بوابة فنيّو خافِت</a>
   </div>`;
@@ -907,24 +911,32 @@ async function autoLoginAfterReset(){
 /* ---- تسجيل مزوّد جديد (داخل التطبيق) ---- */
 const SIGNUP_CATS=['سباكة','كهرباء','تكييف','نجارة','دهان','أجهزة منزلية','تنظيف','مكافحة حشرات','عزل مائي','جبس وديكور','ألمنيوم','زجاج ومرايا','حدادة','سيراميك وبلاط','تمديد غاز','ستائر','كاميرات مراقبة','مصاعد','خزانات مياه','تنسيق حدائق','مسابح','أعمال عامة'];
 const SA_CITIES=['الرياض','جدة','مكة','المدينة','الدمام','الخبر','الظهران','الأحساء','القطيف','الجبيل','بريدة','عنيزة','حائل','تبوك','أبها','خميس مشيط','نجران','جازان','ينبع','الطائف','عرعر','سكاكا','الباحة','حفر الباطن'];
+/* 🌐 أسماء المدن وأنواع الخدمات بالإنجليزي للعرض فقط؛ القيم المحفوظة والمطابقة تبقى عربية (الطلبات تخزّن اسم المدينة بالعربي).
+   المدن هنا وليست في T_DICT لأن كلمة «المدينة» تُستخدم أيضاً كعنوان حقل (City). */
+const CITY_EN={'الرياض':'Riyadh','جدة':'Jeddah','مكة':'Makkah','مكة المكرمة':'Makkah','المدينة':'Madinah','المدينة المنورة':'Madinah','الدمام':'Dammam','الخبر':'Khobar','الظهران':'Dhahran','الأحساء':'Al Ahsa','القطيف':'Qatif','الجبيل':'Jubail','بريدة':'Buraidah','عنيزة':'Unaizah','حائل':'Hail','تبوك':'Tabuk','أبها':'Abha','خميس مشيط':'Khamis Mushait','نجران':'Najran','جازان':'Jazan','ينبع':'Yanbu','الطائف':'Taif','عرعر':'Arar','سكاكا':'Sakaka','الباحة':'Al Baha','حفر الباطن':'Hafar Al Batin','الخرج':'Al Kharj'};
+const CAT_EN={'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','دهان':'Painting','أجهزة منزلية':'Home appliances','تنظيف':'Cleaning','مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum & decor','ألمنيوم':'Aluminum','زجاج ومرايا':'Glass & mirrors','حدادة':'Metal work','سيراميك وبلاط':'Ceramics & tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras','مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Swimming pools','أعمال عامة':'General work'};
+function cityLabel(c){ if(c==null || !_uiEN()) return c; const v=CITY_EN[String(c).trim()]; return typeof v==='string'?v:c; }
+function catLabel(c){ const v=_uiEN()?CAT_EN[c]:null; return typeof v==='string'?v:c; }
+/* اسم محفوظ بالعربي (خدمة أو جهة) ← مقابله الإنجليزي من T_DICT عند العرض فقط */
+function svcName(n){ if(n==null || !_uiEN()) return n; const v=T_DICT[String(n).trim()]; return typeof v==='string'?v:n; }
 let signupCtx=null;
 function showSignup(msg){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login" style="max-width:470px">
     <div class="ic">🤝</div><h1>تسجيل مزوّد جديد</h1>
-    <p>سجّل وابدأ استقبال طلبات مدنك فوراً — بعد التسجيل يطلع لك <b>كودك</b> لضم فنيّيك.</p>
+    <p>${LX('سجّل وابدأ استقبال طلبات مدنك فوراً — بعد التسجيل يطلع لك <b>كودك</b> لضم فنيّيك.','Register and start getting jobs in your cities right away. After you register, you get <b>your code</b> to add your technicians.')}</p>
     <input id="su_name" placeholder="الاسم / اسم المؤسسة" />
     <input id="su_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="su_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
-    <div style="text-align:right;margin:8px 2px 4px;font-size:.9rem;font-weight:700">مدن الخدمة (اختر واحدة أو أكثر):</div>
+    <div style="text-align:${_uiEN()?'left':'right'};margin:8px 2px 4px;font-size:.9rem;font-weight:700">مدن الخدمة (اختر واحدة أو أكثر):</div>
     <div id="su_cities" class="picks">
-      ${SA_CITIES.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${c}</label>`).join('')}
+      ${SA_CITIES.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${cityLabel(c)}</label>`).join('')}
     </div>
     <input id="su_cr" inputmode="numeric" placeholder="رقم السجل التجاري" />
-    <div style="text-align:right;margin:8px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات (اختر واحدة أو أكثر):</div>
+    <div style="text-align:${_uiEN()?'left':'right'};margin:8px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات (اختر واحدة أو أكثر):</div>
     <div id="su_svcs" class="picks">
-      ${SIGNUP_CATS.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${c}</label>`).join('')}
+      ${SIGNUP_CATS.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${catLabel(c)}</label>`).join('')}
     </div>
     <button class="btn" onclick="submitSignup()">تسجيل وتفعيل ✅</button>
     ${msg?`<div class="msg ${/تعذّر|صحيح|اكتب|اختر|المرور/.test(msg)?'':'wait'}">${msg}</div>`:''}
@@ -962,7 +974,7 @@ async function submitSignup(){
 function showSignupOtp(msg){
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">📲</div><h1>تأكيد الجوال</h1>
-    <p>أرسلنا رمزاً إلى ${signupCtx.e164}</p>
+    <p>${LX('أرسلنا رمزاً إلى ','We sent a code to ')}${signupCtx.e164}</p>
     <input id="su_otp" inputmode="numeric" autocomplete="one-time-code" placeholder="••••" style="text-align:center;letter-spacing:8px;font-size:1.4rem" onkeydown="if(event.key==='Enter')verifySignupOtp()" />
     <button class="btn" onclick="verifySignupOtp()">تأكيد وتفعيل ✅</button>
     ${msg?`<div class="msg">${msg}</div>`:''}
@@ -1012,15 +1024,15 @@ async function loadOrgs(){ try{ const { data }=await sb.rpc('list_orgs'); ORGS=d
 function renderOrgs(q){
   const el=document.getElementById('orglist'); if(!el) return;
   q=(q||'').trim().toLowerCase();
-  const list=ORGS.filter(o=>!q||orgLabel(o).toLowerCase().includes(q)||String(o.org_no)===q.replace(/^0+/,''));
+  const list=ORGS.filter(o=>!q||orgLabel(o).toLowerCase().includes(q)||String(o.org_no)===q.replace(/^0+/,'')||(_uiEN()&&String(svcName(o.name)).toLowerCase().includes(q)));
   el.innerHTML=list.length
-    ? list.map(o=>`<button type="button" class="orgbtn" onclick="pickOrg(${+o.org_no})"><span class="orgno">${String(o.org_no).padStart(3,'0')}</span><b>${esc(o.name)}</b><span class="orgarr">‹</span></button>`).join('')
+    ? list.map(o=>`<button type="button" class="orgbtn" onclick="pickOrg(${+o.org_no})"><span class="orgno">${String(o.org_no).padStart(3,'0')}</span><b>${esc(o.name)}</b><span class="orgarr">${LX('‹','›')}</span></button>`).join('')
     : `<div class="orgempty">${ORGS.length?'ما فيه نتائج':'تعذّر تحميل القائمة، تأكد من الإنترنت'}</div>`;
 }
 function toggleJoinCode(){ const w=document.getElementById('jcwrap'); if(!w) return; w.style.display=(w.style.display==='none'?'block':'none'); }
 async function pickOrg(no){
   const o=ORGS.find(x=>+x.org_no===+no); if(!o) return;
-  if(!confirm('إرسال طلب الانضمام إلى '+orgLabel(o)+'؟')) return;
+  if(!confirm(LX('إرسال طلب الانضمام إلى '+orgLabel(o)+'؟','Send a join request to '+svcName(o.name)+' '+String(o.org_no).padStart(3,'0')+'?'))) return;
   try{ const { data }=await sb.rpc('join_org_by_no',{ p_no:+no });
     if(!data||!data.ok){ showJoinCode('تعذّر إرسال الطلب، حاول مرة ثانية'); return; }
     showJoinWait(data.org_name);
@@ -1030,8 +1042,8 @@ function showJoinWait(orgName){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">⏳</div><h1>بانتظار اعتماد ${esc(orgName||'')}</h1>
-    <p>طلبك وصل إلى <b>${esc(orgName||'')}</b>. بعد الاعتماد افتح تطبيق <b>رزق</b> وسجّل الدخول برقمك وكلمة مرورك.</p>
+    <div class="ic">⏳</div><h1>${LX(`بانتظار اعتماد ${esc(orgName||'')}`, `Waiting for ${esc(svcName(orgName||''))} to approve`)}</h1>
+    <p>${LX(`طلبك وصل إلى <b>${esc(orgName||'')}</b>. بعد الاعتماد افتح تطبيق <b>رزق</b> وسجّل الدخول برقمك وكلمة مرورك.`, `Your request reached <b>${esc(svcName(orgName||''))}</b>. Once approved, open the <b>Rizq</b> app and sign in with your number and password.`)}</p>
     <button class="btn" onclick="location.reload()">🔄 تحقق الآن</button>
     <a class="reg2" onclick="showJoinCode('')" style="cursor:pointer;display:block;margin-top:12px">تغيير الجهة</a>
     <a class="reg2" onclick="doLogout()" style="cursor:pointer;display:block;margin-top:8px;color:var(--muted)">خروج من الحساب</a>
@@ -1051,7 +1063,7 @@ function showTechReg(msg){
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">🧑‍🔧</div><h1>تسجيل فني جديد</h1>
-    <p>سجّل حسابك — ويطلع لك <b>كودك</b> تعطيه لمزوّدك ليضيفك لفريقه.</p>
+    <p>${LX('سجّل حسابك — ويطلع لك <b>كودك</b> تعطيه لمزوّدك ليضيفك لفريقه.','Register your account and you get <b>your code</b>. Give it to your provider so they can add you to their team.')}</p>
     <input id="tr_name" placeholder="اسمك" />
     <input id="tr_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="tr_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
@@ -1084,7 +1096,7 @@ async function submitTechReg(){
 function showTechOtp(msg){
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">📲</div><h1>تأكيد الجوال</h1>
-    <p>أرسلنا رمزاً إلى ${techCtx.e164}</p>
+    <p>${LX('أرسلنا رمزاً إلى ','We sent a code to ')}${techCtx.e164}</p>
     <input id="tr_otp" inputmode="numeric" autocomplete="one-time-code" placeholder="••••" style="text-align:center;letter-spacing:8px;font-size:1.4rem" onkeydown="if(event.key==='Enter')verifyTechReg()" />
     <button class="btn" onclick="verifyTechReg()">تأكيد ✅</button>
     ${msg?`<div class="msg">${msg}</div>`:''}
@@ -1120,12 +1132,13 @@ function servesCity(o){
 }
 function toggleCities(){ citiesOpen=!citiesOpen; render(); }
 function paintChosenCities(){ const el=document.getElementById('pv_city_chosen'); if(!el) return;
-  el.innerHTML = pvCitiesSel.length ? pvCitiesSel.map(c=>`<span class="ccity">${esc(c)}<button onclick="removeCityChip('${esc(c)}')">×</button></span>`).join('') : '<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'; }
+  el.innerHTML = pvCitiesSel.length ? pvCitiesSel.map(c=>`<span class="ccity">${esc(cityLabel(c))}<button onclick="removeCityChip('${esc(c)}')">×</button></span>`).join('') : '<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'; }
 function citySearch(q){ q=(q||'').trim(); const el=document.getElementById('pv_city_results'); if(!el) return;
   if(pvCitiesSel===null) pvCitiesSel=myCities().slice();
   if(!q){ el.innerHTML=''; return; }
-  const m=SA_CITIES.filter(c=>c.indexOf(q)>-1 && pvCitiesSel.indexOf(c)<0).slice(0,10);
-  el.innerHTML = m.length ? m.map(c=>`<button class="city-add" onclick="addCityChip('${esc(c)}')">➕ ${esc(c)}</button>`).join('') : '<div class="hint" style="margin:0;padding:6px 2px">ما فيه مدينة بهذا الاسم</div>';
+  const en=_uiEN(), ql=q.toLowerCase();   // بالإنجليزي: البحث يطابق الاسم الإنجليزي أيضاً، والقيمة المضافة تبقى عربية
+  const m=SA_CITIES.filter(c=>(c.indexOf(q)>-1 || (en && String(CITY_EN[c]||'').toLowerCase().indexOf(ql)>-1)) && pvCitiesSel.indexOf(c)<0).slice(0,10);
+  el.innerHTML = m.length ? m.map(c=>`<button class="city-add" onclick="addCityChip('${esc(c)}')">➕ ${esc(cityLabel(c))}</button>`).join('') : '<div class="hint" style="margin:0;padding:6px 2px">ما فيه مدينة بهذا الاسم</div>';
 }
 function addCityChip(c){ if(pvCitiesSel===null) pvCitiesSel=myCities().slice(); if(pvCitiesSel.indexOf(c)<0) pvCitiesSel.push(c);
   const s=document.getElementById('pv_city_search'); if(s){ s.value=''; s.focus(); } citySearch(''); paintChosenCities(); }
@@ -1142,25 +1155,25 @@ function jobCard(o, mode){
   const a=o.address||{};
   // المنجز (في طلباتي) ينصفط بسطر واحد أخضر — يفتح بالضغط
   if(mode==='mine' && o.status==='done' && !doneOpen[o.id]){
-    const work=(o.items||[]).map(i=>esc(i.ico)+' '+esc(i.name)).join('، ');
+    const work=(o.items||[]).map(i=>esc(i.ico)+' '+esc(svcName(i.name))).join(LX('، ',', '));
     return `<button class="tjob-mini" onclick="toggleDone('${o.id}')">
       <span class="tm-ic">✅</span>
       <span class="tm-tx"><b>${fmtTime(o.startMin)} · ${dayLabel(o.date)}</b><small>${esc(o.customer.name||work||'')}</small></span>
       <span class="tm-badge">مكتمل</span><span class="tm-arrow">▾</span>
     </button>`;
   }
-  const work=o.quick?`<div class="quick-tag">⚡ طلب سريع (معاينة)</div>`:`<div class="tj-row"><span class="tj-k">🔧 المطلوب</span><span class="tj-v">${(o.items||[]).map(i=>esc(i.ico)+' '+esc(i.name)+(i.qty>1?' ×'+ar(i.qty):'')).join('، ')}</span></div>`;
+  const work=o.quick?`<div class="quick-tag">⚡ طلب سريع (معاينة)</div>`:`<div class="tj-row"><span class="tj-k">🔧 المطلوب</span><span class="tj-v">${(o.items||[]).map(i=>esc(i.ico)+' '+esc(svcName(i.name))+(i.qty>1?' ×'+ar(i.qty):'')).join(LX('، ',', '))}</span></div>`;
   // الطلب المتاح: نوع الخدمة والوقت والمنطقة فقط — بيانات العميل تظهر بعد القبول
   if(mode==='available'){
     const exclusive = o.offeredTo && o.offeredTo===myPid() && !o.openToAll;
     return `<div class="tjob${exclusive?' tjob-offer':''}${o._new?' tjob-new':''}">
-      ${o._new?`<div class="new-banner">🟢 طلب جديد — ${agoTxt(o.createdAt)||'وصل الحين'}</div>`:''}
+      ${o._new?`<div class="new-banner">${LX(`🟢 طلب جديد — ${agoTxt(o.createdAt)||'وصل الحين'}`, `🟢 New job · ${agoTxt(o.createdAt)||'Just now'}`)}</div>`:''}
       ${exclusive?`<div class="offer-banner">⚡ معروض عليك أولاً — بادر بالقبول قبل ما يُفتح لبقية المزوّدين</div>`:''}
-      <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${o.createdAt&&!o._new?`<small style="color:var(--muted);font-weight:700;margin-inline-end:6px">${agoTxt(o.createdAt)}</small>`:''}<span class="status ${exclusive?'offer':'new'}">${exclusive?'⚡ لك':'متاح'}</span></span></div>
+      <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${o.createdAt&&!o._new?`<small style="color:var(--muted);font-weight:700;margin-inline-end:6px">${agoTxt(o.createdAt)}</small>`:''}<span class="status ${exclusive?'offer':'new'}">${exclusive?LX('⚡ لك','⚡ For you'):'متاح'}</span></span></div>
       <div class="tj-body">
         ${work}
         <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
-        <div class="tj-row"><span class="tj-k">📍 المنطقة</span><span class="tj-v">${esc([a.city,a.district].filter(Boolean).join(' · ')||'—')}</span></div>
+        <div class="tj-row"><span class="tj-k">📍 المنطقة</span><span class="tj-v">${esc([cityLabel(a.city),a.district].filter(Boolean).join(' · ')||'—')}</span></div>
         <div class="tj-row"><span class="tj-k">🔒 بيانات العميل</span><span class="tj-v">الاسم والجوال والعنوان تظهر لك بعد قبول الطلب</span></div>
       </div>
       <div class="tacts">
@@ -1194,7 +1207,7 @@ function jobCard(o, mode){
       ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ المشكلة</span><span class="tj-v">${esc(o.note)}</span></div>`:''}
       ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 صورة/مقطع</span><span class="tj-v"><button class="tvideo" onclick="openMedia('${esc(o.videoUrl)}')">🎥 عرض</button></span></div>`:''}
       <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
-      <div class="tj-row"><span class="tj-k">📍 الموقع</span><span class="tj-v">${[[a.city,a.district,a.street].filter(Boolean).join(' · '), a.house?'منزل '+esc(a.house):''].filter(Boolean).join(' · ')||'📍 GPS'}
+      <div class="tj-row"><span class="tj-k">📍 الموقع</span><span class="tj-v">${[[cityLabel(a.city),a.district,a.street].filter(Boolean).join(' · '), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||'📍 GPS'}
         <a class="tmap" href="${mapUrl}" target="_blank" rel="noopener">🗺️ الخريطة</a>
         ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" onclick="openMedia('${esc(a.photoUrl)}')">🏠 صورة المنزل</button>`:''}</span></div>
       ${mode==='mine'?`<div class="tj-row"><span class="tj-k">👤 العميل</span><span class="tj-v">${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></span></div>`:''}
@@ -1246,8 +1259,8 @@ function render(){
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من الإدارة لتصلك الطلبات'):'ما قبلت طلبات بعد')}</h3></div>`;
   // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
   const subLine = me.tech
-    ? (me.hasProvider ? LX(`🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>`,`🧑‍🔧 Technician at <b>${esc(me.providerName||'a provider')}</b>`) : LX('🧑‍🔧 فني جديد','🧑‍🔧 New technician'))
-    : LX(`🏢 مزوّد خدمة${myCities().length?` · 📍 ${esc(myCities().join(' · '))}`:''}`,`🏢 Service provider${myCities().length?` · 📍 ${esc(myCities().map(c=>(T_DICT[c]||c)).join(' · '))}`:''}`);
+    ? (me.hasProvider ? LX(`🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>`,`🧑‍🔧 Technician at <b>${esc(svcName(me.providerName)||'a provider')}</b>`) : LX('🧑‍🔧 فني جديد','🧑‍🔧 New technician'))
+    : LX(`🏢 مزوّد خدمة${myCities().length?` · 📍 ${esc(myCities().join(' · '))}`:''}`,`🏢 Service provider${myCities().length?` · 📍 ${esc(myCities().map(c=>cityLabel(c)).join(' · '))}`:''}`);
   const showJobs = !me.tech || me.hasProvider;   // الفني بلا مزوّد: كوده أول
 
   // محتوى تبويب الإدارة
@@ -1266,7 +1279,7 @@ function render(){
       </div>
       <div class="mpanel"><h3>🏢 مزوّدي</h3>
         ${me.hasProvider
-          ? `<div class="hint" style="margin:0">✅ أنت في فريق <b style="color:var(--gold-deep)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}</div>`
+          ? `<div class="hint" style="margin:0">${LX(`✅ أنت في فريق <b style="color:var(--gold-deep)">${esc(me.providerName||'')}</b> — تستقبل طلبات مدنه: ${esc(myCities().join('، ')||'—')}`, `✅ You're on the team of <b style="color:var(--gold-deep)">${esc(svcName(me.providerName)||'')}</b>. You get jobs from their cities: ${esc(myCities().map(c=>cityLabel(c)).join(', ')||'—')}`)}</div>`
           : `<div class="hint" style="margin:0">ما أضافك مزوّد بعد — أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.</div>`}
       </div>`;
   } else {
@@ -1287,7 +1300,7 @@ function render(){
         <input class="city-search" id="pv_city_search" placeholder="🔍 ابحث وأضف مدينة…" oninput="citySearch(this.value)" autocomplete="off" />
         <div id="pv_city_results" class="city-results"></div>
         <div class="hint" style="margin:12px 2px 6px">مدنك المختارة:</div>
-        <div id="pv_city_chosen" class="chosen-cities">${(pvCitiesSel||(pvCitiesSel=myCities().slice())).map(c=>`<span class="ccity">${esc(c)}<button onclick="removeCityChip('${esc(c)}')">×</button></span>`).join('')||'<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'}</div>
+        <div id="pv_city_chosen" class="chosen-cities">${(pvCitiesSel||(pvCitiesSel=myCities().slice())).map(c=>`<span class="ccity">${esc(cityLabel(c))}<button onclick="removeCityChip('${esc(c)}')">×</button></span>`).join('')||'<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'}</div>
         <button class="tbtn done" style="margin-top:12px;width:100%" onclick="saveMyCities()">💾 حفظ المدن</button>
       </div>`;
   }
@@ -1297,13 +1310,13 @@ function render(){
   // ═ واجهة المربّعات (زي لوحة الإدارة): الرئيسية = بطاقات الأقسام ═
   const isJobTab=(tab==='available'||tab==='mine');
   const CARDS=[];
-  if(seeStock()) CARDS.push(['stock','📦','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+' items'), 0]);
+  if(seeStock()) CARDS.push(['stock','📦','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+(PINV.length===1?' item':' items')), 0]);
   if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', LX(ar(myDone)+' منجز', myDone+' completed'), 0]);
   CARDS.push(['route','🗺️','مسار اليوم','مواقع طلباتك', 0]);
   CARDS.push(['ratings','⭐','تقييماتي','رأي عملائك', 0]);
   if(!me.tech){  CARDS.push(['numbers','💰','لوحة الأرقام','أرباحك وأرقامك', 0]);
-                 CARDS.push(['team','🧑‍🔧','فريقي', LX(ar(TECHS.length)+' فني', TECHS.length+' techs'), 0]);
-                 CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+' reminders'):LX('دخل متكرّر','Recurring income'), 0]); }
+                 CARDS.push(['team','🧑‍🔧','فريقي', LX(ar(TECHS.length)+' فني', TECHS.length+(TECHS.length===1?' technician':' technicians')), 0]);
+                 CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+(PREM.length===1?' reminder':' reminders')):LX('دخل متكرّر','Recurring income'), 0]); }
   const cardsHTML=CARDS.map(([k,ic,t,sub,badge])=>`<div class="hcard" onclick="setTab('${k}')">
     ${badge>0?`<span class="hc-badge">${ar(badge)}</span>`:''}
     <span class="hc-ic">${ic}</span><h3>${t}</h3><p>${sub}</p><span class="hc-open">فتح ›</span>
@@ -1334,7 +1347,7 @@ function render(){
         <div style="margin-top:14px;font-weight:900;font-size:1.12rem">📥 الطلبات المتاحة</div>
         ${renderPvCalendar()}
         <div>${availList}</div>
-        <div style="margin-top:24px;font-weight:900;font-size:1.12rem">🧰 طلباتي ${mineF.length?`(${ar(mineF.length)})`:''}</div>
+        <div style="margin-top:24px;font-weight:900;font-size:1.12rem">🧰 ${LX('طلباتي','My jobs')} ${mineF.length?`(${_uiEN()?mineF.length:ar(mineF.length)})`:''}</div>
         ${!me.tech?bookPanel():''}
         <div style="padding-bottom:90px">${mineF.length?mineF.map(o=>jobCard(o,'mine')).join(''):'<div class="hint" style="text-align:center;padding:16px">ما قبلت طلبات بعد.</div>'}</div>
       `:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}
@@ -1392,7 +1405,7 @@ function renderNumbers(){
   const svcCount={}; mine.filter(o=>o.status==='done').forEach(o=>{(o.items||[]).forEach(it=>{ svcCount[it.name]=(svcCount[it.name]||0)+1; });});
   const topSvc=Object.entries(svcCount).sort((a,b)=>b[1]-a[1]).slice(0,4);
   const topPanel=topSvc.length?`<div class="mpanel"><h3>🏆 أكثر خدماتك طلباً</h3>
-    ${topSvc.map(([n,c])=>`<div class="mrow"><span>${esc(n)}</span><b style="color:var(--gold-deep)">${ar(c)} طلب</b></div>`).join('')}</div>`:'';
+    ${topSvc.map(([n,c])=>`<div class="mrow"><span>${esc(svcName(n))}</span><b style="color:var(--gold-deep)">${LX(ar(c)+' طلب', c+(c===1?' job':' jobs'))}</b></div>`).join('')}</div>`:'';
   // 👛 محفظتي
   const walletPanel=`<div class="mpanel"><h3>👛 محفظتي</h3>
     <div class="mrow"><span class="hint" style="margin:0">💵 إجمالي دخلك</span><b>${pvMoney(revenue)}</b></div>
@@ -1422,8 +1435,8 @@ function renderNumbers(){
 }
 /* ═══════════ فريقي (مربّع بالرئيسية) ═══════════ */
 function renderTeam(){
-  return `${renderJoinPanel()}<div class="mpanel"><h3>🧑‍🔧 فريقي ${TECHS.length?`(${ar(TECHS.length)})`:''}</h3>
-    <div class="hint">فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل <b>كوده أو رقم جواله</b> هنا فينضم لفريقك.</div>
+  return `${renderJoinPanel()}<div class="mpanel"><h3>🧑‍🔧 ${LX('فريقي','My team')} ${TECHS.length?`(${_uiEN()?TECHS.length:ar(TECHS.length)})`:''}</h3>
+    <div class="hint">${LX('فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل <b>كوده أو رقم جواله</b> هنا فينضم لفريقك.','Your technician signs up in the technicians portal and gets a code. Enter <b>their code or phone</b> here to add them to your team.')}</div>
     <div style="display:flex;gap:8px">
       <input id="add_tech_code" placeholder="كود الفني أو جواله" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-align:center" />
       <button class="tbtn done" style="padding:0 18px" onclick="addTechByCode()">➕ أضف</button>
@@ -1437,7 +1450,7 @@ function renderTeam(){
         <div class="perm-title" style="margin-top:9px">📍 مدينته:</div>
         <select class="assign-sel" style="width:100%;min-width:0" onchange="setTechCity('${t.user_id}',this.value)">
           <option value="">كل مدنك</option>
-          ${SA_CITIES.map(c=>`<option value="${c}" ${pm.city===c?'selected':''}>${c}</option>`).join('')}
+          ${SA_CITIES.map(c=>`<option value="${c}" ${pm.city===c?'selected':''}>${cityLabel(c)}</option>`).join('')}
         </select>
       </div>`; }).join('') : '<div class="hint" style="margin:4px 0 0">ما أضفت فنيّين بعد.</div>'}
     </div>
@@ -1453,12 +1466,12 @@ function renderRatings(){
       <h3 style="justify-content:center">⭐ تقييماتي</h3>
       <div style="font-size:3.2rem;font-weight:900;color:var(--gold-deep);line-height:1.15">${rated.length?avg.toFixed(1):'—'}</div>
       <div style="color:var(--gold);font-size:1.5rem;letter-spacing:4px">${starRow(avg)}</div>
-      <div class="hint" style="margin:6px 0 0">${_uiEN()?rated.length:ar(rated.length)} ${LX('تقييم','ratings')}</div>
+      <div class="hint" style="margin:6px 0 0">${_uiEN()?rated.length:ar(rated.length)} ${LX('تقييم',rated.length===1?'rating':'ratings')}</div>
     </div>
     ${withText.length? withText.map(o=>`<div class="mpanel" style="padding:15px">
       <div style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--gold);font-size:1.1rem;letter-spacing:2px">${starRow(o.rating)}</span><small style="color:var(--muted)">${pvDate(o.date)}</small></div>
       <div style="margin:8px 0 4px;font-weight:600">${esc(o.feedback)}</div>
-      <small style="color:var(--muted)">— ${o.reviewAnon?'عميل':esc(o.customer.name||'عميل')}</small>
+      <small style="color:var(--muted)">${LX(`— ${o.reviewAnon?'عميل':esc(o.customer.name||'عميل')}`, o.reviewAnon?'Customer':esc(o.customer.name||'Customer'))}</small>
     </div>`).join('') : `<div class="hint" style="text-align:center;padding:18px">${rated.length?'تقييماتك بدون ملاحظات مكتوبة.':'ما وصلتك تقييمات بعد — تظهر بعد إنجاز الطلبات وتقييم العملاء.'}</div>`}`;
 }
 /* ═══════════ مسار اليوم (مربّع بالرئيسية) ═══════════ */
@@ -1475,7 +1488,7 @@ function renderRoute(){
   }
   const rows=jobs.length? jobs.map(o=>{const a=o.address||{};
     return `<div class="irow">
-      <div class="in-nm"><b>${esc(o.customer.name||'عميل')}</b><small>${fmtTime(o.startMin)} · ${pvDate(o.date)} · ${esc([a.city,a.district].filter(Boolean).join(' · ')||'—')}</small></div>
+      <div class="in-nm"><b>${esc(o.customer.name||'عميل')}</b><small>${fmtTime(o.startMin)} · ${pvDate(o.date)} · ${esc([cityLabel(a.city),a.district].filter(Boolean).join(' · ')||'—')}</small></div>
       <a class="pill" href="https://www.google.com/maps/dir/?api=1&destination=${geoPt(a)}" target="_blank" rel="noopener">🗺️ اذهب</a>
     </div>`;}).join('') : `<div class="hint" style="text-align:center;padding:18px">ما عندك طلبات قادمة.</div>`;
   return `<div class="mpanel"><h3>🗺️ مسار اليوم والطلبات القادمة</h3>
@@ -1494,7 +1507,7 @@ function renderReminders(){
   const dueN=sorted.filter(r=>r.due_date && r.due_date<=today).length;
   const rows=sorted.length? sorted.map(r=>{ const isDue=r.due_date && r.due_date<=today;
     return `<div class="irow" style="${isDue?'border-color:var(--gold);background:var(--gold-tint)':''}">
-      <div class="in-nm"><b>${esc(r.customer_name||'عميل')}${isDue?' ⏰':''}</b><small>${esc(r.service||'صيانة')}${r.due_date?' · '+pvDate(r.due_date):''}${r.phone?' · '+esc(r.phone):''}</small></div>
+      <div class="in-nm"><b>${esc(r.customer_name||LX('عميل','Customer'))}${isDue?' ⏰':''}</b><small>${esc(r.service||LX('صيانة','Maintenance'))}${r.due_date?' · '+pvDate(r.due_date):''}${r.phone?' · '+esc(r.phone):''}</small></div>
       ${r.phone?`<a class="pill" href="tel:${esc(r.phone)}">📞</a>`:''}
       <button class="x-btn" onclick="delReminder(${r.id})">حذف</button>
     </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:18px">ما فيه تذكيرات — أضف أول تذكير فوق.</div>`;
@@ -1521,34 +1534,38 @@ async function addReminder(){
   catch(e){ toast('تعذّرت الإضافة'); }
 }
 async function delReminder(id){
-  if(!confirm('حذف التذكير؟')) return;
+  if(!confirm(LX('حذف التذكير؟','Delete this reminder?'))) return;
   try{ await sb.from('provider_reminders').delete().eq('id',id); await loadReminders(); render(); }catch(e){ toast('تعذّر الحذف'); }
 }
 /* ═══════════ المخزن (مشترك: المزوّد + فريقه) ═══════════ */
 function stockLow(it){ return (+it.qty||0)<=2; }
+/* اسم الصنف ووحدته للعرض: بالإنجليزي name_en إن وُجد */
+const UNIT_EN={'حبة':'pc','متر':'m','باكيت':'pack','علبة':'box','لفة':'roll','أنبوبة':'tube','كرتون':'carton','عود':'length','كيلو':'kg','لتر':'L'};
+function stockName(it){ return (_uiEN() && it && it.name_en) ? it.name_en : it.name; }
+function unitLabel(u){ const v=_uiEN()?UNIT_EN[u]:null; return typeof v==='string'?v:u; }
 function renderStock(){
   if(!myPid()) return `<div class="empty"><div class="ico">📦</div><h3>غير متاح</h3></div>`;
-  const items=PINV.slice().sort((a,b)=>String(a.name).localeCompare(b.name,'ar'));
+  const items=PINV.slice().sort((a,b)=>_uiEN()? String(stockName(a)).localeCompare(String(stockName(b)),'en') : String(a.name).localeCompare(b.name,'ar'));
   const sellVal=items.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
   const buyVal =items.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0);
   const profit=sellVal-buyVal, margin=buyVal>0?Math.round(profit/buyVal*100):0;
   const rows=items.length? items.map(it=>{
     const buy=+it.buy_price||0, sell=+it.sell_price||0, pu=sell-buy, mg=buy>0?Math.round(pu/buy*100):0;
-    const info=[ buy?'شراء '+pvMoney(buy):'', sell?'بيع '+pvMoney(sell):'' ].filter(Boolean).join(' · ');
+    const info=[ buy?LX('شراء ','Buy ')+pvMoney(buy):'', sell?LX('بيع ','Sell ')+pvMoney(sell):'' ].filter(Boolean).join(' · ');
     return `<div class="irow">
-      <div class="in-nm"><b>${esc(it.name)}</b>
-        <small>${info||esc(it.unit||'حبة')}${(buy&&sell)?` · <span style="color:${pu>=0?'var(--ok)':'#c0392b'};font-weight:800">ربح ${pvMoney(pu)} (${ar(mg)}٪)</span>`:''}</small></div>
+      <div class="in-nm"><b>${esc(stockName(it))}</b>
+        <small>${info||esc(unitLabel(it.unit||'حبة'))}${(buy&&sell)?` · <span style="color:${pu>=0?'var(--ok)':'#c0392b'};font-weight:800">${LX('ربح','Profit')} ${pvMoney(pu)} (${_uiEN()?mg+'%':ar(mg)+'٪'})</span>`:''}</small></div>
       <div class="qty">
         <button class="qbtn" onclick="stockAdj(${it.id},-1)">−</button>
         <span class="qn ${stockLow(it)?'low':''}">${ar(+it.qty||0)}</span>
         <button class="qbtn" onclick="stockAdj(${it.id},1)">＋</button>
       </div>
-      <button class="x-btn" onclick="stockDel(${it.id},'${esc(String(it.name).replace(/'/g,''))}')">حذف</button>
+      <button class="x-btn" onclick="stockDel(${it.id},'${esc(String(stockName(it)).replace(/'/g,''))}')">حذف</button>
     </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه أصناف بعد — أضف أول صنف فوق.</div>`;
   return `
     <div class="mpanel">
       <h3>📦 ${LX(me.tech?'مخزن المزوّد':'مخزن الفريق', me.tech?"Provider's stock":'Team stock')} ${items.length?`(${_uiEN()?items.length:ar(items.length)})`:''}</h3>
-      <div class="hint">${LX('أصناف مشتركة بينك وبين '+(me.tech?'زملائك':'فنيّينك')+' — الكل يشوف نفس الكميات.','Items shared between you and your '+(me.tech?'colleagues':'technicians')+' — everyone sees the same quantities.')}</div>
+      <div class="hint">${LX('أصناف مشتركة بينك وبين '+(me.tech?'زملائك':'فنيّينك')+' — الكل يشوف نفس الكميات.','Items shared between you and your '+(me.tech?'colleagues':'technicians')+'. Everyone sees the same quantities.')}</div>
       <div class="biz-add">
         <input id="st_name" placeholder="اسم الصنف" onkeydown="if(event.key==='Enter')stockAdd()" />
         <input id="st_qty" type="number" inputmode="numeric" placeholder="كمية" style="max-width:80px" />
@@ -1591,7 +1608,7 @@ async function stockAdj(id,delta){
   }catch(e){ toast('تعذّر التعديل'); }
 }
 async function stockDel(id,name){
-  if(!confirm('حذف الصنف '+(name||'')+'؟')) return;
+  if(!confirm(LX('حذف الصنف '+(name||'')+'؟','Delete item '+(name||'')+'?'))) return;
   try{ await sb.from('provider_inventory').delete().eq('id',id); await loadBiz(); toast('حُذف'); }catch(e){ toast('تعذّر الحذف'); }
 }
 
@@ -1627,13 +1644,13 @@ async function custAdd(){
   catch(e){ toast('تعذّرت الإضافة'); }
 }
 async function custDel(id,name){
-  if(!confirm('حذف العميل '+(name||'')+'؟')) return;
+  if(!confirm(LX('حذف العميل '+(name||'')+'؟','Delete customer '+(name||'')+'?'))) return;
   try{ await sb.from('provider_customers').delete().eq('id',id); await loadBiz(); toast('حُذف'); }catch(e){ toast('تعذّر الحذف'); }
 }
 
 /* ═══════════ الفواتير (طلبات المزوّد المنجزة) ═══════════ */
 function orderInvTotal(o){ const inv=o&&o.invoice; if(inv&&inv.items) return inv.items.reduce((s,it)=>s+(+it.price||0)*(+it.qty||1),0); return (inv&&inv.total)||0; }
-function pvDate(iso){ if(!iso) return ''; const p=String(iso).split('-'); if(p.length<3) return String(iso); return ar(+p[2])+' '+(AR_MON[(+p[1]||1)-1]||''); }
+function pvDate(iso){ if(!iso) return ''; const p=String(iso).split('-'); if(p.length<3) return String(iso); if(_uiEN()) return (+p[2])+' '+(EN_MON[(+p[1]||1)-1]||''); return ar(+p[2])+' '+(AR_MON[(+p[1]||1)-1]||''); }
 function renderInvoices(){
   const done=myJobsList().filter(o=>o.status==='done').sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   const total=done.reduce((s,o)=>s+orderInvTotal(o),0);
@@ -1645,7 +1662,7 @@ function renderInvoices(){
     </div>`).join('') : `<div class="hint" style="text-align:center;padding:22px">ما فيه فواتير بعد — تظهر بعد إنجاز الطلبات وإصدار فواتيرها.</div>`;
   return `
     <div class="mpanel">
-      <h3>🧾 الفواتير ${done.length?`(${ar(done.length)})`:''}</h3>
+      <h3>🧾 ${LX('الفواتير','Invoices')} ${done.length?`(${_uiEN()?done.length:ar(done.length)})`:''}</h3>
       <div class="mrow" style="border-bottom:0;padding-bottom:0"><span class="hint" style="margin:0">إجمالي المنجز</span><b style="color:var(--gold-deep);font-size:1.2rem">${pvMoney(total)}</b></div>
       ${done.length?`<button class="tbtn" style="width:100%;margin-top:12px;background:var(--gold-tint);color:var(--gold-deep);font-size:.95rem;padding:11px" onclick="exportInvoices()">⤓ تصدير Excel</button>`:''}
     </div>
@@ -1662,7 +1679,7 @@ function bookPanel(){
   const today=new Date().toISOString().slice(0,10);
   return `<div class="mpanel">
     <h3>➕ حجز جديد لعميل</h3>
-    <div class="hint">أضف طلباً مباشرة — يظهر في «طلباتي»${TECHS.length?' وتقدر توزّعه على فني':''}.</div>
+    <div class="hint">${LX(`أضف طلباً مباشرة — يظهر في «طلباتي»${TECHS.length?' وتقدر توزّعه على فني':''}.`, `Add a job directly. It shows in My jobs${TECHS.length?' and you can assign it to a technician':''}.`)}</div>
     <input id="bk_name" placeholder="اسم العميل" />
     <input id="bk_phone" inputmode="tel" placeholder="جوال العميل" style="margin-top:8px" />
     <input id="bk_city" placeholder="المدينة" style="margin-top:8px" />
@@ -1689,7 +1706,7 @@ async function submitBooking(){
   let start=600; if(time&&time.indexOf(':')>0){ const p=time.split(':'); start=(+p[0])*60+(+p[1]); }
   try{
     const { data }=await sb.rpc('provider_book_order',{ p_customer:name, p_phone:phone, p_city:city, p_items:[], p_date:date, p_start:start, p_duration:60, p_note:note, p_tech:tech||null });
-    if(data&&data.ok){ toast('✅ تم الحجز #'+ar(data.order_no)); bookOpen=false; loadOrders(); }
+    if(data&&data.ok){ toast(LX('✅ تم الحجز #'+ar(data.order_no),'✅ Booked #'+data.order_no)); bookOpen=false; loadOrders(); }
     else toast('تعذّر الحجز');
   }catch(e){ toast('تعذّر الحجز'); }
 }
@@ -1711,33 +1728,33 @@ async function skipOffer(id){
 let techsOpen=false, TECHS=[], PENDING_TECHS=[];
 async function loadTechs(){ if(!me||!cloudReady) return; try{ const { data }=await sb.rpc('my_techs'); TECHS=data||[]; }catch(e){ TECHS=[]; } try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
 function renderJoinPanel(){
-  const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · كوده ${esc(t.code||'')}</small></div>
+  const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · ${LX('كوده','Code')} ${esc(t.code||'')}</small></div>
       <button class="tbtn done" style="padding:8px 14px" onclick="approveTechP('${t.user_id}',true)">✔️ اعتماد</button><button class="x-btn" onclick="approveTechP('${t.user_id}',false)">رفض</button></div>`).join('') : '';
   return `<div class="mpanel"><h3>🔑 كود انضمام فريقك</h3>
     <div class="hint">أعطِ هذا الكود لعمالك. الفني يسجّل في رزق، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.</div>
     <div class="jcode" id="jcodeBox">${esc(me.code||'')}</div>
     <div class="jrow"><button class="tbtn inv" style="flex:1" onclick="copyJoinCodeP()">📋 نسخ</button><button class="tbtn inv" style="flex:1" onclick="regenJoinCodeP()">🎲 كود جديد عشوائي</button></div>
   </div>
-  ${pend?`<div class="mpanel"><h3>⏳ بانتظار اعتمادك (${ar(PENDING_TECHS.length)})</h3>${pend}</div>`:''}`;
+  ${pend?`<div class="mpanel"><h3>⏳ ${LX('بانتظار اعتمادك','Waiting for your approval')} (${_uiEN()?PENDING_TECHS.length:ar(PENDING_TECHS.length)})</h3>${pend}</div>`:''}`;
 }
 async function approveTechP(uid, ok){
-  if(!ok && !confirm('رفض هذا الفني؟')) return;
-  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?'✅ اعتُمد '+(data.name||''):'تم الرفض'); await loadTechs(); renderSafe(); }catch(e){ toast('⚠️ تعذّر'); }
+  if(!ok && !confirm(LX('رفض هذا الفني؟','Reject this technician?'))) return;
+  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?LX('✅ اعتُمد '+(data.name||''),'✅ Approved '+(data.name||'')):'تم الرفض'); await loadTechs(); renderSafe(); }catch(e){ toast('⚠️ تعذّر'); }
 }
 async function regenJoinCodeP(){
-  if(!confirm('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفريقك الحالي يبقى كما هو.')) return;
-  try{ const { data }=await sb.rpc('regenerate_join_code'); if(!data) throw new Error(); me.code=data; toast('🎲 الكود الجديد: '+data); renderSafe(); }catch(e){ toast('⚠️ تعذّر'); }
+  if(!confirm(LX('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفريقك الحالي يبقى كما هو.','Create a new code? The current code stops working right away. Your team stays as it is.'))) return;
+  try{ const { data }=await sb.rpc('regenerate_join_code'); if(!data) throw new Error(); me.code=data; toast(LX('🎲 الكود الجديد: '+data,'🎲 New code: '+data)); renderSafe(); }catch(e){ toast('⚠️ تعذّر'); }
 }
-function copyJoinCodeP(){ const c=me.code||''; try{ navigator.clipboard.writeText(c); toast('📋 نُسخ الكود '+c); }catch(e){ prompt('انسخ الكود:', c); } }
+function copyJoinCodeP(){ const c=me.code||''; try{ navigator.clipboard.writeText(c); toast(LX('📋 نُسخ الكود '+c,'📋 Code copied: '+c)); }catch(e){ prompt(LX('انسخ الكود:','Copy the code:'), c); } }
 async function toggleTechs(){ techsOpen=!techsOpen; if(techsOpen) await loadTechs(); render(); }
-function copyMyCode(){ const c=(me&&me.code)||''; try{ navigator.clipboard.writeText(c); toast('📋 نُسخ كودك: '+c); }catch(e){ toast('كودك: '+c); } }
-async function removeTech(uid,name){ if(!confirm('إزالة الفني '+(name||'')+' من فريقك؟')) return; try{ await sb.rpc('remove_my_tech',{ p_uid:uid }); }catch(e){} await loadTechs(); toast('تمت الإزالة'); render(); }
+function copyMyCode(){ const c=(me&&me.code)||''; try{ navigator.clipboard.writeText(c); toast(LX('📋 نُسخ كودك: '+c,'📋 Code copied: '+c)); }catch(e){ toast(LX('كودك: '+c,'Your code: '+c)); } }
+async function removeTech(uid,name){ if(!confirm(LX('إزالة الفني '+(name||'')+' من فريقك؟','Remove technician '+(name||'')+' from your team?'))) return; try{ await sb.rpc('remove_my_tech',{ p_uid:uid }); }catch(e){} await loadTechs(); toast('تمت الإزالة'); render(); }
 async function addTechByCode(){
   const el=document.getElementById('add_tech_code'); const code=((el&&el.value)||'').trim();
   if(code.length<4){ toast('اكتب كود الفني أو جواله'); return; }
   try{
     const { data }=await sb.rpc('add_tech_by_code',{ p_code:code });
-    if(data && data.ok){ toast('✅ أُضيف الفني: '+(data.name||'')); if(el) el.value=''; await loadTechs(); render(); }
+    if(data && data.ok){ toast(LX('✅ أُضيف الفني: '+(data.name||''),'✅ Technician added: '+(data.name||''))); if(el) el.value=''; await loadTechs(); render(); }
     else toast(data && data.reason==='bad_code' ? '❌ الكود أو الجوال غير صحيح — تأكّد أنه سجّل كفني' : 'تعذّرت الإضافة');
   }catch(e){ toast('تعذّرت الإضافة، حاول ثانية'); }
 }
@@ -1773,7 +1790,7 @@ async function toggleTechPerm(uid,pk){
 async function setTechCity(uid,city){
   const t=TECHS.find(x=>x.user_id===uid); if(!t) return;
   t.perms=t.perms||{}; if(city) t.perms.city=city; else delete t.perms.city;
-  try{ await sb.rpc('set_tech_perms',{ p_uid:uid, p_perms:t.perms }); toast(city?('📍 '+city):'📍 كل مدنك'); }
+  try{ await sb.rpc('set_tech_perms',{ p_uid:uid, p_perms:t.perms }); toast(city?('📍 '+cityLabel(city)):'📍 كل مدنك'); }
   catch(e){ toast('تعذّر الحفظ'); }
 }
 /* حفظ أرقام لوحة المزوّد المالية */
@@ -1800,62 +1817,62 @@ const T_DICT = {
   "الرئيسية":"Home","‹ الرئيسية":"‹ Home","👤 حسابي":"👤 Account","حسابي":"Account","خروج":"Sign out","🚪 تسجيل الخروج":"🚪 Sign out","دخول":"Sign in",
   "رزق · خافِت © ٢٠٢٦":"Rizq · Khafet © 2026","خاص بالمزوّد":"Provider only","غير متاح":"Unavailable","فتح ›":"Open ›",
   // بطاقات الرئيسية / الأقسام
-  "📥 الطلبات المتاحة":"📥 Available orders","طلبات متاحة":"Available orders","🏆 أكثر خدماتك طلباً":"🏆 Your top services",
-  "💰 لوحة الأرقام":"💰 Numbers board","⭐ تقييماتي":"⭐ My ratings","🗺️ الخريطة":"🗺️ Map","🗺️ مسار اليوم والطلبات القادمة":"🗺️ Today's route & upcoming orders",
+  "📥 الطلبات المتاحة":"📥 Available jobs","طلبات متاحة":"Available jobs","🏆 أكثر خدماتك طلباً":"🏆 Your top services",
+  "💰 لوحة الأرقام":"💰 Numbers board","⭐ تقييماتي":"⭐ My ratings","🗺️ الخريطة":"🗺️ Map","🗺️ مسار اليوم والطلبات القادمة":"🗺️ Today's route & upcoming jobs",
   "🔔 تذكيرات الصيانة الدورية":"🔔 Maintenance reminders","فريقي":"My team","⚙️ الإدارة":"⚙️ Management","⚙️ الإعدادات":"⚙️ Settings",
   "🏢 مزوّدي":"🏢 My provider","🏢 مزوّد خدمة":"🏢 Service provider","👛 محفظتي":"👛 My wallet","🧑‍🔧 فني":"🧑‍🔧 Technician",
   // المخزن
   "💰 قيمة المخزون (بالبيع)":"💰 Stock value (at sale)","📦 التكلفة (بالشراء)":"📦 Cost (at purchase)","📦 تكلفة المخزون":"📦 Stock cost","قيمة المخزون":"Stock value",
-  "＋ أضف خدمة":"＋ Add service","خدمة إضافية":"Extra service","بند مخصص":"Custom item","ما فيه أصناف بعد — أضف أول صنف فوق.":"No items yet — add the first above.","📈 الربح المتوقّع":"📈 Expected profit",
+  "＋ أضف خدمة":"＋ Add service","خدمة إضافية":"Extra service","بند مخصص":"Custom item","ما فيه أصناف بعد — أضف أول صنف فوق.":"No items yet. Add the first one above.","📈 الربح المتوقّع":"📈 Expected profit",
   // لوحة الأرقام
   "📊 دخل آخر ٧ أيام":"📊 Income (last 7 days)","📈 الإيرادات":"📈 Revenue","الإيرادات":"Revenue","💵 إجمالي دخلك":"💵 Your total income","💵 صافي تقديري":"💵 Estimated net",
   "💼 المستحق للمنصة":"💼 Owed to platform","🧾 مصاريف شهرية":"🧾 Monthly costs","مصاريف شهرية":"Monthly costs","📊 أرقام صفحتي الرئيسية":"📊 My home numbers","رقمي المهم":"My key number",
   "✏️ عدّل أرقامك:":"✏️ Edit your numbers:","اضغط الأرقام اللي تبيها تطلع لك فوق (أهم ٥).":"Tap the numbers you want shown at top (top 5).",
-  "الإيرادات تُحسب تلقائياً من فواتيرك المنجزة، والباقي تحطّه أنت.":"Revenue is auto-calculated from your completed invoices; you set the rest.",
-  "الصافي":"Net","المستحق":"Owed","إجمالي المنجز":"Total completed","منجزة":"completed","✅ صافي لك":"✅ Your net","👛 محفظتي":"👛 My wallet",
+  "الإيرادات تُحسب تلقائياً من فواتيرك المنجزة، والباقي تحطّه أنت.":"Revenue comes from your completed invoices. You fill in the rest.",
+  "الصافي":"Net","المستحق":"Owed","إجمالي المنجز":"Total completed","منجزة":"Completed","✅ صافي لك":"✅ Your net","👛 محفظتي":"👛 My wallet",
   // الخريطة / المسار
-  "🗺️ اذهب":"🗺️ Go","مواقع طلباتك — افتح المسار كامل ورتّب مشوارك ووفّر وقتك.":"Your orders' locations — open the full route, plan your trip and save time.",
-  "ما عندك طلبات قادمة.":"No upcoming orders.","عرض كل الأيام":"Show all days","📍 المنطقة":"📍 Area","📍 الموقع":"📍 Location",
+  "🗺️ اذهب":"🗺️ Go","مواقع طلباتك — افتح المسار كامل ورتّب مشوارك ووفّر وقتك.":"Where your jobs are. Open the full route, plan your trip and save time.",
+  "ما عندك طلبات قادمة.":"No upcoming jobs.","عرض كل الأيام":"Show all days","📍 المنطقة":"📍 Area","📍 الموقع":"📍 Location",
   // الطلبات
-  "الاسم والجوال والعنوان تظهر لك بعد قبول الطلب":"Name, phone and address appear after you accept the order","🔒 بيانات العميل":"🔒 Customer details","🔒 مزوّدك يوزّع الطلبات":"🔒 Your provider dispatches orders",
-  "⚡ معروض عليك أولاً — بادر بالقبول قبل ما يُفتح لبقية المزوّدين":"⚡ Offered to you first — accept before it opens to other providers","✅ اقبل الطلب":"✅ Accept order","تخطّي ⏭️":"Skip ⏭️","تخطّيت الطلب":"Order skipped",
-  "🔧 المطلوب":"🔧 Needed","🛠️ المشكلة":"🛠️ Problem","🔧 بدء العمل":"🔧 Start work","✅ إنهاء":"✅ Finish","✓ مكتمل":"✓ Completed","قيد التنفيذ":"In progress","مكتمل":"Completed",
-  "⏱️ المدة":"⏱️ Duration","⏰ حان وقتها":"⏰ Due now","🏠 صورة المنزل":"🏠 House photo","📷 صورة/مقطع":"📷 Photo/clip","🎥 عرض":"🎥 View","👤 العميل":"👤 Customer","ما قبلت طلبات بعد.":"You haven't accepted any orders yet.",
-  "الاسم":"Name","الجوال":"Phone","الخدمة":"Service","السعر":"Price","العدد":"Qty","الإجمالي":"Total","الصفة":"Role","⚡ طلب سريع (معاينة)":"⚡ Quick request (inspection)",
+  "الاسم والجوال والعنوان تظهر لك بعد قبول الطلب":"Name, phone and address show after you accept the job","🔒 بيانات العميل":"🔒 Customer details","🔒 مزوّدك يوزّع الطلبات":"🔒 Your provider assigns the jobs",
+  "⚡ معروض عليك أولاً — بادر بالقبول قبل ما يُفتح لبقية المزوّدين":"⚡ Offered to you first. Accept before it opens to other providers","✅ اقبل الطلب":"✅ Accept job","تخطّي ⏭️":"Skip ⏭️","تخطّيت الطلب":"Job skipped",
+  "🔧 المطلوب":"🔧 Work needed","🛠️ المشكلة":"🛠️ Problem","🔧 بدء العمل":"🔧 Start work","✅ إنهاء":"✅ Finish","✓ مكتمل":"✓ Completed","قيد التنفيذ":"In progress","مكتمل":"Completed",
+  "⏱️ المدة":"⏱️ Duration","⏰ حان وقتها":"⏰ Due now","🏠 صورة المنزل":"🏠 House photo","📷 صورة/مقطع":"📷 Photo/clip","🎥 عرض":"🎥 View","👤 العميل":"👤 Customer","ما قبلت طلبات بعد.":"You haven't accepted any jobs yet.",
+  "الاسم":"Name","الجوال":"Phone","الخدمة":"Service","السعر":"Price","العدد":"Qty","الإجمالي":"Total","الصفة":"Role","⚡ طلب سريع (معاينة)":"⚡ Quick job (inspection)",
   // الضمان
-  "🛡️ الضمان":"🛡️ Warranty","ضمان ٧ أيام":"7-day warranty","ضمان ٣٠ يوم":"30-day warranty","ضمان ٩٠ يوم":"90-day warranty","بدون ضمان":"No warranty",
+  "🛡️ الضمان":"🛡️ Warranty","ضمان ٧ أيام":"Warranty 7 days","ضمان ٣٠ يوم":"Warranty 30 days","ضمان ٩٠ يوم":"Warranty 90 days","بدون ضمان":"No warranty",
   // الحجز
-  "➕ حجز جديد لعميل":"➕ New booking for a client","💾 احجز":"💾 Book","تعذّر الحجز":"Couldn't book","اكتب اسم العميل":"Enter client name","👤 بياناتي":"👤 My details",
-  "— بدون توزيع —":"— No assignment —","🧑‍🔧 توزيع على فني…":"🧑‍🔧 Assign to a technician…","✅ وُزّع على الفني":"✅ Assigned to technician","أُلغي التوزيع":"Assignment cancelled","تعذّر التوزيع":"Couldn't assign",
+  "➕ حجز جديد لعميل":"➕ New booking for a customer","💾 احجز":"💾 Book","تعذّر الحجز":"Couldn't book","اكتب اسم العميل":"Enter the customer name","👤 بياناتي":"👤 My details",
+  "— بدون توزيع —":"Not assigned","🧑‍🔧 توزيع على فني…":"🧑‍🔧 Assign to a technician…","✅ وُزّع على الفني":"✅ Assigned to technician","أُلغي التوزيع":"Assignment cancelled","تعذّر التوزيع":"Couldn't assign",
   // الفواتير
-  "فاتورة":"Invoice","حفظ وإرسال للعميل":"Save & send to client","ما فيه فواتير بعد — تظهر بعد إنجاز الطلبات وإصدار فواتيرها.":"No invoices yet — they appear after completing orders and issuing invoices.",
+  "فاتورة":"Invoice","حفظ وإرسال للعميل":"Save & send to customer","ما فيه فواتير بعد — تظهر بعد إنجاز الطلبات وإصدار فواتيرها.":"No invoices yet. They show after you finish jobs and issue invoices.",
   "🖨️ طباعة":"🖨️ Print","⤓ تصدير Excel":"⤓ Export Excel","التاريخ":"Date",
   // فريقي
   "🧑‍🔧 فني":"🧑‍🔧 Technician","➕ أضف":"➕ Add","➕ أضف تذكير":"➕ Add reminder","اكتب كود الفني أو جواله":"Enter technician code or phone","✅ أُضيف الفني:":"✅ Technician added:",
   "إزالة الفني":"Remove technician","إزالة":"Remove","تمت الإزالة":"Removed","الفني مو من فريقك":"Technician isn't in your team","ما أضفت فنيّين بعد.":"You haven't added technicians yet.",
   "صلاحياته:":"Permissions:","💾 حُدّثت الصلاحيات":"💾 Permissions updated","📍 مدينته:":"📍 Their city:","كوده أو رقم جواله":"Their code or phone","من فريقك؟":"From your team?",
-  "✅ أنت في فريق":"✅ You're in the team of","❌ الكود أو الجوال غير صحيح — تأكّد أنه سجّل كفني":"❌ Code or phone is wrong — make sure they registered as a technician","تعذّرت الإضافة":"Couldn't add","تعذّرت الإضافة، حاول ثانية":"Couldn't add, try again","الصفة":"Role",
+  "✅ أنت في فريق":"✅ You're in the team of","❌ الكود أو الجوال غير صحيح — تأكّد أنه سجّل كفني":"❌ Wrong code or phone. Make sure they signed up as a technician","تعذّرت الإضافة":"Couldn't add","تعذّرت الإضافة، حاول ثانية":"Couldn't add, try again","الصفة":"Role",
   // المدن
   "📍 مدن الخدمة":"📍 Service cities","📍 كل مدنك":"📍 All your cities","كل مدنك":"All your cities","مدنك المختارة:":"Your selected cities:",
-  "ابحث عن مدينتك وأضفها — أي طلب من مدنك المختارة يوصلك.":"Search for your city and add it — any order from your selected cities reaches you.","ابحث وأضف مدينة فوق 👆":"Search and add a city above 👆",
+  "ابحث عن مدينتك وأضفها — أي طلب من مدنك المختارة يوصلك.":"Search for your city and add it. You get every job from the cities you pick.","ابحث وأضف مدينة فوق 👆":"Search and add a city above 👆",
   "ما فيه مدينة بهذا الاسم":"No city by that name","💾 حفظ المدن":"💾 Save cities","مدن الخدمة (اختر واحدة أو أكثر):":"Service cities (choose one or more):","نوع الخدمات (اختر واحدة أو أكثر):":"Service types (choose one or more):",
   // التذكيرات
-  "ما فيه تذكيرات — أضف أول تذكير فوق.":"No reminders — add the first above.","تواصل مع هؤلاء العملاء الآن.":"Contact these clients now.",
+  "ما فيه تذكيرات — أضف أول تذكير فوق.":"No reminders yet. Add the first one above.","تواصل مع هؤلاء العملاء الآن.":"Contact these customers now.",
   // العملاء
-  "ما فيه عملاء بعد — أضف أول عميل فوق.":"No clients yet — add the first above.",
+  "ما فيه عملاء بعد — أضف أول عميل فوق.":"No customers yet. Add the first one above.",
   // الإعدادات والحساب
   "👤 بياناتي":"👤 My details","تغيير كلمة المرور":"Change password","💾 تحديث كلمة المرور":"💾 Update password","تأكيد الجوال":"Confirm phone",
-  "📲 أرسلنا كود تأكيد على جوالك — أدخله للتأكيد:":"📲 We sent a confirmation code to your phone — enter it to confirm:","تأكيد ✅":"Confirm ✅","تأكيد وتفعيل ✅":"Confirm & activate ✅",
-  "تنبيه صوتي للطلبات":"Order sound alert","🔔 التنبيه الصوتي مفعّل":"🔔 Sound alert on","🔕 أُوقف التنبيه الصوتي":"🔕 Sound alert off","حذف الحساب":"Delete account","حذف":"Delete","تم حذف الحساب":"Account deleted",
+  "📲 أرسلنا كود تأكيد على جوالك — أدخله للتأكيد:":"📲 We sent a code to your phone. Enter it to confirm:","تأكيد ✅":"Confirm ✅","تأكيد وتفعيل ✅":"Confirm & activate ✅",
+  "تنبيه صوتي للطلبات":"Sound alert for new jobs","🔔 التنبيه الصوتي مفعّل":"🔔 Sound alert on","🔕 أُوقف التنبيه الصوتي":"🔕 Sound alert off","حذف الحساب":"Delete account","حذف":"Delete","تم حذف الحساب":"Account deleted",
   "تواصل مع الدعم":"Contact support","💾 حُفظ":"💾 Saved","💾 حفظ الأرقام":"💾 Save numbers","💾 حُفظت الأرقام":"💾 Numbers saved","تعذّر الحفظ":"Couldn't save","تعذّر، حاول ثانية":"Failed, try again","➕ أضف":"➕ Add",
   // التسجيل / الدخول
   "➕ تسجيل مزوّد جديد":"➕ Register new provider","تسجيل مزوّد جديد":"Register new provider","تسجيل فني جديد":"Register new technician","تسجيل ✅":"Register ✅","تسجيل وتفعيل ✅":"Register & activate ✅",
-  "لديك حساب؟ تسجيل الدخول":"Have an account? Sign in","ما عندك حساب مزوّد؟ سجّل الآن 👇":"No provider account? Register now 👇","سجّل حسابك — ويطلع لك":"Register your account — and you'll get",
-  "سجّل وابدأ استقبال طلبات مدنك فوراً — بعد التسجيل يطلع لك":"Register and start receiving orders in your cities right away — after registering you'll get",
-  "ادخل برقمك المسجّل وكلمة المرور لاستقبال طلبات منطقتك.":"Sign in with your registered number and password to receive orders in your area.",
+  "لديك حساب؟ تسجيل الدخول":"Have an account? Sign in","ما عندك حساب مزوّد؟ سجّل الآن 👇":"No provider account? Register now 👇","سجّل حسابك — ويطلع لك":"Register your account and you get",
+  "سجّل وابدأ استقبال طلبات مدنك فوراً — بعد التسجيل يطلع لك":"Register and start getting jobs in your cities right away. After you register, you get",
+  "ادخل برقمك المسجّل وكلمة المرور لاستقبال طلبات منطقتك.":"Sign in with your registered number and password to get jobs in your area.",
   "فني؟ دخول / تسجيل من بوابة فنيّو خافِت":"Technician? Sign in / register from the Khafet Technicians portal","الفنيّون يسجّلون من بوابة":"Technicians register from the portal","فنيّو خافِت":"Khafet Technicians",
-  "فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل":"Your technician registers from the technicians portal and gets their code — enter","كودك":"Your code","كودك:":"Your code:","📋 نسخ الكود":"📋 Copy code","📋 نُسخ كودك:":"📋 Your code copied:",
-  "كودك — أعطه لمزوّدك يضيفك لفريقه":"Your code — give it to your provider to add you to their team","تعطيه لمزوّدك ليضيفك لفريقه.":"Give it to your provider to add you to their team.","لضم فنيّيك.":"to add your technicians.",
+  "فنيّك يسجّل من بوابة الفنيين ويأخذ كوده — أدخل":"Your technician signs up in the technicians portal and gets a code. Enter","كودك":"Your code","كودك:":"Your code:","📋 نسخ الكود":"📋 Copy code","📋 نُسخ كودك:":"📋 Your code copied:",
+  "كودك — أعطه لمزوّدك يضيفك لفريقه":"Your code. Give it to your provider so they can add you to their team","تعطيه لمزوّدك ليضيفك لفريقه.":"Give it to your provider to add you to their team.","لضم فنيّيك.":"to add your technicians.",
   "هنا فينضم لفريقك.":"here to join your team.","ويأخذون كودهم، وتضيفهم أنت من":"and they get their code, and you add them from","بعد الدخول.":"after signing in.","سجّل الآن 👇":"Register now 👇",
   // أنواع الخدمات
   "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتبريد":"AC & Cooling","نجارة":"Carpentry","دهان":"Painting","تنظيف":"Cleaning","أعمال عامة":"General work","أجهزة منزلية":"Home appliances",
@@ -1864,21 +1881,69 @@ const T_DICT = {
   "إصلاح سيفون الحمام":"Fix toilet flush","تنظيف خزان المياه":"Clean water tank","تغيير لمبة/إضاءة":"Change lamp / light","تركيب ثريا":"Install chandelier","إصلاح قصر/انقطاع":"Fix short circuit / outage",
   "تغيير مفتاح/بريزة":"Change switch / socket","تركيب مروحة سقف":"Install ceiling fan","فحص لوحة الكهرباء":"Inspect electrical panel","تركيب مكيف سبليت":"Install split AC","صيانة/إصلاح مكيف":"AC service / repair",
   "تعبئة فريون":"Refill freon","تنظيف مكيف سبليت":"Clean split AC","صيانة مكيف شباك":"Window AC service","تعليق/تركيب رفوف":"Mount shelves","إصلاح باب/مفصلات":"Fix door / hinges","إصلاح دولاب/مطبخ":"Fix cabinet / kitchen",
-  "تركيب/تجميع أثاث":"Assemble furniture","إصلاح نافذة/شيش":"Fix window","دهان غرفة":"Paint a room","ترميم وتلميس دهان":"Paint touch-up","معالجة تشققات ورطوبة":"Fix cracks & damp","ترويبة بلاط/سيراميك":"Tile grouting",
+  "تركيب/تجميع أثاث":"Assemble furniture","إصلاح نافذة/شيش":"Fix window","دهان غرفة":"Paint a room","ترميم وتلميس دهان":"Paint retouching","معالجة تشققات ورطوبة":"Fix cracks & damp","ترويبة بلاط/سيراميك":"Tile grouting",
   "عزل تسرب بسيط":"Simple leak sealing","تنظيف عام للمنزل":"General home cleaning","تنظيف كنب وسجاد":"Sofa & carpet cleaning","إصلاح ثلاجة":"Fix fridge","إصلاح غسالة":"Fix washing machine","إصلاح غسالة صحون":"Fix dishwasher","إصلاح فرن/بوتاجاز":"Fix oven / stove",
   // المدن
-  "الرياض":"Riyadh","جدة":"Jeddah","مكة المكرمة":"Makkah","المدينة المنورة":"Madinah","الدمام":"Dammam","الخبر":"Khobar","الظهران":"Dhahran","القطيف":"Qatif","الجبيل":"Jubail","الأحساء":"Al-Ahsa",
-  "الطائف":"Taif","تبوك":"Tabuk","أبها":"Abha","خميس مشيط":"Khamis Mushait","حائل":"Hail","نجران":"Najran","جازان":"Jazan","ينبع":"Yanbu","بريدة":"Buraidah","الخرج":"Al-Kharj",
+  "الرياض":"Riyadh","جدة":"Jeddah","مكة المكرمة":"Makkah","المدينة المنورة":"Madinah","الدمام":"Dammam","الخبر":"Khobar","الظهران":"Dhahran","القطيف":"Qatif","الجبيل":"Jubail","الأحساء":"Al Ahsa",
+  "الطائف":"Taif","تبوك":"Tabuk","أبها":"Abha","خميس مشيط":"Khamis Mushait","حائل":"Hail","نجران":"Najran","جازان":"Jazan","ينبع":"Yanbu","بريدة":"Buraidah","الخرج":"Al Kharj",
   // عناوين البطاقات والحالات الفارغة
-  "المخزن":"Stock","الفواتير":"Invoices","مسار اليوم":"Today's route","مواقع طلباتك":"Your orders' locations","تقييماتي":"My ratings","رأي عملائك":"Your clients' feedback",
-  "لوحة الأرقام":"Numbers board","أرباحك وأرقامك":"Your profits & numbers","تذكيرات الصيانة":"Maintenance reminders","دخل متكرّر":"Recurring income","طلباتي":"My orders","فتح ›":"Open ›",
-  "لا طلبات في هذا اليوم":"No orders on this day","لا توجد طلبات متاحة في مدن خدمتك حالياً":"No available orders in your service cities right now",
-  "حدّد مدن خدمتك من الإدارة لتصلك الطلبات":"Set your service cities from Management to receive orders","حدّد مدن خدمتك من «حسابي» لتصلك الطلبات":"Set your service cities from Account to receive orders","ما قبلت طلبات بعد":"You haven't accepted any orders yet",
-  "ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد ٦ شهور) — دخل متكرّر لك.":"Remind your clients of upcoming maintenance (e.g. AC service in 6 months) — recurring income for you.",
+  "المخزن":"Stock","الفواتير":"Invoices","مسار اليوم":"Today's route","مواقع طلباتك":"Where your jobs are","تقييماتي":"My ratings","رأي عملائك":"What your customers say",
+  "لوحة الأرقام":"Numbers board","أرباحك وأرقامك":"Your profits & numbers","تذكيرات الصيانة":"Maintenance reminders","دخل متكرّر":"Recurring income","طلباتي":"My jobs","فتح ›":"Open ›",
+  "لا طلبات في هذا اليوم":"No jobs on this day","لا توجد طلبات متاحة في مدن خدمتك حالياً":"No available jobs in your service cities right now",
+  "حدّد مدن خدمتك من الإدارة لتصلك الطلبات":"Set your service cities in Management to get jobs","حدّد مدن خدمتك من «حسابي» لتصلك الطلبات":"Set your service cities in Account to get jobs","ما قبلت طلبات بعد":"You haven't accepted any jobs yet",
+  "ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد ٦ شهور) — دخل متكرّر لك.":"Remind your customers about upcoming maintenance (like AC service after 6 months). Recurring income for you.",
   "اسم الصنف":"Item name","الكمية":"Qty","سعر الشراء":"Buy price","سعر البيع":"Sell price","ربح/وحدة":"Profit/unit","النسبة٪":"Margin %","قيمة البيع":"Sale value","الصنف":"Item","اكتب اسم الصنف":"Enter item name","✅ أُضيف الصنف":"✅ Item added",
-  "قبول الطلبات":"Accept orders","إضافة/تعديل مخزن":"Add/edit stock","إصدار فواتير":"Issue invoices","محطة":"stop","محطات":"stops",
-  "تقييماتك بدون ملاحظات مكتوبة.":"Your ratings have no written notes.","ما وصلتك تقييمات بعد — تظهر بعد إنجاز الطلبات وتقييم العملاء.":"No ratings yet — they appear after you complete orders and clients rate you.","عميل":"Client",
+  "قبول الطلبات":"Accept jobs","إضافة/تعديل مخزن":"Add/edit stock","إصدار فواتير":"Issue invoices","محطة":"stop","محطات":"stops",
+  "تقييماتك بدون ملاحظات مكتوبة.":"Your ratings have no written notes.","ما وصلتك تقييمات بعد — تظهر بعد إنجاز الطلبات وتقييم العملاء.":"No ratings yet. They show after you finish jobs and customers rate you.","عميل":"Customer",
   "🧑‍🔧 فني لدى":"🧑‍🔧 Technician at","🧑‍🔧 فني جديد":"🧑‍🔧 New technician","لا توجد أوقات متاحة":"No available times","المنطقة":"Area","إجمالي":"Total","الرصيد":"Balance",
+  // الدخول ونسيت كلمة المرور (المفاتيح بلا الإيموجي الأول؛ المحرّك يحافظ عليه)
+  "لحظة…":"One moment…","نتحقق من جلستك المحفوظة":"Checking your saved session","كلمة المرور":"Password",
+  "تذكرني — ابقَ مسجّلاً بهذا الجهاز":"Remember me on this device","نسيت كلمة المرور؟":"Forgot password?",
+  "حسابك قيد المراجعة. بننتظر اعتماد الإدارة.":"Your account is under review. We're waiting for approval.",
+  "رقم الجوال غير صحيح.":"Invalid mobile number.","رقم الجوال غير صحيح":"Invalid mobile number","اكتب كلمة المرور.":"Enter your password.","لا يوجد اتصال بالخادم":"No connection to the server",
+  "الرقم أو كلمة المرور غير صحيحة.":"Wrong number or password.","الرقم غير مسجّل — سجّل كمزوّد أو كفني بكودك.":"This number isn't registered. Sign up as a provider, or as a technician with your code.",
+  "تعذّر الاتصال، حاول مرة ثانية.":"Couldn't connect, try again.","تعذّر الاتصال، حاول مرة ثانية":"Couldn't connect, try again",
+  "استعادة كلمة المرور":"Reset password","اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد لتعيين كلمة مرور جديدة.":"Enter your registered mobile number and we'll send you a code to set a new password.",
+  "أرسل كود التأكيد":"Send code","‹ رجوع لتسجيل الدخول":"‹ Back to sign in","جاري الإرسال...":"Sending...",
+  "الرقم غير مسجّل، أو تعذّر الإرسال — حاول بعد قليل.":"Number not registered, or sending failed. Try again shortly.","تعذّر الإرسال، حاول مرة ثانية.":"Sending failed, try again.",
+  "تعيين كلمة مرور جديدة":"Set a new password","أرسلنا كوداً إلى":"We sent a code to","كلمة المرور الجديدة (٦ فأكثر)":"New password (6+ characters)","أعد كتابة كلمة المرور":"Repeat the password",
+  "حفظ ودخول":"Save and sign in","لم يصلك الكود؟ إعادة الإرسال":"No code? Resend","اكتب كود التأكيد المرسل لجوالك":"Enter the code sent to your phone",
+  "كلمة المرور ٦ خانات على الأقل":"Password must be at least 6 characters","كلمة المرور ٦ أحرف على الأقل":"Password must be at least 6 characters","كلمتا المرور غير متطابقتين":"Passwords do not match",
+  "الكود غير صحيح أو انتهت صلاحيته.":"Wrong or expired code.","تعذّر حفظ كلمة المرور — جرّب كلمة مختلفة.":"Couldn't save the password. Try a different one.",
+  "تعذّر، حاول مرة ثانية.":"Failed, try again.","تعذّر، حاول مرة ثانية":"Failed, try again","تم تغيير كلمة المرور — سجّل الدخول الآن.":"Password changed. Sign in now.","تم تغيير كلمة المرور":"Password changed",
+  // تسجيل مزوّد / فني
+  "الاسم / اسم المؤسسة":"Name or business name","كلمة مرور (٦ أحرف فأكثر)":"Password (6+ characters)","رقم السجل التجاري":"Commercial registration number",
+  "اكتب الاسم":"Enter your name","اكتب مدن الخدمة":"Choose your service cities","اختر نوع الخدمات":"Choose your service types","لا يوجد اتصال، حاول بعد قليل":"No connection, try again shortly",
+  "نرسل رمز التحقق...":"Sending the code...","تعذّر إرسال الرمز — تأكد من الرقم وحاول ثانية":"Couldn't send the code. Check the number and try again",
+  "اكتب الرمز كاملاً":"Enter the full code","اكتب الكود كاملًا":"Enter the full code","نتحقق...":"Checking...","الرمز غير صحيح — حاول ثانية":"Wrong code, try again",
+  "تعذّر الإكمال — حاول مرة ثانية":"Couldn't finish, try again","تم التسجيل — ادخل بجوالك وكلمة المرور":"Registered. Sign in with your phone and password",
+  "اسمك":"Your name","اكتب اسمك":"Enter your name","تعذّر التسجيل، حاول ثانية":"Couldn't register, try again",
+  "هذا الرقم حساب مدير — لا يُسجّل كفني. استخدم رقماً آخر.":"This number is a manager account and can't register as a technician. Use another number.",
+  // اختيار جهة العمل
+  "اختر جهة عملك":"Choose your workplace","حسابك جاهز. اختر المؤسسة اللي تشتغل معها، ويوصلها طلبك للاعتماد.":"Your account is ready. Pick the business you work with and your request goes to them for approval.",
+  "ابحث باسم المؤسسة أو رقمها":"Search by business name or number","جاري التحميل…":"Loading…","ما فيه نتائج":"No results","تعذّر تحميل القائمة، تأكد من الإنترنت":"Couldn't load the list. Check your internet",
+  "عندك كود انضمام؟ اكتبه هنا":"Have a join code? Enter it here","مثال: HN7K2Q":"Example: HN7K2Q","انضمام بالكود ✅":"Join with code ✅","خروج من الحساب":"Sign out","خافت":"Khafet",
+  "تحقق الآن":"Check now","تغيير الجهة":"Change workplace","تعذّر إرسال الطلب، حاول مرة ثانية":"Couldn't send the request, try again","الكود غير صحيح، تأكد منه من صاحب العمل":"Wrong code. Check it with your employer",
+  // الطلبات والتنقّل السفلي
+  "متاح":"Available","جديد":"New","مؤكد":"Confirmed","الفاتورة":"Invoice","فني":"Technician","الطلبات":"Jobs","حجز":"Book","المزيد":"More","بياناتي والإعدادات":"My details and settings",
+  "ما أضافك مزوّد بعد — أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.":"No provider has added you yet. Send your code to your provider. Once they add you, their jobs show here.",
+  "اعتذار — الطلب أخذه مزوّد آخر":"Sorry, another provider already took this job","وصلت حدّ ٣ طلبات نشطة — أنجز طلباً قبل ما تقبل جديداً":"You have 3 active jobs, which is the limit. Finish one before you accept a new one",
+  "حسابك موقوف أو قيد المراجعة — تواصل مع الإدارة":"Your account is suspended or under review. Contact management","رقمك غير مسجّل كمزوّد":"Your number isn't registered as a provider","هذا الحساب ليس حساب مزوّد":"This isn't a provider account",
+  "تعذّر القبول":"Couldn't accept","تم قبول الطلب ✅":"Job accepted ✅","تعذّر القبول، حاول مرة ثانية":"Couldn't accept, try again","أُلغي الضمان":"Warranty removed","تعذّر حفظ الضمان":"Couldn't save the warranty",
+  "وصل طلب جديد في مدن خدمتك!":"New job in your service cities!","تعذّر فتح الملف":"Couldn't open the file",
+  "أُرسلت الفاتورة ✓":"Invoice sent ✓","اسمح بالنوافذ المنبثقة":"Allow popups to print","تم تنزيل الملف":"File downloaded",
+  // الإعدادات
+  "كلمة المرور الجديدة":"New password","أعد كتابتها":"Type it again","كود التأكيد":"Confirmation code","تأكيد وتغيير كلمة المرور":"Confirm and change password",
+  "أرسلنا كود تأكيد على جوالك":"We sent a code to your phone","تعذّر إرسال الكود، حاول بعد قليل":"Couldn't send the code, try again shortly","اكتب كود التأكيد":"Enter the confirmation code",
+  "الجديدة لازم تكون مختلفة عن القديمة":"The new password must be different from the old one","الكود غير صحيح أو انتهى":"Wrong or expired code","تعذّر حذف الحساب — تواصل مع الدعم":"Couldn't delete the account. Contact support",
+  // الأرقام، الفريق، المخزن، التذكيرات، الحجز، المدن
+  "المصاريف الشهرية (ر.س)":"Monthly costs (SAR)","رقمي المهم (اسمه)":"My key number (its name)","قيمته":"Value",
+  "كود انضمام فريقك":"Your team join code","نسخ":"Copy","كود جديد عشوائي":"New random code","كود الفني أو جواله":"Technician code or phone","اعتماد":"Approve","رفض":"Reject","تم الرفض":"Rejected","تعذّر":"Something went wrong",
+  "أعطِ هذا الكود لعمالك. الفني يسجّل في رزق، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.":"Give this code to your workers. The technician signs up in Rizq, enters the code, and shows up here for you to approve. Change it any time and the old one stops working.",
+  "كمية":"Qty","تعذّر التعديل":"Couldn't update","حُذف":"Deleted","تعذّر الحذف":"Couldn't delete",
+  "اسم العميل":"Customer name","الخدمة (صيانة مكيف، تسليك...)":"Service (AC service, drain cleaning...)","أُضيف التذكير":"Reminder added","أُضيف العميل":"Customer added",
+  "جوال العميل":"Customer phone","المدينة":"City","الخدمة / المشكلة":"Service or problem",
+  "🔍 ابحث وأضف مدينة…":"🔍 Search and add a city…","حُفظت مدن الخدمة":"Service cities saved",
   // الوحدات
   "ر.س":"SAR","إلغاء":"Cancel","يوم":"day","دقيقة":"min"
 };
@@ -1943,6 +2008,7 @@ function setUILang(l){
   UILANG=l; try{localStorage.setItem('khafet_uilang',l);}catch(e){}
   document.documentElement.lang = l==='en'?'en':'ar';
   document.documentElement.dir  = l==='en'?'ltr':'rtl';
+  document.title = LX('خافِت | بوابة المزوّد','Khafet | Provider Portal');
   render();
   if(l==='en') applyLang(); else _restoreEl(document.querySelector('header.top'));
   syncLangBtn();
@@ -1964,6 +2030,7 @@ function showChecking(){
 }
 document.documentElement.lang = UILANG==='en'?'en':'ar';
 document.documentElement.dir  = UILANG==='en'?'ltr':'rtl';
+if(UILANG==='en') document.title = 'Khafet | Provider Portal';
 initialScreen();
 _startI18n();
 if(_uiEN()) applyLang();
@@ -1979,7 +2046,7 @@ function _pwToggle(btn){
   const show = inp.type==='password';
   inp.type = show?'text':'password';
   btn.innerHTML = show?_EYE_OFF:_EYE_OPEN;
-  btn.setAttribute('aria-label', show?'إخفاء كلمة المرور':'إظهار كلمة المرور');
+  btn.setAttribute('aria-label', show?LX('إخفاء كلمة المرور','Hide password'):LX('إظهار كلمة المرور','Show password'));
   try{ inp.focus({preventScroll:true}); }catch(e){}
 }
 function applyPwEyes(){
@@ -1989,7 +2056,7 @@ function applyPwEyes(){
     inp.parentNode.insertBefore(w, inp); w.appendChild(inp);
     const b=document.createElement('button');
     b.type='button'; b.className='pweye'; b.innerHTML=_EYE_OPEN;
-    b.setAttribute('aria-label','إظهار كلمة المرور');
+    b.setAttribute('aria-label',LX('إظهار كلمة المرور','Show password'));
     b.setAttribute('tabindex','-1');
     b.onclick=function(e){ e.preventDefault(); e.stopPropagation(); _pwToggle(b); };
     w.appendChild(b);
