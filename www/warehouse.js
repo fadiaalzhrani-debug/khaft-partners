@@ -116,8 +116,10 @@ async function whCommit(id){
     if(why===null||!why.trim()){ it.qty=(+it.qty||0)-d; whPaint(it); whT('↩️ '+whL('أُلغي الصرف','Cancelled')); return; }
     reason='صرف · '+why.trim();
   }
-  await whH().saveQty(it); await whH().logStock(it,d,reason);
-  whT((d>0?'➕ ':'➖ ')+whNx(Math.abs(d))+' '+whUnit(it.unit)+' · '+whName(it)); whH().refreshLog();
+  const ok1=await whH().saveQty(it); const ok2=await whH().logStock(it,d,reason);
+  if(ok1===false||ok2===false){ whT('⏳ '+whL('محفوظ بالجهاز، يُرسل عند رجوع الاتصال','Saved on device, will sync when online')); }
+  else { whT((d>0?'➕ ':'➖ ')+whNx(Math.abs(d))+' '+whUnit(it.unit)+' · '+whName(it)); }
+  whH().refreshLog();
 }
 async function whType(id){
   const it=whFind(id); if(!it) return;

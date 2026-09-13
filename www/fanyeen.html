@@ -816,8 +816,21 @@ async function loadOrg(){ if(!cloudReady) return; try{ const r=await sb.rpc('my_
     const p=/^provider:(.+)$/.exec(MYORG||''); if(p){ try{ const pr=await sb.from('khafet_providers').select('name').eq('id',p[1]).maybeSingle(); window.MYORG_NAME=(pr.data&&pr.data.name)||''; }catch(e){} } }catch(e){} }
 async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const src=invSrc(); const iv=await sb.from(src.table).select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; invCache3(); } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; } }
 function toggleInv(){ showInv=!showInv; render(); }
-async function invSaveQty(it){ invCache3(); if(cloudReady&&it.id){ try{ await sb.from(invSrc().table).update({qty:it.qty}).eq('id',it.id); }catch(e){} } }
-async function logStock(it, delta, reason){ const src=invSrc(); const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(src.pid) entry.provider_id=src.pid; if(cloudReady){ try{ await sb.from(src.log).insert(entry); }catch(e){} } loadStockLog(); }
+/* ═══ صندوق الصادر: أي حفظ يفشل (نت ضعيف) يُحفظ في الجهاز ويُعاد إرساله تلقائيًا، و«تم» لا تظهر إلا بعد نجاح الحفظ فعلًا ═══ */
+const OUTBOX_KEY='kh_outbox';
+function obLoad(){ try{ return JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]'); }catch(e){ return []; } }
+function obSave(q){ try{ localStorage.setItem(OUTBOX_KEY,JSON.stringify(q)); }catch(e){} obBadge(); }
+function obBadge(){ let b=document.getElementById('obBadge'); const n=obLoad().length; if(!n){ if(b) b.remove(); return; } if(!b){ b=document.createElement('div'); b.id='obBadge'; b.style.cssText='position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:#7a5c00;color:#fff;padding:7px 14px;border-radius:999px;font-weight:800;font-size:.85rem;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.2)'; b.onclick=obFlush; document.body.appendChild(b); } b.textContent='⏳ '+(lang==='ar'?ar(n)+' بانتظار الإرسال، اضغط للمحاولة':n+' pending, tap to retry'); }
+async function obRun(op){ if(op.kind==='update'){ const r=await sb.from(op.table).update(op.patch).eq('id',op.id); if(r.error) throw r.error; } else if(op.kind==='insert'){ const r=await sb.from(op.table).insert(op.row); if(r.error) throw r.error; } }
+let _obBusy=false;
+async function obFlush(){ if(!cloudReady||_obBusy) return; const q=obLoad(); if(!q.length) return; _obBusy=true;
+  try{ const rest=[]; for(const op of q){ try{ await obRun(op); }catch(e){ rest.push(op); } } obSave(rest);
+    if(!rest.length){ toast(lang==='ar'?'✅ أُرسلت التغييرات المعلّقة':'✅ Pending changes sent'); loadInv(); loadStockLog(); loadOrders(); } }
+  finally{ _obBusy=false; } }
+async function khSave(op){ if(cloudReady){ try{ await obRun(op); return true; }catch(e){} } obSave(obLoad().concat([Object.assign({t:Date.now()},op)])); toast(lang==='ar'?'⏳ ما فيه اتصال، محفوظ بالجهاز ويُرسل تلقائيًا':'⏳ Offline, saved on device and will sync'); return false; }
+try{ window.addEventListener('online',()=>setTimeout(obFlush,1500)); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') obFlush(); }); setInterval(obFlush,30000); setTimeout(obBadge,1500); }catch(e){}
+async function invSaveQty(it){ invCache3(); if(!it.id) return true; return khSave({kind:'update',table:invSrc().table,id:it.id,patch:{qty:it.qty}}); }
+async function logStock(it, delta, reason){ const src=invSrc(); const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(src.pid) entry.provider_id=src.pid; const ok=await khSave({kind:'insert',table:src.log,row:entry}); if(ok) loadStockLog(); return ok; }
 /* ---- سجل حركة المستودع: كل زيادة ونقص مسجّل باسم صاحبه — يشوفه الفني والمدير ---- */
 let STOCKLOG=[];
 async function loadStockLog(){
@@ -908,9 +921,10 @@ function subscribe(){
 async function setJobStatus(id, st){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.status=st;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({status:st, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
+  let ok=true;
+  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{status:st, handled_by_name:myName}}); }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.status=st; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  toast('✓'); render();
+  if(ok) toast('✓'); render();
 }
 
 /* ---- واتساب + وصول الفني ---- */
@@ -928,26 +942,29 @@ function waLink(phone, msg){
 async function markOnWay(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.onTheWay=true;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({on_the_way:true, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
+  let ok=true;
+  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{on_the_way:true, handled_by_name:myName}}); }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.onTheWay=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  toast(lang==='ar'?'🚗 أُبلغ العميل إنك في الطريق':'🚗 Customer notified you are on the way'); render();
+  if(ok) toast(lang==='ar'?'🚗 أُبلغ العميل إنك في الطريق':'🚗 Customer notified you are on the way'); render();
   // العميل يستلم إشعاراً مختصراً من التطبيق تلقائياً — بدون رسائل واتساب
 }
 async function markArrived(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.arrived=true;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({arrived:true, handled_by_name:myName}).eq('id',o.dbId); }catch(e){} }
+  let ok=true;
+  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{arrived:true, handled_by_name:myName}}); }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.arrived=true; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  toast(t('arrivedToast')); render();
+  if(ok) toast(t('arrivedToast')); render();
   // العميل يستلم إشعار «الفني عند بابك» من التطبيق تلقائياً — بدون واتساب
 }
 // الفني يحتاج وقت إضافي على الطلب الحالي → يتأخر ويُبلَّغ العميل التالي تلقائياً
 async function addDelay(id, mins){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   o.delayMin=Math.max(0,(o.delayMin||0)+mins);
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({delay_min:o.delayMin}).eq('id',o.dbId); }catch(e){} }
+  let ok=true;
+  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{delay_min:o.delayMin}}); }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.delayMin=o.delayMin; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  toast(t('delayToast')); render();
+  if(ok) toast(t('delayToast')); render();
 }
 // أسباب رفض جاهزة — تُعرض بلغة الفني وتُخزَّن بالعربي (تضمن وصولها عربي للعميل والمؤسسة)
 const REJECT_REASONS=[
@@ -1071,8 +1088,15 @@ function invTotal(){ return invItems.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1
 function invPct(){ const o=ORDERS.find(x=>x.id===invEditing); return o?(+o.discountPct||0):0; }
 function invNet(){ const p=invPct(); return Math.round(invTotal()*(1-p/100)); }
 async function saveInvoice(){
+  if(window._invSaving) return;   // يمنع الضغط مرتين وخصم القطع مرتين
   captureInvPrices();
   const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
+  const A=lang==='ar';
+  invItems.forEach(it=>{ if(!(+it.price>=0)) it.price=0; if(!(+it.qty>=1)) it.qty=1; });
+  if(!invItems.length){ toast(A?'أضف بندًا واحدًا على الأقل':'Add at least one item'); return; }
+  const big=invItems.some(it=>(+it.price||0)*(+it.qty||1)>2000)||invTotal()>5000;
+  if(big && !confirm(A?'المبلغ كبير غير معتاد: '+ar(invTotal())+' ريال. تأكد من الأسعار ثم اضغط موافق للحفظ.':'Unusually large total: '+invTotal()+' SAR. Check the prices, then press OK to save.')) return;
+  window._invSaving=true;
   // خصم قطع المستودع من المخزون — الفرق فقط (يمنع الخصم المزدوج عند إعادة الحفظ/التعديل)
   for(const it of invItems){
     if(it.id==='stock' && it.stockId){
@@ -1088,9 +1112,11 @@ async function saveInvoice(){
   }
   const invoice={ items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||''})), subtotal:invTotal(), discountPct:invPct(), total:invNet(), createdAt:Date.now() };
   o.invoice=invoice;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({invoice:invoice}).eq('id',o.dbId); }catch(e){} }
+  let ok=true;
+  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{invoice:invoice, final_price:+invoice.total||0}}); o.finalPrice=+invoice.total||0; }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===o.id); if(tt){ tt.invoice=invoice; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  toast(t('invoiceSent')); closeInvoice(); render();
+  window._invSaving=false;
+  if(ok) toast(t('invoiceSent')); closeInvoice(); render();
 }
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; const tmp={...o, invoice:{items:invItems,subtotal:invTotal(),discountPct:invPct(),total:invNet()}}; printInvoiceDoc(tmp); }
 function printInvoiceDoc(o){
@@ -1162,23 +1188,32 @@ function normPhone(v){
   if(!d.startsWith('966')) d='966'+d;
   return d;
 }
-function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textContent=msg||'تعذّر الدخول · Sign-in failed'; e.style.display='block'; } }
+function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textContent=msg||lg('fail'); e.style.display='block'; } }
+/* شاشة الدخول بخمس لغات (كانت عربي وإنجليزي ثابتة، فتنقلب الحقول مع النيبالي والهندي والأوردو) */
+const LG={
+  ar:{title:'دخول الفنيين',sub:'ادخل برقم جوالك وكلمة المرور',phone:'رقم الجوال · 05xxxxxxxx',pass:'كلمة المرور',login:'دخول',stay:'ابقَ مسجّل الدخول',forgot:'نسيت كلمة المرور؟',fail:'تعذّر الدخول',newq:'فني جديد؟ سجّل واحصل على كودك 👇',newbtn:'🤝 تسجيل فني جديد',badphone:'رقم الجوال غير صحيح',nopass:'اكتب كلمة المرور',noconn:'لا يوجد اتصال بالخادم',notreg:'هذا الرقم غير مسجّل كفني، راجع الإدارة',wrong:'الرقم أو كلمة المرور غير صحيحة'},
+  en:{title:'Technician sign in',sub:'Enter your mobile number and password',phone:'Mobile · 05xxxxxxxx',pass:'Password',login:'Sign in',stay:'Stay signed in',forgot:'Forgot password?',fail:'Sign-in failed',newq:'New technician? Register and get your code 👇',newbtn:'🤝 Register as a technician',badphone:'Invalid mobile number',nopass:'Enter your password',noconn:'No connection to the server',notreg:'This number is not registered as a technician, contact management',wrong:'Wrong number or password'},
+  ne:{title:'प्राविधिक लगइन',sub:'आफ्नो मोबाइल नम्बर र पासवर्ड हाल्नुहोस्',phone:'मोबाइल · 05xxxxxxxx',pass:'पासवर्ड',login:'लगइन',stay:'लगइन रहनुहोस्',forgot:'पासवर्ड बिर्सनुभयो?',fail:'लगइन असफल',newq:'नयाँ प्राविधिक? दर्ता गर्नुहोस् र कोड पाउनुहोस् 👇',newbtn:'🤝 नयाँ प्राविधिक दर्ता',badphone:'मोबाइल नम्बर गलत छ',nopass:'पासवर्ड लेख्नुहोस्',noconn:'सर्भरसँग जडान छैन',notreg:'यो नम्बर प्राविधिकको रूपमा दर्ता छैन, व्यवस्थापनलाई सम्पर्क गर्नुहोस्',wrong:'नम्बर वा पासवर्ड गलत छ'},
+  hi:{title:'तकनीशियन लॉगिन',sub:'अपना मोबाइल नंबर और पासवर्ड डालें',phone:'मोबाइल · 05xxxxxxxx',pass:'पासवर्ड',login:'लॉगिन',stay:'लॉगिन रहें',forgot:'पासवर्ड भूल गए?',fail:'लॉगिन विफल',newq:'नए तकनीशियन? रजिस्टर करें और अपना कोड पाएं 👇',newbtn:'🤝 नया तकनीशियन रजिस्टर',badphone:'मोबाइल नंबर गलत है',nopass:'पासवर्ड लिखें',noconn:'सर्वर से कनेक्शन नहीं है',notreg:'यह नंबर तकनीशियन के रूप में रजिस्टर नहीं है, प्रबंधन से संपर्क करें',wrong:'नंबर या पासवर्ड गलत है'},
+  ur:{title:'ٹیکنیشن لاگ ان',sub:'اپنا موبائل نمبر اور پاس ورڈ درج کریں',phone:'موبائل · 05xxxxxxxx',pass:'پاس ورڈ',login:'لاگ ان',stay:'لاگ ان رہیں',forgot:'پاس ورڈ بھول گئے؟',fail:'لاگ ان ناکام',newq:'نئے ٹیکنیشن؟ رجسٹر کریں اور اپنا کوڈ حاصل کریں 👇',newbtn:'🤝 نیا ٹیکنیشن رجسٹر',badphone:'موبائل نمبر درست نہیں',nopass:'پاس ورڈ لکھیں',noconn:'سرور سے رابطہ نہیں',notreg:'یہ نمبر ٹیکنیشن کے طور پر رجسٹرڈ نہیں، انتظامیہ سے رابطہ کریں',wrong:'نمبر یا پاس ورڈ غلط ہے'}
+};
+function lg(k){ const d=LG[lang]||LG.ar; return d[k]||LG.ar[k]||''; }
 function showLogin(){
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   const ab0=document.getElementById('acctBtn'); if(ab0) ab0.style.display='none';
   document.getElementById('app').innerHTML=`
     <div class="login">
-      <div class="ic">🧑‍🔧</div><h1>دخول الفنيين</h1>
-      <p>ادخل برقم جوالك وكلمة المرور · Sign in</p>
-      <input id="wu" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
-      <input id="wp" type="password" placeholder="كلمة المرور · Password" autocomplete="current-password" />
-      <button class="btn" onclick="doLogin()">دخول · Login</button>
-      <label class="rememberme"><input type="checkbox" id="lg_rem" ${localStorage.getItem('khafet_remember')==='0'?'':'checked'}> ابقَ مسجّل الدخول · Stay signed in</label>
-      <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟ · Forgot password?</button>
-      <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول · Sign-in failed</div>
+      <div class="ic">🧑‍🔧</div><h1>${lg('title')}</h1>
+      <p>${lg('sub')}</p>
+      <input id="wu" inputmode="tel" placeholder="${lg('phone')}" autocomplete="tel" />
+      <input id="wp" type="password" placeholder="${lg('pass')}" autocomplete="current-password" />
+      <button class="btn" onclick="doLogin()">${lg('login')}</button>
+      <label class="rememberme"><input type="checkbox" id="lg_rem" ${localStorage.getItem('khafet_remember')==='0'?'':'checked'}> ${lg('stay')}</label>
+      <button type="button" class="forgot-link" onclick="showForgot('')">${lg('forgot')}</button>
+      <div id="lgerr" class="lgerr" style="display:none">${lg('fail')}</div>
       <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
-        <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">فني جديد؟ سجّل واحصل على كودك 👇</div>
-        <a href="provider.html?techreg=1" class="btn" style="display:block;text-align:center;text-decoration:none;background:transparent;border:2px solid var(--gold);color:var(--ink)">🤝 تسجيل فني جديد</a>
+        <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">${lg('newq')}</div>
+        <a href="provider.html?techreg=1" class="btn" style="display:block;text-align:center;text-decoration:none;background:transparent;border:2px solid var(--gold);color:var(--ink)">${lg('newbtn')}</a>
       </div>
     </div>`;
   const wp=document.getElementById('wp'); if(wp) wp.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
@@ -1250,9 +1285,9 @@ async function doLogin(){
   const d=normPhone((document.getElementById('wu')||{}).value||'');
   const p=((document.getElementById('wp')||{}).value||'');
   const btn=document.querySelector('.login .btn');
-  if(d.length<12){ lgFail('رقم الجوال غير صحيح'); return; }
-  if(!p){ lgFail('اكتب كلمة المرور'); return; }
-  if(!cloudReady){ lgFail('لا يوجد اتصال بالخادم'); return; }
+  if(d.length<12){ lgFail(lg('badphone')); return; }
+  if(!p){ lgFail(lg('nopass')); return; }
+  if(!cloudReady){ lgFail(lg('noconn')); return; }
   if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
     const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:p });
@@ -1267,8 +1302,8 @@ async function doLogin(){
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); localStorage.setItem('khafet_staff_ok','1'); }catch(e){}
     loggedIn=true; render(); loadOrders(); loadPrices(); loadInv(); loadStockLog(); initPush();   // المستودع والأسعار تُحمَّل بعد الدخول لا قبله
   }catch(e){
-    if(btn){ btn.disabled=false; btn.textContent='دخول · Login'; }
-    lgFail((e&&e.message==='no-role') ? 'هذا الرقم غير مسجّل كفني — راجع الإدارة' : 'الرقم أو كلمة المرور غير صحيحة');
+    if(btn){ btn.disabled=false; btn.textContent=lg('login'); }
+    lgFail((e&&e.message==='no-role') ? lg('notreg') : lg('wrong'));
   }
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false;

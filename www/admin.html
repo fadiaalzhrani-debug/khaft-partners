@@ -884,7 +884,7 @@ const WH_HOST={
   inv:()=>INV, setInv:v=>{ INV=v; }, log:()=>LOG, sb:()=>sb, cloud:()=>cloudReady,
   table:'khafet_inventory', logTable:'khafet_stock_log', extra:()=>({}),
   loaded:()=>invLoaded,
-  saveQty:async it=>{ WH_HOST.cacheSave(); if(cloudReady&&it.id){ try{ await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); }catch(e){} } },
+  saveQty:async it=>{ WH_HOST.cacheSave(); if(cloudReady&&it.id){ try{ const r=await sb.from('khafet_inventory').update({qty:it.qty}).eq('id',it.id); if(r.error) return false; }catch(e){ return false; } } return true; },
   logStock:(it,d,reason)=>logStock(it,d,reason,'المؤسسة'),
   afterChange:()=>render(), refreshLog:()=>{ const b=document.getElementById('stockLogBox'); if(b) b.innerHTML=renderStockLog(); },
   upload:(id,f)=>uploadPartPhoto(id,f), clearImage:async id=>{ if(cloudReady){ try{ await sb.from('khafet_inventory').update({image_url:null}).eq('id',id); }catch(e){} } },
