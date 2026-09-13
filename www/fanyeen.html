@@ -733,18 +733,46 @@ function showJoin(msg){
   const A=lang==='ar'; const st=PENDING||{}; const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   const waiting = st.status==='pending';
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">${waiting?'⏳':'🔑'}</div>
-    <h1>${waiting?(A?'بانتظار الاعتماد':'Awaiting approval'):(A?'كود جهة العمل':'Workplace code')}</h1>
+    <div class="ic">${waiting?'⏳':'🏢'}</div>
+    <h1>${waiting?(A?'بانتظار اعتماد '+(st.org_name||''):'Awaiting approval from '+(st.org_name||'')):(A?'اختر جهة عملك':'Pick your workplace')}</h1>
     ${waiting
       ? `<p>${A?'طلبك وصل إلى':'Your request was sent to'} <b>${esc(st.org_name||'')}</b>. ${A?'بعد ما يعتمدك صاحب العمل اضغط «تحقق الآن».':'Once approved, tap Check now.'}</p>
          <button class="btn" onclick="recheckJoin()">🔄 ${A?'تحقق الآن':'Check now'}</button>
-         <a class="reg2" style="cursor:pointer;display:block;margin-top:14px" onclick="PENDING.status='unassigned';render()">${A?'تغيير الكود':'Change code'}</a>`
-      : `<p>${st.status==='rejected'?(A?'طلبك السابق ما اعتُمد. ':'Your previous request was not approved. '):''}${A?'اطلب الكود من مديرك في خافت أو من مزوّدك ثم اكتبه هنا.':'Ask your manager at Khafet or your provider for the code.'}</p>
-         <input id="jc" placeholder="${A?'مثال':'e.g.'}: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoin()" />
-         <button class="btn" onclick="submitJoin()">${A?'انضمام':'Join'}</button>`}
+         <a class="reg2" style="cursor:pointer;display:block;margin-top:14px" onclick="PENDING.status='unassigned';render()">${A?'تغيير الجهة':'Change workplace'}</a>`
+      : `<style>.orglist{display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow:auto;margin-bottom:10px}.orgbtn{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:13px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:1rem;text-align:start;cursor:pointer}.orgbtn .orgno{background:var(--gold);color:var(--ink);border-radius:8px;padding:2px 9px;font-size:.85rem;font-variant-numeric:tabular-nums}.orgbtn b{flex:1}.orgbtn .orgarr{color:var(--muted);font-size:1.3rem}.orgempty{color:var(--muted);text-align:center;padding:10px}</style>
+         <p>${st.status==='rejected'?(A?'طلبك السابق ما اعتُمد. ':'Your previous request was not approved. '):''}${A?'اختر المؤسسة اللي تشتغل معها، ويوصلها طلبك للاعتماد.':'Pick the company you work with, they will approve your request.'}</p>
+         <input id="jq" placeholder="${A?'ابحث باسم المؤسسة أو رقمها':'Search by name or number'}" oninput="renderOrgs(this.value)" />
+         <div id="orglist" class="orglist"><div class="orgempty">${A?'جاري التحميل…':'Loading…'}</div></div>
+         <a class="reg2" style="cursor:pointer;display:block;margin-top:6px" onclick="toggleJoinCode()">${A?'عندك كود انضمام؟ اكتبه هنا':'Have a join code? Enter it here'}</a>
+         <div id="jcwrap" style="display:none;margin-top:10px">
+           <input id="jc" placeholder="${A?'مثال':'e.g.'}: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoin()" />
+           <button class="btn" onclick="submitJoin()">${A?'انضمام بالكود':'Join with code'}</button>
+         </div>`}
     <div id="lgerr" class="lgerr" style="display:${msg?'block':'none'}">${esc(msg||'')}</div>
     <a class="reg2" style="cursor:pointer;display:block;margin-top:18px;color:var(--muted)" onclick="leaveJoin()">${A?'خروج من الحساب':'Sign out'}</a>
   </div>`;
+  if(!waiting) loadOrgs();
+}
+/* قائمة المؤسسات (خافت 001 ثم المزوّدون المعتمدون): الفني يختار جهته ويوصلها طلبه للاعتماد */
+let ORGS=[];
+function orgLabel(o){ return o.name+' '+String(o.org_no).padStart(3,'0'); }
+async function loadOrgs(){ try{ const { data }=await sb.rpc('list_orgs'); ORGS=data||[]; }catch(e){ ORGS=[]; } renderOrgs(((document.getElementById('jq')||{}).value)||''); }
+function renderOrgs(q){
+  const A=lang==='ar'; const el=document.getElementById('orglist'); if(!el) return;
+  q=(q||'').trim().toLowerCase();
+  const list=ORGS.filter(o=>!q||orgLabel(o).toLowerCase().includes(q)||String(o.org_no)===q.replace(/^0+/,''));
+  el.innerHTML=list.length
+    ? list.map(o=>`<button type="button" class="orgbtn" onclick="pickOrg(${+o.org_no})"><span class="orgno">${String(o.org_no).padStart(3,'0')}</span><b>${esc(o.name)}</b><span class="orgarr">‹</span></button>`).join('')
+    : `<div class="orgempty">${ORGS.length?(A?'ما فيه نتائج':'No results'):(A?'تعذّر تحميل القائمة، تأكد من الإنترنت':'Could not load the list, check your connection')}</div>`;
+}
+function toggleJoinCode(){ const w=document.getElementById('jcwrap'); if(!w) return; w.style.display=(w.style.display==='none'?'block':'none'); if(w.style.display==='block'){ const i=document.getElementById('jc'); if(i) i.focus(); } }
+async function pickOrg(no){
+  const A=lang==='ar'; const o=ORGS.find(x=>+x.org_no===+no); if(!o) return;
+  if(!confirm((A?'إرسال طلب الانضمام إلى ':'Send a join request to ')+orgLabel(o)+'؟')) return;
+  try{ const { data }=await sb.rpc('join_org_by_no',{ p_no:+no });
+    if(!data||!data.ok){ showJoin(A?'تعذّر إرسال الطلب، حاول مرة ثانية':'Could not send the request, try again'); return; }
+    PENDING={ status:'pending', org_name:data.org_name, org:data.org }; toast('📨 '+(A?'أُرسل طلبك إلى ':'Request sent to ')+data.org_name); render();
+  }catch(e){ showJoin(A?'تعذّر الاتصال':'Connection failed'); }
 }
 async function submitJoin(){
   const A=lang==='ar'; const code=((document.getElementById('jc')||{}).value||'').trim();

@@ -990,22 +990,50 @@ function showJoinCode(msg){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">🔑</div><h1>كود جهة العمل</h1>
-    <p>حسابك جاهز${techCtx&&techCtx.code?' وكودك الشخصي <b>'+esc(techCtx.code)+'</b>':''}. اطلب <b>كود الانضمام</b> من مديرك في خافت أو من مزوّدك واكتبه هنا.</p>
-    <input id="jc" placeholder="مثال: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoinCode()" />
-    <button class="btn" onclick="submitJoinCode()">انضمام ✅</button>
+    <style>.orglist{display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow:auto;margin-bottom:10px}.orgbtn{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:13px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:1rem;text-align:start;cursor:pointer}.orgbtn .orgno{background:var(--gold);color:var(--ink);border-radius:8px;padding:2px 9px;font-size:.85rem;font-variant-numeric:tabular-nums}.orgbtn b{flex:1}.orgbtn .orgarr{color:var(--muted);font-size:1.3rem}.orgempty{color:var(--muted);text-align:center;padding:10px}</style>
+    <div class="ic">🏢</div><h1>اختر جهة عملك</h1>
+    <p>حسابك جاهز. اختر المؤسسة اللي تشتغل معها، ويوصلها طلبك للاعتماد.</p>
+    <input id="jq" placeholder="ابحث باسم المؤسسة أو رقمها" oninput="renderOrgs(this.value)" />
+    <div id="orglist" class="orglist"><div class="orgempty">جاري التحميل…</div></div>
+    <a class="reg2" style="cursor:pointer;display:block;margin-top:6px" onclick="toggleJoinCode()">عندك كود انضمام؟ اكتبه هنا</a>
+    <div id="jcwrap" style="display:none;margin-top:10px">
+      <input id="jc" placeholder="مثال: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoinCode()" />
+      <button class="btn" onclick="submitJoinCode()">انضمام بالكود ✅</button>
+    </div>
     ${msg?`<div class="msg">${msg}</div>`:''}
-    <a class="reg2" onclick="doLogout()" style="cursor:pointer">خروج من الحساب</a>
+    <a class="reg2" onclick="doLogout()" style="cursor:pointer;display:block;margin-top:10px">خروج من الحساب</a>
   </div>`;
+  loadOrgs();
+}
+/* قائمة المؤسسات (خافت 001 ثم المزوّدون المعتمدون) */
+let ORGS=[];
+function orgLabel(o){ return o.name+' '+String(o.org_no).padStart(3,'0'); }
+async function loadOrgs(){ try{ const { data }=await sb.rpc('list_orgs'); ORGS=data||[]; }catch(e){ ORGS=[]; } renderOrgs(((document.getElementById('jq')||{}).value)||''); }
+function renderOrgs(q){
+  const el=document.getElementById('orglist'); if(!el) return;
+  q=(q||'').trim().toLowerCase();
+  const list=ORGS.filter(o=>!q||orgLabel(o).toLowerCase().includes(q)||String(o.org_no)===q.replace(/^0+/,''));
+  el.innerHTML=list.length
+    ? list.map(o=>`<button type="button" class="orgbtn" onclick="pickOrg(${+o.org_no})"><span class="orgno">${String(o.org_no).padStart(3,'0')}</span><b>${esc(o.name)}</b><span class="orgarr">‹</span></button>`).join('')
+    : `<div class="orgempty">${ORGS.length?'ما فيه نتائج':'تعذّر تحميل القائمة، تأكد من الإنترنت'}</div>`;
+}
+function toggleJoinCode(){ const w=document.getElementById('jcwrap'); if(!w) return; w.style.display=(w.style.display==='none'?'block':'none'); }
+async function pickOrg(no){
+  const o=ORGS.find(x=>+x.org_no===+no); if(!o) return;
+  if(!confirm('إرسال طلب الانضمام إلى '+orgLabel(o)+'؟')) return;
+  try{ const { data }=await sb.rpc('join_org_by_no',{ p_no:+no });
+    if(!data||!data.ok){ showJoinCode('تعذّر إرسال الطلب، حاول مرة ثانية'); return; }
+    showJoinWait(data.org_name);
+  }catch(e){ showJoinCode('تعذّر الاتصال، حاول مرة ثانية'); }
 }
 function showJoinWait(orgName){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">⏳</div><h1>بانتظار الاعتماد</h1>
+    <div class="ic">⏳</div><h1>بانتظار اعتماد ${esc(orgName||'')}</h1>
     <p>طلبك وصل إلى <b>${esc(orgName||'')}</b>. بعد الاعتماد افتح تطبيق <b>رزق</b> وسجّل الدخول برقمك وكلمة مرورك.</p>
     <button class="btn" onclick="location.reload()">🔄 تحقق الآن</button>
-    <a class="reg2" onclick="showJoinCode('')" style="cursor:pointer;display:block;margin-top:12px">تغيير الكود</a>
+    <a class="reg2" onclick="showJoinCode('')" style="cursor:pointer;display:block;margin-top:12px">تغيير الجهة</a>
     <a class="reg2" onclick="doLogout()" style="cursor:pointer;display:block;margin-top:8px;color:var(--muted)">خروج من الحساب</a>
   </div>`;
 }
