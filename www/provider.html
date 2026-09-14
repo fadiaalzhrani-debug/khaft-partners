@@ -194,6 +194,10 @@
   .tbtn{flex:1;padding:16px;border-radius:13px;font-weight:900;font-size:1.1rem;text-align:center}
   .tbtn.accept{background:var(--gold);color:var(--ink)}
   .tbtn.done{background:var(--ok);color:#fff}
+  .tbtn.devpay{background:#2563eb;color:#fff}
+  .tbtn.waitpay{background:#EEF6FF;color:#0b3d6b;border:1px solid #BBD6F5}
+  .status.paidb{background:var(--ok-soft);color:var(--ok);border-color:#BBF7D0;margin-inline-end:6px}
+  .status.dueb{background:#EEF6FF;color:#0b3d6b;border-color:#BBD6F5;margin-inline-end:6px}
   .tbtn.inv{background:var(--gold-tint);border:1px solid var(--gold-soft);color:var(--gold-deep)}
   .tbtn.inv.sent{background:var(--ok-soft);color:var(--ok)}
   .tbtn.donelbl{background:var(--ok-soft);color:var(--ok)}
@@ -447,6 +451,12 @@ function fmtDur(mins){ if(!mins) return _uiEN()?'After inspection':'حسب ال�
 let sb=null, cloudReady=false;
 async function loadPrices(){
   if(!cloudReady) return;
+  // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort').order('sort');
+    if(!r.error && r.data && r.data.length){
+      r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active}); });
+      return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); } }catch(e){}
 }
 async function initCloud(){
@@ -500,7 +510,22 @@ function rowToOrder(r){
   return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''},
     address:r.address||{}, date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
     status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', handledBy:r.handled_by||'',
-    rating:+r.rating||0, feedback:r.feedback||'', reviewAnon:!!r.review_anon, warrantyDays:+r.warranty_days||0 };
+    rating:+r.rating||0, feedback:r.feedback||'', reviewAnon:!!r.review_anon, warrantyDays:+r.warranty_days||0,
+    finalPrice:+r.final_price||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid' };
+}
+/* المتبقي على العميل (الخادم يحسبه) */
+function payDue(o){ return (o && o.dbId && o.status!=='cancelled') ? Math.max(0, +o.amountDue||0) : 0; }
+async function markCardPaid(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId||window._payBusy) return;
+  const due=payDue(o); if(!(due>0)) return;
+  if(!confirm(LX('تأكيد استلام ','Confirm you received ')+due+LX(' ر.س بجهاز الدفع؟',' SAR by card machine?'))) return;
+  window._payBusy=true;
+  try{
+    const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId });
+    if(error||!data||!data.ok) throw (error||new Error((data&&data.error)||'fail'));
+    toast(LX('✓ تم تسجيل الدفع','✓ Payment recorded')); loadOrders();
+  }catch(e){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); }
+  finally{ window._payBusy=false; }
 }
 /* الطلبات المتاحة تُقرأ من مصدر آمن (بلا اسم/جوال/عنوان دقيق/صور) —
    بيانات العميل تظهر فقط بعد ما يقبل المزوّد الطلب ويصير له. */
@@ -762,9 +787,11 @@ async function setWarranty(dbId,days){
 }
 async function setJobStatus(id, st){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
-  o.status=st;
-  try{ await sb.from('khafet_orders').update({status:st}).eq('id',o.dbId); }catch(e){}
-  toast('✓'); loadOrders();
+  if(st==='done' && payDue(o)>0){ toast(LX('فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.','The customer still owes money. Ask them to pay in the app or record a card machine payment.')); return; }
+  let r=null;
+  try{ r=await sb.from('khafet_orders').update({status:st}).eq('id',o.dbId); }catch(e){}
+  if(r && r.error){ toast(/KHAFET_UNPAID/.test(r.error.message||'')?LX('فيه مبلغ متبقي على العميل','The customer still owes money'):LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); loadOrders(); return; }
+  o.status=st; toast('✓'); loadOrders();
 }
 
 /* ---- الفاتورة (نفس منطق بوابة الفنيين) ---- */
@@ -782,7 +809,9 @@ async function saveInvoice(){
   captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
   const invoice={ items:invItems.map(it=>({name:it.name,qty:+it.qty||1,price:+it.price||0})), total:invTotal(), createdAt:Date.now() };
   o.invoice=invoice;
-  try{ await sb.from('khafet_orders').update({invoice:invoice}).eq('id',o.dbId); }catch(e){}
+  let r=null;
+  try{ r=await sb.from('khafet_orders').update({invoice:invoice}).eq('id',o.dbId); }catch(e){}
+  if(!r || r.error){ toast(LX('ما انحفظت الفاتورة، حاول مرة ثانية','Invoice not saved, try again')); return; }
   toast('أُرسلت الفاتورة ✓'); closeInvoice(); loadOrders();
 }
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; printInvoiceDoc({...o,invoice:{items:invItems,total:invTotal()}}); }
@@ -803,7 +832,7 @@ function printInvoiceDoc(o){
 }
 function renderInvoice(){
   const m=document.getElementById('invModal'); if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
-  const opts=SERVICES.map(s=>`<option value="${s.id}">${s.ico} ${LX(`${s.name} — ${ar(s.price)}`, `${svcName(s.name)} · ${s.price} SAR`)}</option>`).join('');
+  const opts=SERVICES.filter(s=>!s.inactive).map(s=>`<option value="${s.id}">${s.ico} ${LX(`${s.name} — ${ar(s.price)}`, `${svcName(s.name)} · ${s.price} SAR`)}</option>`).join('');
   const rows=invItems.length?invItems.map((it,i)=>`<div class="inv-row"><span class="ir-name">${esc(it.name)}</span>
     <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
     <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />
@@ -1189,7 +1218,9 @@ function jobCard(o, mode){
   if(mode==='available') acts=`<button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button>`;
   else { // mine
     if(o.status==='confirmed') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','progress')">🔧 بدء العمل</button>`;
-    else if(o.status==='progress') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
+    else if(o.status==='progress') acts = payDue(o)>0
+      ? `<div class="tbtn waitpay">💳 ${LX('بانتظار الدفع','Awaiting payment')} · ${payDue(o)}</div><button class="tbtn devpay" onclick="markCardPaid('${o.id}')">💳 ${LX('دفع بجهاز الفني','Paid by card machine')}</button>`
+      : `<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
     else if(o.status==='done') acts=`<div class="tbtn donelbl">✓ مكتمل</div><button class="tbtn fold" onclick="toggleDone('${o.id}')">▴</button>`;
     acts+=`<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?'✓ الفاتورة':'🧾 فاتورة'}</button>`;
     // المزوّد يوزّع الطلب على فني من فريقه
@@ -1201,7 +1232,7 @@ function jobCard(o, mode){
     }
   }
   return `<div class="tjob">
-    <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span class="status ${o.status}">${({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status}</span></div>
+    <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${mode!=='available'&&payDue(o)>0?`<span class="status dueb">💳 ${payDue(o)}</span>`:(mode!=='available'&&o.paidAmount>0?`<span class="status paidb">💳 ${LX('مدفوع','Paid')}</span>`:'')}</span><span class="status ${o.status}">${({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status}</span></div>
     <div class="tj-body">
       ${work}
       ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ المشكلة</span><span class="tj-v">${esc(o.note)}</span></div>`:''}

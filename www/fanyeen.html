@@ -125,6 +125,16 @@
   .delay-ctl .dc-btns .dc-reset{background:var(--card);border-color:var(--line);color:var(--muted)}
   .tbtn.arrive{background:#25D366;color:#fff}
   .tbtn.arrivedlbl{background:rgba(37,211,102,.15);color:#5ee68f}
+  .tbtn.waitpay{background:rgba(96,165,250,.15);color:#93c5fd}
+  .tbtn.devpay{background:#2563eb;color:#fff}
+  .status.due-b{background:rgba(96,165,250,.18);color:#93c5fd;border-color:transparent}
+  .status.paid-b{background:rgba(37,211,102,.18);color:#5ee68f;border-color:transparent}
+  .inv-pay{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:6px 13px}
+  .inv-pay div{display:flex;justify-content:space-between;padding:7px 0;font-weight:800;font-size:.98rem}
+  .inv-pay div+div{border-top:1px dashed var(--line)}
+  .inv-pay .due{font-size:1.15rem;color:#93c5fd}
+  .inv-row .ir-lock{font-size:.8rem;font-weight:800;color:#5ee68f;margin-inline-start:6px}
+  .inv-row .ir-static{min-width:74px;text-align:center;font-weight:900;font-size:1.05rem}
   .tbtn.onway{background:#3884ff;color:#fff}
   .tbtn.onwaylbl{background:rgba(56,132,255,.15);color:#7fb0ff}
   .tj-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
@@ -803,6 +813,13 @@ async function loadMyName(){
 function copyMyCode(){ if(!myCode) return; try{ navigator.clipboard.writeText(myCode); toast('📋 '+myCode); }catch(e){ toast(myCode); } }
 async function loadPrices(){
   if(!cloudReady) return;
+  // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort').order('sort');
+    if(!r.error && r.data && r.data.length){
+      r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active});
+        if(d.name_en && !(SVC_I18N[d.id]&&SVC_I18N[d.id].en)) SVC_I18N[d.id]=Object.assign({}, SVC_I18N[d.id]||{}, {en:d.name_en}); });
+      if(invEditing) renderInvoice(); return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); if(invEditing) renderInvoice(); } }catch(e){}
 }
 /* ---- المخزن (يشترك مع لوحة المؤسسة) ---- */
@@ -823,13 +840,16 @@ const OUTBOX_KEY='kh_outbox';
 function obLoad(){ try{ return JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]'); }catch(e){ return []; } }
 function obSave(q){ try{ localStorage.setItem(OUTBOX_KEY,JSON.stringify(q)); }catch(e){} obBadge(); }
 function obBadge(){ let b=document.getElementById('obBadge'); const n=obLoad().length; if(!n){ if(b) b.remove(); return; } if(!b){ b=document.createElement('div'); b.id='obBadge'; b.style.cssText='position:fixed;bottom:86px;left:50%;transform:translateX(-50%);background:#7a5c00;color:#fff;padding:7px 14px;border-radius:999px;font-weight:800;font-size:.85rem;z-index:60;box-shadow:0 4px 14px rgba(0,0,0,.2)'; b.onclick=obFlush; document.body.appendChild(b); } b.textContent='⏳ '+(lang==='ar'?ar(n)+' بانتظار الإرسال، اضغط للمحاولة':n+' pending, tap to retry'); }
-async function obRun(op){ if(op.kind==='update'){ const r=await sb.from(op.table).update(op.patch).eq('id',op.id); if(r.error) throw r.error; } else if(op.kind==='insert'){ const r=await sb.from(op.table).insert(op.row); if(r.error) throw r.error; } }
+async function obRun(op){ if(op.kind==='update'){ const r=await sb.from(op.table).update(op.patch).eq('id',op.id); if(r.error){ r.error._status=r.status; throw r.error; } } else if(op.kind==='insert'){ const r=await sb.from(op.table).insert(op.row); if(r.error){ r.error._status=r.status; throw r.error; } } }
+/* رفض من الخادم (مو انقطاع نت): ما نحفظه بالجهاز، نوضّح السبب */
+function srvRejected(e){ return !!(e && +e._status>0); }
+function srvMsg(e){ return /KHAFET_UNPAID/.test((e&&e.message)||'') ? lg('unpaidDone') : lg('serverErr'); }
 let _obBusy=false;
 async function obFlush(){ if(!cloudReady||_obBusy) return; const q=obLoad(); if(!q.length) return; _obBusy=true;
-  try{ const rest=[]; for(const op of q){ try{ await obRun(op); }catch(e){ rest.push(op); } } obSave(rest);
+  try{ const rest=[]; for(const op of q){ try{ await obRun(op); }catch(e){ if(!srvRejected(e)) rest.push(op); } } obSave(rest);
     if(!rest.length){ toast(lang==='ar'?'✅ أُرسلت التغييرات المعلّقة':'✅ Pending changes sent'); loadInv(); loadStockLog(); loadOrders(); } }
   finally{ _obBusy=false; } }
-async function khSave(op){ if(cloudReady){ try{ await obRun(op); return true; }catch(e){} } obSave(obLoad().concat([Object.assign({t:Date.now()},op)])); toast(lang==='ar'?'⏳ ما فيه اتصال، محفوظ بالجهاز ويُرسل تلقائيًا':'⏳ Offline, saved on device and will sync'); return false; }
+async function khSave(op){ if(cloudReady){ try{ await obRun(op); return true; }catch(e){ if(srvRejected(e)){ toast(srvMsg(e)); return false; } } } obSave(obLoad().concat([Object.assign({t:Date.now()},op)])); toast(lang==='ar'?'⏳ ما فيه اتصال، محفوظ بالجهاز ويُرسل تلقائيًا':'⏳ Offline, saved on device and will sync'); return false; }
 try{ window.addEventListener('online',()=>setTimeout(obFlush,1500)); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') obFlush(); }); setInterval(obFlush,30000); setTimeout(obBadge,1500); }catch(e){}
 async function invSaveQty(it){ invCache3(); if(!it.id) return true; return khSave({kind:'update',table:invSrc().table,id:it.id,patch:{qty:it.qty}}); }
 async function logStock(it, delta, reason){ const src=invSrc(); const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(src.pid) entry.provider_id=src.pid; const ok=await khSave({kind:'insert',table:src.log,row:entry}); if(ok) loadStockLog(); return ok; }
@@ -901,7 +921,22 @@ function rowToOrder(r){
   return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[],
     customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, createdAt:r.created_at||null,
-    free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0 };
+    free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0,
+    price:+r.price||0, finalPrice:+r.final_price||0, bookedFinal:+r.booked_final||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payRequired:!!r.pay_required };
+}
+/* المتبقي على العميل (الخادم يحسبه) */
+function payDue(o){ return (o && o.dbId && o.status!=='cancelled') ? Math.max(0, +o.amountDue||0) : 0; }
+async function markCardPaid(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId||window._payBusy) return;
+  const due=payDue(o); if(!(due>0)) return;
+  if(!confirm(lg('deviceConfirm')+' '+ar(due)+' '+lg('cur'))) return;
+  window._payBusy=true;
+  try{
+    const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId });
+    if(error||!data||!data.ok) throw (error||new Error((data&&data.error)||'fail'));
+    toast(lg('deviceDone')); await loadOrders();
+  }catch(e){ toast(lg('serverErr')); }
+  finally{ window._payBusy=false; }
 }
 function loadLocal(){
   try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); ORDERS=(s&&s.orders)||[]; }catch(e){ ORDERS=[]; }
@@ -922,9 +957,10 @@ function subscribe(){
 }
 async function setJobStatus(id, st){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  if(st==='done' && payDue(o)>0){ toast(lg('unpaidDone')); render(); return; }   // ما ينقفل الطلب وفيه مبلغ متبقٍ
   o.status=st;
   let ok=true;
-  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{status:st, handled_by_name:myName}}); }
+  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{status:st, handled_by_name:myName}}); if(!ok && cloudReady) loadOrders(); }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.status=st; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   if(ok) toast('✓'); render();
 }
@@ -1045,9 +1081,19 @@ function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(
 function openInvoice(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   invEditing=id;
-  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||''})) : [];
+  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})) : [];
+  // فاتورة جديدة: خدمات الحجز تنضاف مقفولة (أجرتها محسوبة وقت الحجز)، والفني يضيف الأغراض
+  if(!o.invoice && o.dbId && !o.quick){
+    invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick').map(it=>{ const s=svc(it.id); return {id:it.id,name:it.name,qty:+it.qty||1,price:s?+s.price:(+it.price||0),booked:true}; });
+  }
   renderInvoice();
 }
+/* حساب الفاتورة: أجرة الحجز الصافية + الإضافات */
+function invOrder(){ return ORDERS.find(x=>x.id===invEditing); }
+function invExtras(){ return invItems.filter(it=>!it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
+function invBookedNet(){ const o=invOrder(); if(!invItems.some(it=>it.booked)) return 0; return o&&o.bookedFinal>0 ? +o.bookedFinal : Math.round(invItems.filter(it=>it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0)*(1-invPct()/100)); }
+function invGrand(){ return Math.round((invBookedNet()+invExtras())*100)/100; }
+function invDueNow(){ const o=invOrder(); return Math.max(0, invGrand()-(o?(+o.paidAmount||0):0)); }
 /* قطعة من المستودع: تدخل الفاتورة بسعر البيع، وتنخصم عند الحفظ */
 
 /* ضغط صورة الصنف قبل الرفع: أقصى بُعد 800px، JPEG 82% */
@@ -1084,8 +1130,8 @@ function captureInvPrices(){
 function addInvItem(id){ if(!id) return; captureInvPrices(); const s=svc(id); if(s){ invItems.push({id:s.id,name:s.name,qty:1,price:s.price}); } renderInvoice(); }
 function addCustomItem(){ captureInvPrices(); invItems.push({id:'custom',name:'',qty:1,price:0}); renderInvoice(); }
 function addPart(){ captureInvPrices(); invItems.push({id:'part',name:'',qty:1,price:0}); renderInvoice(); }
-function invQty(i,d){ captureInvPrices(); if(invItems[i]){ invItems[i].qty=Math.max(1,(invItems[i].qty||1)+d); } renderInvoice(); }
-function invRemove(i){ captureInvPrices(); invItems.splice(i,1); renderInvoice(); }
+function invQty(i,d){ captureInvPrices(); if(invItems[i]&&!invItems[i].booked){ invItems[i].qty=Math.max(1,(invItems[i].qty||1)+d); } renderInvoice(); }
+function invRemove(i){ captureInvPrices(); if(invItems[i]&&invItems[i].booked) return; invItems.splice(i,1); renderInvoice(); }
 function invTotal(){ return invItems.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
 function invPct(){ const o=ORDERS.find(x=>x.id===invEditing); return o?(+o.discountPct||0):0; }
 function invNet(){ const p=invPct(); return Math.round(invTotal()*(1-p/100)); }
@@ -1112,13 +1158,15 @@ async function saveInvoice(){
       }
     }
   }
-  const invoice={ items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||''})), subtotal:invTotal(), discountPct:invPct(), total:invNet(), createdAt:Date.now() };
+  const invoice={ v:2, items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})), subtotal:invTotal(), discountPct:invPct(), total:invGrand(), createdAt:Date.now() };
   o.invoice=invoice;
   let ok=true;
   if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{invoice:invoice, final_price:+invoice.total||0}}); o.finalPrice=+invoice.total||0; }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===o.id); if(tt){ tt.invoice=invoice; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   window._invSaving=false;
-  if(ok) toast(t('invoiceSent')); closeInvoice(); render();
+  const dueAfter=Math.max(0, invoice.total-(+o.paidAmount||0));
+  if(ok) toast(dueAfter>0 ? t('invoiceSent')+' · '+lg('dueNow')+' '+ar(dueAfter)+' '+lg('cur') : t('invoiceSent'));
+  closeInvoice(); render();
 }
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; const tmp={...o, invoice:{items:invItems,subtotal:invTotal(),discountPct:invPct(),total:invNet()}}; printInvoiceDoc(tmp); }
 function printInvoiceDoc(o){
@@ -1147,9 +1195,13 @@ function renderInvoice(){
   const m=document.getElementById('invModal');
   if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
   const A=lang==='ar';
-  const opts=SERVICES.map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} — ${ar(s.price)}</option>`).join('');
+  const opts=SERVICES.filter(s=>!s.inactive).map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} — ${ar(s.price)}</option>`).join('');
   const invOpts=(INV||[]).map(it=>`<option value="${it.id}">${esc(it.name)} — ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
   const rows = invItems.length ? invItems.map((it,i)=>{
+    if(it.booked) return `<div class="inv-row">
+      <span class="ir-name">${esc(itemDisplay(it))}<span class="ir-lock">🔒 ${lg('booked')}</span></span>
+      <span class="ir-static">×${ar(it.qty)}</span>
+    </div>`;
     const editable=(it.id==='part'||it.id==='custom');
     const nameCell = editable
       ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
@@ -1171,8 +1223,14 @@ function renderInvoice(){
     </div>
     ${stockPickOpen?`<div class="sp-wrap"><input class="sp-search" placeholder="🔍 ${A?'ابحث عن القطعة':'Search part'}" oninput="stockPickSearch(this.value)" /><div class="sp-grid" id="spGrid">${stockPickGrid()}</div></div>`:''}
     <div class="inv-items">${rows}</div>
-    ${invPct()>0?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل — ينطبق تلقائياً</div>`:''}
-    <div class="inv-total"><span>${t('total')}</span><b>${ar(invNet())} ${lg('cur')}</b></div>
+    ${invPct()>0&&!invItems.some(it=>it.booked)?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل — ينطبق تلقائياً</div>`:''}
+    <div class="inv-total"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
+    ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=invBookedNet(); if(!bk&&!paid) return ''; return `<div class="inv-pay">
+      ${bk?`<div><span>${lg('bookedFee')}</span><span>${ar(bk)} ${lg('cur')}</span></div>`:''}
+      <div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>
+      ${paid?`<div><span>${lg('paidLbl')}</span><span>${ar(paid)} ${lg('cur')}</span></div>`:''}
+      <div class="due"><span>${lg('dueNow')}</span><span>${ar(invDueNow())} ${lg('cur')}</span></div>
+    </div>`; })()}
     <div class="inv-acts">
       <button class="tbtn done" onclick="saveInvoice()">${t('saveSend')}</button>
       <button class="tbtn inv" onclick="printInv()">${t('print')}</button>
@@ -1218,6 +1276,9 @@ const LG2={
       showPass:'پاس ورڈ دکھائیں',hidePass:'پاس ورڈ چھپائیں',acct:'👤 اکاؤنٹ',out:'لاگ آؤٹ',brand:'خافت',brandSub:'ٹیکنیشن پورٹل',home:'ہوم',onway:'🚗 راستے میں ہوں',onwayDone:'🚗 راستے میں، گاہک کو اطلاع دی',onwayToast:'🚗 گاہک کو بتایا کہ آپ راستے میں ہیں',popup:'پاپ اپ کی اجازت دیں',cur:'SAR',tour:'📘 ایپ کا تعارف'}
 };
 Object.keys(LG2).forEach(k=>{ Object.assign(LG[k],LG2[k]); });
+/* نصوص الدفع (باقي اللغات ترجع للعربي) */
+Object.assign(LG.ar,{paidLbl:'💳 مدفوع',waitPay:'💳 بانتظار الدفع',deviceBtn:'💳 دفع بجهاز الفني',deviceConfirm:'تأكيد استلام',deviceDone:'✓ تم تسجيل الدفع',unpaidDone:'فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.',serverErr:'ما انحفظ، حاول مرة ثانية',booked:'محجوز',bookedFee:'أجرة الحجز',extras:'الإضافات',dueNow:'المتبقي على العميل'});
+Object.assign(LG.en,{paidLbl:'💳 Paid',waitPay:'💳 Awaiting payment',deviceBtn:'💳 Paid by card machine',deviceConfirm:'Confirm you received',deviceDone:'✓ Payment recorded',unpaidDone:'The customer still owes money. Ask them to pay in the app or record a card machine payment.',serverErr:'Not saved, try again',booked:'Booked',bookedFee:'Booking fee',extras:'Extras',dueNow:'Customer owes'});
 function lg(k){ const d=LG[lang]||LG.ar; return d[k]||LG.ar[k]||''; }
 /* الشرح التعريفي: مرة وحدة بعد أول دخول على هذا الجهاز؛ لو اللغة ما اختيرت قبل يبدأ باختيار اللغة */
 function khMaybeTour(){
@@ -1768,7 +1829,9 @@ function render(){
     } else if(o.status==='new'||o.status==='confirmed'){
       acts=`<div class="tbtn arrivedlbl">${t('arrivedDone')}</div><button class="tbtn start" onclick="setJobStatus('${o.id}','progress')">${t('start')}</button>`;
     } else if(o.status==='progress'){
-      acts=`<div class="tbtn arrivedlbl">${t('arrivedDone')}</div><button class="tbtn done" onclick="setJobStatus('${o.id}','done')">${t('complete')}</button>`;
+      acts = payDue(o)>0
+        ? `<div class="tbtn waitpay">${lg('waitPay')} · ${ar(payDue(o))}</div><button class="tbtn devpay" onclick="markCardPaid('${o.id}')">${lg('deviceBtn')}</button>`
+        : `<div class="tbtn arrivedlbl">${t('arrivedDone')}</div><button class="tbtn done" onclick="setJobStatus('${o.id}','done')">${t('complete')}</button>`;
     }
     // زر الفاتورة (بعد بدء العمل)
     if(['confirmed','progress','done'].includes(o.status)){
@@ -1799,7 +1862,7 @@ function render(){
       ${isNew?`<div class="newband"><span class="dot"></span>${lang==='ar'?'جديد':'NEW'}${agoS?' • '+agoS:''}</div>`:''}
       <div class="tj-head">
         <span class="tj-when">🕐 ${jobTime(o.startMin)} · ${jobDate(o.date)}</span>
-        <span class="tj-badges">${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}<span class="status ${o.status}">${t('st')[o.status]}</span></span>
+        <span class="tj-badges">${payDue(o)>0&&o.status!=='new'?`<span class="status due-b">💳 ${ar(payDue(o))}</span>`:(o.paidAmount>0&&o.status!=='cancelled'?`<span class="status paid-b">${lg('paidLbl')}</span>`:'')}${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}<span class="status ${o.status}">${t('st')[o.status]}</span></span>
       </div>
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`}

@@ -99,6 +99,9 @@
   .flow i.arr{background:#0b7a3b;color:#fff;border-color:#0b7a3b}
   .flow span{color:var(--line);font-weight:900;font-size:.7rem}
   .mini-ok{color:#0b7a3b;font-weight:800;font-size:.82rem;align-self:center;margin-inline-end:6px}
+  .paychip{display:inline-block;border-radius:8px;padding:2px 9px;font-weight:800;font-size:.84rem}
+  .paychip.ok{background:var(--ok-soft);color:#166534} .paychip.due{background:#EEF6FF;color:#0b3d6b} .paychip.wait{background:#FEF0C7;color:#92600A} .paychip.bad{background:var(--danger-soft);color:#991B1B}
+  .paylink{background:none;border:none;padding:0;margin-inline-start:6px;color:#7c3aed;font-weight:800;cursor:pointer;font-family:inherit;font-size:inherit}
   /* شريط الأقسام الرئيسي — يقسّم اللوحة لصفحات واضحة */
   .secbar{display:flex;gap:8px;overflow-x:auto;margin-top:16px;padding-bottom:4px;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);padding-top:8px}
   .secbar::-webkit-scrollbar{display:none}
@@ -122,6 +125,33 @@
   .aorder .actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
   .sbtn{padding:10px 15px;border-radius:11px;font-weight:700;font-size:.86rem;border:1.5px solid var(--line);background:#fff;transition:.15s}
   .sbtn:hover{background:#f6f4ec} .sbtn.danger{color:var(--danger);border-color:#f0cccc} .sbtn.ok{color:#fff;background:var(--ok);border-color:var(--ok)}
+  .cg-cat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
+  .cg-cat.off{opacity:.62}
+  .cg-head,.cg-svc{display:flex;align-items:center;gap:8px}
+  .cg-head{padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .cg-main{flex:1;display:flex;align-items:center;gap:11px;background:none;border:0;padding:6px 2px;text-align:start;font-family:inherit;cursor:pointer;color:inherit;min-width:0}
+  .cg-ic{width:38px;height:38px;border-radius:11px;background:#f6f4ec;display:grid;place-items:center;font-size:1.25rem;flex:none}
+  .cg-ic.big{width:46px;height:46px;font-size:1.5rem;background:#FBF3D0}
+  .cg-t{display:flex;flex-direction:column;min-width:0}
+  .cg-t b{font-weight:800;font-size:.98rem} .cg-head .cg-t b{font-size:1.08rem;font-weight:900}
+  .cg-t small{color:var(--muted);font-weight:600;font-size:.8rem}
+  .cg-list{padding-top:4px}
+  .cg-svc{border-bottom:1px dashed var(--line)} .cg-svc:last-child{border-bottom:0} .cg-svc.off{opacity:.55}
+  .cg-ord{display:flex;gap:4px;flex:none}
+  .cg-ord button{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:.72rem;cursor:pointer}
+  .cg-ord button:disabled{opacity:.3;cursor:default}
+  .cg-empty{color:var(--muted);font-weight:600;font-size:.86rem;padding:10px 2px}
+  .cg-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+  .cg-sheet{background:#fff;width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 18px 26px;max-height:92vh;overflow:auto}
+  .cg-sheet h3{font-weight:900;font-size:1.15rem;margin-bottom:12px}
+  .cg-sheet label{display:block;font-weight:800;font-size:.86rem;margin-bottom:10px;color:#333}
+  .cg-sheet input:not([type=checkbox]),.cg-sheet select,.cg-sheet textarea{display:block;width:100%;margin-top:5px;border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:.95rem;font-weight:600;background:#fff}
+  .cg-sheet textarea{min-height:64px;resize:vertical}
+  .cg-sheet .cg-row{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px}
+  .cg-sheet .cg-sw{display:flex;align-items:center;gap:9px;padding:9px 0;font-weight:700}
+  .cg-sheet .cg-sw input{width:20px;height:20px;accent-color:var(--ok)}
+  .cg-acts{display:flex;gap:8px;margin-top:14px} .cg-acts .sbtn{flex:1;padding:13px}
+  @media(min-width:700px){ .cg-overlay{align-items:center} .cg-sheet{border-radius:20px} }
   .plang-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
   .plang{padding:8px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:.85rem;color:var(--muted);cursor:pointer;font-family:inherit}
   .plang.active{background:var(--gold,#F5C518);border-color:var(--gold,#F5C518);color:var(--ink)}
@@ -615,7 +645,7 @@ function curPriceLang(){ return (_enUI() && !priceLangPicked) ? 'en' : priceLang
 function catLabel(k){ const c=CAT_I18N[k], pl=curPriceLang(); return (c&&c[pl])||(c&&c.ar)||k; }
 function psvcName(s){ const pl=curPriceLang(); if(pl==='ar') return s.name; const tr=SVC_TR[s.id]; return (tr&&tr[pl])?tr[pl]:s.name; }
 /* اسم الخدمة في بطاقة الطلب: الاسم الإنجليزي من الكتالوج لما تكون الواجهة إنجليزية */
-function itemName(i){ if(_enUI()){ const tr=Object.prototype.hasOwnProperty.call(SVC_TR,i.id)?SVC_TR[i.id]:null; if(tr&&tr.en) return tr.en; return trData(i.name); } return i.name; }
+function itemName(i){ if(_enUI()){ const tr=Object.prototype.hasOwnProperty.call(SVC_TR,i.id)?SVC_TR[i.id]:null; if(tr&&tr.en) return tr.en; const cs=(typeof CATALOG!=='undefined'&&CATALOG.svcs||[]).find(s=>s.id===i.id); if(cs&&cs.name_en) return cs.name_en; return trData(i.name); } return i.name; }
 const SERVICES=[
   {id:'p1',cat:'plumb',name:'تغيير شطّاف',price:80},{id:'p2',cat:'plumb',name:'تسليك مجاري/بالوعة',price:120},
   {id:'p3',cat:'plumb',name:'تغيير خلاط ماء',price:100},{id:'p4',cat:'plumb',name:'إصلاح تسريب مياه',price:150},
@@ -639,6 +669,101 @@ const SERVICES=[
 ];
 let PRICES={};
 function svcPrice(s){ return (PRICES[s.id]!=null)?PRICES[s.id]:s.price; }
+/* ═══ الأقسام والخدمات: كل قسم تحته خدماته وأسعارها (يظهر في تطبيق خافت مباشرة) ═══ */
+let CATALOG={cats:[], svcs:[], loaded:false};
+async function loadCatalog(){
+  if(!cloudReady) return;
+  try{
+    const [c,s]=await Promise.all([ sb.from('khafet_categories').select('*'), sb.from('khafet_services').select('*') ]);
+    if(!c.error && !s.error){ CATALOG={cats:c.data||[], svcs:s.data||[], loaded:true}; }
+  }catch(e){}
+}
+const bySort=(a,b)=>(+a.sort||0)-(+b.sort||0);
+function renderCatalogEditor(){
+  if(!CATALOG.loaded || !CATALOG.cats.length) return renderPriceEditor();
+  const cats=[...CATALOG.cats].sort(bySort);
+  const html=cats.map((c,ci)=>{
+    const svcs=CATALOG.svcs.filter(s=>s.cat_id===c.id).sort(bySort);
+    const rows=svcs.map((s,si)=>`<div class="cg-svc ${s.active?'':'off'}">
+        <button class="cg-main" onclick="editService('${esc(s.id)}')"><span class="cg-ic">${esc(s.icon||'🔧')}</span><span class="cg-t"><b>${esc(s.name)}</b><small>${s.custom?LX('السعر بعد المعاينة','Price after inspection'):money(+s.price||0)} · ${fmtDur(+s.duration||0)}${s.active?'':' · '+LX('مخفية','Hidden')}</small></span></button>
+        <span class="cg-ord"><button onclick="moveCatalog('svc','${esc(s.id)}',-1)" ${si===0?'disabled':''}>▲</button><button onclick="moveCatalog('svc','${esc(s.id)}',1)" ${si===svcs.length-1?'disabled':''}>▼</button></span>
+      </div>`).join('');
+    return `<div class="cg-cat ${c.active?'':'off'}">
+      <div class="cg-head">
+        <button class="cg-main" onclick="editCategory('${esc(c.id)}')"><span class="cg-ic big">${esc(c.icon||'🛠️')}</span><span class="cg-t"><b>${esc(c.name)}</b><small>${c.featured?LX('⭐ في الواجهة تحت صيانة','⭐ On home under Maintenance'):LX('ضمن باقي خدمات المنزل','In other home services')}${c.active?'':' · '+LX('مخفي','Hidden')} · ${LX(ar(svcs.length)+' خدمة',svcs.length+' services')}</small></span></button>
+        <span class="cg-ord"><button onclick="moveCatalog('cat','${esc(c.id)}',-1)" ${ci===0?'disabled':''}>▲</button><button onclick="moveCatalog('cat','${esc(c.id)}',1)" ${ci===cats.length-1?'disabled':''}>▼</button></span>
+      </div>
+      <div class="cg-list">${rows||`<div class="cg-empty">${LX('ما فيه خدمات بعد','No services yet')}</div>`}</div>
+      <button class="sbtn" style="width:100%;margin-top:8px" onclick="editService('','${esc(c.id)}')">➕ ${LX('خدمة جديدة','New service')}</button>
+    </div>`;
+  }).join('');
+  return `<button class="sbtn ok" style="width:100%;padding:13px;margin-bottom:12px" onclick="editCategory('')">➕ ${LX('قسم جديد','New section')}</button>${html}`;
+}
+function cgModal(html){ closeCg(); const m=document.createElement('div'); m.className='cg-overlay'; m.id='cgModal'; m.innerHTML=`<div class="cg-sheet" dir="${_uiEN()?'ltr':'rtl'}">${html}</div>`; m.addEventListener('click',e=>{ if(e.target===m) closeCg(); }); document.body.appendChild(m); }
+function closeCg(){ const m=document.getElementById('cgModal'); if(m) m.remove(); }
+const cgVal=id=>((document.getElementById(id)||{}).value||'').trim();
+const cgChk=id=>!!(document.getElementById(id)||{}).checked;
+function editCategory(id){
+  const c=CATALOG.cats.find(x=>x.id===id)||{id:'',name:'',name_en:'',icon:'🛠️',featured:false,active:true};
+  cgModal(`<h3>${id?LX('تعديل القسم','Edit section'):LX('قسم جديد','New section')}</h3>
+    <label>${LX('اسم القسم','Section name')}<input id="cg_name" value="${esc(c.name)}" placeholder="${LX('مثال: سباكة','e.g. Plumbing')}"></label>
+    <label>${LX('الاسم بالإنجليزي (اختياري)','English name (optional)')}<input id="cg_name_en" dir="ltr" value="${esc(c.name_en||'')}"></label>
+    <label>${LX('الأيقونة (إيموجي)','Icon (emoji)')}<input id="cg_icon" value="${esc(c.icon||'')}" maxlength="8"></label>
+    <label class="cg-sw"><input type="checkbox" id="cg_featured" ${c.featured?'checked':''}> ${LX('يظهر في الواجهة تحت «صيانة»','Show on home under Maintenance')}</label>
+    <label class="cg-sw"><input type="checkbox" id="cg_active" ${c.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
+    <div class="cg-acts"><button class="sbtn ok" onclick="saveCategory('${esc(c.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+}
+async function saveCategory(id){
+  const name=cgVal('cg_name'); if(!name){ toast(LX('اكتب اسم القسم','Enter the section name')); return; }
+  const row={ id:id||('c'+Date.now().toString(36)), name, name_en:cgVal('cg_name_en')||null, icon:cgVal('cg_icon')||'🛠️', featured:cgChk('cg_featured'), active:cgChk('cg_active') };
+  if(!id) row.sort=Math.max(0,...CATALOG.cats.map(c=>+c.sort||0))+10;
+  const { error }=await sb.from('khafet_categories').upsert(row);
+  if(error){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
+  closeCg(); toast(LX('✓ انحفظ القسم','✓ Section saved')); await loadCatalog(); render();
+}
+function editService(id, catId){
+  const s=CATALOG.svcs.find(x=>x.id===id)||{id:'',cat_id:catId||'',name:'',name_en:'',description:'',icon:'🔧',duration:60,price:0,custom:false,active:true};
+  const opts=[...CATALOG.cats].sort(bySort).map(c=>`<option value="${esc(c.id)}" ${c.id===s.cat_id?'selected':''}>${esc(c.icon||'')} ${esc(c.name)}</option>`).join('');
+  cgModal(`<h3>${id?LX('تعديل الخدمة','Edit service'):LX('خدمة جديدة','New service')}</h3>
+    <label>${LX('القسم','Section')}<select id="sv_cat">${opts}</select></label>
+    <label>${LX('اسم الخدمة','Service name')}<input id="sv_name" value="${esc(s.name)}" placeholder="${LX('مثال: تغيير خلاط','e.g. Replace mixer')}"></label>
+    <label>${LX('الاسم بالإنجليزي (اختياري)','English name (optional)')}<input id="sv_name_en" dir="ltr" value="${esc(s.name_en||'')}"></label>
+    <label>${LX('الوصف (اختياري)','Description (optional)')}<textarea id="sv_desc">${esc(s.description||'')}</textarea></label>
+    <div class="cg-row">
+      <label>${LX('السعر (ر.س)','Price (SAR)')}<input id="sv_price" type="number" min="0" inputmode="decimal" value="${+s.price||0}"></label>
+      <label>${LX('المدة (دقيقة)','Time (min)')}<input id="sv_dur" type="number" min="0" inputmode="numeric" value="${+s.duration||0}"></label>
+      <label>${LX('أيقونة','Icon')}<input id="sv_icon" value="${esc(s.icon||'')}" maxlength="8"></label>
+    </div>
+    <label class="cg-sw"><input type="checkbox" id="sv_custom" ${s.custom?'checked':''}> ${LX('السعر بعد المعاينة','Price after inspection')}</label>
+    <label class="cg-sw"><input type="checkbox" id="sv_active" ${s.active!==false?'checked':''}> ${LX('ظاهرة للعملاء','Visible to customers')}</label>
+    <div class="cg-acts"><button class="sbtn ok" onclick="saveService('${esc(s.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+}
+async function saveService(id){
+  const name=cgVal('sv_name'), cat=cgVal('sv_cat');
+  if(!name){ toast(LX('اكتب اسم الخدمة','Enter the service name')); return; }
+  if(!cat){ toast(LX('اختر القسم','Choose a section')); return; }
+  const price=Math.max(0, Number(cgVal('sv_price'))||0), dur=Math.max(0, Math.round(Number(cgVal('sv_dur'))||0));
+  const old=CATALOG.svcs.find(x=>x.id===id);
+  const row={ id:id||('s'+Date.now().toString(36)), cat_id:cat, name, name_en:cgVal('sv_name_en')||null, description:cgVal('sv_desc')||null, icon:cgVal('sv_icon')||'🔧', price, duration:dur, custom:cgChk('sv_custom'), active:cgChk('sv_active') };
+  if(!old || old.cat_id!==cat) row.sort=Math.max(0,...CATALOG.svcs.filter(x=>x.cat_id===cat).map(x=>+x.sort||0))+10;
+  if(!old) row.quick=false;
+  const { error }=await sb.from('khafet_services').upsert(row);
+  if(error){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
+  closeCg(); toast(LX('✓ انحفظت الخدمة','✓ Service saved')); await loadCatalog(); render();
+}
+async function moveCatalog(kind, id, dir){
+  const table=kind==='cat'?'khafet_categories':'khafet_services';
+  const all=kind==='cat'?CATALOG.cats:CATALOG.svcs;
+  const me=all.find(x=>x.id===id); if(!me) return;
+  const list=(kind==='cat'?[...all]:all.filter(x=>x.cat_id===me.cat_id)).sort(bySort);
+  const i=list.indexOf(me), j=i+dir; if(j<0||j>=list.length) return;
+  [list[i],list[j]]=[list[j],list[i]];
+  const upd=list.map((x,k)=>({x,sort:(k+1)*10})).filter(({x,sort})=>+x.sort!==sort);
+  upd.forEach(({x,sort})=>{ x.sort=sort; }); render();
+  const res=await Promise.all(upd.map(({x,sort})=>sb.from(table).update({sort}).eq('id',x.id)));
+  if(res.some(r=>r.error)) toast(LX('ما انحفظ الترتيب','Order not saved'));
+  await loadCatalog(); render();
+}
 function renderPriceEditor(){
   const pl=curPriceLang();
   const sw=priceLangs.map(([l,n])=>`<button class="plang ${pl===l?'active':''}" onclick="setPriceLang('${l}')">${n}</button>`).join('');
@@ -702,7 +827,34 @@ function rowToOrder(r){ return { id:'#'+arDigits(r.order_no), num:r.order_no, db
   items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
   date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, price:Number(r.price)||0, finalPrice:Number(r.final_price)||0,
   free:!!r.free, status:r.status||'new', rating:r.rating||0, reminded:!!r.reminded, quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', feedback:r.feedback||'', rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, reviewAnon:!!r.review_anon, reviewHidden:!!r.review_hidden, discountPct:+r.discount_pct||0, promoCode:r.promo_code||'',
-  arrived:!!r.arrived, delayMin:+r.delay_min||0 }; }
+  arrived:!!r.arrived, delayMin:+r.delay_min||0,
+  payRequired:!!r.pay_required, released:r.released!==false, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'' }; }
+/* حالة الدفع للمدير */
+function payCell(o){
+  const METH={online:LX('إلكتروني','online'),tamara:LX('تمارا','Tamara'),device:LX('جهاز الفني','card machine')}[o.payMethod]||'';
+  if(o.status==='cancelled'){
+    if(o.payStatus==='refunded') return `<span class="paychip ok">${LX('✓ رجع المبلغ','✓ Refunded')}</span>`;
+    if(o.payStatus==='refund_pending'||o.payStatus==='refund_failed') return `<span class="paychip ${o.payStatus==='refund_failed'?'bad':'wait'}">${o.payStatus==='refund_failed'?LX('فشل الاسترجاع','Refund failed'):LX('جاري الاسترجاع','Refund pending')} · ${money(o.paidAmount)}</span><button class="paylink" onclick="retryRefund('${o.id}')">${LX('إعادة المحاولة','Retry')}</button>`;
+    return `<span class="paychip">—</span>`;
+  }
+  if(o.payRequired && !o.released) return `<span class="paychip wait">${LX('بانتظار دفع العميل','Awaiting customer payment')}</span>`;
+  if(o.paidAmount>0 && o.amountDue<=0) return `<span class="paychip ok">${LX('✓ مدفوع','✓ Paid')} ${money(o.paidAmount)}${METH?' · '+METH:''}</span>`;
+  if(o.amountDue>0) return `<span class="paychip due">${LX('المتبقي','Due')} ${money(o.amountDue)}${o.paidAmount>0?' · '+LX('مدفوع','paid')+' '+money(o.paidAmount):''}</span>${o.status==='progress'||o.status==='confirmed'?`<button class="paylink" onclick="adminDevicePay('${o.id}')">${LX('تسجيل دفع بالجهاز','Record card payment')}</button>`:''}`;
+  return `<span class="paychip">—</span>`;
+}
+async function adminDevicePay(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId) return;
+  if(!confirm(LX('تسجيل استلام '+money(o.amountDue)+' بجهاز الدفع؟','Record '+money(o.amountDue)+' received by card machine?'))) return;
+  try{ const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId }); if(error||!data||!data.ok) throw (error||new Error('fail')); toast(LX('✓ تم تسجيل الدفع','✓ Payment recorded')); loadAll(); }
+  catch(e){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); }
+}
+async function retryRefund(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId) return;
+  try{ const r=await fetch(SUPABASE_URL+'/functions/v1/pay/refund',{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON,'apikey':SUPABASE_ANON}, body:JSON.stringify({order_id:o.dbId}) });
+    const j=await r.json(); const man=(j.payments||[]).some(p=>p.manual); const bad=(j.payments||[]).some(p=>p.ok===false);
+    toast(bad?LX('ما نجح الاسترجاع، جرّب لاحقًا','Refund failed, try later'):(man?LX('دفعة جهاز الفني: رجّعها يدويًا للعميل','Card machine payment: refund it manually'):LX('✓ تم الاسترجاع','✓ Refunded'))); loadAll(); }
+  catch(e){ toast(LX('تعذّر الاتصال','Connection failed')); }
+}
 async function loadAll(){
   if(!cloudReady||!loggedIn){ render(); return; }
   // كل الاستعلامات مع بعض بدل واحد ورا الثاني (كانت تاخذ وقت طويل على شبكة الجوال)
@@ -711,6 +863,7 @@ async function loadAll(){
     Q(sb.from('khafet_orders').select('*').order('created_at',{ascending:false}), o=>{ ORDERS=(o.data||[]).map(rowToOrder); }),
     Q(sb.from('khafet_providers').select('*').order('created_at',{ascending:false}), p=>{ PROVIDERS=p.data||[]; }),
     Q(sb.from('khafet_prices').select('*'), pr=>{ PRICES={}; (pr.data||[]).forEach(r=>{ PRICES[r.sid]=Number(r.price); }); }),
+    Promise.resolve().then(()=>loadCatalog()).catch(()=>{}),
     Q(sb.from('khafet_subscriptions').select('*').order('created_at',{ascending:false}), x=>{ SUBS=x.data||[]; }),
     Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ invLoaded=true; if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
     Q(sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000), lg=>{ LOG=lg.data||[]; }),
@@ -954,8 +1107,8 @@ function renderSubs(){
     ${s.status==='active'?'':`<button class="sbtn ok" onclick="subMark('${s.id}','active')">تفعيل</button>`}</div>`).join('');
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_admin').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(loggedIn) loadAll(); }).subscribe(); }catch(e){} }
-async function patch(dbId,p){ if(!cloudReady||!dbId) return; try{ await sb.from('khafet_orders').update(p).eq('id',dbId); }catch(e){} }
-function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.status=st; patch(o.dbId,{status:st}); toast(LX('تم تحديث الحالة: '+STATUS_AR[st],'Status updated: '+trData(STATUS_AR[st]))); render(); }
+async function patch(dbId,p){ if(!cloudReady||!dbId) return; try{ const r=await sb.from('khafet_orders').update(p).eq('id',dbId); if(r&&r.error){ toast(LX('ما انحفظ التعديل','Change not saved')); loadAll(); } }catch(e){} }
+function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return; if(st==='cancelled' && o.paidAmount>0 && !confirm(LX('العميل دافع '+money(o.paidAmount)+'، يرجع له المبلغ تلقائيًا. إلغاء الطلب؟','The customer paid '+money(o.paidAmount)+' and will be refunded automatically. Cancel the order?'))) return; o.status=st; patch(o.dbId,{status:st}); toast(LX('تم تحديث الحالة: '+STATUS_AR[st],'Status updated: '+trData(STATUS_AR[st]))); render(); }
 // تعليم وصول الفني — يفعّل مرحلة «الفني وصل الموقع» ويُشعر العميل تلقائياً
 function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.arrived=true; patch(o.dbId,{arrived:true}); toast('🚪 تم إبلاغ العميل بوصول الفني'); render(); }
 function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
@@ -1120,6 +1273,7 @@ function renderAdminOrder(o){
       <div><div class="k">📅 الموعد</div>${dayLabel(o.date)} · ${fmtTime(o.startMin)}</div>
       <div><div class="k">⏱️ المدة</div>${fmtDur(o.duration)}</div>
       <div><div class="k">📍 الموقع</div>${[[trData(a.city),a.district].filter(Boolean).map(esc).join(LX('، ',', ')), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||LX('📍 خريطة','📍 Map')}${a.mapUrl?` · <a href="${esc(a.mapUrl)}" target="_blank" style="color:#7c3aed;font-weight:800">🗺️</a>`:''}${a.photoUrl?` · <button onclick="openMedia('${esc(a.photoUrl)}')" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🏠 صورة المنزل</button>`:''}</div>
+      <div><div class="k">${LX('💳 الدفع','💳 Payment')}</div>${payCell(o)}</div>
       <div><div class="k">💰 الإجمالي</div>${o.free?LX('مجاني 🎁','Free 🎁'):money(o.finalPrice)}${o.discountPct>0?` <span style="color:#0b7a3b;font-weight:800">${LX(`🎟️ خصم ${ar(o.discountPct)}٪`,`🎟️ ${o.discountPct}% off`)}${o.promoCode?' ('+esc(o.promoCode)+')':''}</span>`:''}</div>
       ${o.providerPhone?`<div><div class="k">🤝 المزوّد</div>${esc(provName(o.providerPhone))}</div>`:''}
       ${o.note?`<div><div class="k">🛠️ المشكلة</div>${esc(o.note)}</div>`:''}
@@ -1245,14 +1399,14 @@ function render(){
     ['team','👥 الفريق', pendingProv+PENDING_TECHS.length],
     ['cust','💬 العملاء', newSugs+newSubs],
     ['store','📦 المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length],
-    ['prices','🏷️ الأسعار', 0],
+    ['prices','🗂️ الخدمات', 0],
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
     ['team','👥','الفريق', pendingProv+PENDING_TECHS.length, 'الفنيّون · المزوّدون · المستحقات', true],
     ['cust','💬','العملاء', newSugs+newSubs, 'الرسائل · الاشتراكات · مقالات السلامة', false],
     ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
-    ['prices','🏷️','الأسعار', 0, 'تعديل أسعار الخدمات', false],
+    ['prices','🗂️',LX('الأقسام والخدمات','Sections & services'), 0, LX('الأقسام · الخدمات · الأسعار','Sections · services · prices'), false],
     ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
@@ -1281,11 +1435,11 @@ function render(){
     body=`${block(LX('📦 المستودع','📦 Warehouse'), renderInventory())}
       ${block(LX('📋 سجل حركة المخزن (يومي)','📋 Stock movement log (daily)'), '<div id="stockLogBox">'+renderStockLog()+'</div>')}`;
   } else if(adminSection==='prices'){
-    body=block(LX('🏷️ أسعار الخدمات','🏷️ Service prices'), renderPriceEditor());
+    body=block(LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'), renderCatalogEditor());
   } else if(adminSection==='notify'){
     body=renderBroadcast();
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:'🏷️ الأسعار',notify:'📣 إشعار للكل'})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل'})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
