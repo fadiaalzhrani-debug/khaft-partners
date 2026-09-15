@@ -556,7 +556,7 @@ async function approveTechA(uid, ok){
   try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?LX('✅ اعتُمد '+(data.name||''),'✅ Approved '+(data.name||'')):'تم الرفض'); await loadStaff(); await loadJoin(); render(); }catch(e){ toast('⚠️ تعذّر'); }
 }
 async function regenJoinCodeA(){
-  if(!confirm(LX('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفنيّوك المعتمدون يبقون كما هم.','Create a new code? The current code stops working now. Approved technicians stay as they are.'))) return;
+  if(!confirm(LX('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفنيينك المعتمدين يبقون كما هم.','Create a new code? The current code stops working now. Approved technicians stay as they are.'))) return;
   try{ const { data }=await sb.rpc('regenerate_join_code'); if(!data) throw new Error(); JOIN_CODE=data; toast(LX('🎲 الكود الجديد: ','🎲 New code: ')+data); render(); }catch(e){ toast('⚠️ تعذّر'); }
 }
 function copyJoinCodeA(){ try{ navigator.clipboard.writeText(JOIN_CODE); toast(LX('📋 نُسخ الكود ','📋 Code copied ')+JOIN_CODE); }catch(e){ prompt(LX('انسخي الكود:','Copy the code:'), JOIN_CODE); } }
@@ -1424,8 +1424,8 @@ function render(){
       <div style="height:10px"></div>
       ${block(LX('📩 تذكيرات المواعيد القريبة','📩 Upcoming appointment reminders'), remHtml)}`;
   } else if(adminSection==='team'){
-    body=`${block(LX(`🧑‍🔧 فنيّو خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`,`🧑‍🔧 Khafet technicians (${STAFF.filter(s=>s.role==='tech').length})`), renderTechs())}
-      ${block(LX(`🤝 مزوّدو الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
+    body=`${block(LX(`🧑‍🔧 فنيين خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`,`🧑‍🔧 Khafet technicians (${STAFF.filter(s=>s.role==='tech').length})`), renderTechs())}
+      ${block(LX(`🤝 مزودين الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
       ${block(LX(`💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`,`💰 Platform dues (${COMMISSION} SAR/order commission)`), renderCommission())}`;
   } else if(adminSection==='cust'){
     body=`${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
