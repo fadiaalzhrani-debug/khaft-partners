@@ -31,6 +31,8 @@
   .logout{color:var(--muted);font-weight:700;font-size:.85rem}
 
   .login{max-width:400px;margin:40px auto;padding:0 18px;text-align:center}
+  .login-top{display:flex;justify-content:flex-start;margin:-20px 0 14px}
+  .login-back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.95rem}
   .login .ic{font-size:3rem;margin-bottom:8px}
   .login h1{font-size:1.5rem;font-weight:900}
   .login p{color:var(--muted);margin:6px 0 20px}
@@ -691,7 +693,7 @@ async function enterTechMode(info, d){
 }
 async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=null; localStorage.removeItem('khafet_provider_phone'); render(); }
 /* 🏠 الرئيسية = الصفحة الرئيسية لحسابه (لوحته)، مو اختيار البوابات */
-function goHome(){ if(me){ tab='home'; pvCalFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
+function goHome(){ if(me){ tab='home'; pvCalFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html#stay'; } }
 /* ═══════════ إعدادات الحساب (مثل أي تطبيق) ═══════════ */
 function soundOn(){ return localStorage.getItem('khafet_sound')!=='off'; }
 function toggleSound(){ localStorage.setItem('khafet_sound', soundOn()?'off':'on'); render(); toast(soundOn()?'🔔 التنبيه الصوتي مفعّل':'🔕 أُوقف التنبيه الصوتي'); }
@@ -851,12 +853,13 @@ function showLogin(msg, wait){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
+    <div class="login-top"><a class="backbtn login-back" href="index.html#stay">‹ ${LX('الصفحة الرئيسية','Home')}</a></div>
     <div class="ic">🤝</div><h1>بوابة المزوّد</h1>
     <p>ادخل برقمك المسجّل وكلمة المرور لاستقبال طلبات منطقتك.</p>
     <input id="lg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
     <input id="lg_pass" type="password" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
     <button class="btn" onclick="login()">دخول</button>
-    <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني — ابقَ مسجّلاً بهذا الجهاز</label>
+    <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني · ابقَ مسجّلًا بهذا الجهاز</label>
     <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
@@ -1929,7 +1932,7 @@ const T_DICT = {
   "🧑‍🔧 فني لدى":"🧑‍🔧 Technician at","🧑‍🔧 فني جديد":"🧑‍🔧 New technician","لا توجد أوقات متاحة":"No available times","المنطقة":"Area","إجمالي":"Total","الرصيد":"Balance",
   // الدخول ونسيت كلمة المرور (المفاتيح بلا الإيموجي الأول؛ المحرّك يحافظ عليه)
   "لحظة…":"One moment…","نتحقق من جلستك المحفوظة":"Checking your saved session","كلمة المرور":"Password",
-  "تذكرني — ابقَ مسجّلاً بهذا الجهاز":"Remember me on this device","نسيت كلمة المرور؟":"Forgot password?",
+  "تذكرني · ابقَ مسجّلًا بهذا الجهاز":"Remember me on this device","نسيت كلمة المرور؟":"Forgot password?",
   "حسابك قيد المراجعة. بننتظر اعتماد الإدارة.":"Your account is under review. We're waiting for approval.",
   "رقم الجوال غير صحيح.":"Invalid mobile number.","رقم الجوال غير صحيح":"Invalid mobile number","اكتب كلمة المرور.":"Enter your password.","لا يوجد اتصال بالخادم":"No connection to the server",
   "الرقم أو كلمة المرور غير صحيحة.":"Wrong number or password.","الرقم غير مسجّل — سجّل كمزوّد أو كفني بكودك.":"This number isn't registered. Sign up as a provider, or as a technician with your code.",

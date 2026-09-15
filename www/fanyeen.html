@@ -177,6 +177,8 @@
   .logout{color:var(--muted);font-weight:700;font-size:.85rem;padding:6px 10px}
   /* تسجيل الدخول */
   .login{max-width:380px;margin:44px auto;padding:0 18px;text-align:center}
+  .login-top{display:flex;justify-content:flex-start;margin:-24px 0 14px}
+  .login-back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:.95rem}
   .login .ic{font-size:3rem;margin-bottom:8px}
   .login h1{font-size:1.5rem;font-weight:900}
   .login p{color:var(--muted);margin:6px 0 20px;font-size:.9rem}
@@ -1304,6 +1306,7 @@ function showLogin(){
   const ab0=document.getElementById('acctBtn'); if(ab0) ab0.style.display='none';
   document.getElementById('app').innerHTML=`
     <div class="login">
+      <div class="login-top"><a class="backbtn login-back" href="index.html#stay">‹ ${({ar:'الصفحة الرئيسية',en:'Home',ne:'गृहपृष्ठ',hi:'होम पेज',ur:'ہوم پیج'})[lang]||'الصفحة الرئيسية'}</a></div>
       <div class="ic">🧑‍🔧</div><h1>${lg('title')}</h1>
       <p>${lg('sub')}</p>
       <input id="wu" inputmode="tel" placeholder="${lg('phone')}" autocomplete="tel" />
@@ -1412,7 +1415,7 @@ async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} logged
   ['khafet_worker_auth','khafet_staff_ok','khafet_role','khafet_org','kh_inv_cache','khafet_tech_seen',SAVE_KEY].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
   MYROLE=''; MYORG=''; INV=[]; STOCKLOG=[]; ORDERS=[]; invLoaded=false; myName=''; myCode=''; render(); }
 /* 🏠 الرئيسية = صفحة حسابه الرئيسية (طلباته)، مو اختيار البوابات */
-function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html'; } }
+function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html#stay'; } }
 /* إعدادات الحساب */
 function toggleSet(k){ const el=document.getElementById('set_'+k); if(el) el.style.display=(el.style.display==='none'?'block':'none'); }
 async function changePass(){
