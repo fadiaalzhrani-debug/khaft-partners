@@ -313,6 +313,40 @@
   .bk-loc .tbtn{flex:1;font-size:.95rem;padding:13px 10px}
   .bk-loc-ok{font-size:.85rem;font-weight:800;color:#16a34a}
   .bk-loc-ok a{color:#16a34a}
+  .bk-wa{background:var(--card);border:1.5px solid #128C7E;border-radius:16px;padding:14px;margin-top:14px}
+  .bk-wa-h{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  .bk-wa-h b{font-weight:900;color:#0f7a6d;font-size:1.02rem}
+  .bk-wa-go{background:#128C7E;color:#fff;border-radius:11px;padding:9px 14px;font-weight:800;font-size:.92rem}
+  .bk-wa-hint{color:var(--muted);font-size:.84rem;font-weight:700;margin:6px 0 8px}
+  .bk-wa textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#fbfdfc;font:inherit;font-weight:600;font-size:.95rem;color:var(--text);resize:vertical}
+  .bk-wa-acts{display:flex;gap:8px;margin-top:10px}
+  .bk-wa-acts .tbtn{font-size:1rem;padding:12px}
+  .bk-found{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .bk-found span{font-size:.8rem;font-weight:800;padding:2px 10px;border-radius:999px;background:#e3f5ea;color:#15803d}
+  .bk-found span.miss{background:#fdefd5;color:#a15c07}
+  .bk-svc{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .bk-svc-n b{display:block;font-weight:800;line-height:1.35}
+  .bk-svc-n small{color:var(--muted);font-weight:700;font-size:.8rem}
+  .bk-qty{display:flex;align-items:center;gap:4px;background:var(--panel);border-radius:10px;padding:2px}
+  .bk-qty button{width:32px;height:32px;border-radius:8px;font-weight:900;font-size:1.1rem}
+  .bk-qty span{min-width:18px;text-align:center;font-weight:900}
+  .bk-x{width:34px;height:34px;border-radius:9px;color:var(--muted);font-size:1.15rem;font-weight:800}
+  .bk-add{width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);font:inherit;font-weight:700;font-size:.98rem;color:var(--text)}
+  .bk-est{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-weight:800}
+  .bk-exact{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:10px 12px;border-radius:13px;border:1.5px dashed var(--line);background:#fcfbf7}
+  .bk-exact.on{border-style:solid;border-color:var(--gold);background:var(--gold-tint)}
+  .bk-exact label{font-weight:800;color:var(--muted);font-size:.92rem;flex:1;min-width:140px}
+  .bk-exact input{padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);font:inherit;font-weight:800;font-size:1.05rem;color:var(--text);min-width:130px}
+  .bk-exact-ok{margin-top:8px;font-weight:800;color:#15803d;font-size:.92rem}
+  .bk-clash{margin-top:6px;font-weight:800;color:#b45309;font-size:.88rem}
+  .bk-maplink{display:flex;gap:8px;margin-bottom:8px}
+  .bk-maplink input{flex:1;min-width:0;padding:12px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:.95rem;font-family:inherit}
+  .bk-maplink .tbtn{flex:0 0 auto;font-size:.95rem;padding:12px 14px}
+  .bk-photo{display:flex;align-items:center;gap:10px}
+  .bk-photo img{width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+  .bk-photo .tbtn{flex:1;font-size:.95rem;padding:12px}
+  .bk-photo-btn{position:relative;display:block;overflow:hidden;font-size:.98rem;padding:13px;cursor:pointer}
+  .bk-photo-btn input{position:absolute;inset:0;opacity:0;cursor:pointer}
   .bookf{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px;display:flex;flex-direction:column;gap:11px}
   /* اختيار اليوم ونافذة الوصول — منسوخ حرفياً من تطبيق خافت */
   .bkpanel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:16px}
@@ -1085,6 +1119,10 @@ function openInvoice(id){
   invEditing=id;
   invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})) : [];
   // فاتورة جديدة: خدمات الحجز تنضاف مقفولة (أجرتها محسوبة وقت الحجز)، والفني يضيف الأغراض
+  // حجز الطاقم: خدمات الحجز من الأقسام تنضاف للفاتورة جاهزة (غير مقفولة)
+  if(!o.invoice && o.dbId && o.quick){
+    invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick'&&it.id!=='custom'&&svc(it.id)).map(it=>{ const s=svc(it.id); return {id:it.id,name:it.name||s.name,qty:+it.qty||1,price:+s.price||0,booked:false}; });
+  }
   if(!o.invoice && o.dbId && !o.quick){
     invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick').map(it=>{ const s=svc(it.id); return {id:it.id,name:it.name,qty:+it.qty||1,price:s?+s.price:(+it.price||0),booked:true}; });
   }
@@ -1595,8 +1633,8 @@ async function invEdit(id){
 }
 /* ---- قسم: حجز لعميل ---- */
 let bkDate=null, bkTime=null; const bkVals={};
-function pickBkDate(iso){ bkDate=iso; bkTime=null; render(); }
-function pickBkTime(m){ bkTime=m; render(); }
+function pickBkDate(iso){ bkDate=iso; bkTime=null; bkExact=false; render(); }
+function pickBkTime(m){ bkTime=m; bkExact=false; render(); }
 /* أول حجز قائم داخل النافذة بنفس اليوم */
 function bkWinOrder(iso,m){
   return ORDERS.find(o=>o.date===iso && o.status!=='cancelled' &&
@@ -1661,6 +1699,172 @@ function schedHTML(){
 /* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
 const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
 function bkWindowLabel(m){ return jobTime(m)+' – '+jobTime(Math.min(m+BK_WINDOW,BK_WORK_END)); }
+/* ═ حجز لعميل: لصق طلب الواتس، رابط الموقع، وقت محدد، صورة الموقع ═ */
+let bkSvcs=[], bkPhoto=null, bkWaOpen=false, bkFound=null, bkExact=false;
+const BK_KW={
+  p1:['شطاف','الشطاف','شطافه'], p2:['تسليك','مسدود','مسدوده','انسداد','بالوعه','البالوعه','مجاري','المجاري','طفح'],
+  p3:['خلاط','الخلاط','حنفيه','صنبور','بزبوز'], pleak:['كشف تسريب','كشف تسرب','كشف التسريب','فاتوره الماء'],
+  p4:['تسريب','تسرب','يسرب','تهريب','يهرب','ينقط','تنقيط'], p5:['سخان','السخان','الماء الحار','المويه الحاره','ماء حار'],
+  p6:['سيفون','السيفون','صندوق الطرد','كرسي الحمام'], e1:['لمبه','لمبات','سبوت','سبوتات','اضاءه','الاضاءه','انوار'],
+  e2:['ثريا','ثريات','نجفه'], e3:['قصر','التماس','انقطاع','مقطوعه','يفصل','الفيوز','القاطع','ما فيه كهرباء','مافيه كهرباء'],
+  e4:['مفتاح','مفاتيح','بريزه','افياش','فيش','فيشه','ابريز'], e5:['مروحه','مراوح','شفاط'], e6:['لوحه الكهرباء','طبلون','الطبلون'],
+  ac2:['فريون','ما يبرد','مايبرد','غاز المكيف'], ac1:['تنظيف مكيف','تنظيف المكيف','غسيل مكيف','غسيل المكيف','تنظيف مكيفات','غسيل مكيفات'],
+  c1:['باب','الباب','مفصلات','مفصله'], c2:['دولاب','دواليب','خزانه','كبت'], c3:['نافذه','شباك','شيش'], c4:['اثاث','تجميع','ايكيا'],
+  pt1:['دهان','صبغ','بويه'], pt2:['ترميم','تلميس'], pt3:['تشقق','تشققات','رطوبه'],
+  a3:['غساله صحون','غساله الصحون','جلايه'], a1:['غساله','الغساله'], a2:['ثلاجه','الثلاجه','براد'], a4:['فرن','بوتاجاز','طباخ'],
+  cl3:['تنظيف خزان','تنظيف الخزان','غسيل خزان'], cl2:['كنب','سجاد','موكيت'], cl1:['تنظيف بيت','تنظيف شقه','تنظيف فيلا','تنظيف عام'],
+  g1:['رفوف','رف'], g2:['عزل'], g4:['ترويبه','ترويب']
+};
+const BK_DUAL={ p1:['شطافين'], p3:['خلاطين'], e1:['لمبتين'], e2:['ثريتين'], e4:['مفتاحين','بريزتين'], e5:['مروحتين'], ac1:['تنظيف مكيفين','غسيل مكيفين'] };
+const BK_CITIES=['الخبر','الدمام','الظهران','القطيف','الجبيل','الأحساء','الهفوف','سيهات','صفوى','رأس تنورة','بقيق','الرياض','جدة'];
+function bkWest(s){ return String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[‎‏‪-‮⁦-⁩]/g,''); }
+function bkNorm(s){ return bkWest(s).replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي'); }
+function bkHHMM(m){ return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); }
+/* رابط خريطة: يقبل روابط قوقل وأبل والواتس، ويطلع الإحداثيات إذا موجودة */
+function bkParseMap(text){
+  const s=bkWest(text).trim(); if(!s) return null;
+  const url=(s.match(/https?:\/\/[^\s]+/)||[])[0]||'';
+  if(url && /google\.[^\/]+\/maps|maps\.google|goo\.gl|maps\.app|maps\.apple|waze\.com|g\.co\/kgs/i.test(url)){
+    const c=url.match(/[?&](?:q|query|ll|daddr|destination)=(-?\d+\.\d+)(?:,|%2C)\s*(-?\d+\.\d+)/i)||url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    return { mapUrl:url, lat:c?c[1]:'', lng:c?c[2]:'' };
+  }
+  const p=s.match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/);
+  if(p) return { mapUrl:'https://www.google.com/maps?q='+p[1]+','+p[2], lat:p[1], lng:p[2] };
+  return null;
+}
+/* قراءة محادثة واتس: الاسم، الجوال، الخدمات، اليوم، الوقت، العنوان، الموقع */
+function bkParseChat(raw){
+  const lines=bkWest(raw).split(/\r?\n/), msgs=[], count={}; let last='';
+  const rxBr=/^\s*\[([^\]]{4,40})\]\s*([^:]{1,40}):\s?(.*)$/;
+  const rxEx=/^\s*\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4},?\s+\d{1,2}:\d{2}(?::\d{2})?\s*(?:[AaPp][Mm]|ص|م)?\s+-\s+([^:]{1,40}):\s?(.*)$/;
+  lines.forEach(l=>{ let m=l.match(rxBr), s=null, b='';
+    if(m){ s=m[2].trim(); b=m[3]; } else if((m=l.match(rxEx))){ s=m[1].trim(); b=m[2]; }
+    if(s!=null){ count[s]=(count[s]||0)+1; last=s; msgs.push({s,b}); } else if(l.trim()) msgs.push({s:last,b:l}); });
+  const all=Object.keys(count), senders=all.filter(s=>!/خافت|khafet|رزق|^انت$|^أنت$|^you$/i.test(s)).sort((a,b)=>count[b]-count[a]);
+  const cust=senders[0]||'';
+  const body=msgs.filter(x=>!all.length||x.s===cust||!x.s).map(x=>x.b).join('\n');
+  const t=bkNorm(body), R={};
+  // الجوال
+  const rxPh=/(?:\+|00)?(?:966)?[\s-]*0?5(?:[\s-]?\d){8}/g; let mm;
+  while((mm=rxPh.exec(body+'\n'+cust))){ let d=mm[0].replace(/\D/g,'').replace(/^00/,'').replace(/^966/,'').replace(/^0?/,'0'); if(/^05\d{8}$/.test(d) && d!=='0590497866'){ R.phone=d; break; } }
+  // الاسم
+  const nm=body.match(/(?:الاسم|الإسم|اسمي|باسم)\s*[:：]?\s*([^\n،,.!؟?0-9]{2,25})/);
+  if(nm) R.name=nm[1].trim();
+  else { const ab=body.match(/(?:^|\s)((?:أبو|ابو|أم|ام)\s+[ء-ي]{2,15})/); if(ab) R.name=ab[1].trim(); else if(cust && !/\d{5,}/.test(cust)) R.name=cust.replace(/[^؀-ۿa-zA-Z\s]/g,'').trim(); }
+  if(!R.name){ const tl=body.match(/[ء-ي]{3,15}(?=\s*[+\d]{9,})/); if(tl && !/جوالي|رقمي|جوال|رقم|واتس/.test(tl[0])) R.name=tl[0]; }
+  // الموقع
+  (bkWest(raw).match(/https?:\/\/[^\s]+/g)||[]).some(u=>{ const m=bkParseMap(u); if(m){ R.map=m; return true; } return false; });
+  if(!R.map){ const m=bkParseMap((body.match(/-?\d{1,2}\.\d{3,}\s*,\s*-?\d{1,3}\.\d{3,}/)||[''])[0]); if(m) R.map=m; }
+  // العنوان
+  const city=BK_CITIES.find(c=>t.indexOf(bkNorm(c))>-1)||'';
+  const hood=body.match(/حي\s+([ء-ي\s]{2,25}?)(?=\s*(?:[،,.\n]|شارع|فيلا|فله|عمار|شق|بيت|$))/);
+  const street=body.match(/شارع\s+([ء-ي\d\s]{2,25}?)(?=\s*(?:[،,.\n]|فيلا|فله|عمار|شق|بيت|$))/);
+  R.addr=[city, hood?('حي '+hood[1].trim()):'', street?('شارع '+street[1].trim()):''].filter(Boolean).join('، ');
+  const house=body.match(/(?:فيلا|فله|فلة|عمارة|عماره|شقة|شقه|بيت|منزل|مبنى)\s*(?:رقم)?\s*\d+[^\n،,.]{0,14}/g);
+  R.house=house?house.map(x=>x.trim()).join('، '):'';
+  // الخدمات
+  const keys=[];
+  SERVICES.forEach(s=>{ if(s.inactive) return;
+    (BK_DUAL[s.id]||[]).forEach(k=>keys.push({k:bkNorm(k),id:s.id,q:2}));
+    (BK_KW[s.id]||[]).forEach(k=>keys.push({k:bkNorm(k),id:s.id,q:1}));
+    if(s.name && s.name.length>4) keys.push({k:bkNorm(s.name),id:s.id,q:1}); });
+  keys.sort((a,b)=>b.k.length-a.k.length);
+  const used=[], hits={}, NUMW={'واحد':1,'اثنين':2,'ثنتين':2,'ثلاث':3,'ثلاثه':3,'اربع':4,'اربعه':4,'خمس':5,'خمسه':5,'ست':6,'سته':6};
+  keys.forEach(o=>{ let from=0, i;
+    while((i=t.indexOf(o.k,from))>-1){ from=i+o.k.length; const a=i, b=i+o.k.length, before=t.charAt(a-1);
+      if(before && /[ء-ي]/.test(before) && !/^[وبل]$/.test(before)) continue;
+      if(used.some(u=>a<u[1]&&b>u[0])) continue; used.push([a,b]);
+      let q=o.q; const pre=t.slice(Math.max(0,a-10),a), n=pre.match(/(\d{1,2})\s*$/);
+      if(n) q=Math.max(1,Math.min(20,+n[1])); else { const w=pre.trim().split(/\s+/).pop(); if(NUMW[w]) q=NUMW[w]; }
+      hits[o.id]=Math.max(hits[o.id]||0,q); } });
+  if(!hits.ac1 && !hits.ac2 && /مكيف/.test(t) && svc('ac1')) hits.ac1=1;
+  R.svcs=SERVICES.filter(s=>hits[s.id]).map(s=>({id:s.id,qty:hits[s.id]}));
+  // اليوم
+  const base=new Date(); base.setHours(0,0,0,0); const add=n=>{ const x=new Date(base); x.setDate(x.getDate()+n); return x; };
+  let date=null;
+  if(/بعد\s*(بكره|بكرا|باكر|غدا)/.test(t)) date=add(2);
+  else if(/(بكره|بكرا|باكر|غدا|الغد)/.test(t)) date=add(1);
+  else if(/(اليوم|الحين|الان|عاجل|ضروري)/.test(t)) date=base;
+  if(!date){ ['الاحد','الاثنين','الثلاثاء','الاربعاء','الخميس','الجمعه','السبت'].forEach((w,wi)=>{ if(!date && new RegExp('(^|\\s|يوم\\s*)'+w).test(t)) date=add((wi-base.getDay()+7)%7); }); }
+  if(!date){ const dm=t.match(/(?:^|\s)(\d{1,2})\s*[\/-]\s*(\d{1,2})(?!\s*[\/-]?\s*\d{3,})/); if(dm){ const dd=new Date(base.getFullYear(),+dm[2]-1,+dm[1]); if(dd<base) dd.setFullYear(dd.getFullYear()+1); if(!isNaN(dd)) date=dd; } }
+  R.date=date?dateISO(date):'';
+  // الوقت: الساعة بالضبط إذا مكتوبة، وإلا بداية الفترة
+  const tm=t.match(/(?:الساعه|ساعه)\s*(\d{1,2})(?:\s*[:.]\s*(\d{2}))?\s*(وربع|ونص|ونصف|الا ربع|الا ربعا)?\s*(ص|م|صباحا|مساء|الصبح|الصباح|الظهر|العصر|المغرب|الليل|بالليل|العشاء)?/)
+         ||t.match(/(?:^|\s)(\d{1,2})(?:\s*[:.]\s*(\d{2}))?\s*(وربع|ونص|ونصف)?\s*(ص|م|am|pm)(?=\s|$|[،,.])/i)
+         ||t.match(/(?:^|\s)(\d{1,2})\s*[:.]\s*(\d{2})()()(?=\s|$|[،,.])/);
+  R.min=null; R.exact=false;
+  if(tm){ let h=+tm[1], mi=+(tm[2]||0); const fr=tm[3]||'', per=String(tm[4]||'').toLowerCase();
+    if(/وربع/.test(fr)) mi=15; else if(/ونص/.test(fr)) mi=30; else if(/الا ربع/.test(fr)){ h-=1; mi=45; }
+    if(/م|pm|مساء|العصر|المغرب|الليل|العشاء|الظهر/.test(per) && h<12) h+=12; else if(!per && h>=1 && h<=7) h+=12;
+    if(h>=0 && h<24 && mi<60){ R.min=h*60+mi; R.exact=true; } }
+  else if(/الصبح|الصباح|صباحا|الضحي/.test(t)) R.min=8*60;
+  else if(/بعد\s*الظهر/.test(t)) R.min=14*60;
+  else if(/الظهر/.test(t)) R.min=12*60;
+  else if(/العصر/.test(t)) R.min=16*60;
+  else if(/المغرب/.test(t)) R.min=18*60;
+  else if(/الليل|بالليل|العشاء|المسا/.test(t)) R.min=20*60;
+  R.note=body.split(/\r?\n/).filter(l=>!/^\s*https?:\/\/\S+\s*$/.test(l)).join('\n').trim().slice(0,600);
+  return R;
+}
+function bkApplyChat(){
+  const A=lang==='ar', el=document.getElementById('bk_chat'), raw=el?el.value:(bkVals.chat||'');
+  bkVals.chat=raw;
+  if(!raw.trim()){ toast(A?'الصق رسائل العميل أول':'Paste the customer messages first'); return; }
+  const R=bkParseChat(raw);
+  if(R.name) bkVals.name=R.name;
+  if(R.phone) bkVals.phone=R.phone;
+  if(R.svcs.length) bkSvcs=R.svcs;
+  if(R.addr) bkVals.addr=R.addr;
+  if(R.house) bkVals.house=R.house;
+  if(R.map){ bkVals.mapUrl=R.map.mapUrl; bkVals.lat=R.map.lat||''; bkVals.lng=R.map.lng||''; }
+  if(R.date) bkDate=R.date;
+  if(R.min!=null){ bkTime=R.min; bkExact=R.exact || (R.min-BK_WORK_START)%BK_WINDOW!==0; }
+  if(R.note) bkVals.note=R.note;
+  bkFound=[[A?'الاسم':'Name',!!R.name],[A?'الجوال':'Phone',!!R.phone],[A?'الخدمة':'Service',R.svcs.length>0],[A?'اليوم':'Day',!!R.date],[A?'الوقت':'Time',R.min!=null],[A?'العنوان':'Address',!!(R.addr||R.house)],[A?'الموقع':'Location',!!R.map]];
+  bkWaOpen=false; render();
+  toast('✅ '+(A?'تعبّت البيانات، راجعها وأكّد':'Filled, review and confirm'));
+}
+async function bkPasteChat(){
+  const A=lang==='ar';
+  try{ const txt=await navigator.clipboard.readText(); if(txt&&txt.trim()){ bkVals.chat=txt; bkWaOpen=true; render(); bkApplyChat(); return; } }catch(e){}
+  bkWaOpen=true; render();
+  const el=document.getElementById('bk_chat'); if(el) el.focus();
+  toast(A?'اضغط مطولًا في المربع واختر لصق':'Long press the box and paste');
+}
+function bkSetMap(text){
+  const A=lang==='ar', m=bkParseMap(text);
+  if(!m){ toast('⚠️ '+(A?'هذا مو رابط خريطة':'Not a map link')); return false; }
+  bkVals.mapUrl=m.mapUrl; bkVals.lat=m.lat; bkVals.lng=m.lng; bkVals.mapIn='';
+  render(); toast('📍 '+(A?'انحفظ الموقع':'Location saved')); return true;
+}
+async function bkPasteMap(){
+  const A=lang==='ar';
+  try{ const txt=await navigator.clipboard.readText(); if(txt&&txt.trim()){ bkSetMap(txt); return; } }catch(e){}
+  const el=document.getElementById('bk_mapin'); if(el) el.focus();
+  toast(A?'اضغط مطولًا في خانة الرابط واختر لصق':'Long press the link box and paste');
+}
+function bkClearMap(){ bkVals.mapUrl=''; bkVals.lat=''; bkVals.lng=''; render(); }
+function bkPickPhoto(input){
+  const A=lang==='ar', f=input&&input.files&&input.files[0]; if(!f) return;
+  compressImage(f,1280,0.8).then(b=>{ if(bkPhoto&&bkPhoto.url) URL.revokeObjectURL(bkPhoto.url); bkPhoto={blob:b,url:URL.createObjectURL(b)}; render(); })
+    .catch(()=>toast('⚠️ '+(A?'تعذّرت قراءة الصورة':'Could not read the photo')));
+}
+function bkClearPhoto(){ if(bkPhoto&&bkPhoto.url) URL.revokeObjectURL(bkPhoto.url); bkPhoto=null; render(); }
+function bkSetExact(v){ const m=String(v||'').match(/^(\d{1,2}):(\d{2})/); if(!m) return; bkTime=(+m[1])*60+(+m[2]); bkExact=true; render(); }
+function bkAddSvc(id){ if(!id||!svc(id)) return; const x=bkSvcs.find(s=>s.id===id); if(x) x.qty=Math.min(50,x.qty+1); else bkSvcs.push({id,qty:1}); render(); }
+function bkSvcQty(id,d){ const x=bkSvcs.find(s=>s.id===id); if(!x) return; x.qty=Math.max(1,Math.min(50,x.qty+d)); render(); }
+function bkSvcDel(id){ bkSvcs=bkSvcs.filter(s=>s.id!==id); render(); }
+/* يقسم العنوان المكتوب إلى مدينة وحي وشارع عشان يطلع مرتب في بطاقة الطلب */
+function bkSplitAddr(txt){
+  const s=String(txt||'').trim(), out={city:'',district:'',street:''}; if(!s) return out;
+  const n=bkNorm(s), c=BK_CITIES.find(x=>n.indexOf(bkNorm(x))>-1); if(c) out.city=c;
+  const h=s.match(/حي\s+([^،,\n]+?)(?=\s*(?:[،,\n]|شارع|$))/); if(h) out.district=h[1].trim();
+  let rest=s; if(c) rest=rest.replace(new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),''); if(h) rest=rest.replace(h[0],'');
+  rest=rest.replace(/^[\s،,]+|[\s،,]+$/g,'').replace(/[\s]*[،,][\s،,]*/g,'، ');
+  out.street=rest;
+  if(!out.city && !out.district) out.street=s;
+  return out;
+}
 function renderBookTab(){
   const A=lang==='ar';
   const today=new Date(); today.setHours(0,0,0,0);
@@ -1692,62 +1896,115 @@ function renderBookTab(){
     const bo=bkWinOrder(bkDate,m);
     if(bo){
       const isNewB = bo.dbId && bo.status!=='done' && !seenB.has(bo.dbId);
-      slots.push(`<button class="slot win busy ${isNewB?'newbk':''}" onclick="openBkWindow('${bkDate}',${m})">${bkWindowLabel(m)}<span class="bl">${isNewB?(A?'🟢 حجز جديد — اضغط':'🟢 NEW — tap'):(A?'محجوز — اضغط للتفاصيل':'Booked — tap for details')}</span></button>`);
+      slots.push(`<button class="slot win busy ${isNewB?'newbk':''}" onclick="openBkWindow('${bkDate}',${m})">${bkWindowLabel(m)}<span class="bl">${isNewB?(A?'🟢 حجز جديد · اضغط':'🟢 NEW · tap'):(A?'محجوز · اضغط للتفاصيل':'Booked · tap for details')}</span></button>`);
     } else {
-      slots.push(`<button class="slot win ${bkTime===m?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
+      slots.push(`<button class="slot win ${bkTime===m&&!bkExact?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
     }
   }
-  return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل وأنت بالموقع':'Book an appointment on the spot'}</p></div>
+  /* وقت محدد (مثل ٤:١٥) وتنبيه لو فيه حجز بنفس الوقت */
+  const clash = bkExact && bkTime!=null ? ORDERS.find(o=>o.date===bkDate && o.status!=='cancelled' && (+o.startMin||0)<=bkTime && ((+o.endMin)||((+o.startMin||0)+60))>bkTime) : null;
+  const exactRow=`<div class="bk-exact ${bkExact&&bkTime!=null?'on':''}">
+      <label for="bk_exact">⏱️ ${A?'أو اختر وقت محدد':'Or pick an exact time'}</label>
+      <input id="bk_exact" type="time" step="300" value="${bkExact&&bkTime!=null?bkHHMM(bkTime):''}" onchange="bkSetExact(this.value)" />
+    </div>
+    ${bkExact&&bkTime!=null?`<p class="bk-exact-ok">✅ ${A?'الوصول الساعة':'Arrival at'} ${jobTime(bkTime)}</p>`:''}
+    ${clash?`<p class="bk-clash">⚠️ ${A?'فيه حجز بنفس الوقت':'Another booking at this time'}: ${esc(clash.customer&&clash.customer.name||'')}</p>`:''}`;
+  /* الخدمات من الأقسام مع الكمية */
+  let est=0;
+  const svcRows=bkSvcs.map(x=>{ const s=svc(x.id); if(!s) return ''; est+=(+s.price||0)*x.qty;
+    return `<div class="bk-svc"><div class="bk-svc-n"><b>${esc(s.ico||'🔧')} ${esc(svcName2(s))}</b><small>${ar(+s.price||0)} ${A?'ريال':'SAR'}${x.qty>1?' × '+ar(x.qty):''}</small></div>
+      <div class="bk-qty"><button type="button" onclick="bkSvcQty('${x.id}',-1)" aria-label="-">−</button><span>${ar(x.qty)}</span><button type="button" onclick="bkSvcQty('${x.id}',1)" aria-label="+">+</button></div>
+      <button type="button" class="bk-x" onclick="bkSvcDel('${x.id}')" aria-label="${A?'حذف':'Remove'}">×</button></div>`; }).join('');
+  const svcOpts=`<option value="">${A?'+ أضف خدمة من الأقسام':'+ Add a service'}</option>`+SERVICES.filter(s=>!s.inactive && (+s.price||0)>0 && s.id!=='quick').map(s=>`<option value="${s.id}">${esc(svcName2(s))} · ${ar(+s.price||0)}</option>`).join('');
+  const waBox=`<div class="bk-wa">
+      <div class="bk-wa-h"><b>💬 ${A?'طلب من الواتس':'Order from WhatsApp'}</b>${bkWaOpen?'':`<button type="button" class="bk-wa-go" onclick="bkPasteChat()">📋 ${A?'لصق المحادثة':'Paste chat'}</button>`}</div>
+      ${bkWaOpen?`<p class="bk-wa-hint">${A?'انسخ رسائل العميل من الواتس والصقها هنا، وتتعبى البيانات تحت لحالها.':'Copy the customer messages from WhatsApp and paste them here.'}</p>
+        <textarea id="bk_chat" rows="5" oninput="bkVals.chat=this.value" placeholder="${A?'الصق المحادثة هنا':'Paste the chat here'}">${esc(bkVals.chat||'')}</textarea>
+        <div class="bk-wa-acts"><button type="button" class="tbtn done" onclick="bkApplyChat()">✨ ${A?'عبّي البيانات':'Fill the form'}</button><button type="button" class="tbtn inv" onclick="bkWaOpen=false;render()">${A?'إغلاق':'Close'}</button></div>`
+      :(bkFound?`<div class="bk-found">${bkFound.map(f=>`<span class="${f[1]?'ok':'miss'}">${f[1]?'✓':(A?'ناقص:':'Missing:')} ${f[0]}</span>`).join('')}</div>`:`<p class="bk-wa-hint">${A?'تنسخ رسائل العميل وتلصقها، وتتعبى البيانات لحالها.':'Paste the customer chat and the form fills itself.'}</p>`)}
+    </div>`;
+  const locBlock = bkVals.mapUrl
+    ? `<div class="bk-loc"><span class="bk-loc-ok">✅ ${A?'الموقع جاهز':'Location set'} · <a href="${esc(bkVals.mapUrl)}" target="_blank" rel="noopener">${A?'افتح الخريطة':'Open map'}</a></span><button type="button" class="bk-x" onclick="bkClearMap()" aria-label="${A?'مسح الموقع':'Clear location'}">×</button></div>`
+    : `<div class="bk-maplink"><input id="bk_mapin" inputmode="url" value="${esc(bkVals.mapIn||'')}" oninput="bkVals.mapIn=this.value" onpaste="setTimeout(()=>bkSetMap(this.value),0)" onchange="if(this.value.trim())bkSetMap(this.value)" placeholder="${A?'الصق رابط الموقع من الواتس':'Paste the location link'}" />
+        <button type="button" class="tbtn inv" onclick="bkPasteMap()">📋 ${A?'لصق':'Paste'}</button></div>
+       <div class="bk-loc"><button type="button" class="tbtn inv" onclick="bkLocate()">📍 ${A?'أو حدد موقعي الحالي':'Or use my current location'}</button></div>`;
+  const photoBlock = bkPhoto
+    ? `<div class="bk-photo"><img src="${bkPhoto.url}" alt="${A?'صورة الموقع':'Location photo'}" /><button type="button" class="tbtn inv" onclick="bkClearPhoto()">🗑️ ${A?'شيل الصورة':'Remove photo'}</button></div>`
+    : `<label class="tbtn inv bk-photo-btn">📷 ${A?'أضف صورة للموقع':'Add a location photo'}<input type="file" accept="image/*" onchange="bkPickPhoto(this)" /></label>`;
+  return `<div class="hero"><h1>📅 ${tl(2)}</h1><p>${A?'احجز موعد جديد للعميل':'Book an appointment for a customer'}</p></div>
+  ${waBox}
   <div class="bookf">
     <div class="fu-field"><label>${A?'اسم العميل':'Customer name'}</label><input id="bk_name" value="${esc(bkVals.name||'')}" oninput="bkVals.name=this.value" placeholder="${A?'الاسم':'Name'}" /></div>
     <div class="fu-field"><label>${A?'الجوال':'Phone'}</label><input id="bk_phone" inputmode="tel" value="${esc(bkVals.phone||'')}" oninput="bkVals.phone=this.value" placeholder="05xxxxxxxx" /></div>
-    <div class="fu-field"><label>${A?'الخدمة المطلوبة':'Service'}</label><input id="bk_svc" value="${esc(bkVals.svc||'')}" oninput="bkVals.svc=this.value" placeholder="${A?'مثال: تسليك مجاري':'e.g. Drain cleaning'}" /></div>
+  </div>
+  <div class="bkpanel"><h3>🧰 ${A?'الخدمات':'Services'}</h3>
+    ${svcRows}
+    <select class="bk-add" onchange="bkAddSvc(this.value)">${svcOpts}</select>
+    <div class="fu-field" style="margin:10px 0 0"><input id="bk_svc" value="${esc(bkVals.svc||'')}" oninput="bkVals.svc=this.value" placeholder="${A?'وصف أو خدمة مو موجودة (اختياري)':'Description or other service (optional)'}" /></div>
+    ${est>0?`<div class="bk-est"><span>${A?'المجموع التقريبي':'Estimated total'}</span><b>${ar(est)} ${A?'ريال':'SAR'}</b></div>`:''}
   </div>
   <div class="bkpanel"><h3>📅 ${A?'اختر اليوم':'Pick a day'}</h3><div class="dates">${dchips}${farChip}</div></div>
-  <div class="bkpanel"><h3>🕐 ${A?'اختر نافذة الوصول':'Pick an arrival window'}</h3>
-    ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'لا توجد أوقات متاحة في هذا اليوم، جرّب يوماً ثاني.':'No windows left this day — try another.'}</p>`}
-    <p style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:10px">${A?'المنقّط = محجوز، اضغطيه تشوفين تفاصيله · الأخضر = حجز جديد ما شفته بعد':'Dashed = booked, tap for details · Green = new unseen booking'}</p>
+  <div class="bkpanel"><h3>🕐 ${A?'اختر وقت الوصول':'Pick the arrival time'}</h3>
+    ${slots.length?`<div class="slots">${slots.join('')}</div>`:`<p style="color:var(--muted);font-weight:700">${A?'ما فيه فترات متاحة بهذا اليوم، اختر وقت محدد تحت أو يوم ثاني.':'No windows left this day, pick an exact time below or another day.'}</p>`}
+    ${exactRow}
   </div>
   <div class="bookf">
-    <div class="fu-field"><label>${A?'العنوان (الحي والشارع)':'Address (district, street)'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'مثال: حي العقربية، شارع الأمير تركي':'District · street'}">${esc(bkVals.addr||'')}</textarea></div>
+    <div class="fu-field"><label>${A?'العنوان (المدينة والحي والشارع)':'Address (city, district, street)'}</label><textarea id="bk_addr" rows="2" oninput="bkVals.addr=this.value" placeholder="${A?'مثال: الخبر، حي العقربية، شارع الأمير فيصل':'e.g. Al Khobar, Al Aqrabiyah'}">${esc(bkVals.addr||'')}</textarea></div>
     <div class="fu-field"><label>${A?'رقم المنزل أو الشقة':'House / flat number'}</label><input id="bk_house" value="${esc(bkVals.house||'')}" oninput="bkVals.house=this.value" placeholder="${A?'مثال: فيلا 12 أو شقة 5':'e.g. Villa 12'}" /></div>
-    <div class="fu-field"><label>${A?'موقع المنزل على الخريطة':'Home location'}</label>
-      <div class="bk-loc"><button type="button" class="tbtn inv" onclick="bkLocate()">📍 ${bkVals.lat?(A?'تحديث الموقع':'Update location'):(A?'تحديد موقعي الحالي':'Use my current location')}</button>
-      <span id="bk_loc_ok" class="bk-loc-ok">${bkVals.lat?`✅ ${A?'تم تحديد الموقع':'Located'} · <a href="${esc(bkVals.mapUrl)}" target="_blank" rel="noopener">${A?'افتح الخريطة':'Open map'}</a>`:''}</span></div>
-      <p style="color:var(--muted);font-size:.78rem;font-weight:700;margin:6px 0 0">${A?'وأنت عند العميل اضغط الزر فيُحفظ موقع المنزل بدقة للزيارات القادمة.':'Tap while at the customer to save the exact home location.'}</p></div>
-    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">✅ ${A?'أكّد الحجز':'Confirm booking'}${bkTime!=null?' — '+bkWindowLabel(bkTime):''}</button>
+    <div class="fu-field"><label>${A?'موقع المنزل على الخريطة':'Home location'}</label>${locBlock}</div>
+    <div class="fu-field"><label>${A?'صورة الموقع (اختياري)':'Location photo (optional)'}</label>${photoBlock}</div>
+    <div class="fu-field"><label>${A?'ملاحظة للفني (اختياري)':'Note for the technician (optional)'}</label><textarea id="bk_note" rows="2" oninput="bkVals.note=this.value" placeholder="${A?'مثال: الباب الخلفي، اتصل قبل توصل':'e.g. back door, call before arriving'}">${esc(bkVals.note||'')}</textarea></div>
+    <button class="tbtn done" id="bk_go" style="width:100%;margin-top:6px" onclick="createBooking()">✅ ${A?'أكّد الحجز':'Confirm booking'}${bkTime!=null?' · '+(bkExact?jobTime(bkTime):bkWindowLabel(bkTime)):''}</button>
   </div>`;
 }
 function bkLocate(){
   const A=lang==='ar';
   if(!navigator.geolocation){ toast('⚠️ '+(A?'الجهاز ما يدعم تحديد الموقع':'No geolocation')); return; }
-  const ok=document.getElementById('bk_loc_ok'); if(ok) ok.textContent='⏳ '+(A?'جارٍ تحديد الموقع…':'Locating…');
+  toast('⏳ '+(A?'جارٍ تحديد الموقع…':'Locating…'));
   navigator.geolocation.getCurrentPosition(function(pos){
     const la=+pos.coords.latitude.toFixed(6), ln=+pos.coords.longitude.toFixed(6);
     bkVals.lat=la; bkVals.lng=ln; bkVals.mapUrl='https://www.google.com/maps?q='+la+','+ln;
     toast('📍 '+(A?'تم تحديد الموقع':'Located')); render();
-  }, function(){ if(ok) ok.textContent='⚠️ '+(A?'تعذّر تحديد الموقع، فعّل GPS وأذونات الموقع':'Could not locate, enable GPS'); }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
+  }, function(){ toast('⚠️ '+(A?'تعذّر تحديد الموقع، فعّل GPS وأذونات الموقع':'Could not locate, enable GPS')); }, {enableHighAccuracy:true, timeout:15000, maximumAge:0});
 }
 async function createBooking(){
   const A=lang==='ar';
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
-  const name=g('bk_name'), phone=g('bk_phone'), svc=g('bk_svc'), date=bkDate, addr=g('bk_addr');
+  const name=g('bk_name'), phone=g('bk_phone'), svcTxt=g('bk_svc'), date=bkDate, addrTxt=g('bk_addr'), note=g('bk_note');
   if(!name||!phone){ toast('⚠️ '+(A?'عبّي الاسم والجوال':'Fill name & phone')); return; }
   if(!date||bkTime==null){ toast('🕐 '+(A?'اختر اليوم والوقت':'Pick a day & time')); return; }
   const startMin=bkTime, duration=60;
   const house=g('bk_house');
-  const payload={ customer_name:name, customer_phone:phone, address:{ street:addr, house:house, lat:bkVals.lat||'', lng:bkVals.lng||'', mapUrl:bkVals.mapUrl||'' },
-    items:[{id:'custom',name:svc||(A?'خدمة':'Service'),ico:'🔧',qty:1,price:0,custom:true}],
+  const items=bkSvcs.map(x=>{ const s=svc(x.id); return s?{id:s.id,name:s.name,ico:s.ico||'🔧',qty:x.qty,price:+s.price||0}:null; }).filter(Boolean);
+  if(svcTxt) items.push({id:'custom',name:svcTxt,ico:'🔧',qty:1,price:0,custom:true});
+  if(!items.length) items.push({id:'custom',name:(A?'خدمة':'Service'),ico:'🔧',qty:1,price:0,custom:true});
+  const btn=document.getElementById('bk_go'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  const fail=msg=>{ toast('⚠️ '+msg); if(btn){ btn.disabled=false; btn.textContent='✅ '+(A?'أكّد الحجز':'Confirm booking'); } };
+  let photoPath='';
+  if(bkPhoto && cloudReady){
+    try{
+      const rnd=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'');
+      const path='loc_'+Date.now()+'_'+rnd+'.jpg';
+      const up=await sb.storage.from('khafet-videos').upload(path, bkPhoto.blob, {upsert:false, contentType:'image/jpeg'});
+      if(up.error) throw up.error;
+      photoPath=path;
+    }catch(e){ fail((A?'ما انرفعت الصورة، جرّب مرة ثانية أو شيل الصورة':'Photo upload failed, try again or remove it')+(e&&e.message?' ('+e.message+')':'')); return; }
+  }
+  const parts=bkSplitAddr(addrTxt);
+  const payload={ customer_name:name, customer_phone:phone,
+    address:{ city:parts.city, district:parts.district, street:parts.street, house:house, lat:bkVals.lat||'', lng:bkVals.lng||'', mapUrl:bkVals.mapUrl||'', photoUrl:photoPath },
+    items:items,
     service_date:date, start_min:startMin, duration:duration, end_min:startMin+duration,
     price:0, final_price:0, free:false, status:'confirmed', rating:0, reminded:false,
-    quick:true, note:(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
-  const btn=document.getElementById('bk_go'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+    quick:true, note:note||(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
   if(cloudReady){
     try{ const r=await sb.from('khafet_orders').insert(payload).select().single(); if(r.error) throw r.error; }
-    catch(e){ toast('⚠️ '+(e.message||'')); if(btn){ btn.disabled=false; btn.textContent='📅'; } return; }
+    catch(e){ fail(e.message||''); return; }
   }
   toast('✅ '+(A?'تم الحجز':'Booked'));
-  bkTime=null; bkVals.name=''; bkVals.phone=''; bkVals.svc=''; bkVals.addr=''; bkVals.house=''; bkVals.lat=''; bkVals.lng=''; bkVals.mapUrl='';
+  bkTime=null; bkExact=false; bkSvcs=[]; bkFound=null; bkWaOpen=false;
+  if(bkPhoto&&bkPhoto.url) URL.revokeObjectURL(bkPhoto.url); bkPhoto=null;
+  ['name','phone','svc','addr','house','lat','lng','mapUrl','mapIn','note','chat'].forEach(k=>{ bkVals[k]=''; });
   tab='orders'; calFilter=date;
   if(cloudReady) loadOrders(); else render();
 }
@@ -1868,7 +2125,7 @@ function render(){
         <span class="tj-badges">${payDue(o)>0&&o.status!=='new'?`<span class="status due-b">💳 ${ar(payDue(o))}</span>`:(o.paidAmount>0&&o.status!=='cancelled'?`<span class="status paid-b">${lg('paidLbl')}</span>`:'')}${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}<span class="status ${o.status}">${t('st')[o.status]}</span></span>
       </div>
       <div class="tj-body">
-        ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`}
+        ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
         ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ ${t('problem')}</span><span class="tj-v">${esc(o.note)}${lang!=='ar'?` <a class="ttrans" href="https://translate.google.com/?sl=auto&tl=${lang}&text=${encodeURIComponent(o.note)}&op=translate" target="_blank" rel="noopener">${t('translate')}</a>`:''}</span></div>`:''}
         ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 ${lang==='ne'?'फोटो/भिडियो':lang==='en'?'Photo/Video':lang==='hi'?'फोटो/वीडियो':lang==='ur'?'تصویر/ویڈیو':'صورة/مقطع'}</span><span class="tj-v"><button class="tvideo" onclick="openMedia('${esc(o.videoUrl)}')">${t('watchVideo')}</button></span></div>`:''}
         <div class="tj-row"><span class="tj-k">⏱️ ${t('duration')}</span><span class="tj-v">${jobDur(o.duration)}</span></div>
