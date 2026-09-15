@@ -124,6 +124,37 @@
   .aorder .aitems .li{display:flex;justify-content:space-between;padding:3px 0}
   .aorder .actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
   .sbtn{padding:10px 15px;border-radius:11px;font-weight:700;font-size:.86rem;border:1.5px solid var(--line);background:#fff;transition:.15s}
+  /* 📨 طلبات الانضمام */
+  .jr-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .jr-filters button{padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:.85rem;font-family:inherit;cursor:pointer}
+  .jr-filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .jr{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow-sm)}
+  .jr.new{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft)}
+  .jr-top{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .jr-top h4{margin:0;font-size:1.05rem;font-weight:900;flex:1;min-width:150px}
+  .jr-top h4 small{display:block;color:var(--muted);font-weight:700;font-size:.78rem;margin-top:2px}
+  .jr-st{padding:3px 11px;border-radius:999px;font-size:.78rem;font-weight:800;white-space:nowrap}
+  .jr-st.new{background:var(--gold-soft);color:var(--gold-deep)} .jr-st.contacted{background:#e0ecff;color:#1d4ed8}
+  .jr-st.accepted{background:#e3f5ea;color:#15803d} .jr-st.rejected{background:#fde8e8;color:#b91c1c}
+  .jr-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .jr-meta span{background:var(--panel,#f3eee2);border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700}
+  .jr-contact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .jr-contact a{text-decoration:none}
+  .jr-cat{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+  .jr-cat b{font-weight:900}
+  .jr-svc{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+  .jr-svc:last-child{border-bottom:0}
+  .jr-svc em{font-style:normal;color:var(--muted);font-size:.8rem;display:block}
+  .jr-svc .pr{font-weight:900;white-space:nowrap;text-align:end}
+  .jr-new{font-size:.7rem;font-weight:800;color:#7c3aed;background:#f1e9ff;border-radius:999px;padding:0 7px;margin-inline-start:6px;white-space:nowrap;display:inline-block}
+  .jr details{margin-top:10px}
+  .jr summary{cursor:pointer;font-weight:800;color:var(--gold-deep)}
+  .jr-kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:8px;font-size:.88rem}
+  .jr-kv dt{color:var(--muted);font-weight:700} .jr-kv dd{margin:0;font-weight:700}
+  .jr-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .jr-acts .sbtn{flex:1;min-width:90px}
+  .jr-acts .sbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .jr-note{width:100%;margin-top:10px;padding:10px;border-radius:11px;border:1px solid var(--line);font:inherit;font-size:.9rem;resize:vertical}
   .sbtn:hover{background:#f6f4ec} .sbtn.danger{color:var(--danger);border-color:#f0cccc} .sbtn.ok{color:#fff;background:var(--ok);border-color:var(--ok)}
   .cg-cat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
   .cg-cat.off{opacity:.62}
@@ -855,6 +886,7 @@ async function retryRefund(id){
     toast(bad?LX('ما نجح الاسترجاع، جرّب لاحقًا','Refund failed, try later'):(man?LX('دفعة جهاز الفني: رجّعها يدويًا للعميل','Card machine payment: refund it manually'):LX('✓ تم الاسترجاع','✓ Refunded'))); loadAll(); }
   catch(e){ toast(LX('تعذّر الاتصال','Connection failed')); }
 }
+let JOINREQ=[], joinReqLoaded=false, joinFilter='new';
 async function loadAll(){
   if(!cloudReady||!loggedIn){ render(); return; }
   // كل الاستعلامات مع بعض بدل واحد ورا الثاني (كانت تاخذ وقت طويل على شبكة الجوال)
@@ -871,6 +903,7 @@ async function loadAll(){
     Q(sb.from('khafet_articles').select('*').order('sort'), a=>{ ARTICLES=a.data||[]; }),
     Q(sb.from('khafet_suggestions').select('*').order('created_at',{ascending:false}).limit(300), sg=>{ SUGS=sg.data||[]; }),
     Promise.resolve().then(()=>loadJoin()).catch(()=>{}),
+    Promise.resolve().then(()=>loadJoinReqs()).catch(()=>{}),
     Promise.resolve().then(()=>loadImgOpts()).catch(()=>{}),
   ]);
   render();
@@ -1400,6 +1433,7 @@ function render(){
     ['cust','💬 العملاء', newSugs+newSubs],
     ['store','📦 المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length],
     ['prices','🗂️ الخدمات', 0],
+    ['joins','📨 طلبات الانضمام', JOINREQ.filter(x=>x.status==='new').length],
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
@@ -1408,6 +1442,7 @@ function render(){
     ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
     ['prices','🗂️',LX('الأقسام والخدمات','Sections & services'), 0, LX('الأقسام · الخدمات · الأسعار','Sections · services · prices'), false],
     ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
+    ['joins','📨',LX('طلبات الانضمام','Join requests'), JOINREQ.filter(x=>x.status==='new').length, LX('فنيين ومقدمي خدمات · خدماتهم وأسعارهم','Technicians and providers · their services and prices'), false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
     <div class="hcard" onclick="setAdminSection('${k}')">
@@ -1438,8 +1473,10 @@ function render(){
     body=block(LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'), renderCatalogEditor());
   } else if(adminSection==='notify'){
     body=renderBroadcast();
+  } else if(adminSection==='joins'){
+    body=renderJoinReqs();
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل'})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
@@ -1459,7 +1496,91 @@ function render(){
          <div style="margin-top:12px">${body}</div>`}
   </div>`;
 }
-function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); }
+
+/* ═══════ 📨 طلبات الانضمام: من النموذج العام (rezq/join) مباشرة إلى جدول khafet_join_requests ═══════ */
+async function loadJoinReqs(){
+  if(!cloudReady) return;
+  try{
+    const r=await sb.from('khafet_join_requests').select('*').order('created_at',{ascending:false}).limit(500);
+    if(!r.error){ JOINREQ=r.data||[]; joinReqLoaded=true; }
+  }catch(e){}
+}
+const JR_ST=()=>({ new:LX('جديد','New'), contacted:LX('تواصلت','Contacted'), accepted:LX('مقبول','Accepted'), rejected:LX('مرفوض','Rejected') });
+function jrWhen(ts){
+  try{ const d=new Date(ts); const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return dayLabel(iso)+' · '+fmtTime(d.getHours()*60+d.getMinutes()); }catch(e){ return ''; }
+}
+function jrPhoneIntl(p){ const d=String(p||'').replace(/\D/g,''); return d.startsWith('05')?'966'+d.slice(1):d; }
+function jrPrice(s){
+  if(s.inspect) return s.price!=null ? LX('بعد المعاينة، يبدأ من ','After inspection, from ')+ar(s.price) : LX('بعد المعاينة','After inspection');
+  return s.price!=null ? ar(s.price)+' '+LX('ريال','SAR') : '';
+}
+function renderJoinReqs(){
+  if(!joinReqLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
+  const ST=JR_ST(), cnt=k=>JOINREQ.filter(x=>k==='all'||x.status===k).length;
+  const filters=['new','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
+  const list=JOINREQ.filter(x=>joinFilter==='all'||x.status===joinFilter);
+  const share='https://fadiaalzhrani-debug.github.io/rezq/join/';
+  const head=`<div class="panel" style="margin-top:0">
+      <p style="margin:0 0 8px;font-weight:700">${LX('رابط النموذج اللي ترسله للفنيين ومقدمي الخدمات:','Form link to send to technicians and providers:')}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><code style="direction:ltr;background:var(--panel,#f3eee2);padding:6px 10px;border-radius:9px;font-size:.85rem;overflow-wrap:anywhere">${share}</code>
+      <button class="sbtn" onclick="jrCopy('${share}')">📋 ${LX('نسخ الرابط','Copy link')}</button>
+      <button class="sbtn" onclick="loadJoinReqs().then(render)">🔄 ${LX('تحديث','Refresh')}</button></div>
+    </div><div class="jr-filters" style="margin-top:14px">${filters}</div>`;
+  if(!list.length) return head+`<p style="color:var(--muted)">${joinFilter==='new'?LX('ما فيه طلبات جديدة.','No new requests.'):LX('ما فيه طلبات هنا.','No requests here.')}</p>`;
+  return head+list.map(x=>{
+    const d=x.data||{}, cats=Array.isArray(d.categories)?d.categories:[];
+    const svcHtml=cats.map(c=>`<div class="jr-cat"><b>${esc(c.name||c.id||'')}</b>${c.isNew?`<span class="jr-new">${LX('قسم جديد','New section')}</span>`:''}
+      ${(c.services||[]).map(s=>`<div class="jr-svc"><div>${esc(s.name||'')}${s.code==='جديد'?`<span class="jr-new">${LX('خدمة جديدة','New service')}</span>`:''}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`).join('')}</div>`).join('');
+    const kv=[
+      [LX('المواد','Materials'), d.materials], [LX('الضمان','Warranty'), d.warranty],
+      [LX('المعاينة','Inspection'), d.visit? (d.visit.type==='بسعر' ? (ar(d.visit.price||'')+' '+LX('ريال','SAR')+(d.visit.deduct?LX('، تنخصم إذا تم الشغل','، deducted if the job goes ahead'):'')) : d.visit.type) : ''],
+      [LX('الفريق','Team'), d.team], [LX('الخبرة','Experience'), d.exp], [LX('المؤسسة','Company'), d.company], [LX('الوثيقة','Document'), d.doc],
+      [LX('عنده','Has'), (d.equipment||[]).join('، ')], [LX('الأوقات','Times'), (d.times||[]).join('، ')],
+      [LX('الجمعة','Fridays'), d.friday?LX('نعم','Yes'):''], [LX('المستعجل','Urgent'), d.urgent?LX('نعم','Yes'):''],
+      [LX('ملاحظات','Notes'), d.notes], [LX('لغة التعبئة','Form language'), x.lang==='en'?'English':'']
+    ].filter(r=>r[1]).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('');
+    const acts=['contacted','accepted','rejected'].map(k=>`<button class="sbtn ${x.status===k?'on':''}" onclick="setJoinStatus('${x.id}','${x.status===k?'new':k}')">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
+    return `<div class="jr ${x.status==='new'?'new':''}">
+      <div class="jr-top"><h4>#${ar(x.ref_no)} · ${esc(x.name)}<small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${x.status}">${ST[x.status]||x.status}</span></div>
+      <div class="jr-meta"><span>📍 ${esc((x.cities||[]).join('، ')||'')}</span><span>🧰 ${ar(x.services_count)} ${LX('خدمة','services')}</span>${(x.categories||[]).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
+      <div class="jr-contact">
+        <a class="sbtn" href="https://wa.me/${jrPhoneIntl(x.phone)}" target="_blank" rel="noopener">💬 ${LX('واتساب','WhatsApp')}</a>
+        <a class="sbtn" href="tel:${esc(x.phone)}">📞 ${esc(x.phone)}</a>
+      </div>
+      ${svcHtml}
+      ${kv?`<details><summary>${LX('باقي التفاصيل','More details')}</summary><dl class="jr-kv">${kv}</dl></details>`:''}
+      <textarea class="jr-note" rows="2" placeholder="${LX('ملاحظة لك (اختياري)','Your note (optional)')}" onchange="setJoinNote('${x.id}',this.value)">${esc(x.admin_note||'')}</textarea>
+      <div class="jr-acts">${acts}
+        <button class="sbtn" onclick="jrCopy(JOINREQ.find(r=>r.id==='${x.id}').message||'')">📋 ${LX('نسخ','Copy')}</button>
+        <button class="sbtn" style="color:#b91c1c" onclick="deleteJoinReq('${x.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function jrCopy(t){
+  try{ navigator.clipboard.writeText(t).then(()=>toast(LX('📋 انتسخ','📋 Copied')),()=>toast(LX('ما قدرت أنسخ','Could not copy'))); }
+  catch(e){ toast(LX('ما قدرت أنسخ','Could not copy')); }
+}
+async function setJoinStatus(id, st){
+  const x=JOINREQ.find(r=>r.id===id); if(!x) return;
+  const prev=x.status; x.status=st; render();
+  const r=await sb.from('khafet_join_requests').update({status:st}).eq('id',id).select('id,status');
+  if(r.error||!r.data||!r.data.length){ x.status=prev; render(); toast('⚠️ '+LX('ما انحفظ، جرّب مرة ثانية','Not saved, try again')); }
+}
+async function setJoinNote(id, note){
+  const r=await sb.from('khafet_join_requests').update({admin_note:note}).eq('id',id).select('id');
+  if(r.error||!r.data||!r.data.length){ toast('⚠️ '+LX('ما انحفظت الملاحظة','Note not saved')); return; }
+  const x=JOINREQ.find(q=>q.id===id); if(x) x.admin_note=note; toast(LX('✅ انحفظت الملاحظة','✅ Note saved'));
+}
+async function deleteJoinReq(id){
+  const x=JOINREQ.find(r=>r.id===id); if(!x) return;
+  if(!confirm(LX('حذف طلب ','Delete request ')+'#'+x.ref_no+' · '+x.name+'؟')) return;
+  const r=await sb.from('khafet_join_requests').delete().eq('id',id).select('id');
+  if(r.error||!r.data||!r.data.length){ toast('⚠️ '+LX('ما انحذف','Not deleted')); return; }
+  JOINREQ=JOINREQ.filter(q=>q.id!==id); render();
+}
 
 /* ═══════ 📣 إشعار للكل: معاينة بشكل الجوال، تجربة على جوالي، تأكيد قبل الإرسال، وإشعار واحد باليوم (يفرضه الخادم) ═══════ */
 const BC_MAX_T=60, BC_MAX_B=180;
