@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="inapp">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#F5C518" />
+<title>انضم إلى خافت</title>
+<script>document.documentElement.dir='rtl';document.documentElement.lang='ar';</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--y:#F5C518;--y2:#FFE466;--yd:#A87F00;--ink:#111110;--bg:#F1F1EC;--card:#FFFFFF;--tx:#17170F;--mu:#6A685E;--ln:#E1DFD6;--soft:#F7F6F1;--ok:#1C7C4A;--oks:#E3F4EA;--err:#B42318;--sh:0 12px 30px rgba(20,20,10,.10)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F0F0C;--card:#1A1A15;--tx:#F1EEE2;--mu:#A5A293;--ln:#2E2D26;--soft:#22221C;--yd:#F5C518;--ok:#5CC98A;--oks:#173324;--err:#F08A7E;--sh:0 12px 30px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{--bg:#0F0F0C;--card:#1A1A15;--tx:#F1EEE2;--mu:#A5A293;--ln:#2E2D26;--soft:#22221C;--yd:#F5C518;--ok:#5CC98A;--oks:#173324;--err:#F08A7E;--sh:0 12px 30px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+.d,h1,h2,h3,h4{font-family:Changa,"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif}
+.in{max-width:680px;margin:0 auto;padding-inline:16px}
+a{color:inherit}
+button{font-family:inherit}
+
+/* ── الهيدر الأصفر ── */
+.hero{background:var(--y);color:#111;padding-bottom:58px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset-inline-end:-90px;bottom:-130px;width:320px;height:320px;border:28px solid rgba(17,17,17,.07);border-radius:50%}
+.tape{height:8px;background:repeating-linear-gradient(-45deg,#111 0 12px,transparent 12px 24px)}
+.brand{display:flex;align-items:center;gap:10px;padding-top:18px;position:relative;z-index:1}
+.mark{width:38px;height:38px;border-radius:11px;background:#111;color:var(--y);display:grid;place-items:center;font:800 22px/1 Changa,sans-serif}
+.brand b{font:800 22px/1 Changa,sans-serif}
+.langbtn{margin-inline-start:auto;border:1.5px solid rgba(17,17,17,.55);background:transparent;color:#111;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.homebtn{display:none;align-items:center;gap:4px;margin-inline-start:auto;border:1.5px solid rgba(17,17,17,.55);color:#111;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;text-decoration:none}
+.inapp .homebtn{display:inline-flex}
+.inapp .homebtn+.langbtn{margin-inline-start:8px}
+.inapp .stores{display:none}
+.eyebrow{margin:30px 0 6px;font-weight:700;font-size:13px;opacity:.8;position:relative;z-index:1}
+.hero h1{font-weight:800;font-size:clamp(38px,9.5vw,62px);line-height:1.08;margin:0 0 14px;text-wrap:balance;position:relative;z-index:1}
+.hero h1 em{font-style:normal;background:#111;color:var(--y);padding:0 .22em;border-radius:.18em;display:inline-block;line-height:1.05;transform:rotate(-1.5deg)}
+.lead{font-size:16.5px;max-width:34em;margin:0 0 22px;opacity:.92;position:relative;z-index:1}
+.cta{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+.b-ink{background:#111;color:var(--y);border-radius:14px;padding:14px 22px;font-weight:700;text-decoration:none;font-size:16px;box-shadow:0 8px 20px rgba(17,17,17,.25)}
+.b-ghost{border:2px solid #111;color:#111;border-radius:14px;padding:12px 20px;font-weight:700;text-decoration:none}
+
+/* ── تذكرة الأرقام ── */
+.ticket{background:var(--card);border-radius:18px;box-shadow:var(--sh);margin-top:-38px;position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden}
+.fact{padding:16px 10px;text-align:center;position:relative}
+.fact+.fact::before{content:"";position:absolute;inset-inline-start:0;top:14px;bottom:14px;border-inline-start:1px dashed var(--ln)}
+.fact b{display:block;font-family:Changa,sans-serif;font-weight:800;font-size:20px;line-height:1.1;white-space:nowrap}
+.fact span{display:block;font-size:11.5px;color:var(--mu);margin-top:4px;line-height:1.4}
+
+/* ── الأقسام ── */
+.sec{padding-block:36px 0}
+.sec h2{font-weight:800;font-size:28px;margin:0 0 6px;line-height:1.15}
+.sub{color:var(--mu);margin:0 0 18px}
+.tag{display:inline-block;background:var(--y);color:#111;border-radius:6px;padding:2px 10px;font-size:12px;font-weight:700;margin-bottom:10px}
+
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:14px}
+.f .ic{width:38px;height:38px;border-radius:11px;background:var(--y);color:#111;display:grid;place-items:center;margin-bottom:10px}
+.f .ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.f b{display:block;font-family:Changa,sans-serif;font-size:17px;font-weight:700;line-height:1.2;margin-bottom:4px}
+.f p{margin:0;font-size:13px;color:var(--mu);line-height:1.5}
+@media (min-width:600px){.feat{grid-template-columns:repeat(3,1fr)}}
+
+/* ── تطبيق رزق ── */
+.rizq{margin-top:36px;background:#111;color:#F3F0E6;border-radius:24px;padding:26px 20px 30px;overflow:hidden;position:relative}
+.rizq h2{color:#fff}
+.rizq .sub{color:#CFCABB}
+.rizq .note{color:#CFCABB;font-size:13px;margin:12px 0 0}
+.rz{display:grid;gap:26px;align-items:center}
+@media (min-width:600px){.rz{grid-template-columns:1.1fr .9fr}}
+.stores{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.stores a{display:inline-flex;align-items:center;gap:9px;background:#fff;color:#111;border-radius:12px;padding:8px 14px;font-weight:700;text-decoration:none;font-size:14px;line-height:1.15}
+.stores a svg{width:20px;height:20px;flex:none}
+.stores a small{display:block;font-weight:500;font-size:10px;color:#666}
+.phonewrap{display:grid;place-items:center;position:relative;padding-top:30px}
+.phone{width:232px;background:#000;border-radius:34px;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.55),0 0 0 2px #333;transform:rotate(-3deg)}
+.scr{background:#F4F3EE;border-radius:26px;overflow:hidden;color:#111;font-size:11px;height:430px;display:flex;flex-direction:column}
+.sb{display:flex;justify-content:space-between;padding:8px 16px 0;font-size:10px;font-weight:700}
+.ah{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-weight:800;font-family:Changa,sans-serif;font-size:15px}
+.ah i{width:26px;height:26px;border-radius:8px;background:var(--y);display:grid;place-items:center;font-style:normal;font-size:13px}
+.job{margin:6px 10px;background:#fff;border-radius:14px;padding:10px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.job .nw{display:inline-block;background:var(--y);color:#111;font-weight:800;font-size:9.5px;border-radius:6px;padding:1px 6px}
+.job b{display:block;font-size:12.5px;margin-top:6px}
+.job small{display:block;color:#666;font-size:10px;margin-top:2px}
+.job .ac{display:flex;gap:6px;margin-top:8px}
+.job .ac span{flex:1;text-align:center;border-radius:8px;padding:6px;font-weight:700;font-size:10.5px;background:#EEE}
+.job .ac span:first-child{background:#111;color:var(--y)}
+.mini{margin:0 10px 6px;background:#fff;border-radius:12px;padding:8px 10px;color:#444;display:flex;justify-content:space-between;font-size:10px}
+.stat{margin:2px 10px 0;background:#111;color:#fff;border-radius:12px;padding:10px 12px}
+.stat small{display:block;color:#BBB;font-size:9.5px}
+.stat b{display:block;font-family:Changa,sans-serif;font-size:17px;margin:2px 0 6px;line-height:1.1}
+.stat b span{font-size:10px;font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:500;color:#BBB}
+.bars{display:flex;gap:4px;align-items:flex-end;height:32px}
+.bars i{flex:1;background:var(--y);border-radius:3px 3px 0 0;opacity:.55}
+.bars i:last-child{opacity:1}
+.tabs{margin-top:auto;display:flex;justify-content:space-around;padding:8px 6px 10px;border-top:1px solid #E5E3DA;font-size:9px;font-weight:700;color:#777}
+.tabs span:first-child{color:#111}
+.toast{position:absolute;top:0;left:50%;transform:translateX(-50%);background:#fff;color:#111;border-radius:999px;padding:8px 14px;font-weight:700;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);white-space:nowrap;animation:float 3s ease-in-out infinite;z-index:2}
+@keyframes float{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+
+/* ── كيف تبدأ ── */
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:grid;grid-template-columns:40px 1fr;gap:12px;padding-bottom:18px;position:relative}
+.steps li::before{content:"";position:absolute;inset-inline-start:19px;top:44px;bottom:0;border-inline-start:2px dashed var(--ln)}
+.steps li:last-child::before{display:none}
+.steps .n{width:40px;height:40px;border-radius:50%;background:var(--y);color:#111;display:grid;place-items:center;font:800 18px Changa,sans-serif;position:relative;z-index:1}
+.steps b{display:block;font-family:Changa,sans-serif;font-size:18px;font-weight:700;line-height:1.2;margin-top:6px}
+.steps p{margin:2px 0 0;color:var(--mu);font-size:14px}
+
+/* ── النموذج ── */
+.form{margin-top:36px;background:var(--card);border:1px solid var(--ln);border-radius:24px;overflow:hidden;box-shadow:var(--sh)}
+.fh{padding:22px 20px 0}
+.fh h2{margin:0 0 4px}
+.prog{display:flex;gap:6px;margin-top:14px}
+.prog i{flex:1;height:6px;border-radius:3px;background:var(--ln)}
+.prog i.on{background:var(--y)}
+.prog i.done{background:var(--tx)}
+.stepnames{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mu);margin-top:6px;font-weight:600}
+.stepnames span.on{color:var(--tx)}
+.pane{padding:20px;display:none}
+.pane.on{display:block}
+.pane h3{margin:22px 0 10px;font-size:20px;font-weight:800}
+.fld{margin-bottom:18px}
+.fld>label,.fld>.lb{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
+.hint{display:block;font-weight:400;color:var(--mu);font-size:12.5px;margin-top:2px}
+input,select,textarea{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--ln);border-radius:12px;background:var(--card);color:var(--tx)}
+textarea{min-height:80px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid rgba(245,197,24,.65);outline-offset:1px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--ln);background:var(--card);color:var(--tx);border-radius:999px;padding:9px 14px;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.chip.on::before{content:"✓";color:var(--y);font-weight:800}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:2px solid var(--ln);border-radius:16px;padding:14px;cursor:pointer;background:var(--card);text-align:start;color:var(--tx);font-size:14px}
+.opt.on{border-color:var(--y);background:var(--soft);box-shadow:inset 0 0 0 1px var(--y)}
+.opt i{font-style:normal;font-size:24px;display:block;margin-bottom:6px}
+.opt b{display:block;font-family:Changa,sans-serif;font-size:17px;line-height:1.2}
+.opt small{color:var(--mu)}
+.err{color:var(--err);font-size:13px;margin-top:6px;display:none;font-weight:600}
+.fld.bad .err{display:block}
+.fld.bad input{border-color:var(--err)}
+.nav{display:flex;gap:10px;padding:0 20px 20px;align-items:center}
+.nav .sp{flex:1}
+.btn{font-weight:700;border:0;border-radius:14px;padding:14px 20px;cursor:pointer;font-size:16px;color:var(--tx);background:var(--soft)}
+.btn.y{background:var(--y);color:#111;box-shadow:0 8px 20px rgba(245,197,24,.35)}
+.btn.g{background:var(--soft);color:var(--tx);border:1.5px solid var(--ln)}
+.btn:disabled{opacity:.6;cursor:default}
+
+.svcblk{border:1.5px solid var(--ln);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--soft)}
+.svcblk h4{margin:0 0 8px;font-size:17px;display:flex;align-items:center;gap:8px}
+.svcblk h4 small{font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:400;color:var(--mu);font-size:12.5px;margin-inline-start:auto}
+.sug{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.sug button{font-size:13px;border:1px dashed var(--mu);background:transparent;color:var(--tx);border-radius:999px;padding:5px 11px;cursor:pointer}
+.sug button:disabled{opacity:.35;cursor:default;text-decoration:line-through}
+.row{display:grid;grid-template-columns:1fr 124px 28px;gap:6px;margin-bottom:8px;align-items:center;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:8px}
+.row input[data-f="name"]{grid-column:1/-1;font-weight:600}
+.row input,.row select{padding:10px 10px;font-size:14px;border-radius:9px;background:var(--soft)}
+.row .x{border:0;background:transparent;color:var(--mu);font-size:22px;cursor:pointer;padding:0;line-height:1;width:28px;height:28px}
+.addrow{font-size:13px;font-weight:700;color:var(--tx);background:transparent;border:0;cursor:pointer;padding:6px 0;text-decoration:underline}
+.oth{margin-bottom:10px}
+
+.sum{border:1.5px dashed var(--ln);border-radius:16px;padding:6px 16px;background:var(--soft)}
+.sum dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;padding:12px 0}
+.sum dt{color:var(--mu);font-size:13px}
+.sum dd{margin:0;font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.sum .sv{border-top:1px dashed var(--ln);padding:10px 0}
+.sum .sv b{font-family:Changa,sans-serif;display:block;margin-bottom:4px;font-size:16px}
+.sum .sv div{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:2px 0}
+.sum .sv div span:last-child{font-weight:700;white-space:nowrap}
+.agree{font-size:12.5px;color:var(--mu);margin:14px 0 0}
+.fail{display:none;background:var(--soft);border:1.5px solid var(--err);border-radius:14px;padding:12px 14px;margin:0 20px 16px;font-size:14px}
+.fail.on{display:block}
+.fail a{display:inline-block;margin-top:8px;background:#25D366;color:#fff;text-decoration:none;font-weight:700;border-radius:10px;padding:9px 14px}
+
+.done{padding:30px 20px 26px;text-align:center;display:none}
+.done.on{display:block}
+.stamp{display:inline-block;border:4px double var(--ok);color:var(--ok);border-radius:14px;padding:6px 22px;font:800 30px/1.15 Changa,sans-serif;transform:rotate(-5deg);margin:6px 0 20px}
+.ref{font:800 50px/1 Changa,sans-serif}
+.ref small{display:block;font:600 13px/1.4 "IBM Plex Sans Arabic",sans-serif;color:var(--mu);margin-top:6px}
+.done p{margin:14px 0 0}
+.nextl{text-align:start;margin:20px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.nextl li{display:flex;gap:10px;align-items:flex-start;background:var(--soft);border-radius:12px;padding:12px;font-size:14px}
+.nextl li i{font-style:normal;font-size:18px;flex:none}
+.done .stores{justify-content:center}
+.done .stores a{background:var(--tx);color:var(--bg)}
+.done .stores a small{color:inherit;opacity:.7}
+.wa{display:inline-block;margin-top:14px;background:#25D366;color:#fff;text-decoration:none;font-weight:700;border-radius:12px;padding:12px 18px}
+.again{display:block;margin:18px auto 0;background:transparent;border:0;color:var(--mu);text-decoration:underline;cursor:pointer;font-size:13px}
+
+.foot{padding:40px 16px 44px;text-align:center;color:var(--mu);font-size:13px}
+.foot a{color:var(--tx);font-weight:600}
+.hp{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0}
+@media (max-width:380px){.row{grid-template-columns:1fr 112px 24px}.fact b{font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+<style>.hero .tape{margin-top:env(safe-area-inset-top)}</style>
+</head>
+<body>
+
+
+<header class="hero">
+  <div class="tape"></div>
+  <div class="in">
+    <div class="brand"><span class="mark">خ</span><b data-i="brand">خافِت</b><a class="homebtn" href="index.html#stay" data-i="home">الرئيسية</a><button type="button" class="langbtn" id="langBtn">English</button></div>
+    <p class="eyebrow" data-i="eyebrow">انضمام الفنيين ومقدمي الخدمات</p>
+    <h1><span data-i="h1a">طلبات صيانة</span> <em data-i="h1em">جاهزة</em><br><span data-i="h1b">على جوالك.</span></h1>
+    <p class="lead" data-i="lead">خافت يجيب لك عملاء الخبر والدمام والظهران، ورزق يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.</p>
+    <div class="cta"><a class="b-ink" href="#apply" data-i="ctaApply">قدّم طلب الانضمام</a><a class="b-ghost" href="#how" data-i="ctaHow">كيف يشتغل؟</a></div>
+  </div>
+</header>
+
+<main class="in">
+  <div class="ticket" aria-label="ملخص">
+    <div class="fact"><b data-i="f1v">3 مدن</b><span data-i="f1l">الخبر والدمام والظهران</span></div>
+    <div class="fact"><b data-i="f2v">دفع مقدّم</b><span data-i="f2l">العميل يدفع أجرة اليد قبل الشغل</span></div>
+    <div class="fact"><b data-i="f3v">أسعارك</b><span data-i="f3l">أنت تحدد خدماتك وأسعارك ومدنك</span></div>
+  </div>
+
+  <section class="sec" id="why">
+    <span class="tag" data-i="whyTag">لماذا خافت</span>
+    <h2 data-i="whyH">وش تحصل مع خافت</h2>
+    <p class="sub" data-i="whyP">نجيب العميل، وأنت تجيب الخبرة.</p>
+    <div class="feat">
+      <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span><b data-i="w1">طلبات مرتبة</b><p data-i="w1p">كل طلب يوصلك بالخدمة والعنوان والموعد، بدون مكالمات ولا تفاوض.</p></div>
+      <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z"/><path d="m9 12 2 2 4-4"/></svg></span><b data-i="w2">مدفوع قبل ما تبدأ</b><p data-i="w2p">العميل يدفع أجرة اليد داخل التطبيق، وأنت تركّز على الشغل.</p></div>
+      <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h9M19 6h1M4 12h3M13 12h7M4 18h11M21 18h-1"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><b data-i="w3">تحكم كامل</b><p data-i="w3p">تختار خدماتك وأسعارك ومدنك، وتقبل اللي يناسبك.</p></div>
+      <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><b data-i="w4">فاتورة بضغطة</b><p data-i="w4p">خدمات وقطع في فاتورة مرتبة تطبعها أو ترسلها للعميل.</p></div>
+      <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="m21 8-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span><b data-i="w5">مستودعك في جيبك</b><p data-i="w5p">أصنافك وكمياتك، وطلب شراء PDF جاهز للمحل.</p></div>
+      <div class="f"><span class="ic"><svg viewBox="0 0 24 24"><path d="m12 3 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z"/></svg></span><b data-i="w6">سمعتك تكبر</b><p data-i="w6p">تقييمات العملاء تبني اسمك مع كل طلب.</p></div>
+    </div>
+  </section>
+
+  <section class="rizq" id="rizq">
+    <div class="rz">
+      <div>
+        <span class="tag" data-i="rzTag">تطبيق رزق</span>
+        <h2 data-i="rzH">مكتبك كله في جيبك</h2>
+        <p class="sub" data-i="rzP">تستقبل الطلب، تضغط «في الطريق» و«وصلت»، تسجّل القطع، وتطلع الفاتورة. وتشوف دخلك وتقييماتك ومسار يومك على الخريطة.</p>
+        <div class="stores">
+          <a href="https://play.google.com/store/apps/details?id=com.khafet.partners" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M6 3v18l15-9z" fill="currentColor"/></svg><span><small data-i="getOn">حمّله من</small>Google Play</span></a>
+          <a href="https://apps.apple.com/sa/app/id6791782517" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M16.5 12.6c0-2.2 1.8-3.2 1.9-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8-.7 0-1.7-.8-2.9-.8-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.2 1.2-2.4 1.2-2.5-.1 0-2.5-.9-2.5-3.6zM14.4 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-1 2.8 1 .1 2.1-.5 2.7-1.3z" fill="currentColor"/></svg><span><small data-i="getOn2">حمّله من</small>App Store</span></a>
+        </div>
+        <p class="note" data-i="rzLangs">التطبيق بالعربي والإنجليزي والأردو والهندي والنيبالي.</p>
+      </div>
+      <div class="phonewrap" aria-hidden="true">
+        <div class="toast" data-i="phToast">🔔 طلب جديد قريب منك</div>
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>4:12</span><span>▮▮▮ 92%</span></div>
+          <div class="ah"><span data-i="phApp">رزق</span><i>🔔</i></div>
+          <div class="job"><span class="nw" data-i="phNew">طلب جديد</span><b data-i="phSvc">تغيير سيفون أوتوماتيك</b><small data-i="phLoc">📍 الخبر · الراكة</small><small data-i="phTime">🕓 اليوم 4:15 م · 60 ر.س مدفوع</small><div class="ac"><span data-i="phAccept">قبول</span><span data-i="phDetails">التفاصيل</span></div></div>
+          <div class="mini"><span data-i="phR1">تركيب مروحة سقف · الدمام</span><span>6:00</span></div>
+          <div class="mini"><span data-i="phR2">تنظيف سبلت · الظهران</span><span data-i="phTomorrow">غدًا</span></div>
+          <div class="stat"><small data-i="phInc">دخلك هذا الأسبوع</small><b>1,240 <span data-i="phSar">ر.س</span></b><div class="bars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:30%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:72%"></i><i style="height:100%"></i></div></div>
+          <div class="tabs"><span data-i="phT1">الطلبات</span><span data-i="phT2">المستودع</span><span data-i="phT3">دخلي</span><span data-i="phT4">حسابي</span></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="how">
+    <span class="tag" data-i="howTag">4 خطوات</span>
+    <h2 data-i="howH">كيف تبدأ</h2>
+    <p class="sub" data-i="howP">من النموذج إلى أول طلب.</p>
+    <ol class="steps">
+      <li><span class="n">1</span><div><b data-i="s1">عبّ النموذج</b><p data-i="s1p">خدماتك وأسعارك ومدنك، ياخذ دقيقتين.</p></div></li>
+      <li><span class="n">2</span><div><b data-i="s2">نتواصل معك</b><p data-i="s2p">نراجع طلبك ونعتمد حسابك.</p></div></li>
+      <li><span class="n">3</span><div><b data-i="s3">حمّل رزق وسجّل</b><p data-i="s3p">برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».</p></div></li>
+      <li><span class="n">4</span><div><b data-i="s4">استقبل أول طلب</b><p data-i="s4p">الطلبات توصلك بإشعار، وتقبلها من جوالك.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="form" id="apply">
+    <div class="fh" id="fh">
+      <span class="tag" data-i="fTag">طلب الانضمام</span>
+      <h2 data-i="fH">سجّل خدماتك</h2>
+      <p class="sub" data-i="fP">دقيقتين، وبياناتك ما يشوفها أحد غير إدارة خافت.</p>
+      <div class="prog" id="prog"><i class="on"></i><i></i><i></i></div>
+      <div class="stepnames" id="stepnames"><span class="on" data-i="st1">عنك</span><span data-i="st2">خدماتك وأسعارك</span><span data-i="st3">الضمان وأرسل</span></div>
+    </div>
+
+    <input class="hp" id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+    <div class="pane on" id="p1">
+      <div class="fld"><span class="lb" data-i="typeQ">أنت؟</span>
+        <div class="seg">
+          <button type="button" class="opt on" id="optTech"><i>🧰</i><b data-i="tTech">فني مستقل</b><small data-i="tTechS">أشتغل بنفسي</small></button>
+          <button type="button" class="opt" id="optCo"><i>🏢</i><b data-i="tCo">مؤسسة أو شركة</b><small data-i="tCoS">عندي فريق</small></button>
+        </div>
+      </div>
+      <div class="fld" id="fName"><label for="name" data-i="name">الاسم</label><input id="name" autocomplete="name" data-ip="namePh" placeholder="اسمك الثنائي"><div class="err" data-i="eName">اكتب اسمك</div></div>
+      <div class="two" id="coFields" hidden>
+        <div class="fld" id="fCompany"><label for="company" data-i="company">اسم المؤسسة</label><input id="company" autocomplete="organization"><div class="err" data-i="eCompany">اكتب اسم المؤسسة</div></div>
+        <div class="fld"><label for="team" data-i="team">عدد الفنيين</label><select id="team"><option value="1">1</option><option value="2-3">2 · 3</option><option value="4-6">4 · 6</option><option value="7-10">7 · 10</option><option value="10+" data-i="team10">أكثر من 10</option></select></div>
+      </div>
+      <div class="fld" id="fPhone"><label for="phone" data-i="phone">رقم الجوال</label><input id="phone" type="tel" inputmode="tel" dir="ltr" autocomplete="tel" placeholder="05xxxxxxxx"><span class="hint" data-i="phoneH">نتواصل معك عليه بواتساب أو اتصال.</span><div class="err" data-i="ePhone">رقم الجوال لازم يكون سعودي 05xxxxxxxx</div></div>
+      <div class="fld" id="fCities"><span class="lb" data-i="cities">المدن اللي تخدمها <span class="hint" data-i="citiesH">اختر كل اللي يناسبك</span></span><div class="chips" id="cityChips"></div><input id="cityOther" style="margin-top:8px" data-ip="cityOtherPh" placeholder="مدينة أخرى (اختياري)"><div class="err" data-i="eCity">اختر مدينة واحدة على الأقل</div></div>
+    </div>
+
+    <div class="pane" id="p2">
+      <div class="fld" id="fCats"><span class="lb" data-i="catsQ">تخصصاتك <span class="hint" data-i="catsH">اختر تخصص أو أكثر، وبعدها حدد خدماتك وأسعارك</span></span><div class="chips" id="catChips"></div><div class="err" data-i="eCat">اختر تخصصًا واحدًا على الأقل</div></div>
+      <div id="svcBlocks"></div>
+    </div>
+
+    <div class="pane" id="p3">
+      <div class="fld" id="fWar"><span class="lb" data-i="warranty">ضمان الشغل <span class="hint" data-i="warrantyH">كم مدة الضمان اللي تعطيها على شغلك؟</span></span><div class="chips" id="warChips"></div><div class="err" data-i="eWar">اختر مدة الضمان</div></div>
+      <div class="fld"><label for="notes" data-i="notes">ملاحظات (اختياري)</label><textarea id="notes" data-ip="notesPh" placeholder="مثال: أشتغل بعد العصر فقط"></textarea></div>
+      <h3 data-i="revH">ملخص طلبك</h3>
+      <div class="sum" id="sum"></div>
+      <p class="agree" data-i="agree">بالإرسال توافق أن خافت تتواصل معك على رقمك وتراجع بياناتك.</p>
+    </div>
+
+    <div class="fail" id="fail"><span id="failMsg"></span><br><a id="failWa" href="#" target="_blank" rel="noopener" data-i="waBtn">أرسل بواتساب</a></div>
+
+    <div class="nav" id="nav">
+      <button type="button" class="btn g" id="back" data-i="back" hidden>رجوع</button>
+      <span class="sp"></span>
+      <button type="button" class="btn y" id="next" data-i="next">التالي</button>
+    </div>
+
+    <div class="done" id="done">
+      <div class="stamp" data-i="stamp">وصلنا طلبك</div>
+      <div class="ref"><span id="refNo">#0</span><small data-i="refLbl">رقم طلبك، احفظه</small></div>
+      <p id="doneMsg"></p>
+      <ul class="nextl">
+        <li><i>📲</i><span data-i="n1">حمّل رزق من المتجر وخلّه جاهز.</span></li>
+        <li><i>📸</i><span data-i="n2">أرسل لنا صور من أعمالك على واتساب، تسرّع القبول.</span></li>
+        <li><i>✅</i><span data-i="n3">لما نعتمد حسابك، سجّل في رزق بنفس رقم الجوال.</span></li>
+      </ul>
+      <div class="stores">
+        <a href="https://play.google.com/store/apps/details?id=com.khafet.partners" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M6 3v18l15-9z" fill="currentColor"/></svg><span><small data-i="getOn3">حمّله من</small>Google Play</span></a>
+        <a href="https://apps.apple.com/sa/app/id6791782517" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M16.5 12.6c0-2.2 1.8-3.2 1.9-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8-.7 0-1.7-.8-2.9-.8-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.2 1.2-2.4 1.2-2.5-.1 0-2.5-.9-2.5-3.6zM14.4 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-1 2.8 1 .1 2.1-.5 2.7-1.3z" fill="currentColor"/></svg><span><small data-i="getOn4">حمّله من</small>App Store</span></a>
+      </div>
+      <a class="wa" id="waPhotos" href="#" target="_blank" rel="noopener" data-i="photosBtn">📸 أرسل صور أعمالك</a>
+      <button type="button" class="again" id="again" data-i="again">تعبئة طلب آخر</button>
+    </div>
+  </section>
+</main>
+
+<footer class="foot"><span data-i="foot">مؤسسة خافت للسباكة والكهرباء · الخبر</span> · <a href="https://wa.me/966590497866" target="_blank" rel="noopener" data-i="footWa">واتساب خافت</a></footer>
+
+<script>
+(function(){
+var SB='https://zulogtqxbuqxmdmjpzqj.supabase.co', KEY='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG', WA='966590497866';
+var L='ar';
+var T={
+brand:['خافِت','Khafet'], eyebrow:['انضمام الفنيين ومقدمي الخدمات','Technician and provider onboarding'],
+h1a:['طلبات صيانة','Maintenance jobs,'], h1em:['جاهزة','ready,'], h1b:['على جوالك.','on your phone.'],
+lead:['خافت يجيب لك عملاء الخبر والدمام والظهران، ورزق يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.','Khafet brings you customers across Al Khobar, Dammam and Dhahran, and Rizq organizes your work from the job to the invoice. Register now and start receiving jobs.'],
+ctaApply:['قدّم طلب الانضمام','Apply to join'], ctaHow:['كيف يشتغل؟','How it works'],
+f1v:['3 مدن','3 cities'], f1l:['الخبر والدمام والظهران','Al Khobar, Dammam and Dhahran'],
+f2v:['دفع مقدّم','Paid upfront'], f2l:['العميل يدفع أجرة اليد قبل الشغل','Customers pay labor before the work'],
+f3v:['أسعارك','Your prices'], f3l:['أنت تحدد خدماتك وأسعارك ومدنك','You set your services, prices and cities'],
+whyTag:['لماذا خافت','Why Khafet'], whyH:['وش تحصل مع خافت','What you get with Khafet'], whyP:['نجيب العميل، وأنت تجيب الخبرة.','We bring the customer, you bring the skill.'],
+w1:['طلبات مرتبة','Organized jobs'], w1p:['كل طلب يوصلك بالخدمة والعنوان والموعد، بدون مكالمات ولا تفاوض.','Every job arrives with the service, address and time. No calls, no haggling.'],
+w2:['مدفوع قبل ما تبدأ','Paid before you start'], w2p:['العميل يدفع أجرة اليد داخل التطبيق، وأنت تركّز على الشغل.','The customer pays labor inside the app, you focus on the work.'],
+w3:['تحكم كامل','Full control'], w3p:['تختار خدماتك وأسعارك ومدنك، وتقبل اللي يناسبك.','Choose your services, prices and cities, and accept what suits you.'],
+w4:['فاتورة بضغطة','One tap invoice'], w4p:['خدمات وقطع في فاتورة مرتبة تطبعها أو ترسلها للعميل.','Services and parts in a clean invoice to print or send.'],
+w5:['مستودعك في جيبك','Your stock in your pocket'], w5p:['أصنافك وكمياتك، وطلب شراء PDF جاهز للمحل.','Your items and quantities, plus a ready PDF purchase order.'],
+w6:['سمعتك تكبر','Your reputation grows'], w6p:['تقييمات العملاء تبني اسمك مع كل طلب.','Customer ratings build your name with every job.'],
+rzTag:['تطبيق رزق','The Rizq app'], rzH:['مكتبك كله في جيبك','Your whole office in your pocket'],
+rzP:['تستقبل الطلب، تضغط «في الطريق» و«وصلت»، تسجّل القطع، وتطلع الفاتورة. وتشوف دخلك وتقييماتك ومسار يومك على الخريطة.','Receive the job, tap On my way and Arrived, log the parts and issue the invoice. See your income, ratings and day route on the map.'],
+getOn:['حمّله من','Get it on'], getOn2:['حمّله من','Download on the'], getOn3:['حمّله من','Get it on'], getOn4:['حمّله من','Download on the'],
+rzLangs:['التطبيق بالعربي والإنجليزي والأردو والهندي والنيبالي.','The app speaks Arabic, English, Urdu, Hindi and Nepali.'],
+phToast:['🔔 طلب جديد قريب منك','🔔 New job near you'], phApp:['رزق','Rizq'], phNew:['طلب جديد','New job'], phSvc:['تغيير سيفون أوتوماتيك','Replace automatic flush'], phLoc:['📍 الخبر · الراكة','📍 Al Khobar · Al Rakah'], phTime:['🕓 اليوم 4:15 م · 60 ر.س مدفوع','🕓 Today 4:15 PM · 60 SAR paid'], phAccept:['قبول','Accept'], phDetails:['التفاصيل','Details'], phR1:['تركيب مروحة سقف · الدمام','Ceiling fan · Dammam'], phR2:['تنظيف سبلت · الظهران','Split AC cleaning · Dhahran'], phTomorrow:['غدًا','Tomorrow'], phInc:['دخلك هذا الأسبوع','Your income this week'], phSar:['ر.س','SAR'], phT1:['الطلبات','Jobs'], phT2:['المستودع','Stock'], phT3:['دخلي','Income'], phT4:['حسابي','Account'],
+howTag:['4 خطوات','4 steps'], howH:['كيف تبدأ','How to start'], howP:['من النموذج إلى أول طلب.','From the form to your first job.'],
+s1:['عبّ النموذج','Fill the form'], s1p:['خدماتك وأسعارك ومدنك، ياخذ دقيقتين.','Your services, prices and cities. Takes two minutes.'],
+s2:['نتواصل معك','We contact you'], s2p:['نراجع طلبك ونعتمد حسابك.','We review your request and approve your account.'],
+s3:['حمّل رزق وسجّل','Download Rizq and sign in'], s3p:['برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».','With your mobile number. Technicians pick “Khafet technicians”, companies pick “Khafet providers”.'],
+s4:['استقبل أول طلب','Get your first job'], s4p:['الطلبات توصلك بإشعار، وتقبلها من جوالك.','Jobs arrive as notifications, accept them on your phone.'],
+fTag:['طلب الانضمام','Join request'], fH:['سجّل خدماتك','Register your services'], fP:['دقيقتين، وبياناتك ما يشوفها أحد غير إدارة خافت.','Two minutes. Only Khafet management sees your details.'],
+st1:['عنك','About you'], st2:['خدماتك وأسعارك','Services and prices'], st3:['الضمان وأرسل','Warranty and send'],
+typeQ:['أنت؟','You are'], tTech:['فني مستقل','Independent technician'], tTechS:['أشتغل بنفسي','I work on my own'], tCo:['مؤسسة أو شركة','Company'], tCoS:['عندي فريق','I have a team'],
+name:['الاسم','Name'], namePh:['اسمك الثنائي','Your full name'], eName:['اكتب اسمك','Enter your name'],
+company:['اسم المؤسسة','Company name'], eCompany:['اكتب اسم المؤسسة','Enter the company name'], team:['عدد الفنيين','Number of technicians'], team10:['أكثر من 10','More than 10'],
+phone:['رقم الجوال','Mobile number'], phoneH:['نتواصل معك عليه بواتساب أو اتصال.','We contact you on it by WhatsApp or call.'], ePhone:['رقم الجوال لازم يكون سعودي 05xxxxxxxx','Enter a Saudi mobile number 05xxxxxxxx'],
+cities:['المدن اللي تخدمها','Cities you serve'], citiesH:['اختر كل اللي يناسبك','Pick all that apply'], cityOtherPh:['مدينة أخرى (اختياري)','Another city (optional)'], eCity:['اختر مدينة واحدة على الأقل','Pick at least one city'],
+catsQ:['تخصصاتك','Your specialties'], catsH:['اختر تخصص أو أكثر، وبعدها حدد خدماتك وأسعارك','Pick one or more, then set your services and prices'], eCat:['اختر تخصصًا واحدًا على الأقل','Pick at least one specialty'],
+sugH:['اضغط خدمة لإضافتها وحط سعرك، أو اكتب خدمة غير موجودة.','Tap a service to add it and set your price, or type one that is not listed.'],
+addSvc:['+ خدمة أخرى','+ Another service'], svcPh:['اسم الخدمة','Service name'], pricePh:['السعر','Price'], othCatPh:['اسم التخصص','Specialty name'], nSvc:['خدمة','services'],
+uJob:['للخدمة','per job'], uHour:['للساعة','per hour'], uMeter:['للمتر','per meter'], uPiece:['للقطعة','per piece'], uInspect:['بعد المعاينة','after inspection'],
+warranty:['ضمان الشغل','Work warranty'], warrantyH:['كم مدة الضمان اللي تعطيها على شغلك؟','How long do you guarantee your work?'], eWar:['اختر مدة الضمان','Pick a warranty period'],
+notes:['ملاحظات (اختياري)','Notes (optional)'], notesPh:['مثال: أشتغل بعد العصر فقط','Example: I only work afternoons'],
+revH:['ملخص طلبك','Your request summary'], agree:['بالإرسال توافق أن خافت تتواصل معك على رقمك وتراجع بياناتك.','By sending you agree that Khafet contacts you on your number and reviews your details.'],
+back:['رجوع','Back'], next:['التالي','Next'], send:['أرسل الطلب','Send request'], sending:['جاري الإرسال…','Sending…'],
+waBtn:['أرسل بواتساب','Send on WhatsApp'],
+errTooMany:['أرسلت 3 طلبات اليوم من هذا الرقم. نتواصل معك قريبًا.','3 requests were already sent today from this number. We will contact you soon.'],
+errBusy:['الضغط عالي الحين، جرّب بعد شوي.','We are busy right now, try again shortly.'],
+errBig:['الطلب كبير، قلّل عدد الخدمات أو النص.','The request is too large, reduce the services or the text.'],
+errInvalid:['راجع الاسم ورقم الجوال.','Check the name and mobile number.'],
+errNet:['ما قدرنا نرسل الطلب. أرسله لنا على واتساب:','We could not send the request. Send it to us on WhatsApp:'],
+stamp:['وصلنا طلبك','Request received'], refLbl:['رقم طلبك، احفظه','Your request number, keep it'],
+doneMsg:['شكرًا {name}! نراجع طلبك ونتواصل معك على {phone}.','Thank you {name}! We will review your request and contact you on {phone}.'],
+n1:['حمّل رزق من المتجر وخلّه جاهز.','Download Rizq from the store and keep it ready.'], n2:['أرسل لنا صور من أعمالك على واتساب، تسرّع القبول.','Send us photos of your work on WhatsApp, it speeds up approval.'], n3:['لما نعتمد حسابك، سجّل في رزق بنفس رقم الجوال.','Once we approve your account, sign in to Rizq with the same mobile number.'],
+photosBtn:['📸 أرسل صور أعمالك','📸 Send photos of your work'], again:['تعبئة طلب آخر','Fill another request'],
+waPhotos:['طلب انضمام خافت رقم {ref}. هذي صور من أعمالي:','Khafet join request #{ref}. Here are photos of my work:'],
+waFallback:['طلب انضمام خافت','Khafet join request'],
+foot:['مؤسسة خافت للسباكة والكهرباء · الخبر','Khafet Plumbing and Electrical Est. · Al Khobar'], footWa:['واتساب خافت','Khafet WhatsApp'],
+sType:['النوع','Type'], sName:['الاسم','Name'], sCompany:['المؤسسة','Company'], sTeam:['الفريق','Team'], sPhone:['الجوال','Mobile'], sCities:['المدن','Cities'], sWar:['الضمان','Warranty'], sNotes:['ملاحظات','Notes'], sar:['ر.س','SAR'], noPrice:['بدون سعر','no price'], noSvcs:['ما أضفت خدمات، نحددها معك عند التواصل.','No services added, we will set them with you when we talk.']
+};
+T.home=['الرئيسية','Home'];
+/* داخل تطبيق رزق: بدون روابط المتاجر، ونصوص «سجّل» بدل «حمّل» */
+var INAPP=document.documentElement.classList.contains('inapp');
+if(INAPP){
+  T.s3=['سجّل في رزق','Sign in to Rizq'];
+  T.s3p=['بنفس رقم جوالك: فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».','With the same mobile number: technicians pick “Khafet technicians”, companies pick “Khafet providers”.'];
+  T.n1=['خلّ إشعارات رزق مفعّلة عشان توصلك الطلبات.','Keep Rizq notifications on so jobs reach you.'];
+  T.n3=['لما نعتمد حسابك، ارجع للرئيسية وسجّل بنفس رقم الجوال.','Once we approve your account, go back home and sign in with the same mobile number.'];
+}
+var CITIES=[{k:'khobar',ar:'الخبر',en:'Al Khobar'},{k:'dammam',ar:'الدمام',en:'Dammam'},{k:'dhahran',ar:'الظهران',en:'Dhahran'},{k:'qatif',ar:'القطيف',en:'Qatif'},{k:'jubail',ar:'الجبيل',en:'Jubail'}];
+var WARS=[{k:'none',ar:'بدون ضمان',en:'No warranty'},{k:'week',ar:'أسبوع',en:'One week'},{k:'month',ar:'شهر',en:'One month'},{k:'3m',ar:'3 أشهر',en:'3 months'},{k:'6m',ar:'6 أشهر',en:'6 months'},{k:'year',ar:'سنة',en:'One year'}];
+var UNITS=[['job','uJob'],['hour','uHour'],['meter','uMeter'],['piece','uPiece'],['inspect','uInspect']];
+var CATS=[
+{id:'plumb',ar:'سباكة',en:'Plumbing',ic:'🔧',s:[['تسليك مجاري','Drain unblocking'],['تغيير سيفون','Replace flush'],['تركيب خلاط','Install mixer tap'],['تغيير محبس','Replace valve'],['تركيب سخان','Install water heater'],['إصلاح تسريب','Fix a leak'],['تركيب مغسلة','Install a sink'],['تركيب كرسي حمام','Install a toilet']]},
+{id:'elec',ar:'كهرباء',en:'Electrical',ic:'💡',s:[['تغيير لمبة','Replace bulb'],['تركيب مروحة','Install ceiling fan'],['تركيب بريزة أو مفتاح','Install socket or switch'],['إصلاح قاطع','Fix breaker'],['تركيب ثريا','Install chandelier'],['تمديد كهرباء','Wiring'],['تركيب سخان كهرباء','Install electric heater']]},
+{id:'ac',ar:'تكييف',en:'Air conditioning',ic:'❄️',s:[['تنظيف سبلت','Split AC cleaning'],['تنظيف شباك','Window AC cleaning'],['تعبئة فريون','Refrigerant top up'],['تركيب سبلت','Install split AC'],['فك ونقل مكيف','Uninstall and move AC'],['صيانة دورية','Regular maintenance']]},
+{id:'paint',ar:'دهان',en:'Painting',ic:'🎨',s:[['دهان غرفة','Paint a room'],['دهان شقة كاملة','Paint a whole apartment'],['معجون وترميم','Filler and repair'],['دهان أبواب','Paint doors'],['ورق جدران','Wallpaper']]},
+{id:'wood',ar:'نجارة',en:'Carpentry',ic:'🪚',s:[['تركيب باب','Install a door'],['إصلاح خزانة','Repair a cabinet'],['تركيب رفوف','Install shelves'],['تركيب مطبخ','Install a kitchen'],['إصلاح قفل','Fix a lock']]},
+{id:'appl',ar:'أجهزة منزلية',en:'Appliances',ic:'🧺',s:[['إصلاح غسالة','Washing machine repair'],['إصلاح ثلاجة','Fridge repair'],['إصلاح فرن','Oven repair'],['إصلاح نشافة','Dryer repair'],['تركيب غسالة صحون','Install dishwasher']]},
+{id:'clean',ar:'تنظيف',en:'Cleaning',ic:'🧽',s:[['تنظيف شقة','Apartment cleaning'],['تنظيف كنب وسجاد','Sofa and carpet cleaning'],['تنظيف خزانات مياه','Water tank cleaning'],['تنظيف واجهات','Facade cleaning'],['مكافحة حشرات','Pest control']]},
+{id:'garage',ar:'أبواب كراج',en:'Garage doors',ic:'🚪',s:[['صيانة باب كراج','Garage door service'],['تركيب موتور','Install motor'],['برمجة ريموت','Program remote'],['تغيير سبرنج','Replace spring']]},
+{id:'other',ar:'أخرى',en:'Other',ic:'➕',s:[['تركيب تلفزيون','Mount a TV'],['تركيب ستائر','Install curtains'],['تعليق مرايا ولوحات','Hang mirrors and frames'],['نقل عفش','Furniture moving']]}
+];
+var S={type:'tech',cities:{},cats:{},warranty:'',step:1,ref:null};
+var $=function(id){return document.getElementById(id);};
+function t(k){var v=T[k];return v?(L==='en'?v[1]:v[0]):k;}
+function nm(o){return L==='en'?o.en:o.ar;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function unitLabel(u){for(var i=0;i<UNITS.length;i++)if(UNITS[i][0]===u)return t(UNITS[i][1]);return '';}
+function unitAr(u){var m={job:'للخدمة',hour:'للساعة',meter:'للمتر',piece:'للقطعة',inspect:''};return m[u]||'';}
+function warOf(k){for(var i=0;i<WARS.length;i++)if(WARS[i].k===k)return WARS[i];return null;}
+
+/* ── اللغة ── */
+function applyLang(){
+  document.documentElement.lang=L; document.documentElement.dir=L==='en'?'ltr':'rtl';
+  var els=document.querySelectorAll('[data-i]');
+  for(var i=0;i<els.length;i++){var el=els[i];el.textContent=t(el.getAttribute('data-i'));}
+  var ph=document.querySelectorAll('[data-ip]');
+  for(var j=0;j<ph.length;j++){ph[j].placeholder=t(ph[j].getAttribute('data-ip'));}
+  $('langBtn').textContent=L==='en'?'العربية':'English';
+  $('next').textContent=S.step===3?t('send'):t('next');
+  renderChips(); renderSvc(); if(S.step===3)renderSum();
+  try{localStorage.setItem('khafet_join_lang',L);}catch(e){}
+}
+$('langBtn').onclick=function(){L=L==='en'?'ar':'en';applyLang();};
+(function pickLang(){
+  var q=/[?&]lang=(en|ar)/.exec(location.search); if(q){L=q[1];return;}
+  if(INAPP){ try{var a=localStorage.getItem('khafet_techlang');if(a){L=a==='ar'?'ar':'en';return;}}catch(e){} }
+  try{var s=localStorage.getItem('khafet_join_lang');if(s==='en'||s==='ar'){L=s;return;}}catch(e){}
+  var nl=(navigator.language||'').toLowerCase();
+  if(/^(hi|ne|bn|ur|fil|tl|si|ta|ml|te)/.test(nl))L='en';
+})();
+
+/* ── الرقائق ── */
+function chips(el,items,sel,after){
+  el.innerHTML='';
+  items.forEach(function(it){
+    var b=document.createElement('button');b.type='button';b.className='chip'+(sel[it.k]?' on':'');
+    b.textContent=(it.ic?it.ic+' ':'')+nm(it);
+    b.onclick=function(){ if(sel[it.k])delete sel[it.k]; else sel[it.k]=true; if(after)after(it.k,!!sel[it.k]); chips(el,items,sel,after); };
+    el.appendChild(b);
+  });
+}
+function single(el,items,key,after){
+  el.innerHTML='';
+  items.forEach(function(it){
+    var b=document.createElement('button');b.type='button';b.className='chip'+(S[key]===it.k?' on':'');
+    b.textContent=nm(it);
+    b.onclick=function(){S[key]=it.k;if(after)after(it.k);single(el,items,key,after);};
+    el.appendChild(b);
+  });
+}
+function renderChips(){
+  chips($('cityChips'),CITIES,S.cities,function(){$('fCities').classList.remove('bad');});
+  single($('warChips'),WARS,'warranty',function(){$('fWar').classList.remove('bad');renderSum();});
+  chips($('catChips'),CATS.map(function(c){return {k:c.id,ar:c.ar,en:c.en,ic:c.ic};}),S.cats,function(k,on){
+    if(on&&S.cats[k]===true)S.cats[k]={rows:[],name:''};
+    $('fCats').classList.remove('bad'); renderSvc();
+  });
+}
+
+/* ── النوع ── */
+function setType(tp){S.type=tp;$('optTech').classList.toggle('on',tp==='tech');$('optCo').classList.toggle('on',tp==='co');$('coFields').hidden=tp!=='co';}
+$('optTech').onclick=function(){setType('tech');};
+$('optCo').onclick=function(){setType('co');};
+
+/* ── الخدمات ── */
+function renderSvc(){
+  var box=$('svcBlocks');box.innerHTML='';
+  CATS.forEach(function(c){
+    var st=S.cats[c.id]; if(!st)return; if(st===true){st=S.cats[c.id]={rows:[],name:''};}
+    var blk=document.createElement('div');blk.className='svcblk';
+    var have={};st.rows.forEach(function(r){have[r.name]=1;});
+    var h='<h4><span>'+c.ic+'</span>'+esc(nm(c))+'<small>'+st.rows.length+' '+t('nSvc')+'</small></h4>';
+    if(c.id==='other')h+='<div class="oth"><input class="othName" data-cat="other" placeholder="'+esc(t('othCatPh'))+'" value="'+esc(st.name||'')+'"></div>';
+    h+='<p class="hint" style="margin:0 0 8px">'+esc(t('sugH'))+'</p><div class="sug">';
+    c.s.forEach(function(s,i){var label=L==='en'?s[1]:s[0];h+='<button type="button" data-cat="'+c.id+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+'</button>';});
+    h+='</div><div class="rows">';
+    st.rows.forEach(function(r,i){
+      h+='<div class="row"><input data-cat="'+c.id+'" data-i2="'+i+'" data-f="name" placeholder="'+esc(t('svcPh'))+'" value="'+esc(r.name)+'">'
+        +'<input data-cat="'+c.id+'" data-i2="'+i+'" data-f="price" type="number" min="0" inputmode="numeric" dir="ltr" placeholder="'+esc(t('pricePh'))+'" value="'+esc(r.price)+'" '+(r.unit==='inspect'?'disabled':'')+'>'
+        +'<select data-cat="'+c.id+'" data-i2="'+i+'" data-f="unit">'+UNITS.map(function(u){return '<option value="'+u[0]+'" '+(r.unit===u[0]?'selected':'')+'>'+esc(t(u[1]))+'</option>';}).join('')+'</select>'
+        +'<button type="button" class="x" data-cat="'+c.id+'" data-del="'+i+'" aria-label="حذف">×</button></div>';
+    });
+    h+='</div><button type="button" class="addrow" data-cat="'+c.id+'" data-add="1">'+esc(t('addSvc'))+'</button>';
+    blk.innerHTML=h; box.appendChild(blk);
+  });
+}
+$('svcBlocks').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b)return; var cid=b.getAttribute('data-cat'); var c=CATS.find(function(x){return x.id===cid;}); var st=S.cats[cid]; if(!c||!st)return;
+  if(b.hasAttribute('data-sug')){var s=c.s[+b.getAttribute('data-sug')];st.rows.push({name:s[0],name_en:s[1],price:'',unit:'job',code:'مقترح'});renderSvc();focusRow(cid,st.rows.length-1,'price');}
+  else if(b.hasAttribute('data-add')){st.rows.push({name:'',price:'',unit:'job',code:'جديد'});renderSvc();focusRow(cid,st.rows.length-1,'name');}
+  else if(b.hasAttribute('data-del')){st.rows.splice(+b.getAttribute('data-del'),1);renderSvc();}
+});
+$('svcBlocks').addEventListener('input',function(e){
+  var el=e.target; var cid=el.getAttribute('data-cat'); var st=S.cats[cid]; if(!st)return;
+  if(el.classList.contains('othName')){st.name=el.value;return;}
+  var r=st.rows[+el.getAttribute('data-i2')]; if(!r)return; var f=el.getAttribute('data-f');
+  if(f==='unit'){r.unit=el.value;var pi=el.parentNode.querySelector('[data-f="price"]');pi.disabled=r.unit==='inspect';if(pi.disabled){pi.value='';r.price='';}}
+  else r[f]=el.value;
+});
+function focusRow(cid,i,f){var el=$('svcBlocks').querySelector('[data-cat="'+cid+'"][data-i2="'+i+'"][data-f="'+f+'"]');if(el)el.focus();}
+
+/* ── الجوال ── */
+function normPhone(v){var d=String(v||'').replace(/\D/g,'');if(d.indexOf('00966')===0)d=d.slice(5);if(d.indexOf('966')===0)d=d.slice(3);if(/^5\d{8}$/.test(d))d='0'+d;return d;}
+function validPhone(v){return /^05\d{8}$/.test(normPhone(v));}
+
+/* ── التحقق والتنقل ── */
+function bad(id,on){$(id).classList.toggle('bad',on);return on;}
+function validate(step){
+  var ok=true;
+  if(step===1){
+    if(bad('fName',$('name').value.trim().length<2))ok=false;
+    if(bad('fCompany',S.type==='co'&&$('company').value.trim().length<2))ok=false;
+    if(bad('fPhone',!validPhone($('phone').value)))ok=false;
+    if(bad('fCities',!Object.keys(S.cities).length&&!$('cityOther').value.trim()))ok=false;
+  }
+  if(step===2){ if(bad('fCats',!Object.keys(S.cats).length))ok=false; }
+  if(step===3){ if(bad('fWar',!S.warranty))ok=false; }
+  if(!ok){var b=document.querySelector('.pane.on .fld.bad');if(b)b.scrollIntoView({block:'center'});}
+  return ok;
+}
+function go(n){
+  S.step=n;
+  for(var i=1;i<=3;i++){$('p'+i).classList.toggle('on',i===n);}
+  var bars=$('prog').children, names=$('stepnames').children;
+  for(var k=0;k<3;k++){bars[k].className=k+1<n?'done':(k+1===n?'on':'');names[k].className=k+1===n?'on':'';}
+  $('back').hidden=n===1; $('next').textContent=n===3?t('send'):t('next'); $('fail').classList.remove('on');
+  if(n===3)renderSum();
+  $('fh').scrollIntoView({block:'start'});
+}
+$('back').onclick=function(){if(S.step>1)go(S.step-1);};
+$('next').onclick=function(){ if(S.step<3){ if(validate(S.step))go(S.step+1); } else if(validate(3)) send(); };
+['name','company','phone'].forEach(function(id){$(id).addEventListener('input',function(){$('f'+id.charAt(0).toUpperCase()+id.slice(1)).classList.remove('bad');});});
+$('cityOther').addEventListener('input',function(){$('fCities').classList.remove('bad');});
+$('notes').addEventListener('input',function(){if(S.step===3)renderSum();});
+
+/* ── الحمولة ── */
+function selNames(items,sel){return items.filter(function(i){return sel[i.k];}).map(function(i){return i.ar;});}
+function selNamesL(items,sel){return items.filter(function(i){return sel[i.k];}).map(function(i){return nm(i);});}
+function catsPayload(){
+  return CATS.filter(function(c){return S.cats[c.id];}).map(function(c){
+    var st=S.cats[c.id]; var isOther=c.id==='other'; var name=isOther&&(st.name||'').trim()?st.name.trim():c.ar;
+    return {id:c.id,name:name,name_en:c.en,isNew:isOther,services:st.rows.filter(function(r){return r.name.trim();}).map(function(r){
+      var ins=r.unit==='inspect'; var p=(!ins&&r.price!==''&&!isNaN(+r.price))?+r.price:null;
+      return {name:r.name.trim(),name_en:r.name_en||'',price:p,unit:unitAr(r.unit),inspect:ins,code:r.code||'جديد'};
+    })};
+  });
+}
+function payload(){
+  var cities=selNames(CITIES,S.cities); var oc=$('cityOther').value.trim(); if(oc)cities.push(oc);
+  var notes=$('notes').value.trim(); var w=warOf(S.warranty);
+  return {
+    name:$('name').value.trim(), phone:normPhone($('phone').value), website:$('hp').value, lang:L,
+    type:S.type==='co'?'مؤسسة':'فني مستقل',
+    company:S.type==='co'?$('company').value.trim():'', team:S.type==='co'?$('team').value:'',
+    cities:cities, categories:catsPayload(),
+    warranty:w?w.ar:'', notes:notes, message:notes
+  };
+}
+
+/* ── الملخص ── */
+function renderSum(){
+  var p=payload(); var rows=[];
+  function add(k,v){if(v)rows.push('<dt>'+t(k)+'</dt><dd>'+esc(v)+'</dd>');}
+  add('sType',S.type==='co'?t('tCo'):t('tTech')); add('sName',p.name); if(S.type==='co'){add('sCompany',p.company);add('sTeam',p.team);}
+  add('sPhone',p.phone); add('sCities',selNamesL(CITIES,S.cities).concat($('cityOther').value.trim()?[$('cityOther').value.trim()]:[]).join(L==='en'?', ':'، '));
+  var w=warOf(S.warranty); add('sWar',w?nm(w):''); add('sNotes',p.notes);
+  var h='<dl>'+rows.join('')+'</dl>';
+  p.categories.forEach(function(c){
+    var cd=CATS.find(function(x){return x.id===c.id;}); var title=c.id==='other'&&c.name!==cd.ar?c.name:nm(cd);
+    h+='<div class="sv"><b>'+cd.ic+' '+esc(title)+'</b>';
+    if(!c.services.length)h+='<div><span class="hint">'+t('noSvcs')+'</span></div>';
+    c.services.forEach(function(s){var row=S.cats[c.id].rows.find(function(r){return r.name.trim()===s.name;});var pr=s.inspect?t('uInspect'):(s.price==null?t('noPrice'):s.price+' '+t('sar')+' '+unitLabel(row?row.unit:'job'));h+='<div><span>'+esc(L==='en'&&s.name_en?s.name_en:s.name)+'</span><span>'+esc(pr)+'</span></div>';});
+    h+='</div>';
+  });
+  $('sum').innerHTML=h;
+}
+
+/* ── الإرسال ── */
+function waText(p){
+  var lines=[t('waFallback'),p.name,p.phone,p.cities.join('، ')];
+  p.categories.forEach(function(c){lines.push('• '+c.name+': '+c.services.map(function(s){return s.name+(s.price!=null?' '+s.price:'');}).join('، '));});
+  if(p.warranty)lines.push(t('sWar')+': '+p.warranty);
+  if(p.notes)lines.push(p.notes);
+  return 'https://wa.me/'+WA+'?text='+encodeURIComponent(lines.join('\n'));
+}
+function showFail(msg,p){$('failMsg').textContent=msg;$('failWa').href=p?waText(p):'#';$('failWa').hidden=!p;$('fail').classList.add('on');}
+function send(){
+  var p=payload(); var btn=$('next'); btn.disabled=true; btn.textContent=t('sending'); $('fail').classList.remove('on');
+  fetch(SB+'/rest/v1/rpc/submit_join_request',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p:p})})
+  .then(function(r){return r.json();})
+  .then(function(j){
+    if(j&&j.ok){finish(j.ref,p);return;}
+    var e=j&&j.error;
+    if(e==='too_many')showFail(t('errTooMany'));
+    else if(e==='busy')showFail(t('errBusy'));
+    else if(e==='too_big')showFail(t('errBig'));
+    else if(e==='invalid'){showFail(t('errInvalid'));go(1);validate(1);}
+    else showFail(t('errNet'),p);
+  })
+  .catch(function(){showFail(t('errNet'),p);})
+  .then(function(){btn.disabled=false;btn.textContent=S.step===3?t('send'):t('next');});
+}
+function finish(ref,p){
+  S.ref=ref;
+  for(var i=1;i<=3;i++)$('p'+i).classList.remove('on');
+  $('nav').hidden=true; $('fh').hidden=true; $('done').classList.add('on');
+  $('refNo').textContent='#'+ref;
+  $('doneMsg').textContent=t('doneMsg').replace('{name}',p.name).replace('{phone}',p.phone);
+  $('waPhotos').href='https://wa.me/'+WA+'?text='+encodeURIComponent(t('waPhotos').replace('{ref}',ref));
+  $('done').scrollIntoView({block:'start'});
+}
+$('again').onclick=function(){location.reload();};
+
+applyLang(); setType('tech');
+})();
+</script>
+
+</body>
+</html>

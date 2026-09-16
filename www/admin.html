@@ -1609,7 +1609,7 @@ function renderJoinReqs(){
     const kv=[
       [LX('المواد','Materials'), d.materials], [LX('الضمان','Warranty'), d.warranty],
       [LX('المعاينة','Inspection'), d.visit? (d.visit.type==='بسعر' ? (ar(d.visit.price||'')+' '+LX('ريال','SAR')+(d.visit.deduct?LX('، تنخصم إذا تم الشغل','، deducted if the job goes ahead'):'')) : d.visit.type) : ''],
-      [LX('الفريق','Team'), d.team], [LX('الخبرة','Experience'), d.exp], [LX('المؤسسة','Company'), d.company], [LX('الوثيقة','Document'), d.doc],
+      [LX('النوع','Type'), d.type], [LX('الفريق','Team'), d.team], [LX('الخبرة','Experience'), d.exp], [LX('المؤسسة','Company'), d.company], [LX('الوثيقة','Document'), d.doc],
       [LX('عنده','Has'), (d.equipment||[]).join('، ')], [LX('الأوقات','Times'), (d.times||[]).join('، ')],
       [LX('الجمعة','Fridays'), d.friday?LX('نعم','Yes'):''], [LX('المستعجل','Urgent'), d.urgent?LX('نعم','Yes'):''],
       [LX('ملاحظات','Notes'), d.notes], [LX('لغة التعبئة','Form language'), x.lang==='en'?'English':'']
