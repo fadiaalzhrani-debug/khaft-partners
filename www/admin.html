@@ -124,6 +124,11 @@
   .aorder .aitems .li{display:flex;justify-content:space-between;padding:3px 0}
   .aorder .actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
   .sbtn{padding:10px 15px;border-radius:11px;font-weight:700;font-size:.86rem;border:1.5px solid var(--line);background:#fff;transition:.15s}
+  /* 🧰 تخصصات الفني */
+  .trds{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+  .trd{padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:700;font-size:.8rem;font-family:inherit;cursor:pointer}
+  .trd.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+  .trd-h{font-size:.78rem;color:var(--muted);font-weight:700;margin-top:10px}
   /* 📨 طلبات الانضمام */
   .jr-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .jr-filters button{padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:.85rem;font-family:inherit;cursor:pointer}
@@ -924,12 +929,17 @@ function renderTechs(){
   const techs=STAFF.filter(s=>s.role==='tech'&&!s.provider_code&&s.status!=='unassigned'&&s.status!=='rejected'&&s.status!=='pending');
   const rows=techs.length? techs.map(t=>{
     const off=t.active===false;
-    return `<div class="rline">
+    return `<div class="rline" style="flex-wrap:wrap">
       <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?LX('⛔ موقوف','⛔ Suspended'):LX('✅ فعّال','✅ Active')} · 📱 ${esc(t.phone||'—')}</small></div>
       <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
       <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
+      <div style="flex-basis:100%">
+        <div class="trds">${TRADES.map(([k,ar])=>`<button class="trd ${techTrades(t).includes(k)?'on':''}" onclick="toggleTrade('${t.user_id}','${k}')">${LX(ar[0],ar[1])}</button>`).join('')}</div>
+      </div>
     </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
-  return `${renderJoinPanelA()}${rows}
+  return `${renderJoinPanelA()}
+    <p class="trd-h">${LX('حدد تخصص كل فني. كل فني بتخصص معين يزيد حجزًا متزامنًا واحدًا لنفس التخصص في جدول العملاء.','Set the trades for each technician. Each technician adds one more overlapping booking for that trade.')}</p>
+    ${rows}
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
       <b style="display:block;margin-bottom:6px">➕ إضافة فني</b>
       <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله وكلمة المرور — بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.</p>
@@ -938,6 +948,17 @@ function renderTechs(){
       <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٦ خانات فأكثر)" /></div>
       <button class="sbtn ok" style="width:100%;margin-top:6px" onclick="addTech()">إنشاء حساب الفني</button>
     </div>`;
+}
+/* ═══════ 🧰 تخصصات الفنيين: تحدد سعة الحجز المتزامن لكل تخصص ═══════ */
+const TRADES=[['plumb',['سباكة','Plumbing']],['elec',['كهرباء','Electrical']],['ac',['تكييف','AC']],['carp',['نجارة','Carpentry']],['paint',['دهان','Painting']],['appl',['أجهزة','Appliances']],['clean',['تنظيف','Cleaning']],['gen',['عام','General']]];
+function techTrades(t){ return Array.isArray(t&&t.trades)?t.trades:[]; }
+async function toggleTrade(uid, key){
+  const t=STAFF.find(s=>s.user_id===uid); if(!t) return;
+  const cur=techTrades(t), next=cur.includes(key)?cur.filter(x=>x!==key):cur.concat([key]);
+  t.trades=next; render();
+  const r=await sb.from('khafet_staff').update({trades:next}).eq('user_id',uid).select('user_id');
+  if(r.error||!r.data||!r.data.length){ t.trades=cur; render(); toast('⚠️ '+LX('ما انحفظ التخصص','Trade not saved')); return; }
+  toast(LX('✅ انحفظ','✅ Saved'));
 }
 async function addTech(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
