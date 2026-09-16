@@ -167,6 +167,16 @@
   .inv-row .ir-qty span{min-width:30px;text-align:center;font-weight:900;font-size:1.15rem}
   .inv-row .ir-price{width:92px;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:900;text-align:center;font-size:1.1rem}
   .inv-row .ir-del{color:var(--danger);font-size:1.3rem;padding:6px}
+  /* بنود الحجز: القطعة المحجوزة لها ✕ (العميل عنده الغرض) وخيارات اللون */
+  .inv-row .ir-bk{flex:1;min-width:0}
+  .inv-row .ir-img{width:46px;height:46px;border-radius:10px;object-fit:contain;border:1px solid var(--line);background:#fff;flex-shrink:0}
+  /* إعلان الإدارة للفنيين */
+  .rz-banner{margin:12px 0 0;background:#FFF3C4;border:1.5px solid var(--gold);border-radius:14px;padding:11px 14px;font-weight:800;font-size:.95rem;line-height:1.6}
+  .inv-row .ir-bk .ir-name{display:block}
+  .ir-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .ir-opts button{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:4px 11px;font-size:.82rem;font-weight:800;font-family:inherit;cursor:pointer}
+  .ir-opts button.on{background:var(--gold);border-color:var(--gold);color:#1a1408}
+  .inv-pay .refund{color:#0b7a3b;font-weight:900}
   .inv-empty{color:var(--muted);text-align:center;padding:20px;font-weight:700;font-size:1.05rem}
   .inv-disc{margin-top:12px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.35);border-radius:10px;padding:9px 13px;color:#5ee68f;font-weight:800;font-size:.92rem}
   .inv-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:14px;border-top:2px solid var(--line);font-weight:900;font-size:1.5rem}
@@ -860,6 +870,7 @@ async function loadPrices(){
 }
 /* ---- المخزن (يشترك مع لوحة المؤسسة) ---- */
 let INV=[], showInv=false;
+let PARTSPUB=[];   // خيارات القطع لكل خدمة (لمبة أبيض/أصفر...) من khafet_parts_public
 let MYROLE=(()=>{ try{ return localStorage.getItem('khafet_role')||''; }catch(e){ return ''; } })(), invLoaded=false, invCat3='all';
 try{ const c=JSON.parse(localStorage.getItem('kh_inv_cache')||'null'); if(Array.isArray(c)&&c.length) INV=c; }catch(e){}   // تظهر الأصناف فورًا من آخر نسخة محفوظة
 /* المستودع الاحترافي: بحث + فلترة بالحالة */
@@ -869,7 +880,12 @@ function setInvSearch(v){ invSearch=(v||'').trim(); render(); }
 function setInvFilter(f){ invFilter=f; render(); }
 async function loadOrg(){ if(!cloudReady) return; try{ const r=await sb.rpc('my_org'); if(!r.error){ const v=r.data||''; if(v!==MYORG){ MYORG=v; try{ localStorage.setItem('khafet_org',MYORG); }catch(e){} INV=[]; invLoaded=false; } }
     const p=/^provider:(.+)$/.exec(MYORG||''); if(p){ try{ const pr=await sb.from('khafet_providers').select('name').eq('id',p[1]).maybeSingle(); window.MYORG_NAME=(pr.data&&pr.data.name)||''; }catch(e){} } }catch(e){} }
-async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const src=invSrc(); const iv=await sb.from(src.table).select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; invCache3(); } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; } }
+async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const src=invSrc(); const iv=await sb.from(src.table).select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; invCache3(); } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; }
+  try{ const pp=await sb.from('khafet_parts_public').select('*'); if(!pp.error && Array.isArray(pp.data)) PARTSPUB=pp.data; }catch(e){}
+  try{ const st=await sb.from('khafet_settings').select('key,value'); if(!st.error && Array.isArray(st.data)){ KHSET={}; st.data.forEach(x=>{ KHSET[x.key]=x.value; }); if(loggedIn) render(); } }catch(e){} }
+/* إعدادات الإدارة اللي تهم رزق: إعلان الفنيين */
+let KHSET={};
+function rizqBanner(){ const t=String(KHSET.rizq_announcement||'').trim(); return t?`<div class="rz-banner">📣 ${esc(t)}</div>`:''; }
 function toggleInv(){ showInv=!showInv; render(); }
 /* ═══ صندوق الصادر: أي حفظ يفشل (نت ضعيف) يُحفظ في الجهاز ويُعاد إرساله تلقائيًا، و«تم» لا تظهر إلا بعد نجاح الحفظ فعلًا ═══ */
 const OUTBOX_KEY='kh_outbox';
@@ -1114,9 +1130,28 @@ async function createFollowup(id){
 let invEditing=null, invItems=[];
 function svcName2(s){ if(lang==='ar') return s.name; const tr=SVC_I18N[s.id]; return (tr&&tr[lang])?tr[lang]:s.name; }
 function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(s) return svcName2(s); } return it.name; }
+/* القطع المحجوزة اللي شالها الفني لأن العميل عنده الغرض (يرجع مبلغها للعميل)، وفرق سعر تبديل اللون */
+let invDrops=[], invAdj=0;
+function partOpts(stockId){ const row=(PARTSPUB||[]).find(r=>r.item_id===stockId); if(!row) return []; return (PARTSPUB||[]).filter(r=>r.service_id===row.service_id && r.group_key===row.group_key); }
+function invDropBooked(i){
+  captureInvPrices(); const it=invItems[i]; if(!it||!it.booked||it.id!=='stock') return; const A=lang==='ar';
+  const amt=Math.round((+it.price||0)*(+it.qty||1)*100)/100;
+  if(!confirm(A?'العميل عنده «'+it.name+'» وما يحتاجها؟ تنشال من الفاتورة ويرجع له '+ar(amt)+' ر.س':'Customer already has "'+it.name+'"? It is removed and '+amt+' SAR goes back to the customer')) return;
+  if(it.deducted>0){ const inv=INV.find(x=>x.id===it.stockId); if(inv){ inv.qty=(+inv.qty||0)+it.deducted; invSaveQty(inv); logStock(inv, it.deducted, (A?'إرجاع — فاتورة ':'return — ')+invEditing); } }
+  invDrops.push({name:it.name, stockId:it.stockId||null, qty:+it.qty||1, amount:amt});
+  invItems.splice(i,1); renderInvoice();
+}
+function invSwap(i,itemId){
+  captureInvPrices(); const it=invItems[i]; if(!it||it.stockId===itemId) return; const nv=INV.find(x=>x.id===itemId); if(!nv) return;
+  if(it.deducted>0){ const old=INV.find(x=>x.id===it.stockId); if(old){ old.qty=(+old.qty||0)+it.deducted; invSaveQty(old); } it.deducted=0; }
+  const np=+nv.sell_price||0; invAdj += (np-(+it.price||0))*(+it.qty||1);
+  it.stockId=itemId; it.name=nv.name; it.img=nv.image_url||''; it.price=np; renderInvoice();
+}
+function invRefund(){ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; return Math.max(0, Math.round((paid-invGrand())*100)/100); }
 function openInvoice(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   invEditing=id;
+  invDrops=(o.invoice&&Array.isArray(o.invoice.dropped))?o.invoice.dropped.slice():[]; invAdj=(o.invoice&&+o.invoice.adj)||0;
   invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})) : [];
   // فاتورة جديدة: خدمات الحجز تنضاف مقفولة (أجرتها محسوبة وقت الحجز)، والفني يضيف الأغراض
   // حجز الطاقم: خدمات الحجز من الأقسام تنضاف للفاتورة جاهزة (غير مقفولة)
@@ -1134,7 +1169,14 @@ function openInvoice(id){
 /* حساب الفاتورة: أجرة الحجز الصافية + الإضافات */
 function invOrder(){ return ORDERS.find(x=>x.id===invEditing); }
 function invExtras(){ return invItems.filter(it=>!it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
-function invBookedNet(){ const o=invOrder(); if(!invItems.some(it=>it.booked)) return 0; return o&&o.bookedFinal>0 ? +o.bookedFinal : Math.round(invItems.filter(it=>it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0)*(1-invPct()/100)); }
+function invBookedNet(){
+  const o=invOrder(); const f=1-invPct()/100;
+  const dropped=invDrops.reduce((a,d)=>a+(+d.amount||0),0);
+  if(!invItems.some(it=>it.booked) && !dropped) return 0;
+  // أجرة الحجز المدفوعة ناقص القطع اللي العميل عنده، زائد فرق تبديل اللون
+  if(o && o.bookedFinal>0) return Math.max(0, Math.round((+o.bookedFinal - dropped*f + invAdj*f)*100)/100);
+  return Math.round(invItems.filter(it=>it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0)*f);
+}
 function invGrand(){ return Math.round((invBookedNet()+invExtras())*100)/100; }
 function invDueNow(){ const o=invOrder(); return Math.max(0, invGrand()-(o?(+o.paidAmount||0):0)); }
 /* قطعة من المستودع: تدخل الفاتورة بسعر البيع، وتنخصم عند الحفظ */
@@ -1201,37 +1243,65 @@ async function saveInvoice(){
       }
     }
   }
-  const invoice={ v:2, items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})), subtotal:invTotal(), discountPct:invPct(), total:invGrand(), createdAt:Date.now() };
+  const invoice={ v:2, items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})), subtotal:invTotal(), discountPct:invPct(), total:invGrand(), dropped:invDrops, adj:invAdj, refund:invRefund(), createdAt:Date.now() };
   o.invoice=invoice;
   let ok=true;
   if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{invoice:invoice, final_price:+invoice.total||0}}); o.finalPrice=+invoice.total||0; }
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===o.id); if(tt){ tt.invoice=invoice; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
   window._invSaving=false;
   const dueAfter=Math.max(0, invoice.total-(+o.paidAmount||0));
-  if(ok) toast(dueAfter>0 ? t('invoiceSent')+' · '+lg('dueNow')+' '+ar(dueAfter)+' '+lg('cur') : t('invoiceSent'));
+  if(ok) toast(dueAfter>0 ? t('invoiceSent')+' · '+lg('dueNow')+' '+ar(dueAfter)+' '+lg('cur') : (invoice.refund>0 ? t('invoiceSent')+' · '+(A?'يرجع للعميل ':'refund to customer ')+ar(invoice.refund)+' '+lg('cur') : t('invoiceSent')));
   closeInvoice(); render();
 }
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; const tmp={...o, invoice:{items:invItems,subtotal:invTotal(),discountPct:invPct(),total:invNet()}}; printInvoiceDoc(tmp); }
+/* الفاتورة المطبوعة: أقسام (الشغل، القطع، الرسوم) مع صور القطع، ثم المجموع والمدفوع والمتبقي والضمان (نفس تصميم تطبيق العميل) */
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
-  const rows=(inv.items||[]).map(it=>`<tr><td>${esc(it.name)}</td><td>${arNum(it.qty||1)}</td><td>${arNum(+it.price||0)} ر.س</td><td>${arNum((+it.price||0)*(+it.qty||1))} ر.س</td></tr>`).join('');
+  const kind=it=>{ if(!it) return 'svc'; if(it.id==='fee') return 'fee'; if(it.id==='stock'||it.stockId||it.part||it.id==='part'||String(it.id||'').startsWith('part:')) return 'part'; return 'svc'; };
+  const g={svc:[],part:[],fee:[]}; (inv.items||[]).forEach(it=>g[kind(it)].push(it));
+  const m=v=>arNum(Math.round((+v||0)*100)/100)+' ر.س';
+  const sub=(inv.items||[]).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); const total=(+inv.total>0)?+inv.total:sub; const disc=inv.discountPct>0?Math.max(0,sub-total):0;
+  const paid=+o.paidAmount||0, due=Math.max(0,total-paid);
+  const ico=it=>{ const s=it&&it.id?svc(it.id):null; return (s&&s.ico)||'🔧'; };
+  const row=(it,k)=>{ const q=+it.qty||1,p=+it.price||0; const media=k==='part'?(it.img?`<img src="${esc(it.img)}" alt="">`:'🔩'):(k==='fee'?'🚚':ico(it));
+    return `<div class="r"><span class="im">${media}</span><span class="nm"><b>${esc(itemDisplay(it))}</b><small>${q>1?arNum(q)+' × '+m(p):m(p)}</small></span><span class="tt">${m(p*q)}</span></div>`; };
+  const sec=(t,rows,k)=>rows.length?`<div class="sec">${t}</div>${rows.map(r=>row(r,k)).join('')}`:'';
+  const drops=(inv.dropped||[]); const refund=+inv.refund||Math.max(0,paid-total);
   const d=new Date(); const ds=arNum(d.getDate())+'/'+arNum(d.getMonth()+1)+'/'+arNum(d.getFullYear());
-  const html='<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>فاتورة '+o.id+'</title>'
-   +'<style>body{font-family:Cairo,system-ui,Arial,sans-serif;padding:24px;color:#141414;max-width:520px;margin:0 auto}'
-   +'.h{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #F5C518;padding-bottom:12px}'
-   +'.h .b{font-size:1.5rem;font-weight:900}.h .b span{background:#F5C518;padding:2px 10px;border-radius:8px}'
-   +'.meta{color:#555;font-size:.9rem;margin:12px 0}.meta div{margin:3px 0}'
-   +'table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:right;padding:9px 6px;border-bottom:1px solid #eee;font-size:.92rem}'
-   +'th{background:#FBF3D0;font-weight:800}.tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.2rem;margin-top:14px;border-top:2px solid #141414;padding-top:10px}'
-   +'.ft{margin-top:22px;text-align:center;color:#888;font-size:.85rem}@media print{.noprint{display:none}}</style></head><body>'
-   +'<div class="h"><div class="b">🔧 <span>'+BRAND+'</span></div><div style="text-align:left"><b>فاتورة</b><br>'+o.id+'</div></div>'
-   +'<div class="meta"><div>العميل: '+esc(o.customer.name)+' · '+esc(o.customer.phone)+'</div><div>التاريخ: '+ds+'</div></div>'
-   +'<table><thead><tr><th>الخدمة</th><th>العدد</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>'+rows+'</tbody></table>'
-   +((inv.discountPct>0)?('<div style="display:flex;justify-content:space-between;margin-top:10px;color:#555"><span>المجموع</span><span>'+arNum(inv.subtotal||0)+' ر.س</span></div><div style="display:flex;justify-content:space-between;color:#0b7a3b;font-weight:800"><span>🎟️ خصم '+arNum(inv.discountPct)+'٪</span><span>- '+arNum((inv.subtotal||0)-(inv.total||0))+' ر.س</span></div>'):'')
-   +'<div class="tot"><span>الإجمالي</span><span>'+arNum(inv.total||0)+' ر.س</span></div>'
-   +'<div class="ft">شكراً لتعاملك مع '+BRAND+' · '+PHONE+'</div>'
-   +'<div class="noprint" style="text-align:center;margin-top:18px"><button onclick="print()" style="padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer">🖨️ طباعة</button></div>'
-   +'</body></html>';
+  const a=o.address||{}; const addr=[a.city, a.house?'منزل '+a.house:''].filter(Boolean).join(' · ');
+  const html=`<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>فاتورة ${esc(o.id)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{font-family:Cairo,system-ui,Arial,sans-serif;margin:0 auto;padding:0 0 22px;color:#1A1712;background:#fff;max-width:560px}
+.top{background:#F5C518;padding:20px 18px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-radius:0 0 22px 22px}
+.brand{display:flex;align-items:center;gap:10px}.brand .lg{width:50px;height:50px;border-radius:14px;background:#1A1712;color:#F5C518;display:grid;place-items:center;font-size:1.5rem}
+.brand b{font-size:1.4rem;font-weight:900;display:block;line-height:1.1}.brand small{color:#3d3a30;font-weight:700;font-size:.78rem}
+.no{text-align:left}.no b{display:block;font-size:1.05rem;font-weight:900}.no small{color:#3d3a30;font-weight:700;font-size:.8rem}
+.wrap{padding:0 18px}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:16px 0 6px;font-size:.88rem;font-weight:700;color:#3d3a30}.meta span{color:#6E685B;font-weight:700;display:block;font-size:.72rem}
+.sec{display:flex;align-items:center;gap:8px;margin:14px 0 2px;font-size:.8rem;font-weight:800;color:#6E685B}.sec::before{content:"";width:9px;height:9px;border-radius:50%;background:#F5C518}
+.r{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed #EFE9D6}
+.r .im{width:62px;height:62px;border-radius:14px;border:1px solid #EFE9D6;background:#FBF7E8;display:grid;place-items:center;font-size:1.7rem;overflow:hidden;flex-shrink:0}
+.r .im img{width:100%;height:100%;object-fit:contain;background:#fff}
+.r .nm{flex:1;min-width:0}.r .nm b{display:block;font-size:.95rem;font-weight:800;line-height:1.3}.r .nm small{color:#6E685B;font-weight:700;font-size:.78rem}
+.r .tt{font-weight:900;white-space:nowrap;font-size:.95rem}
+.sum{margin-top:14px;border-top:2px solid #1A1712;padding-top:8px}.sum div{display:flex;justify-content:space-between;padding:4px 0;font-size:.92rem;font-weight:700;color:#3d3a30}
+.sum .tot{font-size:1.3rem;font-weight:900;color:#1A1712}.sum .g{color:#0b7a3b}.sum .due{color:#0b3d6b;font-weight:900;font-size:1rem;background:#EEF6FF;border-radius:10px;padding:8px 10px;margin-top:6px}.sum .ok{color:#0b7a3b;font-weight:900}
+.wr{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;font-weight:800}.wr span{background:#E6F4EA;color:#166534;border-radius:999px;padding:4px 11px}
+.ft{margin-top:20px;text-align:center;color:#888;font-size:.82rem;font-weight:700}
+.noprint{text-align:center;margin-top:16px}.noprint button{padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit}
+@media print{.noprint{display:none}.top{border-radius:0}}
+</style></head><body>
+<div class="top"><div class="brand"><span class="lg">🔧</span><div><b>${BRAND}</b><small>للصيانة المنزلية · الخبر</small></div></div><div class="no"><b>فاتورة ${esc(o.id)}</b><small>${ds}</small></div></div>
+<div class="wrap">
+<div class="meta"><div><span>العميل</span>${esc((o.customer||{}).name||'')}</div><div><span>الجوال</span>${esc((o.customer||{}).phone||'')}</div>${addr?`<div><span>العنوان</span>${esc(addr)}</div>`:''}${o.date?`<div><span>تاريخ الخدمة</span>${esc(o.date)}</div>`:''}</div>
+${sec('الشغل',g.svc,'svc')}${sec('القطع والأغراض',g.part,'part')}${sec('الرسوم',g.fee,'fee')}
+<div class="sum">${disc>0?`<div><span>المجموع</span><span>${m(sub)}</span></div><div class="g"><span>🎟️ خصم ${arNum(inv.discountPct)}٪</span><span>− ${m(disc)}</span></div>`:''}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
+<div class="wr"><span>🛡️ ضمان الشغل ${o.warrantyDays>0?arNum(o.warrantyDays)+' يوم':'٧ أيام'}</span>${g.part.length?'<span>🔩 ضمان القطع سنتان</span>':''}</div>
+<div class="ft">شكراً لتعاملك مع ${BRAND} · ${PHONE}</div>
+<div class="noprint"><button onclick="print()">🖨️ طباعة</button></div>
+</div>
+</body></html>`;
   const w=window.open('','_blank'); if(!w){ toast(lg('popup')); return; } w.document.write(html); w.document.close();
 }
 function renderInvoice(){
@@ -1241,15 +1311,23 @@ function renderInvoice(){
   const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} — ${ar(s.price)}</option>`).join('');
   const invOpts=(INV||[]).map(it=>`<option value="${it.id}">${esc(it.name)} — ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
   const rows = invItems.length ? invItems.map((it,i)=>{
-    if(it.booked) return `<div class="inv-row">
-      <span class="ir-name">${esc(itemDisplay(it))}<span class="ir-lock">🔒 ${lg('booked')}</span></span>
+    if(it.booked){
+      const isPart=it.id==='stock'&&it.stockId; const opts=isPart?partOpts(it.stockId):[];
+      return `<div class="inv-row">
+      ${isPart&&it.img?`<img class="ir-img" src="${esc(it.img)}" alt="">`:''}
+      <div class="ir-bk"><span class="ir-name">${isPart&&!it.img?'📦 ':''}${esc(itemDisplay(it))}<span class="ir-lock">🔒 ${lg('booked')}</span></span>
+        ${opts.length>1?`<div class="ir-opts">${opts.map(op=>`<button type="button" class="${op.item_id===it.stockId?'on':''}" onclick="invSwap(${i},'${op.item_id}')">${esc(op.label||op.item_name||'')}</button>`).join('')}</div>`:''}
+      </div>
       <span class="ir-static">×${ar(it.qty)}</span>
+      ${isPart?`<button class="ir-del" title="${A?'العميل عنده الغرض':'Customer has it'}" onclick="invDropBooked(${i})">✕</button>`:''}
     </div>`;
+    }
     const editable=(it.id==='part'||it.id==='custom');
     const nameCell = editable
       ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
-      : `<span class="ir-name">${it.id==='stock'?'📦 ':''}${esc(itemDisplay(it))}</span>`;
+      : `<span class="ir-name">${it.id==='stock'&&!it.img?'📦 ':''}${esc(itemDisplay(it))}</span>`;
     return `<div class="inv-row">
+      ${it.id==='stock'&&it.img?`<img class="ir-img" src="${esc(it.img)}" alt="">`:''}
       ${nameCell}
       <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
       <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />
@@ -1271,8 +1349,9 @@ function renderInvoice(){
     ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=invBookedNet(); if(!bk&&!paid) return ''; return `<div class="inv-pay">
       ${bk?`<div><span>${lg('bookedFee')}</span><span>${ar(bk)} ${lg('cur')}</span></div>`:''}
       <div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>
+      ${invDrops.length?`<div><span>↩️ ${A?'أغراض عند العميل':'Customer has'}</span><span>${esc(invDrops.map(d=>d.name).join('، '))}</span></div>`:''}
       ${paid?`<div><span>${lg('paidLbl')}</span><span>${ar(paid)} ${lg('cur')}</span></div>`:''}
-      <div class="due"><span>${lg('dueNow')}</span><span>${ar(invDueNow())} ${lg('cur')}</span></div>
+      ${invRefund()>0?`<div class="refund"><span>${A?'يرجع للعميل':'Refund to customer'}</span><span>${ar(invRefund())} ${lg('cur')}</span></div>`:`<div class="due"><span>${lg('dueNow')}</span><span>${ar(invDueNow())} ${lg('cur')}</span></div>`}
     </div>`; })()}
     <div class="inv-acts">
       <button class="tbtn done" onclick="saveInvoice()">${t('saveSend')}</button>
@@ -2162,6 +2241,7 @@ function render(){
 
   // الهيرو (رئيسية فقط) + محتوى الطلبات
   const heroHTML=`
+    ${rizqBanner()}
     <div class="hero">
       <h1>${t('title')}</h1>
       <p>${t('sub')}</p>

@@ -141,6 +141,31 @@
   .jr-st{padding:3px 11px;border-radius:999px;font-size:.78rem;font-weight:800;white-space:nowrap}
   .jr-st.new{background:var(--gold-soft);color:var(--gold-deep)} .jr-st.contacted{background:#e0ecff;color:#1d4ed8}
   .jr-st.accepted{background:#e3f5ea;color:#15803d} .jr-st.rejected{background:#fde8e8;color:#b91c1c}
+  .jr-st.waitlist{background:#f1e9ff;color:#7c3aed}
+  /* درجة الجودة وترتيب القائمة */
+  .jr-score{display:inline-flex;align-items:center;gap:6px;background:#f7f4ea;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.76rem;font-weight:800;color:var(--muted);margin-inline-start:6px;white-space:nowrap}
+  .jr-score b{color:var(--gold-deep)}
+  .jr-rank{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:.8rem;font-weight:900;margin-inline-end:6px}
+  /* مؤشر الطلبات لكل فني هذا الشهر */
+  .cap{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+  .cap-c{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .cap-c b{display:block;font-size:.92rem}
+  .cap-c .n{font-size:1.4rem;font-weight:900;line-height:1.2;margin-top:2px}
+  .cap-c small{display:block;color:var(--muted);font-size:.74rem;font-weight:700;line-height:1.4}
+  .cap-c.ok .n{color:#15803d} .cap-c.mid .n{color:#b45309} .cap-c.hot{border-color:#fca5a5;background:#fff5f5} .cap-c.hot .n{color:#b91c1c}
+  .cap-c.none{border-style:dashed} .cap-c.none .n{color:var(--muted)}
+  .cap-h{font-weight:800;margin:0 0 8px;font-size:.95rem}
+  .cap-note{color:var(--muted);font-size:.8rem;font-weight:700;margin:-4px 0 12px;line-height:1.6}
+  .cg-eye{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:.76rem;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap}
+  .cg-eye.off{background:#fde8e8;color:#b91c1c;border-color:#fca5a5}
+  .cg-warn{display:inline-block;font-size:.72rem;font-weight:800;color:#b45309;background:#fff4e0;border-radius:999px;padding:1px 8px;margin-inline-start:6px}
+  /* الإعدادات */
+  .st-g{margin-top:12px}.st-g h3{margin:0 0 4px;font-size:1.02rem}
+  .st-d{color:var(--muted);font-size:.82rem;font-weight:700;margin:0 0 10px;line-height:1.6}
+  .st-f{display:block;font-size:.84rem;font-weight:800;margin:8px 0}
+  .st-f input,.st-f textarea{display:block;width:100%;margin-top:4px;padding:10px 12px;border:1.5px solid var(--line);border-radius:11px;font:inherit;font-size:1rem;background:#fff}
+  .st-sw{display:flex;align-items:center;gap:10px;font-size:.9rem;font-weight:800;margin:10px 0;cursor:pointer}
+  .st-sw input{width:22px;height:22px;accent-color:var(--gold)}
   .jr-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .jr-meta span{background:var(--panel,#f3eee2);border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700}
   .jr-contact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
@@ -738,7 +763,8 @@ function renderCatalogEditor(){
       </div>`).join('');
     return `<div class="cg-cat ${c.active?'':'off'}">
       <div class="cg-head">
-        <button class="cg-main" onclick="editCategory('${esc(c.id)}')"><span class="cg-ic big">${esc(c.icon||'🛠️')}</span><span class="cg-t"><b>${esc(c.name)}</b><small>${c.featured?LX('⭐ في الواجهة تحت صيانة','⭐ On home under Maintenance'):LX('ضمن باقي خدمات المنزل','In other home services')}${c.active?'':' · '+LX('مخفي','Hidden')} · ${LX(ar(svcs.length)+' خدمة',svcs.length+' services')}</small></span></button>
+        <button class="cg-main" onclick="editCategory('${esc(c.id)}')"><span class="cg-ic big">${esc(c.icon||'🛠️')}</span><span class="cg-t"><b>${esc(c.name)}${(c.active&&!activeTechsFor(c.id).length)?`<span class="cg-warn">${LX('بدون فني نشط','No active technician')}</span>`:''}</b><small>${c.featured?LX('⭐ في الواجهة تحت صيانة','⭐ On home under Maintenance'):LX('ضمن باقي خدمات المنزل','In other home services')}${c.active?'':' · '+LX('مخفي عن العملاء','Hidden from customers')} · ${LX(ar(svcs.length)+' خدمة',svcs.length+' services')} · ${LX(ar(activeTechsFor(c.id).length)+' فني',activeTechsFor(c.id).length+' techs')}</small></span></button>
+        <button class="cg-eye ${c.active?'':'off'}" onclick="toggleCatActive('${esc(c.id)}',${c.active?'false':'true'})">${c.active?'👁️ '+LX('ظاهر','Visible'):'🚫 '+LX('مخفي','Hidden')}</button>
         <span class="cg-ord"><button onclick="moveCatalog('cat','${esc(c.id)}',-1)" ${ci===0?'disabled':''}>▲</button><button onclick="moveCatalog('cat','${esc(c.id)}',1)" ${ci===cats.length-1?'disabled':''}>▼</button></span>
       </div>
       <div class="cg-list">${rows||`<div class="cg-empty">${LX('ما فيه خدمات بعد','No services yet')}</div>`}</div>
@@ -746,6 +772,14 @@ function renderCatalogEditor(){
     </div>`;
   }).join('');
   return `<button class="sbtn ok" style="width:100%;padding:13px;margin-bottom:12px" onclick="editCategory('')">➕ ${LX('قسم جديد','New section')}</button>${html}`;
+}
+/* إظهار أو إخفاء قسم عن العملاء بضغطة (القسم اللي ما له فني نشط الأفضل يكون مخفي) */
+async function toggleCatActive(id, on){
+  const c=CATALOG.cats.find(x=>x.id===id); if(!c) return;
+  const prev=c.active; c.active=!!on; render();
+  const { error }=await sb.from('khafet_categories').update({active:!!on}).eq('id',id);
+  if(error){ c.active=prev; render(); toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
+  toast(on?LX('👁️ صار القسم ظاهر للعملاء','👁️ Section visible to customers'):LX('🚫 انخفى القسم عن العملاء','🚫 Section hidden from customers'));
 }
 function cgModal(html){ closeCg(); const m=document.createElement('div'); m.className='cg-overlay'; m.id='cgModal'; m.innerHTML=`<div class="cg-sheet" dir="${_uiEN()?'ltr':'rtl'}">${html}</div>`; m.addEventListener('click',e=>{ if(e.target===m) closeCg(); }); document.body.appendChild(m); }
 function closeCg(){ const m=document.getElementById('cgModal'); if(m) m.remove(); }
@@ -986,10 +1020,11 @@ function renderTechs(){
       <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
       <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
       <div style="flex-basis:100%">
-        <div class="trds">${TRADES.map(([k,ar])=>`<button class="trd ${techTrades(t).includes(k)?'on':''}" onclick="toggleTrade('${t.user_id}','${k}')">${LX(ar[0],ar[1])}</button>`).join('')}</div>
+        <div class="trds">${tradeList().map(([k,ar])=>`<button class="trd ${techTrades(t).includes(k)?'on':''}" onclick="toggleTrade('${t.user_id}','${k}')">${LX(ar[0],ar[1])}</button>`).join('')}</div>
       </div>
     </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
   return `${renderJoinPanelA()}
+    ${renderCapacity()}
     <p class="trd-h">${LX('حدد تخصص كل فني. كل فني بتخصص معين يزيد حجزًا متزامنًا واحدًا لنفس التخصص في جدول العملاء.','Set the trades for each technician. Each technician adds one more overlapping booking for that trade.')}</p>
     ${rows}
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
@@ -1002,7 +1037,129 @@ function renderTechs(){
     </div>`;
 }
 /* ═══════ 🧰 تخصصات الفنيين: تحدد سعة الحجز المتزامن لكل تخصص ═══════ */
-const TRADES=[['plumb',['سباكة','Plumbing']],['elec',['كهرباء','Electrical']],['ac',['تكييف','AC']],['carp',['نجارة','Carpentry']],['paint',['دهان','Painting']],['appl',['أجهزة','Appliances']],['clean',['تنظيف','Cleaning']],['gen',['عام','General']]];
+const TRADES_FALLBACK=[['plumb',['سباكة','Plumbing']],['elec',['كهرباء','Electrical']],['ac',['تكييف','AC']],['carp',['نجارة','Carpentry']],['paint',['دهان','Painting']],['appl',['أجهزة','Appliances']],['clean',['تنظيف','Cleaning']],['gen',['عام','General']]];
+/* التخصصات = أقسام الكتالوج نفسها (أي قسم جديد يصير تخصصًا يمكن اختياره للفني) */
+function tradeList(){ return (CATALOG.loaded&&CATALOG.cats.length) ? [...CATALOG.cats].sort(bySort).map(c=>[c.id,[c.name,c.name_en||c.name]]) : TRADES_FALLBACK; }
+function activeTechsFor(tradeKey){ return STAFF.filter(s=>s.role==='tech'&&!s.provider_code&&s.active!==false&&['active',undefined,null,''].includes(s.status)&&techTrades(s).includes(tradeKey)); }
+/* الطلبات هذا الشهر لكل تخصص: من خدمات الطلب → قسمها */
+function ordersThisMonthByTrade(){
+  const now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  const byTrade={};
+  ORDERS.forEach(o=>{
+    if(!o||o.status==='cancelled') return;
+    const d=o.date?new Date(o.date):null; if(!d||d.getFullYear()!==y||d.getMonth()!==m) return;
+    const seen=new Set();
+    (o.items||[]).forEach(it=>{ const s=CATALOG.svcs.find(x=>x.id===it.id); const cat=s?s.cat_id:null; if(cat&&!seen.has(cat)){ seen.add(cat); byTrade[cat]=(byTrade[cat]||0)+1; } });
+  });
+  return byTrade;
+}
+/* مؤشر «الطلبات لكل فني هذا الشهر»: أقل من 10 هادي، 10 إلى 20 مناسب، أكثر من 20 وقت تفعيل فني جديد */
+function renderCapacity(){
+  if(!CATALOG.loaded||!CATALOG.cats.length) return '';
+  const by=ordersThisMonthByTrade();
+  const wait=JOINREQ.filter(x=>x.status==='waitlist');
+  const cards=[...CATALOG.cats].sort(bySort).map(c=>{
+    const techs=activeTechsFor(c.id).length, orders=by[c.id]||0, per=techs?Math.round(orders/techs):null;
+    const waiting=wait.filter(x=>(x.categories||[]).includes(c.name)).length;
+    let cls='none', msg=LX('ما فيه فني نشط','No active technician'), val='—';
+    const LO=stNum('cap_low',10), HI=stNum('cap_high',20);
+    if(techs){ val=ar(per); if(per>HI){ cls='hot'; msg=LX('وقت تفعيل فني جديد','Time to activate a new technician'); } else if(per>=LO){ cls='mid'; msg=LX('مناسب، راقب الأسبوع الجاي','Fine, watch next week'); } else { cls='ok'; msg=LX('هادي، لا تضيف أحد','Quiet, do not add anyone'); } }
+    else if(!c.active) msg=LX('مخفي عن العملاء','Hidden from customers');
+    return `<div class="cap-c ${cls}"><b>${esc(c.icon||'')} ${esc(c.name)}</b><div class="n">${val}</div><small>${LX(ar(orders)+' طلب / '+ar(techs)+' فني',orders+' orders / '+techs+' techs')}<br>${msg}${waiting?'<br>⏳ '+LX(ar(waiting)+' على القائمة',waiting+' on the waitlist'):''}</small></div>`;
+  }).join('');
+  return `<p class="cap-h">📊 ${LX('الطلبات لكل فني هذا الشهر','Orders per technician this month')}</p><div class="cap">${cards}</div><p class="cap-note">${LX('القاعدة: فني واحد لكل '+ar(stNum('cap_low',10))+' إلى '+ar(stNum('cap_high',20))+' طلب بالشهر. لما يتجاوز التخصص '+ar(stNum('cap_high',20))+' فعّل أول واحد من القائمة، وقبلها خلّ الباقي ينتظرون. تغيّر الأرقام من الإعدادات.','Rule of thumb: one technician per '+stNum('cap_low',10)+' to '+stNum('cap_high',20)+' orders a month. Above '+stNum('cap_high',20)+', activate the top of the waitlist. Change the numbers in Settings.')}</p>`;
+}
+
+/* ═══════ ⚙️ إعدادات المؤسسة: كل الأرقام اللي كانت ثابتة صارت من هنا (khafet_settings) ═══════ */
+let SETTINGS={}, settingsLoaded=false;
+function stNum(k,d){ const v=SETTINGS[k]; const n=parseFloat(v); return isFinite(n)?n:d; }
+function stStr(k,d){ return (SETTINGS[k]!=null&&SETTINGS[k]!=='')?String(SETTINGS[k]):d; }
+function stJson(k,d){ try{ const v=JSON.parse(SETTINGS[k]); return v==null?d:v; }catch(e){ return d; } }
+async function loadSettings(){ if(!cloudReady) return; try{ const r=await sb.from('khafet_settings').select('key,value'); if(!r.error){ SETTINGS={}; (r.data||[]).forEach(x=>{ SETTINGS[x.key]=x.value; }); settingsLoaded=true; } }catch(e){} }
+const ST_GROUPS=[
+  { id:'commission', t:['💰 العمولة','💰 Commission'], d:['نسبتك من أجرة اليد فقط، لا على القطع ولا التوصيل. تُخصم تلقائيًا لأن العميل يدفع لخافت.','Your share of labour only, never parts or delivery. Deducted automatically because the customer pays Khafet.'], f:[
+    ['commission_tech_pct','فني مستقل (%)','Independent technician (%)','num'],
+    ['commission_provider_pct','مؤسسة أو مزود (%)','Company or provider (%)','num'],
+    ['commission_first_jobs','أول كم طلب للفني الجديد بنسبة مخفضة','First N jobs at the intro rate','num'],
+    ['commission_first_pct','النسبة المخفضة للطلبات الأولى (%)','Intro rate (%)','num'],
+    ['commission_big_min','الطلب الكبير يبدأ من (ريال أجرة يد)','Big job starts at (SAR labour)','num'],
+    ['commission_big_pct','نسبة الطلب الكبير (%)','Big job rate (%)','num'],
+    ['commission_big_cap','الحد الأقصى للعمولة في الطلب الكبير (ريال)','Big job commission cap (SAR)','num'] ] },
+  { id:'policy', t:['🛡️ الإلغاء والضمان','🛡️ Cancellation & warranty'], d:['الإلغاء وتغيير الموعد مجاني قبل الموعد بهذي الساعات، وبعدها عبر التواصل فقط.','Free cancel or reschedule until this many hours before the visit, then only by contacting you.'], f:[
+    ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
+    ['warranty_days','ضمان الشغل (أيام)','Work warranty (days)','num'],
+    ['delivery_fee','رسوم التوصيل (ريال)','Delivery fee (SAR)','num'],
+    ['close_requires_payment','إقفال الطلب يتطلب دفع المتبقي','Closing an order requires payment of the balance','bool'] ] },
+  { id:'coverage', t:['📍 التغطية','📍 Coverage'], d:['المدن اللي تخدمها. أي عميل خارجها يشوف الرسالة تحت ولا يقدر يحجز.','Cities you serve. Customers outside them see the message and cannot book.'], f:[
+    ['coverage_cities','المدن (افصل بينها بفاصلة)','Cities (comma separated)','list'],
+    ['coverage_msg','رسالة خارج التغطية','Out of coverage message','text'] ] },
+  { id:'hours', t:['🕐 المواعيد','🕐 Scheduling'], d:['ساعات العمل ونافذة الوصول وأيام الإجازة. تظهر للعميل عند الحجز.','Working hours, arrival window and off days, as shown to customers when booking.'], f:[
+    ['work_start','بداية الدوام (ساعة، 24)','Work start (hour, 24h)','num'],
+    ['work_end','نهاية الدوام (ساعة، 24)','Work end (hour, 24h)','num'],
+    ['arrival_window','نافذة الوصول (دقائق)','Arrival window (minutes)','num'],
+    ['max_jobs_per_day','أقصى عدد طلبات باليوم لكل فريق','Max jobs per day per team','num'],
+    ['off_days','أيام الإجازة (0 الأحد … 5 الجمعة، 6 السبت، افصل بفاصلة)','Off days (0 Sunday … 5 Friday, 6 Saturday, comma separated)','list'] ] },
+  { id:'plans', t:['🛡️ الباقات السنوية','🛡️ Annual plans'], d:['إظهار الباقات للعملاء، وأسعار «ريّح بالك» وتاريخ إقفال العرض. المشتركون الحاليون يشوفون اشتراكهم دائمًا.','Show plans to customers, Rayyeh Balak prices and offer closing date. Existing subscribers always see their plan.'], f:[
+    ['plans_enabled','الباقات السنوية ظاهرة للعملاء','Annual plans visible to customers','bool'],
+    ['plan_apt_price','سعر باقة الشقة (ريال)','Apartment plan price (SAR)','num'],
+    ['plan_home_price','سعر باقة البيت (ريال)','House plan price (SAR)','num'],
+    ['plans_close','العرض يقفل بتاريخ','Offer closes on','date'] ] },
+  { id:'capacity', t:['📊 قائمة الانتظار','📊 Waitlist'], d:['متى يقول لك المؤشر إن التخصص هادي أو يحتاج فني جديد.','When the indicator says a trade is quiet or needs a new technician.'], f:[
+    ['cap_low','هادي تحت (طلب لكل فني بالشهر)','Quiet below (orders per tech per month)','num'],
+    ['cap_high','فعّل فني جديد فوق','Activate a new technician above','num'] ] },
+  { id:'khafet', t:['📱 تطبيق خافت','📱 Khafet app'], d:['مفاتيح تشغيل وإيقاف في تطبيق العميل، تطبّق فور فتح التطبيق.','On/off switches in the customer app, applied as soon as the app opens.'], f:[
+    ['booking_enabled','الحجز مفتوح (أطفئه في الإجازات أو الطوارئ)','Booking open (switch off for holidays or emergencies)','bool'],
+    ['booking_msg','رسالة توقف الحجز','Booking paused message','text'],
+    ['home_banner','إعلان أعلى الرئيسية (اتركه فارغًا لإخفائه)','Announcement at the top of home (leave empty to hide)','text'],
+    ['quick_enabled','الطلب السريع (معاينة) ظاهر','Quick request (inspection) visible','bool'],
+    ['referral_enabled','كود صديق وخصم الإحالة','Friend code and referral discount','bool'],
+    ['loyalty_target','مكافأة الولاء بعد كم طلب','Loyalty reward after N orders','num'],
+    ['tamara_enabled','التقسيط مع تمارا','Tamara instalments','bool'],
+    ['tamara_min','تمارا تظهر إذا أجرة اليد فوق (ريال)','Tamara shows when labour is above (SAR)','num'],
+    ['lead_min','أقل مدة قبل الموعد لقبول الحجز (دقائق)','Minimum lead time before a slot (minutes)','num'] ] },
+  { id:'rizq', t:['🤝 تطبيق رزق','🤝 Rizq app'], d:['رسالة تظهر للفنيين والمزودين أعلى رزق (تعليمات، تنبيه، عيد).','A message technicians and providers see at the top of Rizq (instructions, alerts, holidays).'], f:[
+    ['rizq_announcement','إعلان الفنيين (اتركه فارغًا لإخفائه)','Technician announcement (leave empty to hide)','text'] ] },
+  { id:'contact', t:['📞 التواصل','📞 Contact'], d:['الرقم اللي يظهر للعميل في التطبيق والفاتورة.','The number customers see in the app and invoice.'], f:[
+    ['support_phone','رقم الاتصال','Phone','text'],
+    ['support_whatsapp','واتساب بالصيغة الدولية بدون + (9665…)','WhatsApp international format without + (9665…)','text'] ] },
+];
+function renderSettings(){
+  if(!settingsLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
+  return ST_GROUPS.map(g=>`<div class="panel st-g" id="stg_${g.id}">
+    <h3>${LX(g.t[0],g.t[1])}</h3><p class="st-d">${LX(g.d[0],g.d[1])}</p>
+    ${g.f.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
+      if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
+      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
+      if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
+      return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" type="${ty==='num'?'number':(ty==='date'?'date':'text')}" ${ty==='num'?'inputmode="decimal" step="any"':''} value="${esc(v)}"></label>`; }).join('')}
+    <button class="sbtn ok" style="width:100%;margin-top:8px" onclick="saveSettingsGroup('${g.id}')">💾 ${LX('حفظ','Save')}</button>
+  </div>`).join('');
+}
+async function saveSettingsGroup(gid){
+  const g=ST_GROUPS.find(x=>x.id===gid); if(!g) return;
+  const rows=[];
+  for(const [k,,,ty] of g.f){ const el=document.getElementById('st_'+k); if(!el) continue; let v;
+    if(ty==='bool') v=el.checked?'1':'0';
+    else if(ty==='list'){ const parts=el.value.split(/[،,]/).map(s=>s.trim()).filter(Boolean); v=JSON.stringify(k==='off_days'?parts.map(Number).filter(n=>n>=0&&n<=6):parts); }
+    else v=el.value.trim();
+    rows.push({ key:k, value:v, updated_at:new Date().toISOString() }); }
+  const r=await sb.from('khafet_settings').upsert(rows,{ onConflict:'key' }).select('key');
+  if(r.error||!r.data||r.data.length!==rows.length){ toast('⚠️ '+LX('ما انحفظ، جرّب مرة ثانية','Not saved, try again')); return; }
+  rows.forEach(x=>{ SETTINGS[x.key]=x.value; });
+  // رسوم التوصيل تُقرأ في التطبيق من خدمة «رسوم التوصيل» المخفية، فنحدّثها معها
+  if(gid==='policy'){ const fee=parseFloat(SETTINGS.delivery_fee); if(isFinite(fee)){ try{ await sb.from('khafet_services').update({price:fee}).eq('id','fee'); }catch(e){} } }
+  toast(LX('✅ انحفظت الإعدادات','✅ Settings saved')); render();
+}
+/* العمولة لطلب واحد حسب الإعدادات: نسبة من أجرة اليد فقط، مع نسبة مخفضة لأول الطلبات وسقف للطلب الكبير */
+function orderLabor(o){ return (o.items||[]).filter(it=>it&&it.id!=='fee'&&!it.part&&it.id!=='stock'&&!it.stockId&&!String(it.id||'').startsWith('part:')).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
+function commissionFor(o, idxForProvider, isCompany){
+  const labor=orderLabor(o); if(!labor) return 0;
+  let pct=isCompany?stNum('commission_provider_pct',12):stNum('commission_tech_pct',15);
+  if(idxForProvider!=null && idxForProvider<stNum('commission_first_jobs',10)) pct=Math.min(pct, stNum('commission_first_pct',10));
+  let c=labor*pct/100;
+  if(labor>=stNum('commission_big_min',1000)){ c=Math.min(labor*stNum('commission_big_pct',10)/100, stNum('commission_big_cap',150)); }
+  return Math.round(c*100)/100;
+}
 function techTrades(t){ return Array.isArray(t&&t.trades)?t.trades:[]; }
 async function toggleTrade(uid, key){
   const t=STAFF.find(s=>s.user_id===uid); if(!t) return;
@@ -1281,13 +1438,20 @@ async function logout(){ if(!confirm(LX('تسجيل الخروج؟ بتحتاج�
 /* ---- العرض ---- */
 function setAdminFilter(f){ adminFilter=f; render(); }
 function provName(phone){ const p=PROVIDERS.find(x=>x.phone===phone); return p?p.name:phone; }
+/* مستحقات المنصة من المزودين: نسبة من أجرة اليد حسب الإعدادات (أول الطلبات بنسبة مخفضة، وسقف للطلب الكبير) */
+function commissionByProvider(){
+  const done=ORDERS.filter(o=>o.status==='done' && o.providerPhone).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||(+a.num||0)-(+b.num||0));
+  const byP={};
+  done.forEach(o=>{ const ph=o.providerPhone; const p=byP[ph]||(byP[ph]={n:0,labor:0,sum:0}); const prov=PROVIDERS.find(x=>x.phone===ph); const isCo=!prov||!/فني/.test(String(prov.type||'')); p.sum+=commissionFor(o,p.n,isCo); p.n++; p.labor+=orderLabor(o); });
+  return byP;
+}
 function renderCommission(){
-  const done=ORDERS.filter(o=>o.status==='done' && o.providerPhone);
-  if(!done.length) return `<p style="color:var(--muted)">لا توجد طلبات منجزة عبر مزوّدين بعد.</p>`;
-  const byP={}; done.forEach(o=>{ byP[o.providerPhone]=(byP[o.providerPhone]||0)+1; });
-  const total=done.length*COMMISSION;
-  const rows=Object.keys(byP).map(ph=>`<div class="rline"><div class="rl-t"><b>${esc(provName(ph))}</b><small>${ordersN(byP[ph])} · ${esc(ph)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(byP[ph]*COMMISSION)}</span></div>`).join('');
-  return rows+`<div class="rline" style="border-top:2px solid var(--line)"><div class="rl-t"><b>الإجمالي المستحق</b></div><span style="font-weight:900;font-size:1.15rem">${money(total)}</span></div>`;
+  const byP=commissionByProvider(); const phones=Object.keys(byP);
+  if(!phones.length) return `<p style="color:var(--muted)">${LX('لا توجد طلبات منجزة عبر مزوّدين بعد.','No completed provider orders yet.')}</p>`;
+  const total=phones.reduce((a,ph)=>a+byP[ph].sum,0);
+  const rows=phones.map(ph=>`<div class="rline"><div class="rl-t"><b>${esc(provName(ph))}</b><small>${ordersN(byP[ph].n)} · ${LX('أجرة يد','labour')} ${money(byP[ph].labor)} · ${esc(ph)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(byP[ph].sum)}</span></div>`).join('');
+  return `<p style="color:var(--muted);font-size:.82rem;font-weight:700;margin-bottom:8px">${LX('النسبة: فني '+ar(stNum('commission_tech_pct',15))+'٪ · مؤسسة '+ar(stNum('commission_provider_pct',12))+'٪ · أول '+ar(stNum('commission_first_jobs',10))+' طلبات '+ar(stNum('commission_first_pct',10))+'٪ · تتغيّر من الإعدادات','Rates: technician '+stNum('commission_tech_pct',15)+'% · company '+stNum('commission_provider_pct',12)+'% · first '+stNum('commission_first_jobs',10)+' jobs '+stNum('commission_first_pct',10)+'% · change in Settings')}</p>`
+    +rows+`<div class="rline" style="border-top:2px solid var(--line)"><div class="rl-t"><b>${LX('الإجمالي المستحق','Total due')}</b></div><span style="font-weight:900;font-size:1.15rem">${money(total)}</span></div>`;
 }
 /* ═ إدارة المزوّدين بالاستثناء: بحث + فلاتر + اعتماد جماعي + إيقاف/تفعيل ═ */
 let provQ='', provCity='all', provSt='all';
@@ -1507,6 +1671,7 @@ function render(){
     ['store','📦 المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length],
     ['prices','🗂️ الخدمات', 0],
     ['joins','📨 طلبات الانضمام', JOINREQ.filter(x=>x.status==='new').length],
+    ['settings','⚙️ الإعدادات', 0],
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
@@ -1516,6 +1681,7 @@ function render(){
     ['prices','🗂️',LX('الأقسام والخدمات','Sections & services'), 0, LX('الأقسام · الخدمات · الأسعار','Sections · services · prices'), false],
     ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
     ['joins','📨',LX('طلبات الانضمام','Join requests'), JOINREQ.filter(x=>x.status==='new').length, LX('فنيين ومقدمي خدمات · خدماتهم وأسعارهم','Technicians and providers · their services and prices'), false],
+    ['settings','⚙️',LX('الإعدادات','Settings'), 0, LX('العمولة، الإلغاء، الضمان، التغطية، المواعيد، الباقات، التواصل','Commission, cancellation, warranty, coverage, hours, plans, contact'), false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
     <div class="hcard" onclick="setAdminSection('${k}')">
@@ -1534,7 +1700,7 @@ function render(){
   } else if(adminSection==='team'){
     body=`${block(LX(`🧑‍🔧 فنيين خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`,`🧑‍🔧 Khafet technicians (${STAFF.filter(s=>s.role==='tech').length})`), renderTechs())}
       ${block(LX(`🤝 مزودين الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
-      ${block(LX(`💰 مستحقات المنصة (عمولة ${ar(COMMISSION)} ر.س/طلب)`,`💰 Platform dues (${COMMISSION} SAR/order commission)`), renderCommission())}`;
+      ${block(LX('💰 مستحقات المنصة (نسبة من أجرة اليد)','💰 Platform dues (share of labour)'), renderCommission())}`;
   } else if(adminSection==='cust'){
     body=`${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
       ${block(LX(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`,`🛡️ Subscription requests (${newSubs} new)`), renderSubs())}
@@ -1548,8 +1714,10 @@ function render(){
     body=renderBroadcast();
   } else if(adminSection==='joins'){
     body=renderJoinReqs();
+  } else if(adminSection==='settings'){
+    body=renderSettings();
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests')})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
@@ -1569,7 +1737,7 @@ function render(){
          <div style="margin-top:12px">${body}</div>`}
   </div>`;
 }
-function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); }
 
 /* ═══════ 📨 طلبات الانضمام: من النموذج العام (rezq/join) مباشرة إلى جدول khafet_join_requests ═══════ */
 async function loadJoinReqs(){
@@ -1579,7 +1747,19 @@ async function loadJoinReqs(){
     if(!r.error){ JOINREQ=r.data||[]; joinReqLoaded=true; }
   }catch(e){}
 }
-const JR_ST=()=>({ new:LX('جديد','New'), contacted:LX('تواصلت','Contacted'), accepted:LX('مقبول','Accepted'), rejected:LX('مرفوض','Rejected') });
+const JR_ST=()=>({ new:LX('جديد','New'), contacted:LX('تواصلت','Contacted'), waitlist:LX('على القائمة','Waitlist'), accepted:LX('مقبول','Accepted'), rejected:LX('مرفوض','Rejected') });
+/* درجة الجودة (من 15): تُرتّب بها القائمة تلقائيًا · مؤسسة موثقة، خدمات كثيرة، ضمان أطول، صور أعمال، سيارة، خبرة */
+function jrScore(x){
+  const d=x.data||{}; let s=0;
+  if(/مؤسسة/.test(d.type||'')) s+=2; if(d.doc||d.company) s+=1;
+  s+=Math.min(4, Math.floor((+x.services_count||0)/3));
+  const w=String(d.warranty||''); if(/سنة/.test(w)) s+=4; else if(/6|٦/.test(w)) s+=3; else if(/3|٣/.test(w)) s+=3; else if(/شهر/.test(w)) s+=2; else if(/أسبوع/.test(w)) s+=1;
+  if((x.cities||[]).length>=2) s+=1;
+  if(d.portfolio) s+=2; if((d.equipment||[]).some(e=>/سيارة/.test(e))) s+=1;
+  const e=String(d.exp||''); if(/10/.test(e)) s+=3; else if(/5/.test(e)) s+=2; else if(/3/.test(e)) s+=1;
+  return Math.min(15,s);
+}
+function jrStars(n){ const k=Math.max(0,Math.min(5,Math.round(n/3))); return '★'.repeat(k)+'☆'.repeat(5-k); }
 function jrWhen(ts){
   try{ const d=new Date(ts); const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return dayLabel(iso)+' · '+fmtTime(d.getHours()*60+d.getMinutes()); }catch(e){ return ''; }
@@ -1592,18 +1772,20 @@ function jrPrice(s){
 function renderJoinReqs(){
   if(!joinReqLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
   const ST=JR_ST(), cnt=k=>JOINREQ.filter(x=>k==='all'||x.status===k).length;
-  const filters=['new','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
-  const list=JOINREQ.filter(x=>joinFilter==='all'||x.status===joinFilter);
+  const filters=['new','waitlist','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
+  // ترتيب تلقائي بالجودة (الأعلى أولًا)، والقائمة مرقّمة
+  const list=JOINREQ.filter(x=>joinFilter==='all'||x.status===joinFilter).slice().sort((a,b)=>jrScore(b)-jrScore(a)||new Date(a.created_at)-new Date(b.created_at));
   const share='https://fadiaalzhrani-debug.github.io/rezq/join/';
-  const head=`<div class="panel" style="margin-top:0">
+  const head=renderCapacity()+`<div class="panel" style="margin-top:0">
       <p style="margin:0 0 8px;font-weight:700">${LX('رابط النموذج اللي ترسله للفنيين ومقدمي الخدمات:','Form link to send to technicians and providers:')}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><code style="direction:ltr;background:var(--panel,#f3eee2);padding:6px 10px;border-radius:9px;font-size:.85rem;overflow-wrap:anywhere">${share}</code>
       <button class="sbtn" onclick="jrCopy('${share}')">📋 ${LX('نسخ الرابط','Copy link')}</button>
       <button class="sbtn" onclick="loadJoinReqs().then(render)">🔄 ${LX('تحديث','Refresh')}</button></div>
     </div><div class="jr-filters" style="margin-top:14px">${filters}</div>`;
   if(!list.length) return head+`<p style="color:var(--muted)">${joinFilter==='new'?LX('ما فيه طلبات جديدة.','No new requests.'):LX('ما فيه طلبات هنا.','No requests here.')}</p>`;
-  return head+list.map(x=>{
+  return head+list.map((x,idx)=>{
     const d=x.data||{}, cats=Array.isArray(d.categories)?d.categories:[];
+    const sc=jrScore(x);
     const svcHtml=cats.map(c=>`<div class="jr-cat"><b>${esc(c.name||c.id||'')}</b>${c.isNew?`<span class="jr-new">${LX('قسم جديد','New section')}</span>`:''}
       ${(c.services||[]).map(s=>`<div class="jr-svc"><div>${esc(s.name||'')}${s.code==='جديد'?`<span class="jr-new">${LX('خدمة جديدة','New service')}</span>`:''}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`).join('')}</div>`).join('');
     const kv=[
@@ -1614,9 +1796,9 @@ function renderJoinReqs(){
       [LX('الجمعة','Fridays'), d.friday?LX('نعم','Yes'):''], [LX('المستعجل','Urgent'), d.urgent?LX('نعم','Yes'):''],
       [LX('ملاحظات','Notes'), d.notes], [LX('لغة التعبئة','Form language'), x.lang==='en'?'English':'']
     ].filter(r=>r[1]).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('');
-    const acts=['contacted','accepted','rejected'].map(k=>`<button class="sbtn ${x.status===k?'on':''}" onclick="setJoinStatus('${x.id}','${x.status===k?'new':k}')">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
+    const acts=['contacted','waitlist','accepted','rejected'].map(k=>`<button class="sbtn ${x.status===k?'on':''}" onclick="setJoinStatus('${x.id}','${x.status===k?'new':k}')">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
     return `<div class="jr ${x.status==='new'?'new':''}">
-      <div class="jr-top"><h4>#${ar(x.ref_no)} · ${esc(x.name)}<small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${x.status}">${ST[x.status]||x.status}</span></div>
+      <div class="jr-top"><h4>${x.status==='waitlist'?`<span class="jr-rank">${ar(idx+1)}</span>`:''}#${ar(x.ref_no)} · ${esc(x.name)}<span class="jr-score" title="${LX('درجة الجودة','Quality score')}">${jrStars(sc)} <b>${ar(sc)}</b>/15</span><small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${x.status}">${ST[x.status]||x.status}</span></div>
       <div class="jr-meta"><span>📍 ${esc((x.cities||[]).join('، ')||'')}</span><span>🧰 ${ar(x.services_count)} ${LX('خدمة','services')}</span>${(x.categories||[]).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
       <div class="jr-contact">
         <a class="sbtn" href="https://wa.me/${jrPhoneIntl(x.phone)}" target="_blank" rel="noopener">💬 ${LX('واتساب','WhatsApp')}</a>
@@ -1829,10 +2011,9 @@ function exportSection(k){
       downloadCSV(EN?'Warehouse_'+d:'المستودع-'+d, EN?['Item','Category','Code','Qty','Unit','Buy price','Sell price','Reorder level','Target','Percent','Usage (6 months)']:['الصنف','الفئة','الكود','الكمية','الوحدة','سعر الشراء','سعر البيع','حد الطلب','المستهدف','النسبة','استخدام 6 أشهر'],
         INV.map(it=>[EN?whName(it):it.name,EN?(CAT_EN[it.category]||it.category||''):(it.category||''),it.code||'',it.qty,EN?whUnit(it.unit):(it.unit||''),it.buy_price||0,it.sell_price||0,it.min_qty||0,it.target_qty||0,(invPct(it)===null?'':invPct(it)+'%'),invUsage(it.id).u6]));
     } else if(k==='team'){
-      const done=ORDERS.filter(o=>o.status==='done'&&o.providerPhone); const byP={};
-      done.forEach(o=>{ byP[o.providerPhone]=(byP[o.providerPhone]||0)+1; });
-      downloadCSV(EN?'Provider_dues_'+d:'مستحقات-المزوّدين-'+d, EN?['Provider','Phone','Completed orders','Due (SAR)']:['المزوّد','الجوال','طلبات منجزة','المستحق (ر.س)'],
-        Object.keys(byP).map(ph=>[provName(ph),ph,byP[ph],byP[ph]*COMMISSION]));
+      const byP=commissionByProvider();
+      downloadCSV(EN?'Provider_dues_'+d:'مستحقات-المزوّدين-'+d, EN?['Provider','Phone','Completed orders','Labour (SAR)','Due (SAR)']:['المزوّد','الجوال','طلبات منجزة','أجرة اليد (ر.س)','المستحق (ر.س)'],
+        Object.keys(byP).map(ph=>[provName(ph),ph,byP[ph].n,byP[ph].labor,byP[ph].sum]));
     }
     toast('⤓ تم تنزيل ملف Excel');
   }catch(e){ toast('تعذّر التصدير'); }
