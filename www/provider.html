@@ -454,10 +454,10 @@ let sb=null, cloudReady=false;
 async function loadPrices(){
   if(!cloudReady) return;
   // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
-  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort').order('sort');
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden').order('sort');
     if(!r.error && r.data && r.data.length){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
-        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active}); });
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden}); });
       return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); } }catch(e){}
 }
@@ -834,7 +834,7 @@ function printInvoiceDoc(o){
 }
 function renderInvoice(){
   const m=document.getElementById('invModal'); if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
-  const opts=SERVICES.filter(s=>!s.inactive).map(s=>`<option value="${s.id}">${s.ico} ${LX(`${s.name} — ${ar(s.price)}`, `${svcName(s.name)} · ${s.price} SAR`)}</option>`).join('');
+  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${s.id}">${s.ico} ${LX(`${s.name} — ${ar(s.price)}`, `${svcName(s.name)} · ${s.price} SAR`)}</option>`).join('');
   const rows=invItems.length?invItems.map((it,i)=>`<div class="inv-row"><span class="ir-name">${esc(it.name)}</span>
     <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
     <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />

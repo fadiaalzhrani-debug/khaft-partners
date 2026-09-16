@@ -850,10 +850,10 @@ function copyMyCode(){ if(!myCode) return; try{ navigator.clipboard.writeText(my
 async function loadPrices(){
   if(!cloudReady) return;
   // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
-  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort').order('sort');
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden').order('sort');
     if(!r.error && r.data && r.data.length){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
-        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active});
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden});
         if(d.name_en && !(SVC_I18N[d.id]&&SVC_I18N[d.id].en)) SVC_I18N[d.id]=Object.assign({}, SVC_I18N[d.id]||{}, {en:d.name_en}); });
       if(invEditing) renderInvoice(); return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); if(invEditing) renderInvoice(); } }catch(e){}
@@ -1235,7 +1235,7 @@ function renderInvoice(){
   const m=document.getElementById('invModal');
   if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
   const A=lang==='ar';
-  const opts=SERVICES.filter(s=>!s.inactive).map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} — ${ar(s.price)}</option>`).join('');
+  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} — ${ar(s.price)}</option>`).join('');
   const invOpts=(INV||[]).map(it=>`<option value="${it.id}">${esc(it.name)} — ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
   const rows = invItems.length ? invItems.map((it,i)=>{
     if(it.booked) return `<div class="inv-row">
@@ -1915,7 +1915,7 @@ function renderBookTab(){
     return `<div class="bk-svc"><div class="bk-svc-n"><b>${esc(s.ico||'🔧')} ${esc(svcName2(s))}</b><small>${ar(+s.price||0)} ${A?'ريال':'SAR'}${x.qty>1?' × '+ar(x.qty):''}</small></div>
       <div class="bk-qty"><button type="button" onclick="bkSvcQty('${x.id}',-1)" aria-label="-">−</button><span>${ar(x.qty)}</span><button type="button" onclick="bkSvcQty('${x.id}',1)" aria-label="+">+</button></div>
       <button type="button" class="bk-x" onclick="bkSvcDel('${x.id}')" aria-label="${A?'حذف':'Remove'}">×</button></div>`; }).join('');
-  const svcOpts=`<option value="">${A?'+ أضف خدمة من الأقسام':'+ Add a service'}</option>`+SERVICES.filter(s=>!s.inactive && (+s.price||0)>0 && s.id!=='quick').map(s=>`<option value="${s.id}">${esc(svcName2(s))} · ${ar(+s.price||0)}</option>`).join('');
+  const svcOpts=`<option value="">${A?'+ أضف خدمة من الأقسام':'+ Add a service'}</option>`+SERVICES.filter(s=>!s.inactive && !s.hidden && (+s.price||0)>0 && s.id!=='quick').map(s=>`<option value="${s.id}">${esc(svcName2(s))} · ${ar(+s.price||0)}</option>`).join('');
   const waBox=`<div class="bk-wa">
       <div class="bk-wa-h"><b>💬 ${A?'طلب من الواتس':'Order from WhatsApp'}</b>${bkWaOpen?'':`<button type="button" class="bk-wa-go" onclick="bkPasteChat()">📋 ${A?'لصق المحادثة':'Paste chat'}</button>`}</div>
       ${bkWaOpen?`<p class="bk-wa-hint">${A?'انسخ رسائل العميل من الواتس والصقها هنا، وتتعبى البيانات تحت لحالها.':'Copy the customer messages from WhatsApp and paste them here.'}</p>
