@@ -185,6 +185,18 @@
   .cg-sheet textarea{min-height:64px;resize:vertical}
   .cg-sheet .cg-row{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px}
   .cg-sheet .cg-sw{display:flex;align-items:center;gap:9px;padding:9px 0;font-weight:700}
+  /* 🔩 القطع المرتبطة بالخدمة */
+  .sp-box{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
+  .sp-box h4{margin:0 0 4px;font-size:.98rem;font-weight:900}
+  .sp-hint{color:var(--muted);font-size:.8rem;font-weight:700;margin:0 0 10px}
+  .sp-g{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:10px;background:#FBF9F3}
+  .sp-g .sp-gh{display:grid;grid-template-columns:1fr 70px 34px;gap:6px;align-items:center}
+  .sp-g input,.sp-g select{width:100%;padding:8px 9px;border-radius:9px;border:1px solid var(--line);font:inherit;font-size:.88rem;background:#fff}
+  .sp-o{display:grid;grid-template-columns:1fr 90px 26px 26px;gap:6px;align-items:center;margin-top:6px}
+  .sp-o input[type=radio]{width:18px;height:18px;accent-color:var(--gold);margin:0 auto}
+  .sp-mini{font:inherit;font-weight:800;font-size:.78rem;padding:6px 10px;border-radius:9px;border:1.5px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+  .sp-x{font:inherit;border:0;background:transparent;color:#b91c1c;font-weight:900;font-size:1.05rem;cursor:pointer;width:26px;height:30px}
+  .sp-lbl{font-size:.72rem;color:var(--muted);font-weight:700;display:grid;grid-template-columns:1fr 90px 26px 26px;gap:6px;margin-top:8px}
   .cg-sheet .cg-sw input{width:20px;height:20px;accent-color:var(--ok)}
   .cg-acts{display:flex;gap:8px;margin-top:14px} .cg-acts .sbtn{flex:1;padding:13px}
   @media(min-width:700px){ .cg-overlay{align-items:center} .cg-sheet{border-radius:20px} }
@@ -710,8 +722,8 @@ let CATALOG={cats:[], svcs:[], loaded:false};
 async function loadCatalog(){
   if(!cloudReady) return;
   try{
-    const [c,s]=await Promise.all([ sb.from('khafet_categories').select('*'), sb.from('khafet_services').select('*') ]);
-    if(!c.error && !s.error){ CATALOG={cats:c.data||[], svcs:s.data||[], loaded:true}; }
+    const [c,s,p]=await Promise.all([ sb.from('khafet_categories').select('*'), sb.from('khafet_services').select('*'), sb.from('khafet_service_parts').select('*').order('sort') ]);
+    if(!c.error && !s.error){ CATALOG={cats:c.data||[], svcs:s.data||[], parts:(!p.error&&p.data)||[], loaded:true}; }
   }catch(e){}
 }
 const bySort=(a,b)=>(+a.sort||0)-(+b.sort||0);
@@ -772,7 +784,46 @@ function editService(id, catId){
     </div>
     <label class="cg-sw"><input type="checkbox" id="sv_custom" ${s.custom?'checked':''}> ${LX('السعر بعد المعاينة','Price after inspection')}</label>
     <label class="cg-sw"><input type="checkbox" id="sv_active" ${s.active!==false?'checked':''}> ${LX('ظاهرة للعملاء','Visible to customers')}</label>
+    <div class="sp-box"><h4>🔩 ${LX('القطع المرتبطة','Linked parts')}</h4>
+      <p class="sp-hint">${LX('تنضاف تلقائيًا لطلب العميل عند الدفع. لو فيه خيارات (أبيض وأصفر) حطها في نفس المجموعة والعميل يختار.','Added to the customer order at checkout. Put colour options in one group and the customer picks.')}</p>
+      <div id="sp_box"></div>
+      <button type="button" class="sp-mini" onclick="spAddGroup()">➕ ${LX('مجموعة قطع','Parts group')}</button>
+    </div>
     <div class="cg-acts"><button class="sbtn ok" onclick="saveService('${esc(s.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+  spLoad(s.id); spRender();
+}
+/* ═══ 🔩 القطع المرتبطة بالخدمة: مجموعات، وكل مجموعة فيها خيارات من المستودع ═══ */
+let cgParts=[];
+function spLoad(svcId){
+  const rows=(CATALOG.parts||[]).filter(r=>r.service_id===svcId).sort((a,b)=>(+a.sort||0)-(+b.sort||0));
+  const groups={};
+  rows.forEach(r=>{ const g=groups[r.group_key]||(groups[r.group_key]={key:r.group_key, name:r.group_name||'', qty:+r.qty||1, opts:[]}); g.opts.push({itemId:r.item_id, label:r.label||'', def:!!r.is_default}); });
+  cgParts=Object.values(groups);
+}
+function spAddGroup(){ cgParts.push({key:'g'+Date.now().toString(36), name:'', qty:1, opts:[{itemId:'', label:'', def:true}]}); spRender(); }
+function spDelGroup(gi){ cgParts.splice(gi,1); spRender(); }
+function spAddOpt(gi){ cgParts[gi].opts.push({itemId:'', label:'', def:false}); spRender(); }
+function spDelOpt(gi,oi){ const g=cgParts[gi]; g.opts.splice(oi,1); if(g.opts.length && !g.opts.some(o=>o.def)) g.opts[0].def=true; spRender(); }
+function spSet(gi,oi,f,v){ if(oi==null){ cgParts[gi][f]= f==='qty' ? Math.max(1, Number(v)||1) : v; return; } const o=cgParts[gi].opts[oi]; if(f==='def'){ cgParts[gi].opts.forEach(x=>x.def=false); o.def=true; } else o[f]=v; if(f==='itemId' && !o.label){ const it=INV.find(x=>x.id===v); if(it){ o.label=''; } } }
+function spRender(){
+  const box=document.getElementById('sp_box'); if(!box) return;
+  const items=[...INV].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
+  const opt=(sel)=>`<option value="">${LX('اختر قطعة من المستودع','Pick a stock item')}</option>`+items.map(it=>`<option value="${it.id}" ${it.id===sel?'selected':''}>${esc(it.name)} · ${ar(+it.sell_price||0)}</option>`).join('');
+  box.innerHTML=cgParts.length?cgParts.map((g,gi)=>`<div class="sp-g">
+      <div class="sp-gh"><input value="${esc(g.name)}" placeholder="${LX('اسم المجموعة، مثل: اللمبة','Group name, e.g. Bulb')}" oninput="spSet(${gi},null,'name',this.value)"><input type="number" min="1" value="${g.qty}" title="${LX('الكمية لكل خدمة','Qty per service')}" oninput="spSet(${gi},null,'qty',this.value)"><button type="button" class="sp-x" onclick="spDelGroup(${gi})" aria-label="حذف">×</button></div>
+      <div class="sp-lbl"><span>${LX('القطعة','Item')}</span><span>${LX('اسم الخيار','Option label')}</span><span>${LX('افتراضي','Default')}</span><span></span></div>
+      ${g.opts.map((o,oi)=>`<div class="sp-o"><select onchange="spSet(${gi},${oi},'itemId',this.value)">${opt(o.itemId)}</select><input value="${esc(o.label)}" placeholder="${LX('أبيض','White')}" oninput="spSet(${gi},${oi},'label',this.value)"><input type="radio" name="spdef${gi}" ${o.def?'checked':''} onchange="spSet(${gi},${oi},'def',true)"><button type="button" class="sp-x" onclick="spDelOpt(${gi},${oi})" aria-label="حذف">×</button></div>`).join('')}
+      <button type="button" class="sp-mini" style="margin-top:8px" onclick="spAddOpt(${gi})">➕ ${LX('خيار','Option')}</button>
+    </div>`).join(''):`<p class="sp-hint">${LX('ما فيه قطع مرتبطة بهذي الخدمة.','No parts linked to this service.')}</p>`;
+}
+async function spSave(svcId){
+  const rows=[];
+  cgParts.forEach((g,gi)=>{ const opts=g.opts.filter(o=>o.itemId); if(!opts.length) return; if(!opts.some(o=>o.def)) opts[0].def=true;
+    opts.forEach((o,oi)=>rows.push({ service_id:svcId, group_key:g.key||('g'+gi), group_name:g.name||LX('القطعة','Part'), item_id:o.itemId, label:o.label||null, qty:Math.max(1,+g.qty||1), is_default:!!o.def, sort:oi+1, active:true })); });
+  const del=await sb.from('khafet_service_parts').delete().eq('service_id',svcId);
+  if(del.error) return false;
+  if(rows.length){ const ins=await sb.from('khafet_service_parts').insert(rows); if(ins.error) return false; }
+  return true;
 }
 async function saveService(id){
   const name=cgVal('sv_name'), cat=cgVal('sv_cat');
@@ -785,7 +836,8 @@ async function saveService(id){
   if(!old) row.quick=false;
   const { error }=await sb.from('khafet_services').upsert(row);
   if(error){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
-  closeCg(); toast(LX('✓ انحفظت الخدمة','✓ Service saved')); await loadCatalog(); render();
+  const okParts=await spSave(row.id);
+  closeCg(); toast(okParts?LX('✓ انحفظت الخدمة','✓ Service saved'):LX('انحفظت الخدمة، لكن القطع ما انحفظت','Service saved, parts not saved')); await loadCatalog(); render();
 }
 async function moveCatalog(kind, id, dir){
   const table=kind==='cat'?'khafet_categories':'khafet_services';

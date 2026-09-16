@@ -1124,7 +1124,10 @@ function openInvoice(id){
     invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick'&&it.id!=='custom'&&svc(it.id)).map(it=>{ const s=svc(it.id); return {id:it.id,name:it.name||s.name,qty:+it.qty||1,price:+s.price||0,booked:false}; });
   }
   if(!o.invoice && o.dbId && !o.quick){
-    invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick').map(it=>{ const s=svc(it.id); return {id:it.id,name:it.name,qty:+it.qty||1,price:s?+s.price:(+it.price||0),booked:true}; });
+    // القطع المحجوزة مع الطلب (part:) تدخل كقطع مستودع مقفولة عشان تنخصم من المخزون عند الحفظ
+    invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick').map(it=>{
+      if(String(it.id).startsWith('part:') && it.stockId){ const inv=INV.find(x=>x.id===it.stockId); return {id:'stock',stockId:it.stockId,name:it.name||(inv&&inv.name)||'',qty:+it.qty||1,price:+it.price||0,deducted:0,img:it.img||(inv&&inv.image_url)||'',booked:true}; }
+      const s=svc(it.id); return {id:it.id,name:it.name,qty:+it.qty||1,price:s?+s.price:(+it.price||0),booked:true}; });
   }
   renderInvoice();
 }
@@ -2072,7 +2075,9 @@ function render(){
   else { let lastDate=null; cards=shown.map(o=>{
     const a=o.address||{};
     const sep=isRTL()?'، ':', ';
-    const work=(o.items||[]).map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
+    const isPart=i=>i&&(i.part||String(i.id||'').startsWith('part:'));
+    const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
+    const partsTxt=(o.items||[]).filter(isPart).map(i=>'🔩 '+esc(i.name)+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const addr=[a.city,a.district,a.street].filter(Boolean).join(' · ');
     const mapUrl=a.mapUrl || ('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')));
     const gpsPin=!!(a.lat&&a.lng);
@@ -2126,6 +2131,7 @@ function render(){
       </div>
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
+        ${partsTxt?`<div class="tj-row"><span class="tj-k">🔩 ${lang==='ar'?'قطع محجوزة مع الطلب':lang==='en'?'Parts booked':lang==='ur'?'بک شدہ پارٹس':'बुक पार्ट्स'}</span><span class="tj-v">${partsTxt}<div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:2px">${lang==='ar'?'خذها معك من المستودع، مدفوعة مع الحجز':'Take them from stock, paid with the booking'}</div></span></div>`:''}
         ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ ${t('problem')}</span><span class="tj-v">${esc(o.note)}${lang!=='ar'?` <a class="ttrans" href="https://translate.google.com/?sl=auto&tl=${lang}&text=${encodeURIComponent(o.note)}&op=translate" target="_blank" rel="noopener">${t('translate')}</a>`:''}</span></div>`:''}
         ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 ${lang==='ne'?'फोटो/भिडियो':lang==='en'?'Photo/Video':lang==='hi'?'फोटो/वीडियो':lang==='ur'?'تصویر/ویڈیو':'صورة/مقطع'}</span><span class="tj-v"><button class="tvideo" onclick="openMedia('${esc(o.videoUrl)}')">${t('watchVideo')}</button></span></div>`:''}
         <div class="tj-row"><span class="tj-k">⏱️ ${t('duration')}</span><span class="tj-v">${jobDur(o.duration)}</span></div>
