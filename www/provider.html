@@ -315,19 +315,25 @@ const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
+/* ═ مخزن آمن ═ Keychain على آيفون: يبقى حتى بعد حذف التطبيق وإعادة تحميله، فيرجع حسابك مسجّلًا */
+const _khSec=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('SecureStoragePlugin'):null)||(C.Plugins&&C.Plugins.SecureStoragePlugin)||null; } }catch(e){} return null; })();
+const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_worker_auth','khafet_techlang','khafet_uilang','khafet_lang']);
+async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
+function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
+function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
 const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
 const KH_STORE={
-  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} return null; },
-  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} },
-  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} }
+  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} try{ if(_khPrefs) _khPrefs.set({key:k,value:sv}).catch(()=>{}); }catch(e){} return sv; } } return null; },
+  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
+  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
-  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} };
-  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); }catch(e){} };
+  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
+  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
 }catch(e){}
 /* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
-async function khRestore(){ if(!_khPrefs) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ localStorage.setItem(k,r.value); back.push(k); } }catch(e){} } return back; }
+async function khRestore(){ if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
 
 const BRAND='خافِت'; const CONTACT='0590497866'; const COMMISSION=3; const SAVE_KEY='siyanah_v1';
 /* حساب المزوّدين محفوظ في Supabase → Authentication (ما فيه كلمة مرور بالكود).
@@ -399,6 +405,9 @@ function toggleDone(id){ doneOpen[id]=!doneOpen[id]; render(); }
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
 function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
 function money(n){ return ar(n)+' ر.س'; }
+
+/* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
+function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -495,7 +504,9 @@ async function initPush(){
    الباكِت خاص — رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
-  const s=String(v);
+  const s=String(v).trim();
+  /* نقبل فقط مسارًا داخل الباكِت أو رابط تخزين المشروع، ونرفض أي scheme آخر */
+  if(/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https:\/\/[^/]*supabase\.co\/storage\//i.test(s)) return '';
   const m=s.match(/khafet-videos\/(.+?)(\?|$)/);
   return m ? decodeURIComponent(m[1]) : s;
 }
@@ -1164,13 +1175,13 @@ function servesCity(o){
 }
 function toggleCities(){ citiesOpen=!citiesOpen; render(); }
 function paintChosenCities(){ const el=document.getElementById('pv_city_chosen'); if(!el) return;
-  el.innerHTML = pvCitiesSel.length ? pvCitiesSel.map(c=>`<span class="ccity">${esc(cityLabel(c))}<button onclick="removeCityChip('${esc(c)}')">×</button></span>`).join('') : '<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'; }
+  el.innerHTML = pvCitiesSel.length ? pvCitiesSel.map(c=>`<span class="ccity">${esc(cityLabel(c))}<button data-city="${esc(c)}" onclick="removeCityChip(this.dataset.city)">×</button></span>`).join('') : '<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'; }
 function citySearch(q){ q=(q||'').trim(); const el=document.getElementById('pv_city_results'); if(!el) return;
   if(pvCitiesSel===null) pvCitiesSel=myCities().slice();
   if(!q){ el.innerHTML=''; return; }
   const en=_uiEN(), ql=q.toLowerCase();   // بالإنجليزي: البحث يطابق الاسم الإنجليزي أيضاً، والقيمة المضافة تبقى عربية
   const m=SA_CITIES.filter(c=>(c.indexOf(q)>-1 || (en && String(CITY_EN[c]||'').toLowerCase().indexOf(ql)>-1)) && pvCitiesSel.indexOf(c)<0).slice(0,10);
-  el.innerHTML = m.length ? m.map(c=>`<button class="city-add" onclick="addCityChip('${esc(c)}')">➕ ${esc(cityLabel(c))}</button>`).join('') : '<div class="hint" style="margin:0;padding:6px 2px">ما فيه مدينة بهذا الاسم</div>';
+  el.innerHTML = m.length ? m.map(c=>`<button class="city-add" data-city="${esc(c)}" onclick="addCityChip(this.dataset.city)">➕ ${esc(cityLabel(c))}</button>`).join('') : '<div class="hint" style="margin:0;padding:6px 2px">ما فيه مدينة بهذا الاسم</div>';
 }
 function addCityChip(c){ if(pvCitiesSel===null) pvCitiesSel=myCities().slice(); if(pvCitiesSel.indexOf(c)<0) pvCitiesSel.push(c);
   const s=document.getElementById('pv_city_search'); if(s){ s.value=''; s.focus(); } citySearch(''); paintChosenCities(); }
@@ -1216,7 +1227,7 @@ function jobCard(o, mode){
       </div>
     </div>`;
   }
-  const mapUrl=a.mapUrl||('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')));
+  const mapFallback='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')); const mapUrl=safeUrl(a.mapUrl, mapFallback);
   let acts='';
   if(mode==='available') acts=`<button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button>`;
   else { // mine
@@ -1239,11 +1250,11 @@ function jobCard(o, mode){
     <div class="tj-body">
       ${work}
       ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ المشكلة</span><span class="tj-v">${esc(o.note)}</span></div>`:''}
-      ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 صورة/مقطع</span><span class="tj-v"><button class="tvideo" onclick="openMedia('${esc(o.videoUrl)}')">🎥 عرض</button></span></div>`:''}
+      ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 صورة/مقطع</span><span class="tj-v"><button class="tvideo" data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)">🎥 عرض</button></span></div>`:''}
       <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
       <div class="tj-row"><span class="tj-k">📍 الموقع</span><span class="tj-v">${[[cityLabel(a.city),a.district,a.street].filter(Boolean).join(' · '), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||'📍 GPS'}
         <a class="tmap" href="${mapUrl}" target="_blank" rel="noopener">🗺️ الخريطة</a>
-        ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" onclick="openMedia('${esc(a.photoUrl)}')">🏠 صورة المنزل</button>`:''}</span></div>
+        ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" data-media="${esc(a.photoUrl)}" onclick="openMedia(this.dataset.media)">🏠 صورة المنزل</button>`:''}</span></div>
       ${mode==='mine'?`<div class="tj-row"><span class="tj-k">👤 العميل</span><span class="tj-v">${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></span></div>`:''}
       ${mode==='mine'&&o.status==='done'?`<div class="tj-row"><span class="tj-k">🛡️ الضمان</span><span class="tj-v"><select class="assign-sel" style="padding:7px 10px;min-width:120px" onchange="setWarranty('${o.dbId}',this.value)">
         <option value="0" ${!o.warrantyDays?'selected':''}>بدون ضمان</option>
@@ -1334,7 +1345,7 @@ function render(){
         <input class="city-search" id="pv_city_search" placeholder="🔍 ابحث وأضف مدينة…" oninput="citySearch(this.value)" autocomplete="off" />
         <div id="pv_city_results" class="city-results"></div>
         <div class="hint" style="margin:12px 2px 6px">مدنك المختارة:</div>
-        <div id="pv_city_chosen" class="chosen-cities">${(pvCitiesSel||(pvCitiesSel=myCities().slice())).map(c=>`<span class="ccity">${esc(cityLabel(c))}<button onclick="removeCityChip('${esc(c)}')">×</button></span>`).join('')||'<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'}</div>
+        <div id="pv_city_chosen" class="chosen-cities">${(pvCitiesSel||(pvCitiesSel=myCities().slice())).map(c=>`<span class="ccity">${esc(cityLabel(c))}<button data-city="${esc(c)}" onclick="removeCityChip(this.dataset.city)">×</button></span>`).join('')||'<span class="hint" style="margin:0">ابحث وأضف مدينة فوق 👆</span>'}</div>
         <button class="tbtn done" style="margin-top:12px;width:100%" onclick="saveMyCities()">💾 حفظ المدن</button>
       </div>`;
   }
@@ -1478,7 +1489,7 @@ function renderTeam(){
     <div style="margin-top:10px">
     ${TECHS.length? TECHS.map(t=>{ const pm=t.perms||{}; return `<div class="tech-card">
         <div class="tc-top"><span><b>${esc(t.name||'فني')}</b> <small style="color:var(--muted)">${esc(t.phone||'')}</small></span>
-          <button class="x-btn" onclick="removeTech('${t.user_id}','${esc((t.name||'').replace(/'/g,''))}')">إزالة</button></div>
+          <button class="x-btn" data-name="${esc(t.name||'')}" onclick="removeTech('${t.user_id}',this.dataset.name)">إزالة</button></div>
         <div class="perm-title">صلاحياته:</div>
         <div class="perm-chips">${[['accept','قبول الطلبات'],['stock','المخزن'],['invoices','الفواتير']].map(([pk,pl])=>`<button class="pchip ${pm[pk]?'on':''}" onclick="toggleTechPerm('${t.user_id}','${pk}')">${pm[pk]?'✓ ':''}${pl}</button>`).join('')}</div>
         <div class="perm-title" style="margin-top:9px">📍 مدينته:</div>
@@ -1594,7 +1605,7 @@ function renderStock(){
         <span class="qn ${stockLow(it)?'low':''}">${ar(+it.qty||0)}</span>
         <button class="qbtn" onclick="stockAdj(${it.id},1)">＋</button>
       </div>
-      <button class="x-btn" onclick="stockDel(${it.id},'${esc(String(stockName(it)).replace(/'/g,''))}')">حذف</button>
+      <button class="x-btn" data-name="${esc(String(stockName(it)))}" onclick="stockDel(${it.id},this.dataset.name)">حذف</button>
     </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه أصناف بعد — أضف أول صنف فوق.</div>`;
   return `
     <div class="mpanel">
@@ -1653,7 +1664,7 @@ function renderCustomers(){
     <div class="irow">
       <div class="in-nm"><b>${esc(c.name)}</b><small>${esc(c.phone||'')}${c.city?' · '+esc(c.city):''}</small></div>
       ${c.phone?`<a class="pill" href="tel:${esc(c.phone)}">📞</a>`:''}
-      <button class="x-btn" onclick="custDel(${c.id},'${esc(String(c.name).replace(/'/g,''))}')">حذف</button>
+      <button class="x-btn" data-name="${esc(String(c.name))}" onclick="custDel(${c.id},this.dataset.name)">حذف</button>
     </div>`).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه عملاء بعد — أضف أول عميل فوق.</div>`;
   return `
     <div class="mpanel">

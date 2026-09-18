@@ -553,19 +553,25 @@ const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
+/* ═ مخزن آمن ═ Keychain على آيفون: يبقى حتى بعد حذف التطبيق وإعادة تحميله، فيرجع حسابك مسجّلًا */
+const _khSec=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('SecureStoragePlugin'):null)||(C.Plugins&&C.Plugins.SecureStoragePlugin)||null; } }catch(e){} return null; })();
+const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_worker_auth','khafet_techlang','khafet_uilang','khafet_lang']);
+async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
+function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
+function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
 const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
 const KH_STORE={
-  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} return null; },
-  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} },
-  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} }
+  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} try{ if(_khPrefs) _khPrefs.set({key:k,value:sv}).catch(()=>{}); }catch(e){} return sv; } } return null; },
+  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
+  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
-  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} };
-  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); }catch(e){} };
+  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
+  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
 }catch(e){}
 /* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
-async function khRestore(){ if(!_khPrefs) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ localStorage.setItem(k,r.value); back.push(k); } }catch(e){} } return back; }
+async function khRestore(){ if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
 
 const BRAND='خافِت'; const COMMISSION=3;
 /* ---- دخول لوحة المؤسسة ----
@@ -589,7 +595,7 @@ function ilGo(d){ ilPage=Math.max(0,ilPage+d); renderImgLinker(); const o=docume
 function ilCard(it){
   const opts=IMGOPTS[it.id]||[]; const cur=it.image_url||'';
   const known=opts.some(u=>u===cur);
-  const grid=(cur&&!known?`<div class="il-opt sel" onclick="pickImg('${it.id}','${esc(cur)}')"><img src="${esc(cur)}" loading="lazy" /></div>`:'')+opts.map(u=>`<div class="il-opt ${u===cur?'sel':''}" onclick="pickImg('${it.id}','${esc(u)}')"><img src="${esc(u)}" loading="lazy" /></div>`).join('');
+  const grid=(cur&&!known?`<div class="il-opt sel" data-url="${esc(cur)}" onclick="pickImg('${it.id}',this.dataset.url)"><img src="${esc(cur)}" loading="lazy" /></div>`:'')+opts.map(u=>`<div class="il-opt ${u===cur?'sel':''}" data-url="${esc(u)}" onclick="pickImg('${it.id}',this.dataset.url)"><img src="${esc(u)}" loading="lazy" /></div>`).join('');
   return `<div class="il-item" id="il-${it.id}">
     <div class="il-head"><div class="wh-thumb">${cur?`<img src="${esc(cur)}" />`:(CAT_ICO[it.category]||'📦')}</div><div style="flex:1;min-width:0"><b>${esc(_enUI()?whName(it):it.name)}</b><small>${esc(it.code||'')} · ${cur?LX('لها صورة، اضغطي أخرى لتغييرها','Has image, tap another to change'):LX('بدون صورة، اختاري وحدة','No image yet, pick one')}</small></div></div>
     ${grid?`<div class="il-grid">${grid}</div>`:`<div class="il-empty">${LX('ما فيه خيارات جاهزة لهذا الصنف، صوّريه من الجوال','No ready options, take a photo')}</div>`}
@@ -653,6 +659,9 @@ const DATA_EN={
 function trData(v){ if(!_enUI()||v==null) return v; const k=String(v).trim(), own=Object.prototype.hasOwnProperty;
   if(own.call(DATA_EN,k)) return DATA_EN[k]; if(own.call(T_DICT,k)) return T_DICT[k]; return v; }
 function ordersN(n){ return LX(ar(n)+' طلب', n+(n===1?' order':' orders')); }
+
+/* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
+function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -909,7 +918,9 @@ let sb=null, cloudReady=false;
    الباكِت خاص — رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
-  const s=String(v);
+  const s=String(v).trim();
+  /* نقبل فقط مسارًا داخل الباكِت أو رابط تخزين المشروع، ونرفض أي scheme آخر */
+  if(/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https:\/\/[^/]*supabase\.co\/storage\//i.test(s)) return '';
   const m=s.match(/khafet-videos\/(.+?)(\?|$)/);
   return m ? decodeURIComponent(m[1]) : s;
 }
@@ -972,7 +983,8 @@ async function adminDevicePay(id){
 }
 async function retryRefund(id){
   const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId) return;
-  try{ const r=await fetch(SUPABASE_URL+'/functions/v1/pay/refund',{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON,'apikey':SUPABASE_ANON}, body:JSON.stringify({order_id:o.dbId}) });
+  try{ const ses=(await sb.auth.getSession()).data.session; const tok=(ses&&ses.access_token)||SUPABASE_ANON;   // الاسترجاع يحتاج جلسة مدير
+    const r=await fetch(SUPABASE_URL+'/functions/v1/pay/refund',{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok,'apikey':SUPABASE_ANON}, body:JSON.stringify({order_id:o.dbId}) });
     const j=await r.json(); const man=(j.payments||[]).some(p=>p.manual); const bad=(j.payments||[]).some(p=>p.ok===false);
     toast(bad?LX('ما نجح الاسترجاع، جرّب لاحقًا','Refund failed, try later'):(man?LX('دفعة جهاز الفني: رجّعها يدويًا للعميل','Card machine payment: refund it manually'):LX('✓ تم الاسترجاع','✓ Refunded'))); loadAll(); }
   catch(e){ toast(LX('تعذّر الاتصال','Connection failed')); }
@@ -1077,6 +1089,16 @@ function stStr(k,d){ return (SETTINGS[k]!=null&&SETTINGS[k]!=='')?String(SETTING
 function stJson(k,d){ try{ const v=JSON.parse(SETTINGS[k]); return v==null?d:v; }catch(e){ return d; } }
 async function loadSettings(){ if(!cloudReady) return; try{ const r=await sb.from('khafet_settings').select('key,value'); if(!r.error){ SETTINGS={}; (r.data||[]).forEach(x=>{ SETTINGS[x.key]=x.value; }); settingsLoaded=true; } }catch(e){} }
 const ST_GROUPS=[
+  { id:'legal', t:['⚖️ بيانات المنشأة','⚖️ Business identity'], d:['تظهر في الفواتير وصفحة الحساب كما تطلبه أنظمة التجارة الإلكترونية. لو سجّلت في ضريبة القيمة المضافة فعّل الخيار واكتب الرقم الضريبي، فتصير الفواتير ضريبية مبسطة برمز QR.','Shown on invoices and the account page as required by the e-commerce regulations. If VAT registered, switch it on and enter the VAT number; invoices become simplified tax invoices with a QR code.'], f:[
+    ['company_name','اسم المنشأة','Business name','text'],
+    ['cr_number','رقم السجل التجاري','Commercial registration number','text'],
+    ['unified_number','الرقم الموحد','Unified number','text'],
+    ['company_city','المدينة والمنطقة','City and region','text'],
+    ['vat_registered','مسجّلة في ضريبة القيمة المضافة','VAT registered','bool'],
+    ['vat_number','الرقم الضريبي (15 رقمًا)','VAT number (15 digits)','text'],
+    ['vat_pct','نسبة الضريبة (%)','VAT rate (%)','num'],
+    ['legal_email','بريد التواصل الرسمي','Official contact email','text'],
+    ['maroof_url','رابط توثيق معروف (اختياري)','Maroof verification link (optional)','text'] ] },
   { id:'commission', t:['💰 العمولة','💰 Commission'], d:['نسبتك من أجرة اليد فقط، لا على القطع ولا التوصيل. تُخصم تلقائيًا لأن العميل يدفع لخافت.','Your share of labour only, never parts or delivery. Deducted automatically because the customer pays Khafet.'], f:[
     ['commission_tech_pct','فني مستقل (%)','Independent technician (%)','num'],
     ['commission_provider_pct','مؤسسة أو مزود (%)','Company or provider (%)','num'],
@@ -1103,14 +1125,20 @@ const ST_GROUPS=[
     ['plans_enabled','الباقات السنوية ظاهرة للعملاء','Annual plans visible to customers','bool'],
     ['plan_apt_price','سعر باقة الشقة (ريال)','Apartment plan price (SAR)','num'],
     ['plan_home_price','سعر باقة البيت (ريال)','House plan price (SAR)','num'],
+    ['plan_promo_code','كود خصم الاشتراك','Subscription promo code','text'],
+    ['plan_promo_pct','خصم الكود (%)','Promo discount (%)','num'],
     ['plans_close','العرض يقفل بتاريخ','Offer closes on','date'] ] },
   { id:'capacity', t:['📊 قائمة الانتظار','📊 Waitlist'], d:['متى يقول لك المؤشر إن التخصص هادي أو يحتاج فني جديد.','When the indicator says a trade is quiet or needs a new technician.'], f:[
     ['cap_low','هادي تحت (طلب لكل فني بالشهر)','Quiet below (orders per tech per month)','num'],
-    ['cap_high','فعّل فني جديد فوق','Activate a new technician above','num'] ] },
+    ['cap_high','فعّل فني جديد فوق','Activate a new technician above','num'],
+    ['provider_auto_approve','المؤسسة الجديدة تُعتمد تلقائيًا إذا ملفها مكتمل (أطفئه لتعتمدها بنفسك)','New providers auto approved when complete (off = you approve manually)','bool'] ] },
   { id:'khafet', t:['📱 تطبيق خافت','📱 Khafet app'], d:['مفاتيح تشغيل وإيقاف في تطبيق العميل، تطبّق فور فتح التطبيق.','On/off switches in the customer app, applied as soon as the app opens.'], f:[
     ['booking_enabled','الحجز مفتوح (أطفئه في الإجازات أو الطوارئ)','Booking open (switch off for holidays or emergencies)','bool'],
     ['booking_msg','رسالة توقف الحجز','Booking paused message','text'],
     ['home_banner','إعلان أعلى الرئيسية (اتركه فارغًا لإخفائه)','Announcement at the top of home (leave empty to hide)','text'],
+    ['solutions_enabled','صفحة الحلول الجاهزة ظاهرة (حلول منازل أجيال)','Ready solutions page visible','bool'],
+    ['solutions_title','عنوان صفحة الحلول','Solutions page title','text'],
+    ['solutions_sub','وصف صفحة الحلول','Solutions page subtitle','text'],
     ['quick_enabled','الطلب السريع (معاينة) ظاهر','Quick request (inspection) visible','bool'],
     ['referral_enabled','كود صديق وخصم الإحالة','Friend code and referral discount','bool'],
     ['loyalty_target','مكافأة الولاء بعد كم طلب','Loyalty reward after N orders','num'],
@@ -1265,6 +1293,71 @@ async function artUpload(input){
     const { data }=sb.storage.from('khafet-articles').getPublicUrl(path);
     artEditing.image_url=data.publicUrl; toast('✅ رُفعت الصورة'); render();
   }catch(e){ toast('⚠️ '+(e.message||'تعذّر رفع الصورة')); }
+}
+/* ═══════ 🏘️ الحلول الجاهزة: مشكلة معروفة + سببها + حلها + سعر، وكل حل مربوط بخدمة قابلة للحجز ═══════ */
+let SOLS=[], solsLoaded=false;
+async function loadSolutionsAdmin(){
+  if(!cloudReady) return;
+  try{ const { data, error }=await sb.from('khafet_solutions').select('*').order('sort').order('created_at'); if(!error&&Array.isArray(data)){ SOLS=data; solsLoaded=true; } }catch(e){}
+}
+function renderSolutionsAdmin(){
+  const groups={}; SOLS.forEach(s=>{ (groups[s.group_key||'ajyal']=groups[s.group_key||'ajyal']||[]).push(s); });
+  const rows=SOLS.length? Object.keys(groups).map(g=>`
+    <div class="sub-h" style="margin:12px 0 6px;font-weight:900;color:var(--muted);font-size:.85rem">📍 ${esc(g)}</div>`+groups[g].map(s=>`
+    <div class="rline">
+      <div class="rl-t"><b>${esc(s.icon||'🔧')} ${esc(s.title)}</b><small>${s.active===false?LX('⚪ مخفي','⚪ Hidden'):LX('🟢 ظاهر','🟢 Visible')} · ${+s.price>0?money(s.price):LX('بعد المعاينة','after inspection')}${s.service_id?'':' · '+LX('⚠️ بلا خدمة مرتبطة','⚠️ no linked service')}</small></div>
+      <button class="sbtn" onclick="editSolution('${esc(s.id)}')">✏️</button>
+      <button class="sbtn ${s.active===false?'ok':''}" onclick="solToggle('${esc(s.id)}',${s.active===false})">${s.active===false?LX('أظهر','Show'):LX('إخفاء','Hide')}</button>
+      <button class="sbtn danger" onclick="solDelete('${esc(s.id)}')">🗑️</button>
+    </div>`).join('')).join('') : `<p style="color:var(--muted)">${solsLoaded?LX('ما فيه حلول بعد.','No solutions yet.'):LX('جارٍ التحميل…','Loading…')}</p>`;
+  return `<p class="sp-hint" style="margin-bottom:10px">${LX('كل حل يظهر للعميل كصفحة: المشكلة، ليش تصير، الحل، وش يشمل، والسعر. زر «اطلب الحل» يحجز الخدمة المرتبطة به. العنوان ووصف الصفحة من ⚙️ الإعدادات.','Each solution is a customer page: problem, cause, fix, what is included, price. The order button books the linked service.')}</p>
+    ${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="editSolution('')">➕ ${LX('حل جديد','New solution')}</button>`;
+}
+function editSolution(id){
+  const s=SOLS.find(x=>x.id===id)||{id:'',group_key:'ajyal',title:'',icon:'🔧',problem:'',cause:'',solution:'',includes:'',price:0,sort:(Math.max(0,...SOLS.map(x=>+x.sort||0))+10),active:true};
+  cgModal(`<h3>${id?LX('تعديل الحل','Edit solution'):LX('حل جديد','New solution')}</h3>
+    <div class="cg-row" style="grid-template-columns:1fr 90px 90px">
+      <label>${LX('العنوان','Title')}<input id="so_title" value="${esc(s.title)}" placeholder="${LX('مثال: الإنارة الخارجية DC','e.g. Outdoor DC lighting')}"></label>
+      <label>${LX('أيقونة','Icon')}<input id="so_icon" value="${esc(s.icon||'🔧')}" maxlength="8"></label>
+      <label>${LX('المجموعة','Group')}<input id="so_group" value="${esc(s.group_key||'ajyal')}"></label>
+    </div>
+    <label>😕 ${LX('المشكلة (وش يحس فيه الساكن)','Problem (what the resident notices)')}<textarea id="so_problem" rows="3">${esc(s.problem||'')}</textarea></label>
+    <label>🔍 ${LX('ليش تصير (السبب الفني بلغة بسيطة)','Why it happens')}<textarea id="so_cause" rows="3">${esc(s.cause||'')}</textarea></label>
+    <label>✅ ${LX('الحل (وش نسوي بالضبط)','The fix')}<textarea id="so_solution" rows="3">${esc(s.solution||'')}</textarea></label>
+    <label>📦 ${LX('وش يشمل السعر (قطع، ضمان، مدة)','What the price includes')}<textarea id="so_includes" rows="2">${esc(s.includes||'')}</textarea></label>
+    <label>🔘 ${LX('نص زر الطلب (مثال: اطلب تغيير المروحة)','Order button text')}<input id="so_cta" value="${esc(s.cta||'')}" placeholder="اطلب الحل"></label>
+    <div class="cg-row" style="grid-template-columns:1fr 1fr">
+      <label>${LX('أجرة الحل (ر.س)، 0 = بعد المعاينة','Price (SAR), 0 = after inspection')}<input id="so_price" type="number" min="0" inputmode="decimal" value="${+s.price||0}"></label>
+      <label>${LX('الترتيب','Sort')}<input id="so_sort" type="number" inputmode="numeric" value="${+s.sort||0}"></label>
+    </div>
+    <label class="cg-sw"><input type="checkbox" id="so_active" ${s.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
+    <div class="cg-acts"><button class="sbtn ok" onclick="saveSolution('${esc(s.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+}
+function solSlug(t){ return 'sol_'+String(t||'').toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)+'-'+Date.now().toString(36).slice(-4); }
+async function saveSolution(id){
+  const title=cgVal('so_title'); if(!title){ toast(LX('اكتب عنوان الحل','Enter a title')); return; }
+  const old=SOLS.find(x=>x.id===id);
+  const price=Math.max(0, Number(cgVal('so_price'))||0);
+  const row={ group_key:cgVal('so_group')||'ajyal', title, icon:cgVal('so_icon')||'🔧', problem:cgVal('so_problem'), cause:cgVal('so_cause'), solution:cgVal('so_solution'), includes:cgVal('so_includes'), cta:(cgVal('so_cta')||'').trim()||null, price, sort:Math.round(Number(cgVal('so_sort'))||0), active:cgChk('so_active') };
+  if(id) row.id=id;
+  // الخدمة المرتبطة: تُنشأ تلقائيًا في قسم «حلول» (مخفي من الشبكة) حتى يقدر العميل يحجزها
+  let svcId=(old&&old.service_id)||null;
+  try{
+    if(!svcId){ svcId=solSlug(title); const ins=await sb.from('khafet_services').upsert({ id:svcId, cat_id:row.group_key==='ajyal'?'ajyal':'gen', name:title, icon:row.icon, price, duration:60, custom:price<=0, hidden:true, active:true, quick:false, description:(row.problem||'').split('\n')[0].slice(0,140), sort:900 }); if(ins.error) svcId=null; }
+    else { await sb.from('khafet_services').update({ name:title, icon:row.icon, price, custom:price<=0, active:true }).eq('id',svcId); }
+  }catch(e){ svcId=(old&&old.service_id)||null; }
+  if(svcId) row.service_id=svcId;
+  const { error }=await sb.from('khafet_solutions').upsert(row);
+  if(error){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
+  closeCg(); toast(LX('✓ انحفظ الحل','✓ Solution saved')); await loadSolutionsAdmin(); await loadCatalog(); render();
+}
+async function solToggle(id,on){ const { error }=await sb.from('khafet_solutions').update({active:!!on}).eq('id',id); if(error){ toast(LX('ما انحفظ','Not saved')); return; } await loadSolutionsAdmin(); render(); }
+async function solDelete(id){
+  const s=SOLS.find(x=>x.id===id); if(!s) return;
+  if(!confirm(LX('حذف الحل «'+s.title+'»؟','Delete "'+s.title+'"?'))) return;
+  const { error }=await sb.from('khafet_solutions').delete().eq('id',id); if(error){ toast(LX('ما انحذف','Not deleted')); return; }
+  if(s.service_id && /^sol_/.test(s.service_id)){ try{ await sb.from('khafet_services').update({active:false}).eq('id',s.service_id); }catch(e){} }
+  await loadSolutionsAdmin(); render();
 }
 function renderArticles(){
   if(artEditing){
@@ -1490,9 +1583,9 @@ function renderProviders(){
   const chips=[['all','الكل',PROVIDERS.length],['pending','معلّق',nPend],['approved','معتمد',cnt('approved')],['suspended','موقوف',cnt('suspended')],['rejected','مرفوض',cnt('rejected')]];
   const cards=list.map(p=>{ const st=p.status||'pending'; const sv=Array.isArray(p.services)?p.services.map(trData).join(LX('، ',', ')):trData(p.services||'');
     let acts='';
-    if(st==='pending') acts=`<button class="sbtn ok" onclick="approveProvider('${esc(p.phone)}','approved')">✔️ اعتماد</button><button class="sbtn danger" onclick="approveProvider('${esc(p.phone)}','rejected')">رفض</button>`;
-    else if(st==='approved') acts=`<button class="sbtn danger" onclick="suspendProvider('${esc(p.phone)}','suspended')">⏸️ إيقاف</button>`;
-    else acts=`<button class="sbtn ok" onclick="suspendProvider('${esc(p.phone)}','approved')">▶️ تفعيل</button>`;
+    if(st==='pending') acts=`<button class="sbtn ok" data-phone="${esc(p.phone)}" onclick="approveProvider(this.dataset.phone,'approved')">✔️ اعتماد</button><button class="sbtn danger" data-phone="${esc(p.phone)}" onclick="approveProvider(this.dataset.phone,'rejected')">رفض</button>`;
+    else if(st==='approved') acts=`<button class="sbtn danger" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'suspended')">⏸️ إيقاف</button>`;
+    else acts=`<button class="sbtn ok" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'approved')">▶️ تفعيل</button>`;
     return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st)}</span>
       <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
@@ -1542,12 +1635,12 @@ function renderAdminOrder(o){
     <div class="abody">
       <div><div class="k">📅 الموعد</div>${dayLabel(o.date)} · ${fmtTime(o.startMin)}</div>
       <div><div class="k">⏱️ المدة</div>${fmtDur(o.duration)}</div>
-      <div><div class="k">📍 الموقع</div>${[[trData(a.city),a.district].filter(Boolean).map(esc).join(LX('، ',', ')), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||LX('📍 خريطة','📍 Map')}${a.mapUrl?` · <a href="${esc(a.mapUrl)}" target="_blank" style="color:#7c3aed;font-weight:800">🗺️</a>`:''}${a.photoUrl?` · <button onclick="openMedia('${esc(a.photoUrl)}')" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🏠 صورة المنزل</button>`:''}</div>
+      <div><div class="k">📍 الموقع</div>${[[trData(a.city),a.district].filter(Boolean).map(esc).join(LX('، ',', ')), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||LX('📍 خريطة','📍 Map')}${safeUrl(a.mapUrl)?` · <a href="${esc(safeUrl(a.mapUrl))}" target="_blank" style="color:#7c3aed;font-weight:800">🗺️</a>`:''}${a.photoUrl?` · <button data-media="${esc(a.photoUrl)}" onclick="openMedia(this.dataset.media)" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🏠 صورة المنزل</button>`:''}</div>
       <div><div class="k">${LX('💳 الدفع','💳 Payment')}</div>${payCell(o)}</div>
       <div><div class="k">💰 الإجمالي</div>${o.free?LX('مجاني 🎁','Free 🎁'):money(o.finalPrice)}${o.discountPct>0?` <span style="color:#0b7a3b;font-weight:800">${LX(`🎟️ خصم ${ar(o.discountPct)}٪`,`🎟️ ${o.discountPct}% off`)}${o.promoCode?' ('+esc(o.promoCode)+')':''}</span>`:''}</div>
       ${o.providerPhone?`<div><div class="k">🤝 المزوّد</div>${esc(provName(o.providerPhone))}</div>`:''}
       ${o.note?`<div><div class="k">🛠️ المشكلة</div>${esc(o.note)}</div>`:''}
-      ${o.videoUrl?`<div><div class="k">📷 صورة/مقطع</div><button onclick="openMedia('${esc(o.videoUrl)}')" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🎥 عرض</button></div>`:''}
+      ${o.videoUrl?`<div><div class="k">📷 صورة/مقطع</div><button data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🎥 عرض</button></div>`:''}
       ${o.rating?`<div><div class="k">⭐ التقييم</div>${'⭐'.repeat(o.rating)}</div>`:''}
       ${o.feedback?`<div${(o.rating&&o.rating<5)?' style="grid-column:1/-1"':''}><div class="k">${(o.rating&&o.rating<5)?'🚨 شكوى العميل':'💬 ملاحظة العميل'}</div><span${(o.rating&&o.rating<5)?' style="color:#c0392b;font-weight:700"':''}>${esc(o.feedback)}</span></div>`:''}
       ${(o.rating===5 && o.feedback)?`<div style="grid-column:1/-1"><div class="k">⭐ التحكم بالتقييم في الرئيسية</div>
@@ -1671,6 +1764,7 @@ function render(){
     ['store','📦 المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length],
     ['prices','🗂️ الخدمات', 0],
     ['joins','📨 طلبات الانضمام', JOINREQ.filter(x=>x.status==='new').length],
+    ['solutions','🏘️ الحلول', 0],
     ['settings','⚙️ الإعدادات', 0],
   ];
   const CARDS=[
@@ -1681,6 +1775,7 @@ function render(){
     ['prices','🗂️',LX('الأقسام والخدمات','Sections & services'), 0, LX('الأقسام · الخدمات · الأسعار','Sections · services · prices'), false],
     ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
     ['joins','📨',LX('طلبات الانضمام','Join requests'), JOINREQ.filter(x=>x.status==='new').length, LX('فنيين ومقدمي خدمات · خدماتهم وأسعارهم','Technicians and providers · their services and prices'), false],
+    ['solutions','🏘️',LX('الحلول الجاهزة','Ready solutions'), 0, LX('مشاكل معروفة في بيوت أجيال وحلّها بسعر ثابت · تظهر للعميل كصفحة','Known Ajyal home problems with a fixed-price fix · shown to customers as a page'), false],
     ['settings','⚙️',LX('الإعدادات','Settings'), 0, LX('العمولة، الإلغاء، الضمان، التغطية، المواعيد، الباقات، التواصل','Commission, cancellation, warranty, coverage, hours, plans, contact'), false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
@@ -1716,8 +1811,10 @@ function render(){
     body=renderJoinReqs();
   } else if(adminSection==='settings'){
     body=renderSettings();
+  } else if(adminSection==='solutions'){
+    body=block(LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'), renderSolutionsAdmin());
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings')})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     <div class="stats">
@@ -1737,7 +1834,7 @@ function render(){
          <div style="margin-top:12px">${body}</div>`}
   </div>`;
 }
-function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
 
 /* ═══════ 📨 طلبات الانضمام: من النموذج العام (rezq/join) مباشرة إلى جدول khafet_join_requests ═══════ */
 async function loadJoinReqs(){

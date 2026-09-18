@@ -68,7 +68,7 @@ function whMain(){
 function whCard(it){
   const st=invState(it), q=+it.qty||0;
   const badge=st==='out'?`<span class="ws-badge out">⛔ ${whL('نفد','Out')}</span>`:st==='low'?`<span class="ws-badge low">⚠️ ${whL('اطلب','Reorder')}</span>`:'';
-  const thumbClick=it.image_url?`onclick="whZoom('${whE(it.image_url)}')"`:(whH().canEdit()?`onclick="whForm('${it.id}')"`:'');
+  const thumbClick=it.image_url?`data-img="${whE(it.image_url)}" onclick="whZoom(this.dataset.img)"`:(whH().canEdit()?`onclick="whForm('${it.id}')"`:'');
   return `<div class="ws-item st-${st}" id="ws-${it.id}">
     <div class="ws-thumb" ${thumbClick}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
     <div class="ws-body">
@@ -98,7 +98,7 @@ function whBody(){
   } else body=`<div class="ws-list" style="margin-top:6px">${list.map(whCard).join('')}</div>`;
   return chips+body;
 }
-function whZoom(url){ if(!url) return; document.body.insertAdjacentHTML('beforeend',`<div class="wh-lightbox" onclick="this.remove()"><img src="${whE(url)}" /></div>`); }
+function whZoom(url){ if(!url) return; url=String(url).trim(); if(/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url)) return; document.body.insertAdjacentHTML('beforeend',`<div class="wh-lightbox" onclick="this.remove()"><img src="${whE(url)}" /></div>`); }
 /* الكمية بالأزرار: الرقم يتحدّث فورًا، والحركة تُسجَّل مرة واحدة بعد 1.4 ثانية من آخر ضغطة */
 function whPaint(it){ const n=document.getElementById('wsn-'+it.id); if(n) n.textContent=whNx(+it.qty||0); const m=document.getElementById('wsm-'+it.id); if(m) m.disabled=(+it.qty||0)<=0; const c=document.getElementById('ws-'+it.id); if(c) c.className='ws-item st-'+invState(it); }
 function whStep(id,d){
@@ -153,7 +153,7 @@ function whRenderEdit(){
 }
 function whRow(it){
   return `<div class="we-row" id="we-${it.id}">
-    <div class="we-thumb-wrap"><div class="we-thumb" ${it.image_url?`onclick="whZoom('${whE(it.image_url)}')"`:''}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
+    <div class="we-thumb-wrap"><div class="we-thumb" ${it.image_url?`data-img="${whE(it.image_url)}" onclick="whZoom(this.dataset.img)"`:''}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
       <label class="we-cam" title="${whL('صورة','Photo')}">📷<input type="file" accept="image/*" onchange="whRowPhoto('${it.id}',this)" /></label></div>
     <div class="we-fields">
       <input class="we-name" value="${whE(it.name)}" placeholder="${whL('اسم الصنف','Item name (Arabic)')}" onchange="whSave('${it.id}','name',this.value)" />
@@ -322,7 +322,7 @@ function whForm(id){
         <div class="btns"><label class="wh-btn ok camlbl">📷 ${whL('صورة الصنف','Item photo')}<input type="file" accept="image/*" onchange="whPickPhoto(this)" /></label>
         <button class="wh-btn" onclick="whRemovePhoto('${it?it.id:''}')">🗑 ${whL('بدون صورة','Remove')}</button></div>
         <small style="color:var(--muted,#6E685B);font-weight:600;font-size:.74rem">${whL('تظهر للفني عند اختيار القطعة وللعميل في طلباتي','Shown to technicians and customers')}</small></div>
-      ${opts.length?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${whL('خيارات جاهزة، اضغط وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${opts.map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" onclick="whH().pickImg('${it.id}','${whE(u)}');const im=document.getElementById('wf_img');if(im)im.innerHTML='<img src=&quot;'+'${whE(u)}'+'&quot; />';this.parentElement.querySelectorAll('.il-opt').forEach(x=>x.classList.remove('sel'));this.classList.add('sel')"><img src="${whE(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
+      ${opts.length?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${whL('خيارات جاهزة، اضغط وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${opts.map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" data-url="${whE(u)}" onclick="whPickOpt('${it.id}',this)"><img src="${whE(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
       <label class="full">${whL('اسم الصنف بالعربي','Item name (Arabic)')}<input id="wf_name" value="${whE(v.name)}" placeholder="لمبة 9 وات أصفر" /></label>
       <label class="full">${whL('الاسم بالإنجليزي (يظهر للفنيين غير العرب)','English name (shown to non-Arabic technicians)')}<input id="wf_name_en" dir="ltr" value="${whE(v.name_en||'')}" placeholder="9W bulb warm" /></label>
       <label>${whL('الفئة','Category')}<select id="wf_cat">${INV_CATS.map(c=>`<option value="${c}" ${whCat(v)===c?'selected':''}>${whCatLbl(c)}</option>`).join('')}</select></label>
@@ -340,6 +340,14 @@ function whForm(id){
   setTimeout(()=>{ const e=document.getElementById('wf_name'); if(e&&!it) e.focus(); },50);
 }
 function whFormClose(){ const o=document.getElementById('whOv'); if(o) o.remove(); }
+/* اختيار صورة جاهزة من نافذة الصنف: الرابط يُقرأ من data-url وليس من نص المعالج */
+function whPickOpt(id,el){
+  const u=(el&&el.dataset&&el.dataset.url)||'';
+  try{ whH().pickImg(id,u); }catch(e){}
+  const im=document.getElementById('wf_img');
+  if(im){ im.innerHTML=''; const g=document.createElement('img'); g.src=u; im.appendChild(g); }
+  if(el&&el.parentElement){ el.parentElement.querySelectorAll('.il-opt').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); }
+}
 function whAfter(){ if(whState.editOpen){ const box=document.getElementById('weList'); if(box) box.innerHTML=whEditList(); } if(whState.poOpen) whRenderPO(); if(whH().cacheSave) whH().cacheSave(); whH().afterChange(); }
 async function whFormSave(id){
   const g=k=>{ const e=document.getElementById(k); return e?e.value.trim():''; };

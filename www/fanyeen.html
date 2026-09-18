@@ -529,19 +529,25 @@ const SUPABASE_URL  = 'https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
+/* ═ مخزن آمن ═ Keychain على آيفون: يبقى حتى بعد حذف التطبيق وإعادة تحميله، فيرجع حسابك مسجّلًا */
+const _khSec=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('SecureStoragePlugin'):null)||(C.Plugins&&C.Plugins.SecureStoragePlugin)||null; } }catch(e){} return null; })();
+const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_worker_auth','khafet_techlang','khafet_uilang','khafet_lang']);
+async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
+function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
+function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
 const KH_MIRROR=new Set(['khafet_techlang','kh_tour_done','siyanah_v1','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
 const KH_STORE={
-  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} return null; },
-  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} },
-  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} }
+  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} try{ if(_khPrefs) _khPrefs.set({key:k,value:sv}).catch(()=>{}); }catch(e){} return sv; } } return null; },
+  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
+  async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
-  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} };
-  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); }catch(e){} };
+  Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
+  Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
 }catch(e){}
 /* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
-async function khRestore(){ if(!_khPrefs) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ localStorage.setItem(k,r.value); back.push(k); } }catch(e){} } return back; }
+async function khRestore(){ if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
 
 const SAVE_KEY = 'siyanah_v1';
 const BRAND='خافِت'; const PHONE='0590497866';
@@ -694,6 +700,9 @@ function t(k){ return I18N[lang][k]; }
 const DIGITS={ ar:'٠١٢٣٤٥٦٧٨٩', ur:'۰۱۲۳۴۵۶۷۸۹', hi:'०१२३४५६७८९', ne:'०१२३४५६७८९', en:'0123456789' };
 function ar(n){ const d=DIGITS[lang]||DIGITS.en; return String(n).replace(/[0-9]/g,x=>d[+x]); }
 function arNum(n){ return String(n).replace(/[0-9]/g,x=>'٠١٢٣٤٥٦٧٨٩'[+x]); } // عربي دائماً (للفاتورة المطبوعة للعميل)
+
+/* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
+function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 /* حماية: لو الخدمة بلا اسم (بيانات ناقصة) نعرض شرطة بدل undefined */
 function svcName(item){ const nm=item.name||'—'; if(lang==='ar') return nm; const tr=SVC_I18N[item.id]; return (tr&&tr[lang])?tr[lang]:nm; }
@@ -720,7 +729,9 @@ let sb=null, cloudReady=false;
    الباكِت خاص — نولّد رابطاً موقّعاً ينتهي بعد ١٠ دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
-  const s=String(v);
+  const s=String(v).trim();
+  /* نقبل فقط مسارًا داخل الباكِت أو رابط تخزين المشروع، ونرفض أي scheme آخر */
+  if(/^[a-z][a-z0-9+.-]*:/i.test(s) && !/^https:\/\/[^/]*supabase\.co\/storage\//i.test(s)) return '';
   const m=s.match(/khafet-videos\/(.+?)(\?|$)/);
   return m ? decodeURIComponent(m[1]) : s;
 }
@@ -886,6 +897,14 @@ async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const sr
 /* إعدادات الإدارة اللي تهم رزق: إعلان الفنيين */
 let KHSET={};
 function rizqBanner(){ const t=String(KHSET.rizq_announcement||'').trim(); return t?`<div class="rz-banner">📣 ${esc(t)}</div>`:''; }
+/* بيانات المنشأة للفاتورة (من الإعدادات) */
+function khLegal(){ const s=k=>String(KHSET[k]==null?'':KHSET[k]).trim(); const on=v=>v==='1'||v==='true';
+  return { name:s('company_name')||'مؤسسة خافت للسباكة والكهرباء', cr:s('cr_number')||'2052105014', uni:s('unified_number')||'7042751284', city:s('company_city')||'الخبر، المنطقة الشرقية',
+           vat:on(s('vat_registered')), vatNo:s('vat_number'), vatPct:+s('vat_pct')||15 }; }
+function khLegalLine(){ const L=khLegal(); return `${esc(L.name)} · س.ت ${arNum(L.cr)} · الرقم الموحد ${arNum(L.uni)} · ${esc(L.city)}`; }
+function khVatLine(){ const L=khLegal(); return (L.vat&&L.vatNo)?`الرقم الضريبي ${arNum(L.vatNo)} · الأسعار شاملة ضريبة القيمة المضافة ${arNum(L.vatPct)}٪`:'المنشأة غير مسجّلة في ضريبة القيمة المضافة، والأسعار لا تشمل ضريبة'; }
+function khVatOf(total){ const L=khLegal(); if(!(L.vat&&L.vatNo)) return 0; return Math.round((total-total/(1+L.vatPct/100))*100)/100; }
+function khQr(total, vatAmt, when){ const L=khLegal(); if(!(L.vat&&L.vatNo)) return ''; try{ const enc=new TextEncoder(); const parts=[[1,L.name],[2,L.vatNo],[3,new Date(when||Date.now()).toISOString()],[4,(+total).toFixed(2)],[5,(+vatAmt).toFixed(2)]]; let s=''; for(const [t,v] of parts){ const b=enc.encode(String(v)); s+=String.fromCharCode(t)+String.fromCharCode(b.length); b.forEach(c=>{ s+=String.fromCharCode(c); }); } return btoa(s); }catch(e){ return ''; } }
 function toggleInv(){ showInv=!showInv; render(); }
 /* ═══ صندوق الصادر: أي حفظ يفشل (نت ضعيف) يُحفظ في الجهاز ويُعاد إرساله تلقائيًا، و«تم» لا تظهر إلا بعد نجاح الحفظ فعلًا ═══ */
 const OUTBOX_KEY='kh_outbox';
@@ -1292,14 +1311,16 @@ function printInvoiceDoc(o){
 .noprint{text-align:center;margin-top:16px}.noprint button{padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit}
 @media print{.noprint{display:none}.top{border-radius:0}}
 </style></head><body>
-<div class="top"><div class="brand"><span class="lg">🔧</span><div><b>${BRAND}</b><small>للصيانة المنزلية · الخبر</small></div></div><div class="no"><b>فاتورة ${esc(o.id)}</b><small>${ds}</small></div></div>
+<div class="top"><div class="brand"><span class="lg">🔧</span><div><b>${BRAND}</b><small>${esc(khLegal().name)} · س.ت ${arNum(khLegal().cr)}</small></div></div><div class="no"><b>${(khLegal().vat&&khLegal().vatNo)?'فاتورة ضريبية مبسطة':'فاتورة'} ${esc(o.id)}</b><small>${ds}</small></div></div>
 <div class="wrap">
 <div class="meta"><div><span>العميل</span>${esc((o.customer||{}).name||'')}</div><div><span>الجوال</span>${esc((o.customer||{}).phone||'')}</div>${addr?`<div><span>العنوان</span>${esc(addr)}</div>`:''}${o.date?`<div><span>تاريخ الخدمة</span>${esc(o.date)}</div>`:''}</div>
 ${sec('الشغل',g.svc,'svc')}${sec('القطع والأغراض',g.part,'part')}${sec('الرسوم',g.fee,'fee')}
-<div class="sum">${disc>0?`<div><span>المجموع</span><span>${m(sub)}</span></div><div class="g"><span>🎟️ خصم ${arNum(inv.discountPct)}٪</span><span>− ${m(disc)}</span></div>`:''}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
+<div class="sum">${disc>0?`<div><span>المجموع</span><span>${m(sub)}</span></div><div class="g"><span>🎟️ خصم ${arNum(inv.discountPct)}٪</span><span>− ${m(disc)}</span></div>`:''}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${khVatOf(total)>0?`<div><span>منها ضريبة القيمة المضافة ${arNum(khLegal().vatPct)}٪</span><span>${m(khVatOf(total))}</span></div>`:''}${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
 <div class="wr"><span>🛡️ ضمان الشغل ${o.warrantyDays>0?arNum(o.warrantyDays)+' يوم':'٧ أيام'}</span>${g.part.length?'<span>🔩 ضمان القطع سنتان</span>':''}</div>
-<div class="ft">شكراً لتعاملك مع ${BRAND} · ${PHONE}</div>
+${khQr(total, khVatOf(total), o.date)?`<div id="qr" style="margin:14px auto 0;width:140px"></div>`:''}
+<div class="ft">${khLegalLine()}<br>${khVatLine()}<br>شكراً لتعاملك مع ${BRAND} · ${PHONE}</div>
 <div class="noprint"><button onclick="print()">🖨️ طباعة</button></div>
+${khQr(total, khVatOf(total), o.date)?`<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>try{ new QRCode(document.getElementById('qr'),{text:'${khQr(total, khVatOf(total), o.date)}',width:140,height:140}); }catch(e){}<\/script>`:''}
 </div>
 </body></html>`;
   const w=window.open('','_blank'); if(!w){ toast(lg('popup')); return; } w.document.write(html); w.document.close();
@@ -2006,7 +2027,7 @@ function renderBookTab(){
       :(bkFound?`<div class="bk-found">${bkFound.map(f=>`<span class="${f[1]?'ok':'miss'}">${f[1]?'✓':(A?'ناقص:':'Missing:')} ${f[0]}</span>`).join('')}</div>`:`<p class="bk-wa-hint">${A?'تنسخ رسائل العميل وتلصقها، وتتعبى البيانات لحالها.':'Paste the customer chat and the form fills itself.'}</p>`)}
     </div>`;
   const locBlock = bkVals.mapUrl
-    ? `<div class="bk-loc"><span class="bk-loc-ok">✅ ${A?'الموقع جاهز':'Location set'} · <a href="${esc(bkVals.mapUrl)}" target="_blank" rel="noopener">${A?'افتح الخريطة':'Open map'}</a></span><button type="button" class="bk-x" onclick="bkClearMap()" aria-label="${A?'مسح الموقع':'Clear location'}">×</button></div>`
+    ? `<div class="bk-loc"><span class="bk-loc-ok">✅ ${A?'الموقع جاهز':'Location set'} · <a href="${esc(safeUrl(bkVals.mapUrl))}" target="_blank" rel="noopener">${A?'افتح الخريطة':'Open map'}</a></span><button type="button" class="bk-x" onclick="bkClearMap()" aria-label="${A?'مسح الموقع':'Clear location'}">×</button></div>`
     : `<div class="bk-maplink"><input id="bk_mapin" inputmode="url" value="${esc(bkVals.mapIn||'')}" oninput="bkVals.mapIn=this.value" onpaste="setTimeout(()=>bkSetMap(this.value),0)" onchange="if(this.value.trim())bkSetMap(this.value)" placeholder="${A?'الصق رابط الموقع من الواتس':'Paste the location link'}" />
         <button type="button" class="tbtn inv" onclick="bkPasteMap()">📋 ${A?'لصق':'Paste'}</button></div>
        <div class="bk-loc"><button type="button" class="tbtn inv" onclick="bkLocate()">📍 ${A?'أو حدد موقعي الحالي':'Or use my current location'}</button></div>`;
@@ -2158,7 +2179,7 @@ function render(){
     const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const partsTxt=(o.items||[]).filter(isPart).map(i=>'🔩 '+esc(i.name)+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const addr=[a.city,a.district,a.street].filter(Boolean).join(' · ');
-    const mapUrl=a.mapUrl || ('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')));
+    const mapFallback='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')); const mapUrl=safeUrl(a.mapUrl, mapFallback);
     const gpsPin=!!(a.lat&&a.lng);
     let acts='';
     // التسلسل الإلزامي: وصلت الموقع → بدء العمل → إنهاء
@@ -2212,12 +2233,12 @@ function render(){
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
         ${partsTxt?`<div class="tj-row"><span class="tj-k">🔩 ${lang==='ar'?'قطع محجوزة مع الطلب':lang==='en'?'Parts booked':lang==='ur'?'بک شدہ پارٹس':'बुक पार्ट्स'}</span><span class="tj-v">${partsTxt}<div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:2px">${lang==='ar'?'خذها معك من المستودع، مدفوعة مع الحجز':'Take them from stock, paid with the booking'}</div></span></div>`:''}
         ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ ${t('problem')}</span><span class="tj-v">${esc(o.note)}${lang!=='ar'?` <a class="ttrans" href="https://translate.google.com/?sl=auto&tl=${lang}&text=${encodeURIComponent(o.note)}&op=translate" target="_blank" rel="noopener">${t('translate')}</a>`:''}</span></div>`:''}
-        ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 ${lang==='ne'?'फोटो/भिडियो':lang==='en'?'Photo/Video':lang==='hi'?'फोटो/वीडियो':lang==='ur'?'تصویر/ویڈیو':'صورة/مقطع'}</span><span class="tj-v"><button class="tvideo" onclick="openMedia('${esc(o.videoUrl)}')">${t('watchVideo')}</button></span></div>`:''}
+        ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 ${lang==='ne'?'फोटो/भिडियो':lang==='en'?'Photo/Video':lang==='hi'?'फोटो/वीडियो':lang==='ur'?'تصویر/ویڈیو':'صورة/مقطع'}</span><span class="tj-v"><button class="tvideo" data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)">${t('watchVideo')}</button></span></div>`:''}
         <div class="tj-row"><span class="tj-k">⏱️ ${t('duration')}</span><span class="tj-v">${jobDur(o.duration)}</span></div>
         <div class="tj-row loc-row"><span class="tj-k">📍 ${t('location')}</span><span class="tj-v">${[addr, a.house?t('house')+' '+esc(a.house):''].filter(Boolean).join(' · ')||(gpsPin?'📍 GPS':'')}
           ${a.mark?`<div style="color:var(--muted);font-weight:600;margin-top:2px">🚩 ${esc(a.mark)}</div>`:''}
           <a class="tmap" href="${mapUrl}" target="_blank" rel="noopener">🗺️ ${gpsPin?'📍 ':''}${t('openMap')}</a>
-          ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" onclick="openMedia('${esc(a.photoUrl)}')">🏠 ${lang==='ne'?'घरको फोटो':lang==='en'?'House photo':lang==='hi'?'घर की फोटो':lang==='ur'?'گھر کی تصویر':'صورة المنزل'}</button>`:''}</span></div>
+          ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" data-media="${esc(a.photoUrl)}" onclick="openMedia(this.dataset.media)">🏠 ${lang==='ne'?'घरको फोटो':lang==='en'?'House photo':lang==='hi'?'घर की फोटो':lang==='ur'?'گھر کی تصویر':'صورة المنزل'}</button>`:''}</span></div>
         <div class="tj-row"><span class="tj-k">👤 ${t('customer')}</span><span class="tj-v">${esc(o.customer.name)}
           <div class="contact-btns">
             <a class="twa" href="${waLink(o.customer.phone,'')}" target="_blank" rel="noopener">💬 ${t('whatsapp')}</a>

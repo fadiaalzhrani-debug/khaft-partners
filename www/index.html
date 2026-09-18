@@ -25,7 +25,8 @@
   var done=false; function finish(){ if(done) return; done=true; document.documentElement.classList.remove('boot'); }
   setTimeout(finish,2500);
   var KEYS=['khafet_techlang','kh_lang_chosen','khafet_worker_auth','khafet_staff_ok','khafet_provider_phone','khafet_admin_ok','khafet_remember','khafet_uilang','khafet_lang'];
-  Promise.all(KEYS.map(function(k){ return P.get({key:k}).then(function(r){ if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} } }).catch(function(){}); }))
+  function fromSec(k){ if(!Sx) return Promise.resolve(); return Sx.get({key:k}).then(function(r){ if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} } }).catch(function(){}); }
+  Promise.all(KEYS.map(function(k){ if(!P) return fromSec(k); return P.get({key:k}).then(function(r){ if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} } else return fromSec(k); }).catch(function(){ return fromSec(k); }); }))
     .then(function(){ var t2=target(); if(t2){ location.replace(t2); } else finish(); }).catch(finish);
 })();
 </script>
