@@ -1132,6 +1132,18 @@ const ST_GROUPS=[
     ['cap_low','هادي تحت (طلب لكل فني بالشهر)','Quiet below (orders per tech per month)','num'],
     ['cap_high','فعّل فني جديد فوق','Activate a new technician above','num'],
     ['provider_auto_approve','المؤسسة الجديدة تُعتمد تلقائيًا إذا ملفها مكتمل (أطفئه لتعتمدها بنفسك)','New providers auto approved when complete (off = you approve manually)','bool'] ] },
+  { id:'limits', t:['🎛️ حدود الطلبات','🎛️ Order limits'], d:['حماية من الإغراق والأرقام المزعجة. الحدود تُطبّق في الخادم فورًا.','Protection against spam and unwanted numbers. Limits apply on the server immediately.'], f:[
+    ['max_orders_per_day','أقصى طلبات للعميل في اليوم','Max orders per customer per day','num'],
+    ['max_open_orders','أقصى طلبات مفتوحة للعميل في نفس الوقت','Max open orders per customer at once','num'],
+    ['advance_min_days','خصم الحجز المبكر إذا الموعد بعد كم يوم','Early booking discount when the visit is at least N days away','num'],
+    ['advance_pct','نسبة خصم الحجز المبكر (%)، صفر يوقفه','Early booking discount (%), 0 disables','num'],
+    ['blocked_phones','أرقام محظورة من الطلب (رقم في كل سطر أو بفاصلة). يوصلهم «تواصل معنا» بدل الطلب','Blocked phone numbers (one per line or comma separated). They see “contact us” instead of booking','text'] ] },
+  { id:'home', t:['🏠 الرئيسية','🏠 Home screen'], d:['نصوص وبطاقات الشاشة الأولى في تطبيق خافت. تتطبق فور فتح التطبيق.','Texts and cards on the first screen of the Khafet app. Apply when the app opens.'], f:[
+    ['hero_title','العنوان الكبير','Main title','text'],
+    ['hero_sub','السطر الثاني','Second line','text'],
+    ['hero_sub2','السطر الثالث','Third line','text'],
+    ['majlis_enabled','بطاقة «ابنِ مجلسك» ظاهرة','“Build your majlis” card visible','bool'],
+    ['reviews_enabled','آراء العملاء ظاهرة في الرئيسية','Customer reviews visible on home','bool'] ] },
   { id:'khafet', t:['📱 تطبيق خافت','📱 Khafet app'], d:['مفاتيح تشغيل وإيقاف في تطبيق العميل، تطبّق فور فتح التطبيق.','On/off switches in the customer app, applied as soon as the app opens.'], f:[
     ['booking_enabled','الحجز مفتوح (أطفئه في الإجازات أو الطوارئ)','Booking open (switch off for holidays or emergencies)','bool'],
     ['booking_msg','رسالة توقف الحجز','Booking paused message','text'],
@@ -1160,7 +1172,7 @@ function renderSettings(){
     <h3>${LX(g.t[0],g.t[1])}</h3><p class="st-d">${LX(g.d[0],g.d[1])}</p>
     ${g.f.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
       if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
-      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
+      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
       if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
       return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" type="${ty==='num'?'number':(ty==='date'?'date':'text')}" ${ty==='num'?'inputmode="decimal" step="any"':''} value="${esc(v)}"></label>`; }).join('')}
     <button class="sbtn ok" style="width:100%;margin-top:8px" onclick="saveSettingsGroup('${g.id}')">💾 ${LX('حفظ','Save')}</button>
@@ -1790,7 +1802,7 @@ function render(){
     </div>`).join('')}</div>`;
   let body='';
   if(adminSection==='orders'){
-    body=`${renderCalendar(todayISO)}
+    body=`${stalePanelHtml()}${renderCalendar(todayISO)}
       <div class="fbar">${fbar}</div>
       ${orderCards||`<p style="color:var(--muted);margin-top:14px">${LX('لا طلبات بهذا الفلتر.','No orders with this filter.')}</p>`}
       <div style="height:10px"></div>
@@ -1831,10 +1843,58 @@ function render(){
       : `<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
            ${KH_FROM_TECH?`<button class="backbtn" style="margin:0" onclick="location.href='fanyeen.html'">‹ ${LX('تطبيق الفني','Tech app')}</button>`:''}<button class="backbtn" style="margin:0" onclick="setAdminSection('')">‹ القائمة</button>
            <b style="font-size:1.15rem;font-weight:900;flex:1">${secTitle}</b>
-           ${['orders','team','store'].includes(adminSection)?`<button class="backbtn" style="margin:0" onclick="exportSection('${adminSection}')">⤓ Excel</button>`:''}
+           ${adminSection==='orders'?`<button class="backbtn" style="margin:0" onclick="toggleStale()">🧹 ${LX('المعلّقة','Stale')}</button>`:''}${['orders','team','store'].includes(adminSection)?`<button class="backbtn" style="margin:0" onclick="exportSection('${adminSection}')">⤓ Excel</button>`:''}
            <button class="backbtn" style="margin:0" onclick="printReport()">🖨️ طباعة</button>
          </div>
          <div style="margin-top:12px">${body}</div>`}
+  </div>`;
+}
+/* ═══════ 🧹 الطلبات المعلّقة: مفتوحة من أيام بدون تحرك، تُلغى بصمت (بدون إشعار العميل) ═══════ */
+let staleOpen=false, staleDays=7, STALE=null, staleBusy=false;
+function toggleStale(){ staleOpen=!staleOpen; if(staleOpen) loadStale(); else render(); }
+async function loadStale(){
+  STALE=null; staleBusy=true; render();
+  try{ const r=await sb.rpc('khafet_admin_stale_orders',{p_days:staleDays}); STALE=(r&&r.data)||[]; if(r&&r.error) toast(LX('تعذّر التحميل','Could not load')); }
+  catch(e){ STALE=[]; }
+  staleBusy=false; render();
+}
+function staleSetDays(v){ staleDays=Math.max(1,parseInt(v,10)||7); loadStale(); }
+function staleToggleAll(on){ document.querySelectorAll('#stalePanel input[data-id]').forEach(c=>{ c.checked=!!on; }); }
+async function cancelStale(){
+  const ids=[...document.querySelectorAll('#stalePanel input[data-id]:checked')].map(c=>c.dataset.id);
+  if(!ids.length){ toast(LX('اختر طلبًا واحدًا على الأقل','Pick at least one order')); return; }
+  if(!confirm(LX('إلغاء '+ar(ids.length)+' طلب بدون إشعار العملاء؟','Cancel '+ids.length+' orders without notifying customers?'))) return;
+  staleBusy=true; render();
+  try{
+    const r=await sb.rpc('khafet_admin_cancel_stale',{p_ids:ids,p_silent:true});
+    if(r&&r.error) throw r.error;
+    toast(LX('🧹 أُلغي '+ar(+r.data||0)+' طلب','🧹 Cancelled '+(+r.data||0)+' orders'));
+    await loadAll(); staleBusy=false; await loadStale();
+  }catch(e){ staleBusy=false; toast(LX('ما تم الإلغاء، حاول مرة ثانية','Cancel failed, try again')); render(); }
+}
+function stalePanelHtml(){
+  if(!staleOpen) return '';
+  const A=!_enUI();
+  const rows=(STALE||[]).map(o=>`<label class="st-sw" style="margin:6px 0;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fff">
+      <input type="checkbox" data-id="${esc(o.id)}" ${(+o.paid_amount>0)?'disabled':'checked'}>
+      <span style="flex:1;min-width:0"><b>#${ar(o.order_no)}</b> · ${esc(o.customer_name||'')} ${o.quick?'⚡':''}
+        <small style="display:block;color:var(--muted);font-weight:700">${esc(String(o.created_at||'').slice(0,10))} · ${({new:A?'جديد':'New',confirmed:A?'مؤكد':'Confirmed',progress:A?'قيد التنفيذ':'In progress'})[o.status]||o.status}${(+o.paid_amount>0)?' · '+(A?'مدفوع، يُلغى من بطاقته':'paid, cancel from its card'):''}</small></span>
+    </label>`).join('');
+  return `<div class="panel" id="stalePanel" style="margin-top:0;border-color:var(--gold)">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b style="font-size:1.05rem">🧹 ${A?'الطلبات المعلّقة':'Stale orders'}</b>
+      <span style="color:var(--muted);font-size:.86rem;font-weight:700">${A?'مفتوحة من أكثر من':'Open for more than'}</span>
+      <input type="number" min="1" value="${staleDays}" style="width:64px;padding:8px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-weight:800;text-align:center" onchange="staleSetDays(this.value)">
+      <span style="color:var(--muted);font-size:.86rem;font-weight:700">${A?'يوم':'days'}</span>
+      <span style="flex:1"></span>
+      <button class="sbtn" onclick="toggleStale()">✕</button>
+    </div>
+    <p class="sp-hint" style="margin:8px 0 6px">${A?'تُلغى بصمت بدون إشعار العميل وتختفي من قوائم الفنيين. المدفوع يُلغى من بطاقته عشان يرجع له المبلغ.':'Cancelled silently, no customer notification. Paid orders are cancelled from their card so they get refunded.'}</p>
+    ${staleBusy&&STALE===null?`<p style="color:var(--muted)">⏳</p>`:(STALE&&STALE.length?`
+      <div style="display:flex;gap:8px;margin:6px 0"><button class="sbtn" onclick="staleToggleAll(true)">${A?'تحديد الكل':'All'}</button><button class="sbtn" onclick="staleToggleAll(false)">${A?'إلغاء التحديد':'None'}</button><span style="flex:1"></span><b style="color:var(--muted);font-size:.9rem">${ar(STALE.length)}</b></div>
+      ${rows}
+      <button class="backbtn" style="margin-top:10px;width:100%;background:var(--ink);color:#fff;border-color:var(--ink)" ${staleBusy?'disabled':''} onclick="cancelStale()">🧹 ${A?'إلغاء المحدد بصمت':'Cancel selected silently'}</button>`
+      :`<p style="color:var(--ok,#1f7a3e);font-weight:800">✅ ${A?'ما فيه طلبات معلّقة':'No stale orders'}</p>`)}
   </div>`;
 }
 function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
