@@ -484,27 +484,55 @@
 .rememberme input{width:17px;height:17px;accent-color:#F5C518;cursor:pointer}
 
 html,body{touch-action:manipulation}
+
+  /* ===== مقترح إعادة التصميم ===== */
+  header.top .wrap{display:flex;align-items:center;gap:8px;padding:8px 18px;position:relative;flex-wrap:nowrap}
+  header.top .langpop{position:absolute;top:calc(100% + 6px);left:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px;box-shadow:var(--shadow);display:none;z-index:40}
+  header.top .langpop.open{display:block}
+  header.top .langpop .langsw{display:flex;border:none;background:none;padding:0}
+  header.top .hbtn{height:42px;min-width:42px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-family:inherit;font-weight:800;font-size:1rem;padding:0 12px;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  header.top .hbtn.acct{color:var(--gold-deep)}
+  header.top #logoutBtn{display:none!important}
+  .tb span{font-size:.78rem}
+  .status.paid-b,.status.arrived-b{background:rgba(22,163,74,.12);color:#15803d}
+  .status.due-b{background:rgba(37,99,235,.12);color:#1d4ed8}
+  .status.confirmed{color:#1d4ed8}.status.done{color:#15803d}
+  .tj-when{font-size:1.15rem}.tj-head{padding:12px 16px;flex-direction:column;align-items:flex-start;gap:8px}.tj-badges{justify-content:flex-start}.tj-body{padding:10px 16px}
+  .tj-row{padding:9px 0;font-size:1rem;gap:10px}.tj-k{min-width:92px;font-size:.9rem}
+  .contact-btns a{padding:8px 13px;font-size:.88rem}.tmap{padding:7px 12px;font-size:.85rem;margin-top:6px}
+  .tacts{flex-direction:column;gap:8px;padding:0 16px 14px}
+  .tacts .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .tacts .chips .tbtn{flex:0 0 auto;padding:6px 12px;font-size:.85rem;border-radius:999px}
+  .tacts .chips .tbtn.arrivedlbl,.tacts .chips .tbtn.onwaylbl,.tacts .chips .tbtn.donelbl{background:rgba(22,163,74,.12);color:#15803d}
+  .tacts .chips .tbtn.waitpay{background:rgba(37,99,235,.12);color:#1d4ed8}
+  .tacts .tbtn.primary{width:100%;font-size:1.15rem;padding:17px;flex:none}
+  .tacts details{width:100%}
+  .tacts summary{list-style:none;cursor:pointer;text-align:center;color:var(--muted);font-weight:800;padding:8px;font-size:.92rem}
+  .tacts summary::-webkit-details-marker{display:none}
+  .tacts .more{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
+  .tacts .more .tbtn{flex:1 1 40%;padding:12px;font-size:.95rem}
+  .delay-ctl{padding:10px 16px}
+  .inv-add{flex-direction:column}.inv-add .cust{white-space:normal;text-align:start}
+  .inv-row{flex-wrap:wrap;gap:8px}
+  .inv-row .ir-name,.inv-row .ir-pname{flex:1 0 100%;font-size:1.05rem}
+  .inv-row .ir-x{color:var(--muted);font-weight:800}
+  .inv-row .ir-line{margin-inline-start:auto;font-weight:900;color:var(--gold-deep);font-size:1.05rem;white-space:nowrap}
+  .inv-acts{flex-direction:column}
+  .cal-day .cd-c:empty{display:none}
 </style>
 </head>
 <body>
 
 <header class="top">
   <div class="wrap">
-    <div class="brand">
-      <span class="mk"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 23 L24 9 L40 23"/><path d="M12 21 V38 a2 2 0 0 0 2 2 H34 a2 2 0 0 0 2-2 V21"/><path d="M33 15 V11 h4 v8"/><g transform="translate(11,18) scale(0.6)"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></g></svg></span>
-      <span>خافِت<small>بوابة الفنيين</small></span>
-    </div>
-    <a class="home-link" style="cursor:pointer" onclick="goHome()">🏠 <span class="ht">الرئيسية</span></a>
+    <div class="brand" onclick="goHome()" style="cursor:pointer"><span class="mk"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 23 L24 9 L40 23"/><path d="M12 21 V38 a2 2 0 0 0 2 2 H34 a2 2 0 0 0 2-2 V21"/><path d="M33 15 V11 h4 v8"/><g transform="translate(11,18) scale(0.6)"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></g></svg></span><span>رزق<small>فنيو خافِت</small></span></div>
     <span class="spacer"></span>
-    <div class="langsw">
-      <button data-l="ne">नेपाली</button>
-      <button data-l="hi">हिन्दी</button>
-      <button data-l="ur">اردو</button>
-      <button data-l="en">EN</button>
-      <button data-l="ar">عربي</button>
-    </div>
-    <button class="logout" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('acct')">👤 حسابي</button>
+    <button class="hbtn" id="langBtn" aria-label="اللغة" onclick="document.getElementById('langpop').classList.toggle('open')">🌐</button>
+    <button class="hbtn acct" id="acctBtn" style="display:none" onclick="setTab('acct')">👤 حسابي</button>
     <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
+    <div class="langpop" id="langpop"><div class="langsw">
+      <button data-l="ar">عربي</button><button data-l="en">EN</button><button data-l="ur">اردو</button><button data-l="hi">हिन्दी</button><button data-l="ne">नेपाली</button>
+    </div></div>
   </div>
 </header>
 
@@ -644,7 +672,7 @@ const I18N={
        followBtn:'📅 Follow-up visit', followTitle:'Book follow-up visit', followDate:'Date', followTime:'Time', followReason:'Reason (optional)', followBook:'✅ Book', followDone:'Follow-up booked ✅',
        invTitle:'📦 Inventory', invBuy:'Buy ＋', invGive:'Dispense －', invAddBtn:'➕ Add item', invAvail:'Available', invNamePh:'Item name', invEmpty:'Inventory is empty', invSaved:'Done ✅',
        st:{new:'New',confirmed:'Confirmed',progress:'In progress',done:'Done'} },
-  ar:{ title:'قائمة المهام', sub:'مهامك — الوقت والموقع والعمل المطلوب', today:'مهام اليوم', active:'المهام المفتوحة',
+  ar:{ title:'قائمة المهام', sub:'مهامك: الوقت والموقع والعمل المطلوب', today:'مهام اليوم', active:'المهام المفتوحة',
        when:'الوقت', location:'الموقع', whatNeeded:'العمل المطلوب', duration:'المدة التقريبية', customer:'العميل', call:'📞 اتصال',
        notes:'ملاحظات', problem:'المشكلة', watchVideo:'🎥 مشاهدة المقطع', quickTag:'⚡ طلب سريع', translate:'🌐 ترجم',
        house:'منزل رقم', openMap:'افتح الخريطة', start:'بدء العمل', complete:'تم الإنجاز',
@@ -1348,10 +1376,11 @@ function renderInvoice(){
       ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
       : `<span class="ir-name">${it.id==='stock'&&!it.img?'📦 ':''}${esc(itemDisplay(it))}</span>`;
     return `<div class="inv-row">
-      ${it.id==='stock'&&it.img?`<img class="ir-img" src="${esc(it.img)}" alt="">`:''}
       ${nameCell}
       <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
+      <span class="ir-x">×</span>
       <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />
+      <span class="ir-line">= ${ar((+it.qty||0)*(+it.price||0))}</span>
       <button class="ir-del" onclick="invRemove(${i})">🗑️</button>
     </div>`;
   }).join('') : `<div class="inv-empty">${t('addService')}</div>`;
@@ -1404,10 +1433,10 @@ const LG={
 const LG2={
   ar:{fgTitle:'استعادة كلمة المرور',fgSub:'اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد.',fgSend:'📲 أرسل كود التأكيد',fgBack:'‹ رجوع لتسجيل الدخول',fgSending:'⏳ جاري الإرسال...',fgNotReg:'❌ الرقم غير مسجّل، أو تعذّر الإرسال، حاول بعد قليل',fgFail:'تعذّر الإرسال، حاول مرة ثانية',
       fcTitle:'تعيين كلمة مرور جديدة',fcSent:'أرسلنا كودًا إلى',fcNew:'كلمة المرور الجديدة (٦ فأكثر)',fcRepeat:'أعد كتابة كلمة المرور',fcSave:'✅ حفظ ودخول',fcResend:'لم يصلك الكود؟ إعادة الإرسال',fcNoCode:'اكتب كود التأكيد المرسل لجوالك',fcShort:'كلمة المرور ٦ خانات على الأقل',fcMismatch:'كلمتا المرور غير متطابقتين',fcBadCode:'❌ الكود غير صحيح أو انتهت صلاحيته',fcSaveFail:'تعذّر حفظ كلمة المرور، جرّب كلمة مختلفة',fcDone:'✅ تم تغيير كلمة المرور',tryAgain:'تعذّر، حاول مرة ثانية',
-      showPass:'إظهار كلمة المرور',hidePass:'إخفاء كلمة المرور',acct:'👤 حسابي',out:'خروج',brand:'خافِت',brandSub:'بوابة الفنيين',home:'الرئيسية',onway:'🚗 أنا في الطريق',onwayDone:'🚗 في الطريق، أُبلغ العميل',onwayToast:'🚗 أُبلغ العميل إنك في الطريق',popup:'اسمح بالنوافذ المنبثقة',cur:'ر.س',tour:'📘 شرح التطبيق'},
+      showPass:'إظهار كلمة المرور',hidePass:'إخفاء كلمة المرور',acct:'👤 حسابي',out:'خروج',brand:'رزق',brandSub:'فنيو خافِت',home:'الرئيسية',onway:'🚗 أنا في الطريق',onwayDone:'🚗 في الطريق، أُبلغ العميل',onwayToast:'🚗 أُبلغ العميل إنك في الطريق',popup:'اسمح بالنوافذ المنبثقة',cur:'ر.س',tour:'📘 شرح التطبيق'},
   en:{fgTitle:'Reset password',fgSub:'Enter your registered mobile number and we will send you a code.',fgSend:'📲 Send code',fgBack:'‹ Back to sign in',fgSending:'⏳ Sending...',fgNotReg:'❌ Number not registered, or sending failed. Try again shortly',fgFail:'Sending failed, try again',
       fcTitle:'Set a new password',fcSent:'We sent a code to',fcNew:'New password (6+ characters)',fcRepeat:'Repeat the password',fcSave:'✅ Save and sign in',fcResend:'No code? Resend',fcNoCode:'Enter the code sent to your phone',fcShort:'Password must be at least 6 characters',fcMismatch:'Passwords do not match',fcBadCode:'❌ Wrong or expired code',fcSaveFail:'Could not save the password, try a different one',fcDone:'✅ Password changed',tryAgain:'Failed, try again',
-      showPass:'Show password',hidePass:'Hide password',acct:'👤 Account',out:'Log out',brand:'Khafet',brandSub:'Technicians portal',home:'Home',onway:'🚗 On my way',onwayDone:'🚗 On the way, customer notified',onwayToast:'🚗 Customer notified you are on the way',popup:'Allow pop-ups',cur:'SAR',tour:'📘 App tour'},
+      showPass:'Show password',hidePass:'Hide password',acct:'👤 Account',out:'Log out',brand:'Rizq',brandSub:'Khafet technicians',home:'Home',onway:'🚗 On my way',onwayDone:'🚗 On the way, customer notified',onwayToast:'🚗 Customer notified you are on the way',popup:'Allow pop-ups',cur:'SAR',tour:'📘 App tour'},
   ne:{fgTitle:'पासवर्ड रिसेट',fgSub:'दर्ता भएको मोबाइल नम्बर लेख्नुहोस्, हामी कोड पठाउँछौं।',fgSend:'📲 कोड पठाउनुहोस्',fgBack:'‹ लगइनमा फर्कनुहोस्',fgSending:'⏳ पठाउँदै...',fgNotReg:'❌ नम्बर दर्ता छैन वा पठाउन सकिएन, केही बेरपछि प्रयास गर्नुहोस्',fgFail:'पठाउन सकिएन, फेरि प्रयास गर्नुहोस्',
       fcTitle:'नयाँ पासवर्ड राख्नुहोस्',fcSent:'कोड पठाइयो',fcNew:'नयाँ पासवर्ड (६ वा बढी)',fcRepeat:'पासवर्ड फेरि लेख्नुहोस्',fcSave:'✅ सेभ गरी लगइन',fcResend:'कोड आएन? फेरि पठाउनुहोस्',fcNoCode:'फोनमा आएको कोड लेख्नुहोस्',fcShort:'पासवर्ड कम्तीमा ६ अक्षर',fcMismatch:'पासवर्ड मेल खाएन',fcBadCode:'❌ कोड गलत वा म्याद सकियो',fcSaveFail:'पासवर्ड सेभ भएन, अर्को प्रयास गर्नुहोस्',fcDone:'✅ पासवर्ड परिवर्तन भयो',tryAgain:'सकिएन, फेरि प्रयास गर्नुहोस्',
       showPass:'पासवर्ड देखाउनुहोस्',hidePass:'पासवर्ड लुकाउनुहोस्',acct:'👤 खाता',out:'लगआउट',brand:'Khafet',brandSub:'प्राविधिक पोर्टल',home:'गृहपृष्ठ',onway:'🚗 बाटोमा छु',onwayDone:'🚗 बाटोमा, ग्राहकलाई सूचना गरियो',onwayToast:'🚗 ग्राहकलाई तपाईं बाटोमा हुनुभएको सूचना गरियो',popup:'पप-अप अनुमति दिनुहोस्',cur:'SAR',tour:'📘 एप परिचय'},
@@ -1601,7 +1630,7 @@ function renderCalendar(){
     cells+=`<button class="cal-day ${cls}" onclick="calPick('${iso}')">
       <span class="cd-w">${wkShort(d.getDay())}</span>
       <b class="cd-n">${ar(dd)}</b>
-      <span class="cd-c">${c?('👤 '+ar(c)):'·'}</span>
+      <span class="cd-c">${c?('👤 '+ar(c)):''}</span>
     </button>`;
   }
   const showAll={ar:'عرض الكل',en:'Show all',ne:'सबै',hi:'सभी',ur:'سب دیکھیں'}[lang];
@@ -1678,9 +1707,9 @@ function renderAccountTab(){
   </div>`;
 }
 function renderTabs(){
-  const K=[['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];   // «حسابي» ثابت بالهيدر (acctBtn) بدل تبويب مكرّر
+  const K=[['home','🏠'],['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];   // «حسابي» ثابت بالهيدر (acctBtn) بدل تبويب مكرّر
   return `<nav class="tabbar">${K.map(([k,ic],i)=>
-    `<button class="tb ${tab===k?'on':''}" onclick="setTab('${k}')"><i>${ic}</i><span>${tl(i)}</span>${(k==='inv'&&invLow())?'<em class="tdot"></em>':''}</button>`
+    `<button class="tb ${tab===k?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><i>${ic}</i><span>${k==='home'?(({ar:'الرئيسية',en:'Home',ur:'ہوم',ne:'गृह',hi:'होम'})[lang]||'الرئيسية'):tl(i-1)}</span>${(k==='inv'&&invLow())?'<em class="tdot"></em>':''}</button>`
   ).join('')}</nav>`;
 }
 /* ---- قسم المستودع ---- */
@@ -2211,7 +2240,7 @@ function render(){
       acts += `<button class="tbtn follow" onclick="openFollowup('${o.id}')">${t('followBtn')}</button>`;
     }
     let head='';
-    if(o.date!==lastDate){ lastDate=o.date; head=`<div class="day-head">📅 ${dayHeadLabel(o.date)}</div>`; }
+    if(o.date!==lastDate){ lastDate=o.date; if(!(tab==='orders'&&calFilter)) head=`<div class="day-head">📅 ${dayHeadLabel(o.date)}</div>`; }
     // المنجز ينصفط في سطر واحد (الوقت · اليوم · مكتمل) — والضغط عليه يفتحه للفاتورة وغيرها
     if(o.status==='done' && !doneOpen[o.id]){
       return head+`<button class="tjob-mini" onclick="toggleDone('${o.id}')">
@@ -2256,7 +2285,7 @@ function render(){
           ${o.delayMin?`<button class="dc-reset" onclick="addDelay('${o.id}',${-o.delayMin})">↺</button>`:''}
         </div>`:''}
       </div>`:''}
-      ${acts?`<div class="tacts">${acts}</div>`:''}
+      ${acts?tactsHTML(acts,o):''}
     </div>`;
   }).join(''); }
 
@@ -2296,17 +2325,36 @@ function render(){
     else                      sec=ordersContent;
     view=`<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
         <button class="backbtn" onclick="goHome()">‹ ${homeLbl}</button>
-        <b style="font-size:1.12rem;font-weight:900;flex:1">${secLbl}</b>
+        ${tab==='orders'?`<b style="font-size:1.12rem;font-weight:900;flex:1">${secLbl}</b>`:''}
       </div>
       <div style="margin-top:12px">${sec}</div>`;
   }
   /* الشريط السفلي الثابت + مسافة تمنع تغطية آخر المحتوى */
   document.getElementById('app').innerHTML = view + '<div style="height:84px"></div>' + renderTabs();
+  try{ const td=document.querySelector('.cal-day.sel')||document.querySelector('.cal-day.today'); if(td) td.scrollIntoView({inline:'center',block:'nearest'}); }catch(e){}
   /* بعد ما شاف قائمة الطلبات، الجديد الحالي يُعتبر مقروءاً */
   if(tab==='orders'){
     const ids=jobs.map(o=>o.dbId).filter(Boolean);
     setTimeout(function(){ markJobsSeen(ids); }, 1500);
   }
+}
+
+function tactsHTML(acts,o){
+  const tpl=document.createElement('template'); tpl.innerHTML=acts;
+  const els=[...tpl.content.children]; const A=lang==='ar';
+  const PRIM=['onway','arrive','start','done','devpay'];
+  let primary=null; const chips=[], more=[];
+  els.forEach(el=>{
+    if(el.tagName==='DIV'){ chips.push(el.outerHTML); return; }
+    if(!primary && PRIM.some(c=>el.classList.contains(c))){ el.classList.add('primary'); primary=el.outerHTML; }
+    else more.push(el);
+  });
+  // قيد التنفيذ بدون فاتورة: الفاتورة هي الخطوة الجاية، وتسجيل الدفع بالجهاز يروح للخيارات
+  if(o && o.status==='progress' && !o.invoice){
+    const inv=more.find(el=>el.classList.contains('inv'));
+    if(inv){ if(primary){ const p=document.createElement('template'); p.innerHTML=primary; const pe=p.content.firstElementChild; pe.classList.remove('primary'); more.unshift(pe); } inv.classList.add('primary'); primary=inv.outerHTML; more.splice(more.indexOf(inv),1); }
+  }
+  return '<div class="tacts">'+(chips.length?'<div class="chips">'+chips.join('')+'</div>':'')+(primary||'')+(more.length?'<details><summary>'+(A?'خيارات أخرى ▾':'More ▾')+'</summary><div class="more">'+more.map(e=>e.outerHTML).join('')+'</div></details>':'')+'</div>';
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),1800); }
 

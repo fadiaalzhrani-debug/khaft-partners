@@ -1143,7 +1143,10 @@ const ST_GROUPS=[
     ['referral_enabled','كود صديق وخصم الإحالة','Friend code and referral discount','bool'],
     ['loyalty_target','مكافأة الولاء بعد كم طلب','Loyalty reward after N orders','num'],
     ['tamara_enabled','التقسيط مع تمارا','Tamara instalments','bool'],
-    ['tamara_min','تمارا تظهر إذا أجرة اليد فوق (ريال)','Tamara shows when labour is above (SAR)','num'],
+    ['tamara_min','تمارا تظهر إذا المبلغ المدفوع عند الحجز فوق (ريال)','Tamara shows when the amount paid at booking is above (SAR)','num'],
+    ['first_order_pct','خصم أول طلب على أجرة اليد (٪)، صفر يوقفه','First order labour discount (%), 0 disables','num'],
+    ['launch_pct','خصم الإطلاق على أجرة اليد (٪)، صفر يوقفه','Launch labour discount (%), 0 disables','num'],
+    ['launch_until','خصم الإطلاق ينتهي بتاريخ','Launch discount ends on','date'],
     ['lead_min','أقل مدة قبل الموعد لقبول الحجز (دقائق)','Minimum lead time before a slot (minutes)','num'] ] },
   { id:'rizq', t:['🤝 تطبيق رزق','🤝 Rizq app'], d:['رسالة تظهر للفنيين والمزودين أعلى رزق (تعليمات، تنبيه، عيد).','A message technicians and providers see at the top of Rizq (instructions, alerts, holidays).'], f:[
     ['rizq_announcement','إعلان الفنيين (اتركه فارغًا لإخفائه)','Technician announcement (leave empty to hide)','text'] ] },
