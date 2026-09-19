@@ -576,7 +576,7 @@ const KH_STORE={
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=101, KH_RIZQ_BUILD=101;
+const KH_APP_BUILD=102, KH_RIZQ_BUILD=101;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1169,6 +1169,8 @@ const ST_GROUPS=[
     ['work_start','بداية الدوام (ساعة، 24)','Work start (hour, 24h)','num'],
     ['work_end','نهاية الدوام (ساعة، 24)','Work end (hour, 24h)','num'],
     ['arrival_window','نافذة الوصول (دقائق)','Arrival window (minutes)','num'],
+    ['long_window_enabled','الطلب الطويل يحجز فترتين متتاليتين ويظهر للعميل الوقت كاملًا','Long orders book two windows in a row','bool'],
+    ['long_window_from_min','يُعتبر الطلب طويلًا إذا زادت مدته عن (دقائق)','An order counts as long above (minutes)','num'],
     ['max_jobs_per_day','أقصى عدد طلبات باليوم لكل فريق','Max jobs per day per team','num'],
     ['off_days','أيام الإجازة (0 الأحد … 5 الجمعة، 6 السبت، افصل بفاصلة)','Off days (0 Sunday … 5 Friday, 6 Saturday, comma separated)','list'] ] },
   { id:'plans', t:['🛡️ الباقات السنوية','🛡️ Annual plans'], d:['إظهار الباقات للعملاء، وأسعار «ريّح بالك» وتاريخ إقفال العرض. المشتركون الحاليون يشوفون اشتراكهم دائمًا.','Show plans to customers, Rayyeh Balak prices and offer closing date. Existing subscribers always see their plan.'], f:[
@@ -1193,7 +1195,11 @@ const ST_GROUPS=[
     ['hero_sub','السطر الثاني','Second line','text'],
     ['hero_sub2','السطر الثالث','Third line','text'],
     ['majlis_enabled','بطاقة «ابنِ مجلسك» ظاهرة','“Build your majlis” card visible','bool'],
-    ['reviews_enabled','آراء العملاء ظاهرة في الرئيسية','Customer reviews visible on home','bool'] ] },
+    ['reviews_enabled','آراء العملاء ظاهرة في الرئيسية','Customer reviews visible on home','bool'],
+    ['prices_tile_enabled','بطاقة «قائمة الأسعار» ظاهرة','“Price list” card visible','bool'],
+    ['tips_enabled','بطاقة «نصائح السلامة» ظاهرة (المقالات نفسها تُدار من قسم «نصائح السلامة» في اللوحة)','“Safety tips” card visible (articles are managed in the Safety tips section)','bool'],
+    ['tips_title','اسم بطاقة النصائح','Tips card title','text'],
+    ['tips_sub','السطر الصغير تحت اسم بطاقة النصائح','Tips card subtitle','text'] ] },
   { id:'khafet', t:['📱 تطبيق خافت','📱 Khafet app'], d:['مفاتيح تشغيل وإيقاف في تطبيق العميل، تطبّق فور فتح التطبيق.','On/off switches in the customer app, applied as soon as the app opens.'], f:[
     ['booking_enabled','الحجز مفتوح (أطفئه في الإجازات أو الطوارئ)','Booking open (switch off for holidays or emergencies)','bool'],
     ['booking_msg','رسالة توقف الحجز','Booking paused message','text'],
