@@ -580,7 +580,7 @@ const KH_STORE={
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=104, KH_RIZQ_BUILD=102;
+const KH_APP_BUILD=105, KH_RIZQ_BUILD=102;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1165,6 +1165,7 @@ const ST_GROUPS=[
     ['fee_parts_only','الرسوم فقط إذا الطلب فيه أغراض (مطفي = على كل طلب)','Fee only when the order has parts (off = on every order)','bool'],
     ['first_free_delivery','توصيل مجاني لأول طلب من التطبيق (تنخصم قيمة التوصيل)','Free delivery on the first app order','bool'],
     ['referral_first_bonus','مكافأة صاحب الكود بعد ما يدفع صديقه أول طلب، مرة واحدة (ريال · 0 يوقفها)','Code owner reward after the friend pays their first order, once (SAR · 0 turns it off)','num'],
+    ['referral_friend_bonus','رصيد للصديق من الكود إذا عرض «هدية أول طلب» مطفي (ريال · 0 يوقفه)','Friend credit from the code when the first order gift is off (SAR · 0 turns it off)','num'],
     ['referral_friend_pct','خصم إضافي للصديق على أول طلب بالكود (٪ · 0 = يكفيه الرصيد الترحيبي)','Extra discount for the friend on the first order with a code (% · 0 = welcome credit only)','num'],
     ['welcome_enabled','عرض «هدية أول طلب» شغّال (اطفيه ويختفي من التطبيق فورًا)','First order gift offer on (switch off and it disappears from the app)','bool'],
     ['welcome_credit','مبلغ هدية أول طلب (ريال)','First order gift amount (SAR)','num'],
