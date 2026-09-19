@@ -576,7 +576,7 @@ const KH_STORE={
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=102, KH_RIZQ_BUILD=101;
+const KH_APP_BUILD=103, KH_RIZQ_BUILD=101;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1157,6 +1157,7 @@ const ST_GROUPS=[
     ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
     ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
     ['warranty_days','ضمان الشغل للطلبات اللي يدخلها الموظف (أيام)','Work warranty for staff-entered orders (days)','num'],
+    ['first_free_delivery','توصيل مجاني لأول طلب من التطبيق (تنخصم رسوم الوصول)','Free delivery on the first app order (visit fee waived)','bool'],
     ['welcome_credit','رصيد ترحيبي لأول طلب من التطبيق (ريال · 0 يوقفه)','Welcome credit for the first app order (SAR · 0 turns it off)','num'],
     ['media_retention_days','حذف مقاطع العملاء وصور المنازل بعد كم يوم من موعد الطلب المغلق','Delete customer videos and house photos N days after the closed order date','num'],
     ['complaint_sla_days','مدة الرد على الشكوى (أيام عمل) كما تظهر للعميل','Complaint reply time (working days) shown to customers','num'],
