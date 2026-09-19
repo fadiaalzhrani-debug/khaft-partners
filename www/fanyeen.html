@@ -171,6 +171,12 @@
   .inv-row .ir-bk{flex:1;min-width:0}
   .inv-row .ir-img{width:46px;height:46px;border-radius:10px;object-fit:contain;border:1px solid var(--line);background:#fff;flex-shrink:0}
   /* إعلان الإدارة للفنيين */
+  #updWall{position:fixed;inset:0;z-index:99999;background:var(--bg);display:grid;place-items:center;padding:24px;text-align:center}
+  #updWall .uw-box{max-width:360px}
+  #updWall .uw-ic{width:88px;height:88px;border-radius:28px;background:var(--gold);display:grid;place-items:center;font-size:2.5rem;margin:0 auto 18px;box-shadow:0 12px 30px rgba(245,197,24,.35)}
+  #updWall h2{font-size:1.55rem;font-weight:900;margin:0}
+  #updWall p{color:var(--muted);margin:10px 0 22px;line-height:1.9;font-weight:600;font-size:1rem}
+  #updWall .uw-btn{display:block;width:100%;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:16px;font-weight:900;font-size:1.05rem;font-family:inherit;text-decoration:none;cursor:pointer}
   .rz-banner{margin:12px 0 0;background:#FFF3C4;border:1.5px solid var(--gold);border-radius:14px;padding:11px 14px;font-weight:800;font-size:.95rem;line-height:1.6}
   .inv-row .ir-bk .ir-name{display:block}
   .ir-opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
@@ -520,12 +526,116 @@ html,body{touch-action:manipulation}
   .inv-acts{flex-direction:column}
   .cal-day .cd-c:empty{display:none}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
+<style id="kh-skin">
+/* جلد «خافت الجديد» لتطبيق رزق (الفني): ألوان وأشكال فقط */
+:root:root{
+  --gold:#F5C518; --gold-strong:#E9A800; --gold-deep:#B8860B; --gold-soft:#FBF1C9; --gold-tint:#FDF8E7;
+  --ink:#3A3029; --brand-soft:#FBF1C9;
+  --bg:#F1E9DF; --panel:#E7DDD1; --card:#FAF6F1; --line:#E2D7CA;
+  --text:#3A3029; --muted:#8E8175;
+  --ok:#15803D; --ok-soft:#E3F4E8; --danger:#DC2626;
+  --r:26px; --r-sm:20px; --shadow:0 18px 34px -24px rgba(58,48,41,.5);
+  --brown:#4E3F35; --spring:cubic-bezier(.34,1.56,.64,1);
+}
+body{background:var(--bg);color:var(--text)}
+h1,h2,h3,.brand,.hero h1,.tj-when,.stat .n,.tbtn,.day-head,.acc-head b,.inv-toggle{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
+
+header.top{background:rgba(241,233,223,.92);border-bottom:0}
+.brand .mk,.acc-av{background:linear-gradient(165deg,#FFD84D,#F5C518 55%,#E0A200);border-radius:15px;box-shadow:0 10px 18px -10px rgba(184,134,11,.9),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.08)}
+.langsw{border:0;border-radius:999px;background:var(--card)}
+.langsw button{border-radius:999px}
+
+.hero h1{font-size:1.75rem;font-weight:800;line-height:1.4}
+.stat{border:0;border-radius:22px;padding:14px 18px;box-shadow:var(--shadow)}
+.stat .n{font-weight:800}
+.day-head{border:0;border-radius:999px;background:var(--brown);color:#FFF8EF;padding:9px 20px;display:inline-block;position:static}
+.inv-toggle{border:0;border-radius:22px;box-shadow:var(--shadow)}
+
+/* بطاقة الطلب */
+.tjob,.tj,.job-card,[class^="tjob"]{border:0;border-radius:26px;box-shadow:var(--shadow);background:var(--card)}
+.tj-row{border-bottom-color:var(--line)}
+.status{border:0;padding:6px 14px;font-weight:800}
+.status.new{background:#FBF1C9;color:#8A6400}
+.status.confirmed{background:#DDEEFA;color:#1F6FA8}
+.status.progress{background:#FCE3CF;color:#B4560F}
+.status.done{background:#E3F4E8;color:#15803D}
+.quick-tag{background:var(--gold)}
+.tmap,.tvideo{border-radius:999px;padding:10px 18px}
+.tvideo{background:#9460DC}
+.ttrans{background:#DDEEFA;color:#1F6FA8 !important}
+.tj-row.early-row{background:#E3F4E8;border-radius:16px}
+.tj-row.early-row .tj-v{color:#15803D}
+
+/* الأزرار: حبّة كاملة الاستدارة مع نطّة */
+.tbtn{border-radius:999px;font-weight:800;transition:transform .28s var(--spring)}
+.tbtn:active{transform:scale(.95)}
+.tbtn.start{box-shadow:0 10px 22px -10px rgba(184,134,11,.8)}
+.tbtn.done{background:var(--brown);color:#FFF8EF;box-shadow:0 10px 22px -10px rgba(58,48,41,.7)}
+.tbtn.donelbl{background:#E3F4E8;color:#15803D}
+.tbtn.reject{border:0;background:#FBE4E1;color:#B42318}
+.tbtn.follow{border:0;background:#DDEEFA;color:#1F6FA8}
+.rj-opt,.fu-field input,.fu-field textarea{border:0;border-radius:20px;background:#fff}
+.delay-ctl{background:#FCEBD8}
+.delay-ctl .dc-l,.delay-ctl .dc-l b{color:#B4560F}
+.delay-ctl .dc-btns button{background:#fff;border:0;color:#B4560F;border-radius:999px}
+.acc-panel{border:0;border-radius:26px;box-shadow:var(--shadow)}
+
+/* الشريط السفلي: كبسولة بنية عائمة */
+.tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));border:0;border-radius:999px;background:var(--brown);padding:4px 6px;box-shadow:0 16px 30px -14px rgba(58,48,41,.75)}
+.tb{color:#C9BBAD;border-radius:999px;padding:7px 3px 6px}
+.tb.on{color:var(--brown);background:var(--gold)}
+.tb.on::before{display:none}
+body{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+
+/* بطاقات الرئيسية وبطاقة الطلب */
+.tjob{border:0;border-radius:26px}
+.tj-head{background:var(--gold-soft);border-bottom:0}
+.hcard{border:0;border-radius:26px;transition:transform .28s var(--spring)}
+.hcard:hover{transform:none}
+.hcard:active{transform:scale(.96)}
+.hcard .hc-ic{--c:#27B9B5;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:1.6rem;margin-bottom:6px;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 12px 20px -10px color-mix(in srgb,var(--c) 85%,transparent),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.hcard:nth-child(2) .hc-ic{--c:#F0B21A} .hcard:nth-child(3) .hc-ic{--c:#3796D3} .hcard:nth-child(4) .hc-ic{--c:#EC8434} .hcard:nth-child(5) .hc-ic{--c:#E45C86} .hcard:nth-child(6) .hc-ic{--c:#9460DC}
+.hcard h3{font-weight:800}
+.home-link{border-radius:999px}
+.cal-filter button{border:0}
+
+/* ═ إضافات مشتركة: صفحة المزوّد + الرئيسية + شاشات الدخول ═ */
+.tjob.unread{border:0;box-shadow:0 0 0 3px #46B064,var(--shadow)}
+.tjob-offer{border:0;border-radius:26px}
+.login h1{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;font-weight:800}
+.login input,.biz-add input,.set-body input,.city-search{border:0;border-radius:20px;background:#fff;min-height:56px}
+.login input:focus,.set-body input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+.btn,.login .btn,.login button.btn{border-radius:999px;min-height:58px;font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;font-weight:800;font-size:1.15rem;box-shadow:0 10px 22px -10px rgba(184,134,11,.8);transition:transform .28s var(--spring)}
+.btn:active{transform:scale(.95)}
+.logout,.login-back{border:0;border-radius:999px;background:var(--card)}
+.tabs .tab{border:0;border-radius:999px;min-height:46px;padding:0 18px}
+.tabs .tab.active{background:var(--brown);color:#FFF8EF}
+.fin-cell,.irow,.owed,.mchip,.pick-chip,.ccity,.assign-sel{border:0;border-radius:20px}
+.mchip.on,.pick-chip:has(input:checked){background:var(--brown);color:#FFF8EF}
+.offer-banner{border-radius:26px 26px 0 0}
+/* الرئيسية (index.html) */
+.head h1{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;font-weight:800}
+.biz{border:0;background:var(--gold-soft)}
+.langbar button,.langbar .lb{border:0;border-radius:999px}
+a.card,.card{border:0;border-radius:26px;box-shadow:var(--shadow);transition:transform .28s var(--spring)}
+a.card:active,.card:active{transform:scale(.97)}
+.card .ic{--c:#27B9B5;border-radius:19px;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 12px 20px -10px color-mix(in srgb,var(--c) 85%,transparent),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.card.tech .ic{--c:#F0B21A} .card.prov .ic{--c:#3796D3;background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%)} .card.join .ic{--c:#46B064;background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%)} .card.sufrah .ic{--c:#EC8434}
+.card h2,.card h3,.card b{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
+.langpick .sheet,.lp-sheet{border-radius:32px}
+
+</style><!--/kh-skin-->
 </head>
 <body>
 
 <header class="top">
   <div class="wrap">
-    <div class="brand" onclick="goHome()" style="cursor:pointer"><span class="mk"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 23 L24 9 L40 23"/><path d="M12 21 V38 a2 2 0 0 0 2 2 H34 a2 2 0 0 0 2-2 V21"/><path d="M33 15 V11 h4 v8"/><g transform="translate(11,18) scale(0.6)"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></g></svg></span><span>رزق<small>فنيو خافِت</small></span></div>
+    <div class="brand" onclick="goHome()" style="cursor:pointer"><span class="mk" style="background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;padding:0"><svg viewBox="129 55 800 800" style="width:100%;height:100%;display:block" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span><span>خافت شركاء<small>فنيو خافِت</small></span></div>
     <span class="spacer"></span>
     <button class="hbtn" id="langBtn" aria-label="اللغة" onclick="document.getElementById('langpop').classList.toggle('open')">🌐</button>
     <button class="hbtn acct" id="acctBtn" style="display:none" onclick="setTab('acct')">👤 حسابي</button>
@@ -569,7 +679,9 @@ const KH_STORE={
   async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
-const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
+/* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
+const RIZQ_BUILD=101;
+const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
   Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
@@ -778,7 +890,9 @@ async function initCloud(){
   try{
     if(window.supabase && SUPABASE_URL && !/YOUR_/.test(SUPABASE_URL)){
       sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, KH_AUTH_OPTS);
+      registerInstall('rizq', RIZQ_BUILD);
       cloudReady=true;
+      sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg','rizq_announcement']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{});
       // استعادة الجلسة: الدخول محفوظ في Supabase مو في المتصفح
       const { data:{ session } }=await sb.auth.getSession();
       if(session && localStorage.getItem('khafet_remember')==='0'){
@@ -826,6 +940,83 @@ async function initPush(){
 let myName='', myPhone='', myCode='';
 let PENDING=null;   // حالة الفني غير المعتمد: {status, org_name, code}
 async function techState(){ try{ const { data }=await sb.rpc('my_tech_state'); return data; }catch(e){ return null; } }
+/* ═══════ 📄 وثائق الفني: الاسم كما في الهوية أو الإقامة، رقمها وانتهاؤها، المهنة، وشهادة الاعتماد المهني. تراجعها إدارة خافت قبل الاعتماد ═══════ */
+let MYDOCS=null, docsLoaded=false, docsOpen=false, docsBusy=false;
+const DOC_PROFS=[['سباك','Plumber'],['كهربائي','Electrician'],['فني تكييف وتبريد','AC technician'],['فني صيانة عامة','General maintenance'],['أخرى','Other']];
+async function loadMyDocs(){
+  docsLoaded=true;
+  if(!cloudReady||!sb) return;
+  try{ const r=await sb.rpc('my_staff_docs'); if(!r.error){ MYDOCS=r.data||null; render(); } }catch(e){}
+}
+function docsCardHtml(){
+  if(MYROLE==='admin') return '';
+  if(!docsLoaded) loadMyDocs();
+  const A=lang==='ar'; const d=MYDOCS; const st=d?d.review_status:'none';
+  const M={ none:[A?'ما رفعت وثائقك بعد. الاعتماد يحتاجها':'No documents yet. Approval requires them','#b45309','rgba(245,158,11,.14)'],
+            pending:[A?'وثائقك قيد مراجعة الإدارة':'Your documents are under review','#1d4ed8','rgba(37,99,235,.12)'],
+            approved:[A?'وثائقك معتمدة ✓':'Documents approved ✓','#15803d','rgba(22,163,74,.12)'],
+            rejected:[(A?'الوثائق تحتاج تعديل: ':'Documents need changes: ')+((d&&d.review_note)||''),'#b91c1c','rgba(220,38,38,.10)'] }[st];
+  return `<div style="text-align:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0">
+    <b style="display:block;margin-bottom:6px">📄 ${A?'وثائقي':'My documents'}</b>
+    <div style="color:${M[1]};background:${M[2]};border-radius:10px;padding:8px 10px;font-weight:800;font-size:.9rem;line-height:1.6">${esc(M[0])}</div>
+    <button type="button" onclick="openDocs()" style="margin-top:10px;width:100%;padding:12px;border-radius:12px;background:var(--gold);color:var(--ink);font-weight:900;font-family:inherit;font-size:1rem;border:none;cursor:pointer">${st==='none'?(A?'ارفع وثائقك':'Upload documents'):(A?'عرض أو تحديث':'View or update')}</button>
+  </div>`;
+}
+function openDocs(){ docsOpen=true; try{window.scrollTo(0,0);}catch(e){} render(); }
+function closeDocs(){ docsOpen=false; render(); }
+function showDocs(msg){
+  const A=lang==='ar'; const d=MYDOCS||{};
+  const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
+  document.getElementById('app').innerHTML=`<div class="login" style="text-align:start">
+    <div class="login-top"><button type="button" class="backbtn login-back" onclick="closeDocs()">‹ ${A?'رجوع':'Back'}</button></div>
+    <div class="ic" style="text-align:center">📄</div><h1 style="text-align:center">${A?'وثائقي':'My documents'}</h1>
+    <p style="text-align:center">${A?'نحتاجها للتحقق النظامي قبل اعتمادك. تُحفظ في خزن خاص، ولا يطّلع عليها إلا إدارة خافت.':'Needed for legal verification before approval. Stored privately and seen only by Khafet management.'}</p>
+    <label style="font-weight:800;font-size:.9rem">${A?'الاسم كما في الهوية أو الإقامة':'Name as on ID or Iqama'}</label>
+    <input id="dc_name" value="${esc(d.legal_name||'')}" autocomplete="name" />
+    <label style="font-weight:800;font-size:.9rem">${A?'رقم الهوية أو الإقامة (10 أرقام)':'ID or Iqama number (10 digits)'}</label>
+    <input id="dc_id" inputmode="numeric" maxlength="10" value="${esc(d.id_number||'')}" />
+    <label style="font-weight:800;font-size:.9rem">${A?'تاريخ الانتهاء':'Expiry date'}</label>
+    <input id="dc_exp" type="date" value="${esc(d.id_expiry||'')}" />
+    <label style="font-weight:800;font-size:.9rem">${A?'الجنسية':'Nationality'}</label>
+    <input id="dc_nat" value="${esc(d.nationality||'')}" />
+    <label style="font-weight:800;font-size:.9rem">${A?'المهنة':'Profession'}</label>
+    <select id="dc_prof" style="width:100%;padding:15px;border-radius:13px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:700;font-size:1.05rem;margin-bottom:12px;font-family:inherit">
+      ${DOC_PROFS.map(p=>`<option value="${p[0]}" ${d.profession===p[0]?'selected':''}>${A?p[0]:p[1]}</option>`).join('')}
+    </select>
+    <label style="font-weight:800;font-size:.9rem">${A?'صورة شهادة الاعتماد المهني':'Professional accreditation certificate photo'} ${d.has_cert?'<span style="color:#15803d">✓ '+(A?'مرفوعة':'uploaded')+'</span>':''}</label>
+    <input id="dc_cert" type="file" accept="image/*,application/pdf" />
+    <button class="btn" id="dc_send" onclick="submitDocs()">${A?'إرسال للمراجعة ✅':'Send for review ✅'}</button>
+    ${msg?`<div class="lgerr" style="display:block">${esc(msg)}</div>`:''}
+  </div>`;
+}
+async function submitDocs(){
+  if(docsBusy) return;
+  const A=lang==='ar'; const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const name=g('dc_name'), idn=g('dc_id').replace(/[^0-9]/g,''), exp=g('dc_exp'), nat=g('dc_nat'), prof=g('dc_prof');
+  const fileEl=document.getElementById('dc_cert'); const file=fileEl&&fileEl.files&&fileEl.files[0];
+  const keep=()=>{ MYDOCS=Object.assign({},MYDOCS||{}, {legal_name:name,id_number:idn,id_expiry:exp,nationality:nat,profession:prof, review_status:(MYDOCS&&MYDOCS.review_status)||'none'}); };
+  if(name.length<5){ keep(); showDocs(A?'اكتب الاسم كاملًا كما في الهوية':'Enter your full name as on the ID'); return; }
+  if(!/^[12][0-9]{9}$/.test(idn)){ keep(); showDocs(A?'رقم الهوية أو الإقامة 10 أرقام ويبدأ بـ1 أو 2':'The ID number is 10 digits starting with 1 or 2'); return; }
+  if(!exp || exp<=new Date().toISOString().slice(0,10)){ keep(); showDocs(A?'تاريخ الانتهاء لازم يكون قادم':'Expiry date must be in the future'); return; }
+  if(!file && !(MYDOCS&&MYDOCS.has_cert)){ keep(); showDocs(A?'أرفق صورة شهادة الاعتماد المهني':'Attach the accreditation certificate photo'); return; }
+  if(file && file.size>8*1024*1024){ keep(); showDocs(A?'حجم الصورة أكبر من 8 ميجا':'File is larger than 8 MB'); return; }
+  if(!cloudReady||!sb){ keep(); showDocs(A?'لا يوجد اتصال، حاول بعد قليل':'No connection, try again'); return; }
+  docsBusy=true; const btn=document.getElementById('dc_send'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    let certPath=null;
+    if(file){
+      const u=(await sb.auth.getUser()).data.user; if(!u) throw new Error('no_user');
+      const ext=(((file.name||'').split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,''))||'jpg';
+      certPath=u.id+'/cert_'+Date.now()+'.'+ext;
+      const up=await sb.storage.from('khafet-docs').upload(certPath,file,{upsert:false,contentType:file.type||'image/jpeg'});
+      if(up.error) throw up.error;
+    }
+    const r=await sb.rpc('submit_staff_docs',{ p_legal_name:name, p_id_number:idn, p_id_expiry:exp, p_nationality:nat, p_profession:prof, p_cert_path:certPath, p_id_path:null });
+    if(r.error || !r.data || r.data.ok!==true){ const why=(r.data&&r.data.reason)||''; docsBusy=false; keep();
+      showDocs(why==='bad_id'?(A?'رقم الهوية غير صحيح':'Invalid ID number'):why==='expired'?(A?'الوثيقة منتهية':'Document expired'):why==='not_tech'?(A?'الحساب ليس حساب فني':'Not a technician account'):(A?'تعذّر الإرسال، حاول ثانية':'Could not send, try again')); return; }
+    docsBusy=false; docsLoaded=false; MYDOCS=null; docsOpen=false; await loadMyDocs(); toast(A?'✅ وصلت وثائقك للإدارة':'✅ Documents sent'); render();
+  }catch(e){ docsBusy=false; keep(); showDocs(A?'تعذّر رفع الملف، حاول ثانية':'Upload failed, try again'); }
+}
 function showJoin(msg){
   const A=lang==='ar'; const st=PENDING||{}; const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   const waiting = st.status==='pending';
@@ -845,6 +1036,7 @@ function showJoin(msg){
            <input id="jc" placeholder="${A?'مثال':'e.g.'}: HN7K2Q" autocapitalize="characters" style="text-align:center;letter-spacing:.25em;text-transform:uppercase;font-weight:900" onkeydown="if(event.key==='Enter')submitJoin()" />
            <button class="btn" onclick="submitJoin()">${A?'انضمام بالكود':'Join with code'}</button>
          </div>`}
+    ${docsCardHtml()}
     <div id="lgerr" class="lgerr" style="display:${msg?'block':'none'}">${esc(msg||'')}</div>
     <a class="reg2" style="cursor:pointer;display:block;margin-top:18px;color:var(--muted)" onclick="leaveJoin()">${A?'خروج من الحساب':'Sign out'}</a>
   </div>`;
@@ -921,10 +1113,71 @@ async function loadOrg(){ if(!cloudReady) return; try{ const r=await sb.rpc('my_
     const p=/^provider:(.+)$/.exec(MYORG||''); if(p){ try{ const pr=await sb.from('khafet_providers').select('name').eq('id',p[1]).maybeSingle(); window.MYORG_NAME=(pr.data&&pr.data.name)||''; }catch(e){} } }catch(e){} }
 async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const src=invSrc(); const iv=await sb.from(src.table).select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; invCache3(); } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; }
   try{ const pp=await sb.from('khafet_parts_public').select('*'); if(!pp.error && Array.isArray(pp.data)) PARTSPUB=pp.data; }catch(e){}
-  try{ const st=await sb.from('khafet_settings').select('key,value'); if(!st.error && Array.isArray(st.data)){ KHSET={}; st.data.forEach(x=>{ KHSET[x.key]=x.value; }); if(loggedIn) render(); } }catch(e){} }
-/* إعدادات الإدارة اللي تهم رزق: إعلان الفنيين */
+  try{ const st=await sb.from('khafet_settings').select('key,value'); if(!st.error && Array.isArray(st.data)){ KHSET={}; st.data.forEach(x=>{ KHSET[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} if(loggedIn) render(); } }catch(e){} }
+/* إعدادات الإدارة اللي تهم خافت شركاء: إعلان الفنيين */
 let KHSET={};
-function rizqBanner(){ const t=String(KHSET.rizq_announcement||'').trim(); return t?`<div class="rz-banner">📣 ${esc(t)}</div>`:''; }
+/* ═ إجبار التحديث: إذا النسخة أقدم من rizq_min_build في الإعدادات يظهر حاجز يوجّه للمتجر (أو لتحديث الصفحة على الويب) ═ */
+function checkRizqBuild(){
+  const S=KHSET||{}; const min=parseInt(S.rizq_min_build,10)||0; let w=document.getElementById('updWall');
+  if(!(min>RIZQ_BUILD)){ if(w) w.remove(); return false; }
+  if(w) return true;
+  const A=lang==='ar';
+  const plat=(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'web';
+  const msg=String(S.app_update_msg||'').trim()||(A?'فيه تحديث مهم. حدّث التطبيق عشان تكمل.':'An important update is available. Update the app to continue.');
+  const btn = plat==='ios' ? '<a class="uw-btn" href="https://apps.apple.com/sa/app/id6791782517" target="_blank" rel="noopener">'+(A?'افتح آب ستور':'Open App Store')+'</a>'
+            : plat==='android' ? '<a class="uw-btn" href="https://play.google.com/store/apps/details?id=com.khafet.partners" target="_blank" rel="noopener">'+(A?'افتح قوقل بلاي':'Open Google Play')+'</a>'
+            : '<button type="button" class="uw-btn" onclick="location.reload()">'+(A?'حدّث الصفحة':'Reload')+'</button>';
+  w=document.createElement('div'); w.id='updWall'; w.setAttribute('role','dialog'); w.setAttribute('aria-modal','true');
+  w.innerHTML='<div class="uw-box"><div class="uw-ic">⬆️</div><h2>'+(A?'حدّث التطبيق':'Update required')+'</h2><p>'+esc(msg)+'</p>'+btn+'</div>';
+  document.body.appendChild(w); return true;
+}
+/* ═ عدّاد التثبيتات الفريدة: معرّف ثابت لكل جهاز (يبقى حتى لو انمسح تخزين المتصفح)، يُسجَّل مرة باليوم. يعطي الإدارة عدد الأجهزة الفعلي بدون تكرار ═ */
+async function registerInstall(app, build){
+  try{
+    if(!sb) return;
+    const day=new Date().toISOString().slice(0,10);
+    try{ if(localStorage.getItem('kh_install_day')===day) return; }catch(e){}
+    let id=await KH_STORE.getItem('kh_install_id');
+    if(!id || !/^[0-9a-f-]{36}$/i.test(id)){
+      id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{ const r=Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16); });
+      await KH_STORE.setItem('kh_install_id',id);
+    }
+    const C=window.Capacitor; const p=(C&&C.isNativePlatform&&C.isNativePlatform()&&C.getPlatform)?C.getPlatform():'web';
+    const r=await sb.rpc('register_install',{ p_id:id, p_app:app, p_platform:(p==='ios'||p==='android')?p:'web', p_build:build });
+    if(r && !r.error){ try{ localStorage.setItem('kh_install_day',day); }catch(e){} }
+  }catch(e){}
+}
+/* ═ تحديث تلقائي زي أي تطبيق: نسأل المتجر، ولو فيه نسخة أحدث يطلع حاجز «حدّث التطبيق». أندرويد يحدّث من داخل التطبيق، وآيفون يفتح آب ستور ═ */
+function verGt(a,b){ const x=String(a||'').split('.').map(n=>parseInt(n,10)||0), y=String(b||'').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(x.length,y.length);i++){ if((x[i]||0)!==(y[i]||0)) return (x[i]||0)>(y[i]||0); } return false; }
+let _storeChk=0;
+async function checkStoreUpdate(){
+  try{
+    const C=window.Capacitor; if(!(C&&C.isNativePlatform&&C.isNativePlatform())) return;
+    if(Date.now()-_storeChk < 3600000) return; _storeChk=Date.now();
+    const AU=(C.Plugins&&C.Plugins.AppUpdate)||(typeof C.registerPlugin==='function'?C.registerPlugin('AppUpdate'):null); if(!AU) return;
+    const info=await AU.getAppUpdateInfo({ country:'SA' }); if(!info) return;
+    const plat=C.getPlatform();
+    const newer = plat==='android' ? (info.updateAvailability===2 && (+info.availableVersionCode||0) > (+info.currentVersionCode||0))
+                                   : verGt(info.availableVersionName, info.currentVersionName);
+    if(!newer || document.getElementById('updWall')) return;
+    // أول يوم من نزول النسخة في آب ستور: ممكن ما توصل لكل الأجهزة، فنسمح بـ«لاحقًا»
+    const rel=info.availableVersionReleaseDate ? new Date(info.availableVersionReleaseDate).getTime() : 0;
+    const soft = plat==='ios' && rel>0 && (Date.now()-rel < 86400000);
+    const A=lang==='ar';
+    const w=document.createElement('div'); w.id='updWall'; w.setAttribute('role','dialog'); w.setAttribute('aria-modal','true');
+    w.innerHTML='<div class="uw-box"><div class="uw-ic">⬆️</div><h2>'+(A?'فيه نسخة جديدة':'New version available')+'</h2><p>'+(A?'حدّث خافت شركاء لآخر نسخة عشان تكمل.':'Update خافت شركاء to the latest version to continue.')+'</p>'
+      +'<button type="button" class="uw-btn" id="uwGo">'+(A?'حدّث الآن':'Update now')+'</button>'
+      +(soft?'<button type="button" id="uwLater" style="margin-top:12px;background:none;border:none;color:var(--muted);font-weight:800;font-family:inherit;font-size:.95rem;cursor:pointer">'+(A?'لاحقًا':'Later')+'</button>':'')+'</div>';
+    document.body.appendChild(w);
+    document.getElementById('uwGo').onclick=async function(){
+      try{ if(plat==='android' && info.immediateUpdateAllowed){ await AU.performImmediateUpdate(); } else { await AU.openAppStore({ country:'SA' }); } }
+      catch(e){ try{ await AU.openAppStore({ country:'SA' }); }catch(_){} } };
+    const l=document.getElementById('uwLater'); if(l) l.onclick=function(){ w.remove(); };
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded',function(){ setTimeout(checkStoreUpdate,1500); });
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') checkStoreUpdate(); });
+function rizqBanner(){ const t=String(KHSET.rizq_announcement||'').trim(); if(t && t===String(KHSET.app_update_msg||'').trim()) return '';   /* رسالة التحديث موجّهة للنسخ القديمة فقط */ return t?`<div class="rz-banner">📣 ${esc(t)}</div>`:''; }
 /* بيانات المنشأة للفاتورة (من الإعدادات) */
 function khLegal(){ const s=k=>String(KHSET[k]==null?'':KHSET[k]).trim(); const on=v=>v==='1'||v==='true';
   return { name:s('company_name')||'مؤسسة خافت للسباكة والكهرباء', cr:s('cr_number')||'2052105014', uni:s('unified_number')||'7042751284', city:s('company_city')||'الخبر، المنطقة الشرقية',
@@ -1433,19 +1686,19 @@ const LG={
 const LG2={
   ar:{fgTitle:'استعادة كلمة المرور',fgSub:'اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد.',fgSend:'📲 أرسل كود التأكيد',fgBack:'‹ رجوع لتسجيل الدخول',fgSending:'⏳ جاري الإرسال...',fgNotReg:'❌ الرقم غير مسجّل، أو تعذّر الإرسال، حاول بعد قليل',fgFail:'تعذّر الإرسال، حاول مرة ثانية',
       fcTitle:'تعيين كلمة مرور جديدة',fcSent:'أرسلنا كودًا إلى',fcNew:'كلمة المرور الجديدة (٦ فأكثر)',fcRepeat:'أعد كتابة كلمة المرور',fcSave:'✅ حفظ ودخول',fcResend:'لم يصلك الكود؟ إعادة الإرسال',fcNoCode:'اكتب كود التأكيد المرسل لجوالك',fcShort:'كلمة المرور ٦ خانات على الأقل',fcMismatch:'كلمتا المرور غير متطابقتين',fcBadCode:'❌ الكود غير صحيح أو انتهت صلاحيته',fcSaveFail:'تعذّر حفظ كلمة المرور، جرّب كلمة مختلفة',fcDone:'✅ تم تغيير كلمة المرور',tryAgain:'تعذّر، حاول مرة ثانية',
-      showPass:'إظهار كلمة المرور',hidePass:'إخفاء كلمة المرور',acct:'👤 حسابي',out:'خروج',brand:'رزق',brandSub:'فنيو خافِت',home:'الرئيسية',onway:'🚗 أنا في الطريق',onwayDone:'🚗 في الطريق، أُبلغ العميل',onwayToast:'🚗 أُبلغ العميل إنك في الطريق',popup:'اسمح بالنوافذ المنبثقة',cur:'ر.س',tour:'📘 شرح التطبيق'},
+      showPass:'إظهار كلمة المرور',hidePass:'إخفاء كلمة المرور',acct:'👤 حسابي',out:'خروج',brand:'خافت شركاء',brandSub:'للفنيين',home:'الرئيسية',onway:'🚗 أنا في الطريق',onwayDone:'🚗 في الطريق، أُبلغ العميل',onwayToast:'🚗 أُبلغ العميل إنك في الطريق',popup:'اسمح بالنوافذ المنبثقة',cur:'ر.س',tour:'📘 شرح التطبيق'},
   en:{fgTitle:'Reset password',fgSub:'Enter your registered mobile number and we will send you a code.',fgSend:'📲 Send code',fgBack:'‹ Back to sign in',fgSending:'⏳ Sending...',fgNotReg:'❌ Number not registered, or sending failed. Try again shortly',fgFail:'Sending failed, try again',
       fcTitle:'Set a new password',fcSent:'We sent a code to',fcNew:'New password (6+ characters)',fcRepeat:'Repeat the password',fcSave:'✅ Save and sign in',fcResend:'No code? Resend',fcNoCode:'Enter the code sent to your phone',fcShort:'Password must be at least 6 characters',fcMismatch:'Passwords do not match',fcBadCode:'❌ Wrong or expired code',fcSaveFail:'Could not save the password, try a different one',fcDone:'✅ Password changed',tryAgain:'Failed, try again',
-      showPass:'Show password',hidePass:'Hide password',acct:'👤 Account',out:'Log out',brand:'Rizq',brandSub:'Khafet technicians',home:'Home',onway:'🚗 On my way',onwayDone:'🚗 On the way, customer notified',onwayToast:'🚗 Customer notified you are on the way',popup:'Allow pop-ups',cur:'SAR',tour:'📘 App tour'},
+      showPass:'Show password',hidePass:'Hide password',acct:'👤 Account',out:'Log out',brand:'Khafet Partner',brandSub:'Technicians',home:'Home',onway:'🚗 On my way',onwayDone:'🚗 On the way, customer notified',onwayToast:'🚗 Customer notified you are on the way',popup:'Allow pop-ups',cur:'SAR',tour:'📘 App tour'},
   ne:{fgTitle:'पासवर्ड रिसेट',fgSub:'दर्ता भएको मोबाइल नम्बर लेख्नुहोस्, हामी कोड पठाउँछौं।',fgSend:'📲 कोड पठाउनुहोस्',fgBack:'‹ लगइनमा फर्कनुहोस्',fgSending:'⏳ पठाउँदै...',fgNotReg:'❌ नम्बर दर्ता छैन वा पठाउन सकिएन, केही बेरपछि प्रयास गर्नुहोस्',fgFail:'पठाउन सकिएन, फेरि प्रयास गर्नुहोस्',
       fcTitle:'नयाँ पासवर्ड राख्नुहोस्',fcSent:'कोड पठाइयो',fcNew:'नयाँ पासवर्ड (६ वा बढी)',fcRepeat:'पासवर्ड फेरि लेख्नुहोस्',fcSave:'✅ सेभ गरी लगइन',fcResend:'कोड आएन? फेरि पठाउनुहोस्',fcNoCode:'फोनमा आएको कोड लेख्नुहोस्',fcShort:'पासवर्ड कम्तीमा ६ अक्षर',fcMismatch:'पासवर्ड मेल खाएन',fcBadCode:'❌ कोड गलत वा म्याद सकियो',fcSaveFail:'पासवर्ड सेभ भएन, अर्को प्रयास गर्नुहोस्',fcDone:'✅ पासवर्ड परिवर्तन भयो',tryAgain:'सकिएन, फेरि प्रयास गर्नुहोस्',
-      showPass:'पासवर्ड देखाउनुहोस्',hidePass:'पासवर्ड लुकाउनुहोस्',acct:'👤 खाता',out:'लगआउट',brand:'Khafet',brandSub:'प्राविधिक पोर्टल',home:'गृहपृष्ठ',onway:'🚗 बाटोमा छु',onwayDone:'🚗 बाटोमा, ग्राहकलाई सूचना गरियो',onwayToast:'🚗 ग्राहकलाई तपाईं बाटोमा हुनुभएको सूचना गरियो',popup:'पप-अप अनुमति दिनुहोस्',cur:'SAR',tour:'📘 एप परिचय'},
+      showPass:'पासवर्ड देखाउनुहोस्',hidePass:'पासवर्ड लुकाउनुहोस्',acct:'👤 खाता',out:'लगआउट',brand:'Khafet Partner',brandSub:'प्राविधिक पोर्टल',home:'गृहपृष्ठ',onway:'🚗 बाटोमा छु',onwayDone:'🚗 बाटोमा, ग्राहकलाई सूचना गरियो',onwayToast:'🚗 ग्राहकलाई तपाईं बाटोमा हुनुभएको सूचना गरियो',popup:'पप-अप अनुमति दिनुहोस्',cur:'SAR',tour:'📘 एप परिचय'},
   hi:{fgTitle:'पासवर्ड रीसेट करें',fgSub:'अपना रजिस्टर्ड मोबाइल नंबर लिखें, हम कोड भेजेंगे।',fgSend:'📲 कोड भेजें',fgBack:'‹ लॉगिन पर वापस',fgSending:'⏳ भेज रहे हैं...',fgNotReg:'❌ नंबर रजिस्टर नहीं है या भेजना विफल रहा, थोड़ी देर बाद कोशिश करें',fgFail:'भेजना विफल, फिर कोशिश करें',
       fcTitle:'नया पासवर्ड सेट करें',fcSent:'हमने कोड भेजा',fcNew:'नया पासवर्ड (6 या अधिक)',fcRepeat:'पासवर्ड दोबारा लिखें',fcSave:'✅ सेव करके लॉगिन',fcResend:'कोड नहीं आया? दोबारा भेजें',fcNoCode:'फोन पर आया कोड लिखें',fcShort:'पासवर्ड कम से कम 6 अक्षर',fcMismatch:'पासवर्ड मेल नहीं खाते',fcBadCode:'❌ कोड गलत या समाप्त',fcSaveFail:'पासवर्ड सेव नहीं हुआ, दूसरा आज़माएँ',fcDone:'✅ पासवर्ड बदल गया',tryAgain:'विफल, फिर कोशिश करें',
-      showPass:'पासवर्ड दिखाएँ',hidePass:'पासवर्ड छिपाएँ',acct:'👤 खाता',out:'लॉग आउट',brand:'Khafet',brandSub:'तकनीशियन पोर्टल',home:'होम',onway:'🚗 रास्ते में हूँ',onwayDone:'🚗 रास्ते में, ग्राहक को सूचना दी',onwayToast:'🚗 ग्राहक को बताया कि आप रास्ते में हैं',popup:'पॉप-अप की अनुमति दें',cur:'SAR',tour:'📘 ऐप परिचय'},
+      showPass:'पासवर्ड दिखाएँ',hidePass:'पासवर्ड छिपाएँ',acct:'👤 खाता',out:'लॉग आउट',brand:'Khafet Partner',brandSub:'तकनीशियन पोर्टल',home:'होम',onway:'🚗 रास्ते में हूँ',onwayDone:'🚗 रास्ते में, ग्राहक को सूचना दी',onwayToast:'🚗 ग्राहक को बताया कि आप रास्ते में हैं',popup:'पॉप-अप की अनुमति दें',cur:'SAR',tour:'📘 ऐप परिचय'},
   ur:{fgTitle:'پاس ورڈ بحال کریں',fgSub:'اپنا رجسٹرڈ موبائل نمبر لکھیں، ہم کوڈ بھیجیں گے۔',fgSend:'📲 کوڈ بھیجیں',fgBack:'‹ لاگ ان پر واپس',fgSending:'⏳ بھیج رہے ہیں...',fgNotReg:'❌ نمبر رجسٹرڈ نہیں یا بھیجنا ناکام رہا، تھوڑی دیر بعد کوشش کریں',fgFail:'بھیجنا ناکام، دوبارہ کوشش کریں',
       fcTitle:'نیا پاس ورڈ رکھیں',fcSent:'ہم نے کوڈ بھیجا',fcNew:'نیا پاس ورڈ (6 یا زیادہ)',fcRepeat:'پاس ورڈ دوبارہ لکھیں',fcSave:'✅ محفوظ کر کے لاگ ان',fcResend:'کوڈ نہیں آیا؟ دوبارہ بھیجیں',fcNoCode:'فون پر آیا کوڈ لکھیں',fcShort:'پاس ورڈ کم از کم 6 حروف',fcMismatch:'پاس ورڈ مماثل نہیں',fcBadCode:'❌ کوڈ غلط یا ختم ہو گیا',fcSaveFail:'پاس ورڈ محفوظ نہیں ہوا، دوسرا آزمائیں',fcDone:'✅ پاس ورڈ تبدیل ہو گیا',tryAgain:'ناکام، دوبارہ کوشش کریں',
-      showPass:'پاس ورڈ دکھائیں',hidePass:'پاس ورڈ چھپائیں',acct:'👤 اکاؤنٹ',out:'لاگ آؤٹ',brand:'خافت',brandSub:'ٹیکنیشن پورٹل',home:'ہوم',onway:'🚗 راستے میں ہوں',onwayDone:'🚗 راستے میں، گاہک کو اطلاع دی',onwayToast:'🚗 گاہک کو بتایا کہ آپ راستے میں ہیں',popup:'پاپ اپ کی اجازت دیں',cur:'SAR',tour:'📘 ایپ کا تعارف'}
+      showPass:'پاس ورڈ دکھائیں',hidePass:'پاس ورڈ چھپائیں',acct:'👤 اکاؤنٹ',out:'لاگ آؤٹ',brand:'Khafet Partner',brandSub:'ٹیکنیشن پورٹل',home:'ہوم',onway:'🚗 راستے میں ہوں',onwayDone:'🚗 راستے میں، گاہک کو اطلاع دی',onwayToast:'🚗 گاہک کو بتایا کہ آپ راستے میں ہیں',popup:'پاپ اپ کی اجازت دیں',cur:'SAR',tour:'📘 ایپ کا تعارف'}
 };
 Object.keys(LG2).forEach(k=>{ Object.assign(LG[k],LG2[k]); });
 /* نصوص الدفع (باقي اللغات ترجع للعربي) */
@@ -1702,8 +1955,9 @@ function renderAccountTab(){
       </div>
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> ${x.del}</div><span class="sr-ar">›</span></div>
     </div>
+    ${docsCardHtml()}
     <button class="tbtn" style="width:100%;margin-top:4px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">${x.out}</button>
-    <a href="index.html#stay" style="display:block;text-align:center;color:var(--muted);font-weight:700;font-size:.82rem;margin-top:14px">🤝 ${lang==='ar'?'صفحة رزق الرئيسية':'Rizq home page'}</a>
+    <a href="index.html#stay" style="display:block;text-align:center;color:var(--muted);font-weight:700;font-size:.82rem;margin-top:14px">🤝 ${lang==='ar'?'صفحة خافت شركاء الرئيسية':'Khafet Partner home page'}</a>
   </div>`;
 }
 function renderTabs(){
@@ -1872,7 +2126,7 @@ function bkParseChat(raw){
   lines.forEach(l=>{ let m=l.match(rxBr), s=null, b='';
     if(m){ s=m[2].trim(); b=m[3]; } else if((m=l.match(rxEx))){ s=m[1].trim(); b=m[2]; }
     if(s!=null){ count[s]=(count[s]||0)+1; last=s; msgs.push({s,b}); } else if(l.trim()) msgs.push({s:last,b:l}); });
-  const all=Object.keys(count), senders=all.filter(s=>!/خافت|khafet|رزق|^انت$|^أنت$|^you$/i.test(s)).sort((a,b)=>count[b]-count[a]);
+  const all=Object.keys(count), senders=all.filter(s=>!/خافت|khafet|\u0631\u0632\u0642|شركاء|^انت$|^أنت$|^you$/i.test(s)).sort((a,b)=>count[b]-count[a]);
   const cust=senders[0]||'';
   const body=msgs.filter(x=>!all.length||x.s===cust||!x.s).map(x=>x.b).join('\n');
   const t=bkNorm(body), R={};
@@ -2184,6 +2438,7 @@ function jobAgo(o){
 function render(){
   document.documentElement.setAttribute('dir', isRTL()?'rtl':'ltr');
   try{ applyChrome(); }catch(e){}
+  if(docsOpen){ showDocs(''); return; }
   if(!loggedIn){ if(PENDING) showJoin(); else showLogin(); return; }
   const _sj=seenJobs(); window._sj=_sj;
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='';

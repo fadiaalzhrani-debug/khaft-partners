@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>خافت شركاء · طريقة التسجيل</title>
+<meta name="description" content="شرح مبسط بالصور لتسجيل الفني في تطبيق خافت شركاء، بخمس لغات.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Cairo:wght@500;700;800&family=Noto+Sans+Devanagari:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1E9DF;--card:#FAF6F1;--ink:#3A3029;--ink2:#5E5046;--mute:#8E8175;--group:#E7DDD1;--gold:#F5C518;--brown:#4E3F35;
+  --c1:#27B9B5;--c2:#F0B21A;--c3:#3796D3;--c4:#EC8434;--c5:#E45C86;--c6:#9460DC;--c7:#46B064;--c8:#DE6650;--spring:cubic-bezier(.34,1.56,.64,1)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo','Noto Sans Devanagari',system-ui,sans-serif;font-size:18px;line-height:1.7;padding:env(safe-area-inset-top) 16px calc(40px + env(safe-area-inset-bottom))}
+main{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,.num,.btn,.lang button{font-family:'Baloo Bhaijaan 2','Noto Sans Devanagari','Cairo',sans-serif}
+.top{display:flex;align-items:center;gap:12px;padding-top:18px}
+.mk{width:56px;height:56px;border-radius:22%;background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;flex:none;box-shadow:0 12px 20px -12px rgba(43,36,31,.9)}
+.mk svg{width:100%;height:100%;display:block}
+.top b{font-family:'Baloo Bhaijaan 2',sans-serif;font-size:24px;line-height:1.2;display:block}
+.top small{color:var(--mute);font-size:14px;font-weight:700}
+.pick{background:var(--brown);color:#FFF8EF;border-radius:28px;padding:16px 16px 14px;display:flex;flex-direction:column;gap:2px}
+.pick b{font-family:'Baloo Bhaijaan 2','Noto Sans Devanagari',sans-serif;font-size:20px;line-height:1.5}
+.pick span{font-size:15px;opacity:.8;font-weight:700}
+.lang{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding-top:10px}
+.lang button:first-child{grid-column:1 / -1}
+.lang::-webkit-scrollbar{display:none}
+.lang button{border:0;border-radius:999px;min-height:58px;padding:0 20px;font-size:21px;font-weight:700;background:var(--card);color:var(--ink);cursor:pointer;transition:transform .25s var(--spring)}
+.lang button.on{background:var(--gold);color:var(--ink)}
+.lang button:active{transform:scale(.94)}
+h1{font-size:30px;line-height:1.35;margin:6px 0 0;text-wrap:balance}
+.lead{margin:0;color:var(--ink2);font-size:17px}
+.step{background:var(--card);border-radius:28px;padding:18px;display:grid;grid-template-columns:64px 1fr;gap:4px 14px;align-items:start}
+.num{--c:var(--c1);grid-row:1 / span 2;width:64px;height:64px;border-radius:20px;color:#fff;font-size:34px;font-weight:800;display:grid;place-items:center;line-height:1;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 12px 20px -10px color-mix(in srgb,var(--c) 85%,transparent),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.step:nth-of-type(2) .num{--c:var(--c2)}.step:nth-of-type(3) .num{--c:var(--c3)}.step:nth-of-type(4) .num{--c:var(--c4)}.step:nth-of-type(5) .num{--c:var(--c5)}.step:nth-of-type(6) .num{--c:var(--c6)}.step:nth-of-type(7) .num{--c:var(--c7)}.step:nth-of-type(8) .num{--c:var(--c8)}
+.step h2{margin:0;font-size:22px;line-height:1.4;align-self:center}
+.step p{margin:0;color:var(--ink2);font-size:16.5px;grid-column:2}
+.show{grid-column:1 / -1;margin-top:10px;background:var(--bg);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.fake{background:#fff;border-radius:16px;min-height:50px;padding:0 16px;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--mute);font-size:16px}
+.fake.tap{background:var(--gold);color:var(--ink);justify-content:center;position:relative;font-family:'Baloo Bhaijaan 2','Noto Sans Devanagari',sans-serif;font-size:18px}
+.fake.tap::after{content:"👆";position:absolute;inset-inline-end:14px;bottom:-14px;font-size:30px;animation:tap 1.4s ease-in-out infinite}
+.fake.pick{background:var(--brown);color:#FFF8EF}
+.otp{display:flex;gap:8px;justify-content:center;direction:ltr}
+.otp i{width:42px;height:52px;border-radius:14px;background:#fff;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:22px;color:var(--ink)}
+@keyframes tap{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.stores{grid-column:1 / -1;margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.badge{display:flex;align-items:center;gap:14px;width:100%;min-height:72px;padding:10px 20px;border-radius:20px;background:#111;color:#fff;text-decoration:none;direction:ltr;text-align:left;box-shadow:0 12px 22px -12px rgba(0,0,0,.7);transition:transform .28s var(--spring)}
+.badge:active{transform:scale(.96)}
+.badge svg{width:40px;height:40px;flex:none}
+.badge small{display:block;font-size:13px;font-weight:700;opacity:.85;line-height:1.3;font-family:'Cairo','Noto Sans Devanagari',sans-serif}
+.badge b{display:block;font-family:'Baloo Bhaijaan 2',sans-serif;font-size:24px;line-height:1.15;font-weight:700}
+.badge em{margin-left:auto;font-style:normal;font-size:13px;font-weight:700;background:rgba(255,255,255,.16);border-radius:999px;padding:4px 12px;white-space:nowrap;font-family:'Cairo','Noto Sans Devanagari',sans-serif}
+.btn{flex:1 1 200px;display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px;border-radius:999px;border:0;padding:0 22px;font-size:19px;font-weight:800;text-decoration:none;cursor:pointer;transition:transform .28s var(--spring)}
+.btn:active{transform:scale(.95)}
+.btn.brown{background:var(--brown);color:#FFF8EF;box-shadow:0 10px 22px -10px rgba(58,48,41,.7)}
+.btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 10px 22px -10px rgba(184,134,11,.8)}
+.btn.wa{background:#1FAF5A;color:#fff;box-shadow:0 10px 22px -10px rgba(31,175,90,.8)}
+.tip{background:var(--brown);color:#FFF8EF;border-radius:28px;padding:18px 20px;font-size:17px}
+.tip b{display:block;font-family:'Baloo Bhaijaan 2','Noto Sans Devanagari',sans-serif;font-size:21px;color:var(--gold)}
+.mgr{background:var(--group);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.mgr b{font-family:'Baloo Bhaijaan 2',sans-serif;font-size:20px}
+.mgr p{margin:0;color:var(--ink2);font-size:15.5px}
+.mgr .btn{flex:none;width:100%}
+a:focus-visible,button:focus-visible{outline:3px solid var(--brown);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){ *{animation:none !important;transition:none !important} }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <span class="mk"><svg viewBox="129 55 800 800" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span>
+    <span><b id="brand">خافت شركاء</b><small id="brandSub">Khafet Partner</small></span>
+  </div>
+  <div class="pick">
+    <b>اختر لغتك · Choose your language</b>
+    <span>भाषा छान्नुहोस् · भाषा चुनें · اپنی زبان چنیں</span>
+    <div class="lang" id="lang" role="group" aria-label="Language"></div>
+  </div>
+  <h1 id="h1"></h1>
+  <p class="lead" id="lead"></p>
+  <div id="steps"></div>
+  <div class="tip"><b id="tipT"></b><span id="tipP"></span></div>
+  <div class="mgr" id="mgr">
+    <b id="mgrT"></b><p id="mgrP"></p>
+    <button class="btn wa" id="share" type="button"></button>
+  </div>
+</main>
+<script>
+(function(){
+var IOS='https://apps.apple.com/sa/app/id6791782517', AND='https://play.google.com/store/apps/details?id=com.khafet.partners';
+var LANGS=[['ar','عربي'],['en','English'],['ne','नेपाली'],['hi','हिन्दी'],['ur','اردو']];
+var RTL={ar:1,ur:1};
+/* نفس أسماء الأزرار اللي يشوفها العامل داخل التطبيق */
+var BTN_TECH={ar:'فنيين خافِت',en:'Khafet technicians',ne:'Khafet प्राविधिकहरू',hi:'Khafet तकनीशियन',ur:'خافت ٹیکنیشن'};
+var BTN_NEW={ar:'🤝 تسجيل فني جديد',en:'🤝 Register as a technician',ne:'🤝 नयाँ प्राविधिक दर्ता',hi:'🤝 नया तकनीशियन रजिस्टर',ur:'🤝 نیا ٹیکنیشن رجسٹر'};
+var T={
+ar:{h1:'سجّل في التطبيق في 8 خطوات',lead:'خمس دقائق. اتبع الأرقام واحد واحد.',
+ s:[['حمّل التطبيق','اسمه «خافت شركاء». اضغط الزر حسب جوالك.'],
+    ['اختر لغتك','أول ما يفتح التطبيق، اضغط على لغتك.'],
+    ['اضغط هذا الزر','هذا باب الفنيين.'],
+    ['اضغط «تسجيل فني جديد»','اكتب اسمك، ورقم جوالك، وكلمة سر من 6 أحرف أو أكثر. احفظ كلمة السر.'],
+    ['اكتب الرمز','توصلك رسالة SMS فيها رمز من أرقام. اكتبه في التطبيق.'],
+    ['اختر مؤسستك','اضغط على اسم المؤسسة اللي تشتغل معها. اسأل مديرك عن الاسم.'],
+    ['أضف أوراقك','من «حسابي» ثم «وثائقي»: رقم الإقامة وتاريخ انتهائها، وصورة شهادة الاعتماد المهني.'],
+    ['انتظر الموافقة','مديرك يوافق عليك. بعدها توصلك الطلبات على جوالك.']],
+ name:'اسمك',phone:'05xxxxxxxx',pass:'كلمة السر ••••••',ios:'آيفون',and:'أندرويد',org:'مؤسسة مديرك',other:'مؤسسة أخرى',docs:'📄 وثائقي',wait:'⏳ بانتظار الموافقة',
+ tipT:'مهم: خلّ الإشعارات شغالة 🔔',tipP:'إذا سألك الجوال «تسمح بالإشعارات؟» اضغط «سماح». بدونها ما توصلك الطلبات.',
+ mgrT:'للمدير',mgrP:'أرسل هذا الشرح لعاملك، وهو يختار لغته من فوق.',share:'أرسل الشرح بالواتساب',msg:'طريقة التسجيل في تطبيق خافت شركاء:'},
+en:{h1:'Register in the app in 8 steps',lead:'Five minutes. Follow the numbers one by one.',
+ s:[['Download the app','It is called “Khafet Partner”. Tap the button for your phone.'],
+    ['Choose your language','When the app opens, tap your language.'],
+    ['Tap this button','This is the door for technicians.'],
+    ['Tap “Register as a technician”','Write your name, your mobile number, and a password of 6 letters or more. Remember the password.'],
+    ['Write the code','You get an SMS with a number code. Write it in the app.'],
+    ['Choose your company','Tap the name of the company you work with. Ask your manager for the name.'],
+    ['Add your papers','In “Account” then “My documents”: Iqama number and expiry date, and a photo of your skills certificate.'],
+    ['Wait for approval','Your manager approves you. Then jobs come to your phone.']],
+ name:'Your name',phone:'05xxxxxxxx',pass:'Password ••••••',ios:'iPhone',and:'Android',org:'Your manager’s company',other:'Another company',docs:'📄 My documents',wait:'⏳ Waiting for approval',
+ tipT:'Important: keep notifications ON 🔔',tipP:'If the phone asks “Allow notifications?” tap “Allow”. Without it, jobs will not reach you.',
+ mgrT:'For the manager',mgrP:'Send this guide to your worker. He picks his language at the top.',share:'Send the guide on WhatsApp',msg:'How to register in the Khafet Partner app:'},
+ne:{h1:'८ चरणमा एपमा दर्ता गर्नुहोस्',lead:'पाँच मिनेट लाग्छ। नम्बर अनुसार एक एक गर्दै जानुहोस्।',
+ s:[['एप डाउनलोड गर्नुहोस्','नाम “Khafet Partner” हो। आफ्नो फोन अनुसार बटन थिच्नुहोस्।'],
+    ['आफ्नो भाषा छान्नुहोस्','एप खुलेपछि आफ्नो भाषामा थिच्नुहोस्।'],
+    ['यो बटन थिच्नुहोस्','यो प्राविधिकहरूको ढोका हो।'],
+    ['“नयाँ प्राविधिक दर्ता” थिच्नुहोस्','आफ्नो नाम, मोबाइल नम्बर र ६ अक्षर वा बढीको पासवर्ड लेख्नुहोस्। पासवर्ड याद राख्नुहोस्।'],
+    ['कोड लेख्नुहोस्','SMS मा नम्बरको कोड आउँछ। त्यो एपमा लेख्नुहोस्।'],
+    ['आफ्नो कम्पनी छान्नुहोस्','तपाईं काम गर्ने कम्पनीको नाममा थिच्नुहोस्। नाम म्यानेजरलाई सोध्नुहोस्।'],
+    ['कागजात थप्नुहोस्','“खाता” अनि “मेरा कागजात” मा: इकामा नम्बर, सकिने मिति, र सीप प्रमाणपत्रको फोटो।'],
+    ['स्वीकृति पर्खनुहोस्','म्यानेजरले स्वीकृत गर्छन्। त्यसपछि काम तपाईंको फोनमा आउँछ।']],
+ name:'तपाईंको नाम',phone:'05xxxxxxxx',pass:'पासवर्ड ••••••',ios:'iPhone',and:'Android',org:'तपाईंको म्यानेजरको कम्पनी',other:'अर्को कम्पनी',docs:'📄 मेरा कागजात',wait:'⏳ स्वीकृति पर्खँदै',
+ tipT:'महत्त्वपूर्ण: सूचना खुला राख्नुहोस् 🔔',tipP:'फोनले “सूचना दिन अनुमति?” सोध्यो भने “Allow” थिच्नुहोस्। नत्र काम आउँदैन।',
+ mgrT:'म्यानेजरका लागि',mgrP:'यो गाइड आफ्नो कामदारलाई पठाउनुहोस्। उसले माथि आफ्नो भाषा छान्छ।',share:'WhatsApp मा गाइड पठाउनुहोस्',msg:'Khafet Partner एपमा दर्ता गर्ने तरिका:'},
+hi:{h1:'8 स्टेप में ऐप में रजिस्टर करें',lead:'पाँच मिनट लगेंगे। नंबर के हिसाब से एक एक करके चलें।',
+ s:[['ऐप डाउनलोड करें','नाम “Khafet Partner” है। अपने फोन के हिसाब से बटन दबाएँ।'],
+    ['अपनी भाषा चुनें','ऐप खुलते ही अपनी भाषा पर दबाएँ।'],
+    ['यह बटन दबाएँ','यह तकनीशियन का दरवाज़ा है।'],
+    ['“नया तकनीशियन रजिस्टर” दबाएँ','अपना नाम, मोबाइल नंबर और 6 या ज़्यादा अक्षर का पासवर्ड लिखें। पासवर्ड याद रखें।'],
+    ['कोड लिखें','SMS में नंबर वाला कोड आएगा। उसे ऐप में लिखें।'],
+    ['अपनी कंपनी चुनें','जिस कंपनी में काम करते हैं उसके नाम पर दबाएँ। नाम अपने मैनेजर से पूछें।'],
+    ['अपने काग़ज़ जोड़ें','“अकाउंट” फिर “मेरे दस्तावेज़” में: इक़ामा नंबर, ख़त्म होने की तारीख़, और स्किल सर्टिफिकेट की फोटो।'],
+    ['मंज़ूरी का इंतज़ार करें','मैनेजर आपको मंज़ूर करेगा। फिर काम आपके फोन पर आएगा।']],
+ name:'आपका नाम',phone:'05xxxxxxxx',pass:'पासवर्ड ••••••',ios:'iPhone',and:'Android',org:'आपके मैनेजर की कंपनी',other:'दूसरी कंपनी',docs:'📄 मेरे दस्तावेज़',wait:'⏳ मंज़ूरी का इंतज़ार',
+ tipT:'ज़रूरी: नोटिफिकेशन चालू रखें 🔔',tipP:'फोन पूछे “नोटिफिकेशन की अनुमति?” तो “Allow” दबाएँ। इसके बिना काम नहीं आएगा।',
+ mgrT:'मैनेजर के लिए',mgrP:'यह गाइड अपने वर्कर को भेजें। वह ऊपर अपनी भाषा चुनेगा।',share:'WhatsApp पर गाइड भेजें',msg:'Khafet Partner ऐप में रजिस्टर करने का तरीका:'},
+ur:{h1:'8 قدم میں ایپ میں رجسٹر ہوں',lead:'پانچ منٹ لگیں گے۔ نمبر کے حساب سے ایک ایک کر کے چلیں۔',
+ s:[['ایپ ڈاؤن لوڈ کریں','نام “Khafet Partner” ہے۔ اپنے فون کے حساب سے بٹن دبائیں۔'],
+    ['اپنی زبان چنیں','ایپ کھلتے ہی اپنی زبان پر دبائیں۔'],
+    ['یہ بٹن دبائیں','یہ ٹیکنیشن کا دروازہ ہے۔'],
+    ['«نیا ٹیکنیشن رجسٹر» دبائیں','اپنا نام، موبائل نمبر اور 6 یا زیادہ حروف کا پاس ورڈ لکھیں۔ پاس ورڈ یاد رکھیں۔'],
+    ['کوڈ لکھیں','SMS میں نمبروں والا کوڈ آئے گا۔ اسے ایپ میں لکھیں۔'],
+    ['اپنی کمپنی چنیں','جس کمپنی میں کام کرتے ہیں اس کے نام پر دبائیں۔ نام اپنے مینیجر سے پوچھیں۔'],
+    ['اپنے کاغذات شامل کریں','«اکاؤنٹ» پھر «میرے کاغذات» میں: اقامہ نمبر، ختم ہونے کی تاریخ، اور ہنر کے سرٹیفکیٹ کی تصویر۔'],
+    ['منظوری کا انتظار کریں','مینیجر آپ کو منظور کرے گا۔ پھر کام آپ کے فون پر آئے گا۔']],
+ name:'آپ کا نام',phone:'05xxxxxxxx',pass:'پاس ورڈ ••••••',ios:'iPhone',and:'Android',org:'آپ کے مینیجر کی کمپنی',other:'دوسری کمپنی',docs:'📄 میرے کاغذات',wait:'⏳ منظوری کا انتظار',
+ tipT:'اہم: نوٹیفکیشن چالو رکھیں 🔔',tipP:'فون پوچھے «نوٹیفکیشن کی اجازت؟» تو «Allow» دبائیں۔ اس کے بغیر کام نہیں آئے گا۔',
+ mgrT:'مینیجر کے لیے',mgrP:'یہ گائیڈ اپنے کارکن کو بھیجیں۔ وہ اوپر اپنی زبان چنے گا۔',share:'واٹس ایپ پر گائیڈ بھیجیں',msg:'Khafet Partner ایپ میں رجسٹر ہونے کا طریقہ:'}
+};
+var L='ar';
+(function(){ var q=/[?&]lang=(ar|en|ne|hi|ur)/.exec(location.search); if(q){L=q[1];return;}
+  try{ var a=localStorage.getItem('khafet_techlang')||localStorage.getItem('khafet_join_lang'); if(a&&T[a]){L=a;return;} }catch(e){}
+  var n=(navigator.language||'').slice(0,2); if(T[n]) L=n; })();
+var $=function(id){return document.getElementById(id);};
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function show(i,x){
+  if(i===0) return '<div class="stores">'+'<a class="badge" href="'+AND+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 2.3 13.2 12 3.6 21.7c-.4-.2-.6-.6-.6-1.1V3.4c0-.5.2-.9.6-1.1z" fill="#00D2FF"/><path d="M16.3 8.9 13.2 12l3.1 3.1 3.9-2.2c.8-.5.8-1.4 0-1.8z" fill="#FFCE00"/><path d="M3.6 2.3c.4-.2.9-.2 1.4.1l11.3 6.5-3.1 3.1z" fill="#00F076"/><path d="M3.6 21.7 13.2 12l3.1 3.1L5 21.6c-.5.3-1 .3-1.4.1z" fill="#FF3A44"/></svg><span><small>GET IT ON</small><b>Google Play</b></span><em>'+esc(x.and)+'</em></a>'+'<a class="badge" href="'+IOS+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 12.6c0-2.2 1.8-3.2 1.9-3.3-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.6.8-3.3.8-.7 0-1.7-.8-2.9-.8-1.5 0-2.9.9-3.6 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-1.1 2.7-2.2.9-1.2 1.2-2.4 1.2-2.5-.1 0-2.5-.9-2.5-3.6zM14.4 6.1c.6-.8 1-1.8.9-2.9-.9 0-2 .6-2.6 1.4-.6.7-1.1 1.7-1 2.8 1 .1 2.1-.5 2.7-1.3z" fill="#fff"/></svg><span><small>Download on the</small><b>App Store</b></span><em>'+esc(x.ios)+'</em></a></div>';
+  if(i===1) return '<div class="show" style="flex-direction:row;flex-wrap:wrap">'+LANGS.map(function(l){return '<span class="fake'+(l[0]===L?' pick':'')+'" style="flex:1 1 40%;justify-content:center">'+l[1]+'</span>';}).join('')+'</div>';
+  if(i===2) return '<div class="show"><span class="fake tap">🔧 '+esc(BTN_TECH[L])+'</span></div>';
+  if(i===3) return '<div class="show"><span class="fake tap">'+esc(BTN_NEW[L])+'</span><span class="fake" style="margin-top:12px">👤 '+esc(x.name)+'</span><span class="fake" style="direction:ltr;justify-content:flex-end">📱 '+esc(x.phone)+'</span><span class="fake">🔑 '+esc(x.pass)+'</span></div>';
+  if(i===4) return '<div class="show"><div class="otp"><i>4</i><i>8</i><i>1</i><i>5</i><i>2</i><i>9</i></div></div>';
+  if(i===5) return '<div class="show"><span class="fake">001 · Khafet</span><span class="fake pick">002 · '+esc(x.org)+' ✓</span><span class="fake">003 · '+esc(x.other)+'</span></div>';
+  if(i===6) return '<div class="show"><span class="fake tap">'+esc(x.docs)+'</span></div>';
+  return '<div class="show"><span class="fake" style="justify-content:center">'+esc(x.wait)+'</span><span class="fake pick" style="justify-content:center">🔔 ✅</span></div>';
+}
+function render(){
+  var x=T[L]; document.documentElement.lang=L; document.documentElement.dir=RTL[L]?'rtl':'ltr';
+  $('lang').innerHTML=LANGS.map(function(l){return '<button type="button" data-l="'+l[0]+'" class="'+(l[0]===L?'on':'')+'">'+l[1]+'</button>';}).join('');
+  $('brand').textContent=L==='ar'?'خافت شركاء':'Khafet Partner'; $('brandSub').textContent=L==='ar'?'Khafet Partner':'خافت شركاء';
+  $('h1').textContent=x.h1; $('lead').textContent=x.lead;
+  $('steps').innerHTML=x.s.map(function(s,i){return '<section class="step"><span class="num">'+(i+1)+'</span><h2>'+esc(s[0])+'</h2><p>'+esc(s[1])+'</p>'+show(i,x)+'</section>';}).join('');
+  $('steps').style.cssText='display:flex;flex-direction:column;gap:14px';
+  $('tipT').textContent=x.tipT; $('tipP').textContent=x.tipP; $('mgrT').textContent=x.mgrT; $('mgrP').textContent=x.mgrP; $('share').textContent='💬 '+x.share;
+}
+$('lang').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; L=b.getAttribute('data-l'); try{localStorage.setItem('khafet_join_lang',L);}catch(er){} render(); window.scrollTo(0,0); });
+$('share').addEventListener('click',function(){ var u=location.origin+location.pathname; window.open('https://wa.me/?text='+encodeURIComponent('طريقة التسجيل في خافت شركاء\nHow to register · दर्ता गर्ने तरिका · रजिस्टर करने का तरीका · رجسٹر ہونے کا طریقہ\n'+u),'_blank','noopener'); });
+render();
+})();
+</script>
+</body>
+</html>

@@ -48,7 +48,7 @@ workflows:
           setkey NSMicrophoneUsageDescription "لتسجيل مقطع فيديو يوضّح حالة العمل عند الحاجة"
           setkey CFBundleVersion "$BUILD_NUMBER"
           setkey CFBundleShortVersionString "1.2.0"
-          setkey CFBundleDisplayName "رزق"
+          setkey CFBundleDisplayName "خافت شركاء"
           # آيفون فقط + الحد الأدنى iOS 15 (آبل تحذّر تحت 15.0)
           ruby -e "require 'xcodeproj'; \
             p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); \

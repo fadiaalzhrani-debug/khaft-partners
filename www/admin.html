@@ -533,6 +533,16 @@ html[dir="ltr"] .bc-ios,html[dir="ltr"] .bc-and{text-align:start}
 
 html,body{touch-action:manipulation}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
+<style id="kh-skin">
+/* لوحة الإدارة: ألوان وخط فقط، بدون تغيير أشكال الجداول والأدوات */
+:root:root{ --ink:#3A3029; --brand-dark:#2B241F; --bg:#F1E9DF; --card:#FAF6F1; --muted:#8E8175; --line:#E2D7CA; --gold-deep:#B8860B; --ok-soft:#E3F4E8; --danger-soft:#FBE4E1; --r:22px;
+  --shadow:0 18px 34px -24px rgba(58,48,41,.5); --shadow-sm:0 14px 26px -22px rgba(58,48,41,.45); }
+body{background:var(--bg);color:var(--ink)}
+h1,h2,h3,.brand{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
+header.top{background:rgba(241,233,223,.92);border-bottom:0}
+
+</style><!--/kh-skin-->
 </head>
 <body>
 <header class="top"><div class="wrap">
@@ -565,7 +575,9 @@ const KH_STORE={
   async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
-const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
+/* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
+const KH_APP_BUILD=101, KH_RIZQ_BUILD=101;
+const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
   Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
@@ -618,21 +630,53 @@ async function pickImg(id,url){
   toast(url?LX('✅ رُبطت الصورة بـ'+it.name,'✅ Image linked to '+whName(it)):'🚫 بدون صورة'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); const top=document.querySelector('.il-top small'); if(top) top.textContent=ar(INV.filter(x=>x.image_url).length)+'/'+ar(INV.length);
 }
 async function ilPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳ جارٍ الرفع...'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ انحفظت صورتك'); const card=document.getElementById('il-'+id); if(card) card.outerHTML=ilCard(it); }catch(e){ toast('⚠️ تعذّر الرفع'); } }
-async function loadJoin(){ try{ const jc=await sb.rpc('get_join_code'); JOIN_CODE=jc.data||''; }catch(e){} try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
+async function loadJoin(){ try{ const jc=await sb.rpc('get_join_code'); JOIN_CODE=jc.data||''; }catch(e){} try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } try{ const sd=await sb.rpc('admin_staff_docs'); STAFF_DOCS=sd.data||[]; }catch(e){ STAFF_DOCS=[]; } }
 function renderJoinPanelA(){
   const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||LX('فني','Technician'))}</b><small>📱 ${esc(t.phone||'')} · ${new Date(t.created_at).toLocaleDateString(uiLocale())}</small></div>
       <button class="sbtn ok" onclick="approveTechA('${t.user_id}',true)">✔️ اعتماد</button><button class="sbtn danger" onclick="approveTechA('${t.user_id}',false)">رفض</button></div>`).join('') : '';
   return `<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:14px">
     <b style="display:block;margin-bottom:6px">🔑 ${LX('كود انضمام فنيّي خافت','Khafet team join code')}</b>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">${LX('أعطي هذا الكود لعمالك فقط. الفني يسجّل في رزق ويكتبه، ويظهر لك هنا لتعتمديه. غيّريه متى شئتِ ويبطل القديم فورًا.','Give this code to your own workers only. They enter it in Rizq and appear here for approval.')}</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">${LX('أعطي هذا الكود لعمالك فقط. الفني يسجّل في خافت شركاء ويكتبه، ويظهر لك هنا لتعتمديه. غيّريه متى شئتِ ويبطل القديم فورًا.','Give this code to your own workers only. They enter it in Khafet Partner and appear here for approval.')}</p>
     <div class="jcode">${esc(JOIN_CODE||'…')}</div>
     <div class="jrow"><button class="sbtn" style="flex:1" onclick="copyJoinCodeA()">📋 ${LX('نسخ','Copy')}</button><button class="sbtn" style="flex:1" onclick="regenJoinCodeA()">🎲 ${LX('كود جديد عشوائي','New random code')}</button></div>
   </div>
-  ${pend?`<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px"><b style="display:block;margin-bottom:4px">⏳ ${LX('فنيون بانتظار اعتمادك','Technicians awaiting approval')} (${ar(PENDING_TECHS.length)})</b>${pend}</div>`:''}`;
+  ${pend?`<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px"><b style="display:block;margin-bottom:4px">⏳ ${LX('فنيون بانتظار اعتمادك','Technicians awaiting approval')} (${ar(PENDING_TECHS.length)})</b>${pend}</div>`:''}${renderStaffDocsA()}`;
+}
+/* ═══════ 📄 وثائق الفنيين: مراجعة واعتماد (الهوية أو الإقامة، المهنة، شهادة الاعتماد المهني) ═══════ */
+function renderStaffDocsA(){
+  if(!STAFF_DOCS.length) return '';
+  const chip=(s)=>{ const M={none:[LX('بدون وثائق','No documents'),'#b45309','rgba(245,158,11,.14)'],pending:[LX('بانتظار مراجعتك','Awaiting your review'),'#1d4ed8','rgba(37,99,235,.12)'],approved:[LX('معتمدة','Approved'),'#15803d','rgba(22,163,74,.12)'],rejected:[LX('مرفوضة','Rejected'),'#b91c1c','rgba(220,38,38,.10)']}[s]||['','','']; return `<span style="display:inline-block;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:800;color:${M[1]};background:${M[2]}">${M[0]}</span>`; };
+  const soon=(d)=>{ if(!d) return false; const t=new Date(d+'T00:00:00'); return (t-new Date())/864e5 < 60; };
+  const nPend=STAFF_DOCS.filter(x=>x.review_status==='pending').length;
+  const rows=STAFF_DOCS.map(x=>`<div class="jpend" style="align-items:flex-start;flex-wrap:wrap">
+      <span style="font-size:1.4rem">📄</span>
+      <div class="t" style="flex:1;min-width:200px"><b>${esc(x.name||LX('فني','Technician'))}</b> ${chip(x.review_status)}
+        <small>📱 ${esc(x.phone||'')}${x.active?'':' · '+LX('غير مفعّل','inactive')}</small>
+        ${x.review_status!=='none'?`<small style="display:block;margin-top:4px;line-height:1.8">${LX('الاسم','Name')}: <span style="font-weight:900;color:var(--ink)">${esc(x.legal_name||'')}</span> · ${LX('الرقم','No.')}: <span dir="ltr" style="font-weight:900;color:var(--ink)">${esc(x.id_number||'')}</span><br>${LX('ينتهي','Expires')}: <span style="font-weight:900;${soon(x.id_expiry)?'color:#b91c1c':'color:var(--ink)'}">${esc(x.id_expiry||'')}</span> · ${esc(x.nationality||'')} · ${esc(x.profession||'')}${x.review_note?'<br>📝 '+esc(x.review_note):''}</small>`:''}
+      </div>
+      ${x.review_status!=='none'?`<div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${x.cert_path?`<button class="sbtn" data-path="${esc(x.cert_path)}" onclick="openDocA(this.dataset.path)">📎 ${LX('الشهادة','Certificate')}</button>`:`<span style="color:#b91c1c;font-weight:800;font-size:.82rem">${LX('بدون شهادة','No certificate')}</span>`}
+        ${x.review_status!=='approved'?`<button class="sbtn ok" onclick="reviewDocsA('${x.user_id}',true)">✔️ ${LX('اعتماد الوثائق','Approve')}</button>`:''}
+        ${x.review_status!=='rejected'?`<button class="sbtn danger" onclick="reviewDocsA('${x.user_id}',false)">${LX('رفض','Reject')}</button>`:''}
+      </div>`:''}
+    </div>`).join('');
+  return `<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px"><b style="display:block;margin-bottom:4px">📄 ${LX('وثائق الفنيين','Technician documents')}${nPend?' ('+ar(nPend)+' '+LX('بانتظارك','pending')+')':''}</b>
+    <p style="color:var(--muted);font-size:.84rem;margin-bottom:6px">${LX('الفني ما يُعتمد إلا بعد اعتماد وثائقه هنا. الرقم الأحمر يعني الوثيقة تنتهي خلال 60 يوم.','A technician cannot be approved until documents are approved here. A red date means the document expires within 60 days.')}</p>${rows}</div>`;
+}
+async function openDocA(path){
+  try{ const r=await sb.storage.from('khafet-docs').createSignedUrl(path, 300); if(r.error||!r.data) throw new Error(); window.open(r.data.signedUrl,'_blank','noopener'); }
+  catch(e){ toast(LX('تعذّر فتح الملف','Could not open the file')); }
+}
+async function reviewDocsA(uid, ok){
+  let note='';
+  if(!ok){ note=prompt(LX('سبب الرفض (يظهر للفني عشان يعدّل):','Reason (shown to the technician):'),'')||''; if(!note.trim()) return; }
+  try{ const { data }=await sb.rpc('review_staff_docs',{ p_uid:uid, p_ok:!!ok, p_note:note }); if(!data||!data.ok) throw new Error();
+    toast(ok?LX('✅ اعتُمدت الوثائق. تقدرين تعتمدين الفني الحين','✅ Documents approved'):LX('تم الرفض وأُبلغ الفني بالسبب','Rejected')); await loadJoin(); render(); }
+  catch(e){ toast('⚠️ تعذّر'); }
 }
 async function approveTechA(uid, ok){
   if(!ok && !confirm(LX('رفض هذا الفني؟ ما راح يشوف أي طلب.','Reject this technician? They will not see any orders.'))) return;
-  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(!data||!data.ok) throw new Error(); toast(ok?LX('✅ اعتُمد '+(data.name||''),'✅ Approved '+(data.name||'')):'تم الرفض'); await loadStaff(); await loadJoin(); render(); }catch(e){ toast('⚠️ تعذّر'); }
+  try{ const { data }=await sb.rpc('approve_tech',{ p_uid:uid, p_ok:!!ok }); if(data&&data.reason==='docs_required'){ toast(LX('📄 اعتمد وثائق الفني أول من «وثائق الفنيين» تحت','📄 Approve the technician documents first, in the list below')); return; } if(!data||!data.ok) throw new Error(); toast(ok?LX('✅ اعتُمد '+(data.name||''),'✅ Approved '+(data.name||'')):'تم الرفض'); await loadStaff(); await loadJoin(); render(); }catch(e){ toast('⚠️ تعذّر'); }
 }
 async function regenJoinCodeA(){
   if(!confirm(LX('توليد كود جديد؟ الكود الحالي يبطل فورًا، وفنيينك المعتمدين يبقون كما هم.','Create a new code? The current code stops working now. Approved technicians stay as they are.'))) return;
@@ -1005,6 +1049,8 @@ async function loadAll(){
     Q(sb.from('khafet_staff').select('*'), st=>{ STAFF=st.data||[]; }),
     Q(sb.from('khafet_articles').select('*').order('sort'), a=>{ ARTICLES=a.data||[]; }),
     Q(sb.from('khafet_suggestions').select('*').order('created_at',{ascending:false}).limit(300), sg=>{ SUGS=sg.data||[]; }),
+    Q(sb.from('khafet_complaints').select('*').order('created_at',{ascending:false}).limit(300), c=>{ COMPLAINTS_A=c.data||[]; }),
+    Q(sb.rpc('khafet_admin_audience'), a=>{ if(a&&!a.error&&a.data) AUDIENCE=a.data; }),
     Promise.resolve().then(()=>loadJoin()).catch(()=>{}),
     Promise.resolve().then(()=>loadJoinReqs()).catch(()=>{}),
     Promise.resolve().then(()=>loadImgOpts()).catch(()=>{}),
@@ -1109,7 +1155,11 @@ const ST_GROUPS=[
     ['commission_big_cap','الحد الأقصى للعمولة في الطلب الكبير (ريال)','Big job commission cap (SAR)','num'] ] },
   { id:'policy', t:['🛡️ الإلغاء والضمان','🛡️ Cancellation & warranty'], d:['الإلغاء وتغيير الموعد مجاني قبل الموعد بهذي الساعات، وبعدها عبر التواصل فقط.','Free cancel or reschedule until this many hours before the visit, then only by contacting you.'], f:[
     ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
-    ['warranty_days','ضمان الشغل (أيام)','Work warranty (days)','num'],
+    ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
+    ['warranty_days','ضمان الشغل للطلبات اللي يدخلها الموظف (أيام)','Work warranty for staff-entered orders (days)','num'],
+    ['welcome_credit','رصيد ترحيبي لأول طلب من التطبيق (ريال · 0 يوقفه)','Welcome credit for the first app order (SAR · 0 turns it off)','num'],
+    ['media_retention_days','حذف مقاطع العملاء وصور المنازل بعد كم يوم من موعد الطلب المغلق','Delete customer videos and house photos N days after the closed order date','num'],
+    ['complaint_sla_days','مدة الرد على الشكوى (أيام عمل) كما تظهر للعميل','Complaint reply time (working days) shown to customers','num'],
     ['delivery_fee','رسوم التوصيل (ريال)','Delivery fee (SAR)','num'],
     ['close_requires_payment','إقفال الطلب يتطلب دفع المتبقي','Closing an order requires payment of the balance','bool'] ] },
   { id:'coverage', t:['📍 التغطية','📍 Coverage'], d:['المدن اللي تخدمها. أي عميل خارجها يشوف الرسالة تحت ولا يقدر يحجز.','Cities you serve. Customers outside them see the message and cannot book.'], f:[
@@ -1160,7 +1210,8 @@ const ST_GROUPS=[
     ['launch_pct','خصم الإطلاق على أجرة اليد (٪)، صفر يوقفه','Launch labour discount (%), 0 disables','num'],
     ['launch_until','خصم الإطلاق ينتهي بتاريخ','Launch discount ends on','date'],
     ['lead_min','أقل مدة قبل الموعد لقبول الحجز (دقائق)','Minimum lead time before a slot (minutes)','num'] ] },
-  { id:'rizq', t:['🤝 تطبيق رزق','🤝 Rizq app'], d:['رسالة تظهر للفنيين والمزودين أعلى رزق (تعليمات، تنبيه، عيد).','A message technicians and providers see at the top of Rizq (instructions, alerts, holidays).'], f:[
+  { id:'rizq', t:['🤝 تطبيق خافت شركاء','🤝 Khafet Partner app'], d:['رسالة تظهر للفنيين والمزودين أعلى خافت شركاء (تعليمات، تنبيه، عيد).','A message technicians and providers see at the top of Khafet Partner (instructions, alerts, holidays).'], f:[
+    ['tech_docs_required','اعتماد الفني يتطلب وثائق معتمدة (هوية أو إقامة، مهنة، شهادة اعتماد مهني)','Technician approval requires approved documents','bool'],
     ['rizq_announcement','إعلان الفنيين (اتركه فارغًا لإخفائه)','Technician announcement (leave empty to hide)','text'] ] },
   { id:'contact', t:['📞 التواصل','📞 Contact'], d:['الرقم اللي يظهر للعميل في التطبيق والفاتورة.','The number customers see in the app and invoice.'], f:[
     ['support_phone','رقم الاتصال','Phone','text'],
@@ -1237,6 +1288,7 @@ async function loadStaff(){ if(!cloudReady) return; try{ const { data }=await sb
 
 /* ===== 💡 اقتراحات العملاء ===== */
 let SUGS=[];
+let COMPLAINTS_A=[], STAFF_DOCS=[], AUDIENCE=null;
 async function loadSugs(){
   if(!cloudReady) return;
   try{ const { data }=await sb.from('khafet_suggestions').select('*').order('created_at',{ascending:false}).limit(300); SUGS=data||[]; if(loggedIn) render(); }catch(e){}
@@ -1485,7 +1537,7 @@ function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return;
 function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
 function toggleReviewAnon(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewAnon=!o.reviewAnon; patch(o.dbId,{review_anon:o.reviewAnon}); toast(o.reviewAnon?'👤 أُخفي اسم العميل':'👤 يظهر اسم العميل'); render(); }
 function toggleReviewHidden(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewHidden=!o.reviewHidden; patch(o.dbId,{review_hidden:o.reviewHidden}); toast(o.reviewHidden?'🙈 أُخفي التقييم من الرئيسية':'👁️ يظهر التقييم في الرئيسية'); render(); }
-async function approveProvider(phone,status){ if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
+async function approveProvider(phone,status){ const p0=PROVIDERS.find(x=>x.phone===phone); if(status==='approved' && p0 && !/^[0-9]{10}$/.test(String(p0.cr_number||''))){ toast(LX('🧾 لازم رقم سجل تجاري صحيح قبل الاعتماد','🧾 A valid CR number is required before approval')); return; } if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
 
 /* ---- الدخول ---- */
 /* الدخول بالجوال + رمز SMS (بدون كلمة مرور) */
@@ -1602,7 +1654,8 @@ function renderProviders(){
     else if(st==='approved') acts=`<button class="sbtn danger" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'suspended')">⏸️ إيقاف</button>`;
     else acts=`<button class="sbtn ok" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'approved')">▶️ تفعيل</button>`;
     return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st)}</span>
-      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div></div>
+      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div>
+      <div style="margin-top:3px;font-size:.88rem">🧾 ${LX('السجل التجاري','CR')}: ${/^[0-9]{10}$/.test(String(p.cr_number||''))?'<b dir="ltr">'+esc(p.cr_number)+'</b>':'<b style="color:#b91c1c">'+LX('غير مرفق','missing')+'</b>'} ${p.cr_doc_path?`<button class="sbtn" style="padding:4px 10px" data-path="${esc(p.cr_doc_path)}" onclick="openDocA(this.dataset.path)">📎 ${LX('عرض السجل','View')}</button>`:''}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
       <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)}${p.experience?LX(' · خبرة ',' · Experience: ')+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
       <div style="display:flex;gap:8px;margin-top:10px">${acts}</div></div>`;
@@ -1770,12 +1823,13 @@ function render(){
   const pendingProv=PROVIDERS.filter(p=>(p.status||'pending')==='pending').length;
   // ═ لوحة منظّمة بأقسام: كل شي له مكانه بدل صفحة وحدة طويلة ═
   const newSugs=SUGS.filter(s=>!s.handled).length;
+  const openCmp=COMPLAINTS_A.filter(c=>c.status!=='closed').length;
   const newSubs=SUBS.filter(s=>s.status!=='active').length;
   const block=(t,h)=>`<div class="panel"><h3 class="ph open" style="cursor:default"><span>${t}</span></h3>${h}</div>`;
   const secs=[
     ['orders','📥 الطلبات', cnt('new')],
     ['team','👥 الفريق', pendingProv+PENDING_TECHS.length],
-    ['cust','💬 العملاء', newSugs+newSubs],
+    ['cust','💬 العملاء', newSugs+newSubs+openCmp],
     ['store','📦 المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length],
     ['prices','🗂️ الخدمات', 0],
     ['joins','📨 طلبات الانضمام', JOINREQ.filter(x=>x.status==='new').length],
@@ -1785,7 +1839,7 @@ function render(){
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
     ['team','👥','الفريق', pendingProv+PENDING_TECHS.length, 'الفنيّون · المزوّدون · المستحقات', true],
-    ['cust','💬','العملاء', newSugs+newSubs, 'الرسائل · الاشتراكات · مقالات السلامة', false],
+    ['cust','💬','العملاء', newSugs+newSubs+openCmp, 'الشكاوى · الرسائل · الاشتراكات · المقالات', false],
     ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
     ['prices','🗂️',LX('الأقسام والخدمات','Sections & services'), 0, LX('الأقسام · الخدمات · الأسعار','Sections · services · prices'), false],
     ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
@@ -1812,7 +1866,8 @@ function render(){
       ${block(LX(`🤝 مزودين الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
       ${block(LX('💰 مستحقات المنصة (نسبة من أجرة اليد)','💰 Platform dues (share of labour)'), renderCommission())}`;
   } else if(adminSection==='cust'){
-    body=`${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
+    body=`${block(LX(`📣 الشكاوى (${ar(openCmp)} مفتوحة)`,`📣 Complaints (${openCmp} open)`), renderComplaintsA())}
+      ${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
       ${block(LX(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`,`🛡️ Subscription requests (${newSubs} new)`), renderSubs())}
       ${block(LX(`📰 مقالات السلامة (${ar(ARTICLES.length)})`,`📰 Safety articles (${ARTICLES.length})`), renderArticles())}`;
   } else if(adminSection==='store'){
@@ -1839,7 +1894,7 @@ function render(){
       <div class="stat green"><div class="n">${money(revenue)}</div><div class="l">💰 إيراد مكتمل</div></div>
     </div>
     ${adminSection===''
-      ? homeCards
+      ? homeCards+audiencePanelHtml()
       : `<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
            ${KH_FROM_TECH?`<button class="backbtn" style="margin:0" onclick="location.href='fanyeen.html'">‹ ${LX('تطبيق الفني','Tech app')}</button>`:''}<button class="backbtn" style="margin:0" onclick="setAdminSection('')">‹ القائمة</button>
            <b style="font-size:1.15rem;font-weight:900;flex:1">${secTitle}</b>
@@ -1895,6 +1950,63 @@ function stalePanelHtml(){
       ${rows}
       <button class="backbtn" style="margin-top:10px;width:100%;background:var(--ink);color:#fff;border-color:var(--ink)" ${staleBusy?'disabled':''} onclick="cancelStale()">🧹 ${A?'إلغاء المحدد بصمت':'Cancel selected silently'}</button>`
       :`<p style="color:var(--ok,#1f7a3e);font-weight:800">✅ ${A?'ما فيه طلبات معلّقة':'No stale orders'}</p>`)}
+  </div>`;
+}
+/* ═══════ 📣 الشكاوى: رقم متابعة، حالة، ورد يظهر للعميل في تطبيقه ═══════ */
+const CMP_KINDS_A={quality:['جودة الشغل','Work quality'],late:['تأخر أو عدم حضور','Late or no show'],price:['السعر أو الفاتورة','Price or invoice'],tech:['تعامل الفني','Technician conduct'],app:['التطبيق أو الدفع','App or payment'],other:['أخرى','Other']};
+function renderComplaintsA(){
+  if(!COMPLAINTS_A.length) return `<p style="color:var(--muted)">${LX('ما فيه شكاوى.','No complaints.')}</p>`;
+  const sla=parseInt(SETTINGS.complaint_sla_days,10)||3;
+  return COMPLAINTS_A.map(c=>{ const k=CMP_KINDS_A[c.kind]||[c.kind,c.kind]; const days=Math.floor((Date.now()-new Date(c.created_at).getTime())/864e5); const late=c.status!=='closed' && !c.reply && days>=sla;
+    return `<div class="panel" style="margin-top:10px;padding:14px;${late?'border-color:#dc2626':''}">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>#${ar(c.ticket_no)} · ${LX(k[0],k[1])}</b>${late?`<span style="color:#b91c1c;font-weight:800;font-size:.8rem">⏰ ${LX('تجاوزت مدة الرد','Past reply deadline')}</span>`:''}
+        <span style="flex:1"></span>
+        <select onchange="cmpSetStatusA('${c.id}',this.value)" style="padding:6px 10px;border-radius:10px;border:1px solid var(--line);font-family:inherit;font-weight:800">
+          ${[['open',LX('مفتوحة','Open')],['progress',LX('جارٍ المعالجة','In progress')],['closed',LX('مغلقة','Closed')]].map(o=>`<option value="${o[0]}" ${c.status===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+      <small style="color:var(--muted);font-weight:700;display:block;margin-top:4px">${esc(c.customer_name||'')} · <a href="tel:${esc(c.customer_phone||'')}" dir="ltr">${esc(c.customer_phone||'')}</a>${c.order_no?' · '+LX('طلب','Order')+' #'+ar(c.order_no):''} · ${esc(String(c.created_at||'').slice(0,10))}</small>
+      <p style="margin-top:8px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere">${esc(c.body)}</p>
+      <textarea id="cmpr_${c.id}" rows="2" placeholder="${LX('ردّك على العميل (يظهر له في التطبيق)','Your reply (shown to the customer in the app)')}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:inherit">${esc(c.reply||'')}</textarea>
+      <button class="sbtn ok" style="margin-top:6px" onclick="cmpSaveReplyA('${c.id}')">💬 ${LX('حفظ الرد','Save reply')}</button>
+    </div>`; }).join('');
+}
+async function cmpSetStatusA(id, st){
+  try{ const r=await sb.from('khafet_complaints').update({status:st}).eq('id',id).select('id'); if(r.error) throw r.error; const c=COMPLAINTS_A.find(x=>x.id===id); if(c) c.status=st; toast(LX('تم التحديث','Updated')); render(); }
+  catch(e){ toast(LX('ما انحفظ','Not saved')); }
+}
+async function cmpSaveReplyA(id){
+  const el=document.getElementById('cmpr_'+id); const reply=((el&&el.value)||'').trim(); if(!reply){ toast(LX('اكتب الرد أول','Write the reply first')); return; }
+  const c=COMPLAINTS_A.find(x=>x.id===id); const st=(c&&c.status==='open')?'progress':(c?c.status:'progress');
+  try{ const r=await sb.from('khafet_complaints').update({reply, status:st}).eq('id',id).select('id'); if(r.error) throw r.error; if(c){ c.reply=reply; c.status=st; } toast(LX('💬 انحفظ الرد ويظهر للعميل','💬 Reply saved')); render(); }
+  catch(e){ toast(LX('ما انحفظ','Not saved')); }
+}
+/* ═══════ 📲 مستخدمو التطبيق: أرقام بدون تكرار. الأشخاص بأرقام الجوال المختلفة، والأجهزة بمعرّف التثبيت، والحسابات المجهولة معزولة لأنها تتكرر ═══════ */
+function audiencePanelHtml(){
+  const a=AUDIENCE; if(!a) return '';
+  const N=v=>ar(+v||0);
+  const inst=(app,plat)=>{ const r=(a.installs||[]).find(x=>x.app===app&&x.platform===plat); return r||{n:0,active30:0,new7:0}; };
+  const kI=inst('khafet','ios'), kA=inst('khafet','android'), rI=inst('rizq','ios'), rA=inst('rizq','android');
+  const kTot=(+kI.n||0)+(+kA.n||0), rTot=(+rI.n||0)+(+rA.n||0), push=(+a.push_ios||0)+(+a.push_android||0);
+  const tile=(n,l,sub)=>`<div class="stat" style="flex:1;min-width:150px"><div class="n">${n}</div><div class="l">${l}</div>${sub?`<div class="l" style="margin-top:4px;opacity:.85">${sub}</div>`:''}</div>`;
+  const split=(i,d)=>LX('آيفون ','iPhone ')+N(i)+' · '+LX('أندرويد ','Android ')+N(d);
+  // إلى أن يبدأ عدّاد التثبيت (مع التحديث القادم) نعرض الحد الأدنى المؤكد: أجهزة الإشعارات
+  const kTile = kTot>0 ? tile(N(kTot), '📱 '+LX('حمّلوا تطبيق خافت','Khafet app downloads'), split(kI.n,kA.n))
+                       : tile(N(push), '📱 '+LX('حمّلوا خافت (المؤكد)','Khafet downloads (confirmed)'), split(a.push_ios,a.push_android));
+  const rTile = rTot>0 ? tile(N(rTot), '🤝 '+LX('حمّلوا تطبيق خافت شركاء','Khafet Partner app downloads'), split(rI.n,rA.n))
+                       : tile(N(a.techs_with_device), '🤝 '+LX('فنيون بأجهزتهم','Technicians with a device'), LX('من ','of ')+N(a.techs)+LX(' فني مفعّل',' active'));
+  return `<div class="panel" style="margin-top:16px">
+    <h3 class="ph open" style="cursor:default"><span>📲 ${LX('مستخدمو التطبيق','App users')}</span></h3>
+    <p class="sp-hint">${LX('بدون تكرار: الشخص يُحسب مرة برقم جواله، والجهاز مرة واحدة.','De-duplicated: a person counts once by phone number, a device once.')}</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${tile(N(a.people), '👤 '+LX('أشخاص حقيقيون','Real people'), LX('أرقام جوال مختلفة','distinct phone numbers'))}
+      ${tile(N(a.ordered), '🧾 '+LX('منهم طلبوا فعلًا','of them ordered'), LX('موثّقون بالجوال: ','phone verified: ')+N(a.verified))}
+      ${kTile}${rTile}
+    </div>
+    <div style="margin-top:12px;font-size:.86rem;line-height:1.9;color:var(--muted);font-weight:700">
+      ${kTot+rTot>0?`<div>🟢 ${LX('نشطة آخر 30 يوم: ','Active in 30 days: ')}${N((+kI.active30||0)+(+kA.active30||0)+(+rI.active30||0)+(+rA.active30||0))} · ${LX('جديدة هذا الأسبوع: ','new this week: ')}${N((+kI.new7||0)+(+kA.new7||0)+(+rI.new7||0)+(+rA.new7||0))} · 🔔 ${LX('مفعّلة الإشعارات: ','notifications on: ')}${N(push)}</div>`
+        :`<div>⏳ ${LX('عدّاد الأجهزة المثبّتة يبدأ مع التحديث القادم ويحل محل رقم الإشعارات.','The install counter starts with the next update and replaces the notifications number.')}</div>`}
+      <div>⚠️ ${LX('حسابات مجهولة ','Anonymous accounts ')}${N(a.anon_accounts)}${LX('، ما نحسبها: الجهاز الواحد يفتح أكثر من حساب (أكثر جهاز فتح ',', not counted: one device opens several accounts (the most repeated opened ')}${N(a.anon_top_repeat)}${LX(')، وفيها أجهزة فحص المتاجر وتجاربنا.','), plus store review devices and our tests.')}</div>
+      <div>🏪 ${LX('التحميل الرسمي من المتاجر: ','Official store downloads: ')}<a href="https://appstoreconnect.apple.com/analytics" target="_blank" rel="noopener" style="color:var(--gold-deep);font-weight:900">App Store Connect</a> · <a href="https://play.google.com/console" target="_blank" rel="noopener" style="color:var(--gold-deep);font-weight:900">Play Console</a></div>
+    </div>
   </div>`;
 }
 function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
@@ -2017,15 +2129,15 @@ async function loadBroadcast(){
   try{ const { data }=await sb.from('khafet_broadcasts').select('*').order('created_at',{ascending:false}).limit(10); BC.history=data||[]; }catch(e){}
   BC.loaded=true; if(adminSection==='notify') render();
 }
-const BC_AUD={ all:['الكل','العملاء والفريق'], customers:['العملاء','تطبيق خافت'], staff:['الفريق','تطبيق رزق'] };
-const BC_AUD_EN={ all:['All','Customers and team'], customers:['Customers','Khafet app'], staff:['Team','Rizq app'] };
+const BC_AUD={ all:['الكل','العملاء والفريق'], customers:['العملاء','تطبيق خافت'], staff:['الفريق','تطبيق خافت شركاء'] };
+const BC_AUD_EN={ all:['All','Customers and team'], customers:['Customers','Khafet app'], staff:['Team','Khafet Partner app'] };
 function bcAud(k,i){ const a=(_enUI()?BC_AUD_EN:BC_AUD)[k]; return a?a[i]:''; }
 function bcDev(n){ return LX(ar(n)+' جهاز', n+(n===1?' device':' devices')); }
 function bcTime(ts){ try{ return new Date(ts).toLocaleTimeString(_enUI()?'en-US':'ar-SA',{hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
 function bcDate(ts){ try{ return new Date(ts).toLocaleDateString(uiLocale(),{weekday:'long',day:'numeric',month:'long'}); }catch(e){ return ''; } }
 function bcPreviewHtml(){
   const t=BC.title.trim()||LX('عنوان الإشعار','Notification title'), b=BC.body.trim()||LX('نص الإشعار يظهر هنا كما يشوفه الناس على جوالاتهم.','Your message shows here the way people see it on their phones.');
-  const app=BC.audience==='staff'?LX('رزق','Rizq'):LX('خافِت','Khafet');
+  const app=BC.audience==='staff'?LX('خافت شركاء','Khafet Partner'):LX('خافِت','Khafet');
   const ios=`<div class="bc-ios"><div class="bc-ios-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">${LX('الآن','now')}</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
   const and=`<div class="bc-and"><div class="bc-and-top"><img src="logo.png" alt="" /><span class="bc-app">${app}</span><span class="bc-now">· ${LX('الآن','now')}</span></div><div class="bc-t" dir="auto">${esc(t)}</div><div class="bc-b" dir="auto">${esc(b)}</div></div>`;
   return `<div class="bc-phone ${BC.view}"><div class="bc-clock">${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>${BC.view==='ios'?ios:and}</div>`;
@@ -2109,7 +2221,7 @@ function renderBroadcast(){
             <button type="button" id="bcTest" onclick="bcTest()">${LX('📱 جرّب على جوالي','📱 Test on my phone')}</button>
             <button type="button" id="bcSend" class="go" onclick="bcConfirm()">${LX('📣 إرسال','📣 Send')}</button>
           </div>
-          <p class="bc-note">${LX('مسموح بإشعار واحد فقط لكل يوم. «جرّب على جوالي» يوصل لجوالك أنتِ فقط في تطبيق رزق، وما يحسب من إشعار اليوم.','Only one notification is allowed per day. "Test on my phone" goes only to your own phone in the Rizq app and does not count as today\'s notification.')}</p>
+          <p class="bc-note">${LX('مسموح بإشعار واحد فقط لكل يوم. «جرّب على جوالي» يوصل لجوالك أنتِ فقط في تطبيق خافت شركاء، وما يحسب من إشعار اليوم.','Only one notification is allowed per day. "Test on my phone" goes only to your own phone in the Khafet Partner app and does not count as today\'s notification.')}</p>
         </div>
         <div>
           <div class="bc-views"><button type="button" class="${BC.view==='ios'?'on':''}" onclick="bcSetView('ios')">${LX('آيفون','iPhone')}</button><button type="button" class="${BC.view==='android'?'on':''}" onclick="bcSetView('android')">${LX('أندرويد','Android')}</button></div>
@@ -2125,7 +2237,7 @@ async function bcTest(){
   BC.busy=true; bcPaint(); toast(LX('⏳ جاري الإرسال لجوالك…','⏳ Sending to your phone…'));
   const r=await callBroadcast({ mode:'test', title:BC.title.trim(), body:BC.body.trim() });
   BC.busy=false; bcPaint();
-  if(r&&r.ok) toast(r.total?LX('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')','📱 Sent to your phone ('+r.sent+' of '+r.total+')'):LX('ما فيه جوال مسجّل لحسابك. افتحي تطبيق رزق مرة ووافقي على الإشعارات','No phone is linked to your account. Open the Rizq app once and allow notifications'));
+  if(r&&r.ok) toast(r.total?LX('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')','📱 Sent to your phone ('+r.sent+' of '+r.total+')'):LX('ما فيه جوال مسجّل لحسابك. افتحي تطبيق خافت شركاء مرة ووافقي على الإشعارات','No phone is linked to your account. Open the Khafet Partner app once and allow notifications'));
   else toast('⚠️ '+bcReason(r));
 }
 function bcReason(r){ const k=(r&&r.reason)||'';

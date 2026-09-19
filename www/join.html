@@ -63,7 +63,7 @@ button{font-family:inherit}
 .f p{margin:0;font-size:13px;color:var(--mu);line-height:1.5}
 @media (min-width:600px){.feat{grid-template-columns:repeat(3,1fr)}}
 
-/* ── تطبيق رزق ── */
+/* ── تطبيق خافت شركاء ── */
 .rizq{margin-top:36px;background:#111;color:#F3F0E6;border-radius:24px;padding:26px 20px 30px;overflow:hidden;position:relative}
 .rizq h2{color:#fff}
 .rizq .sub{color:#CFCABB}
@@ -195,8 +195,94 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .hp{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0}
 @media (max-width:380px){.row{grid-template-columns:1fr 112px 24px}.fact b{font-size:17px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.langrow{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none;position:relative;z-index:1}
+.langrow::-webkit-scrollbar{display:none}
+.langrow button{flex:none;border:0;border-radius:999px;min-height:44px;padding:0 16px;font:inherit;font-weight:700;font-size:15px;background:var(--card);color:var(--tx);cursor:pointer}
+.langrow button.on{background:var(--ink);color:#FFF8EF}
+.guidecard{margin-top:36px;background:var(--soft);border-radius:32px;padding:24px 20px;display:flex;flex-direction:column;gap:10px}
+.guidecard .gc-ic{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:28px;background:linear-gradient(165deg,#6FB8E6,#3796D3 55%,#2C7DB4);box-shadow:0 12px 20px -10px rgba(55,150,211,.85),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.guidecard h2{margin:0;font-size:26px;line-height:1.4}
+.guidecard p{margin:0;color:var(--mu)}
+.guidecard .lb{font-weight:700;font-size:14px;margin-top:6px}
+.guidecard .langrow{padding-top:0}
+.gc-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.gc-acts .btn{flex:1 1 180px;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn.wa{background:#1FAF5A;color:#fff;box-shadow:0 10px 22px -10px rgba(31,175,90,.8)}
 </style>
 <style>.hero .tape{margin-top:env(safe-area-inset-top)}</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
+<style id="kh-skin">
+/* جلد «خافت الجديد» لصفحة الانضمام: ألوان وأشكال فقط، بدون لمس الوظائف */
+:root:root:root{
+  --y:#F5C518; --y2:#FBF1C9; --yd:#B8860B; --ink:#4E3F35;
+  --bg:#F1E9DF; --card:#FAF6F1; --tx:#3A3029; --mu:#8E8175; --ln:#E2D7CA; --soft:#E7DDD1;
+  --ok:#15803D; --oks:#E3F4E8; --err:#DC2626; --sh:0 18px 34px -22px rgba(58,48,41,.45);
+  --c1:#27B9B5; --c2:#F0B21A; --c3:#3796D3; --c4:#EC8434; --c5:#E45C86; --c6:#9460DC;
+  --spring:cubic-bezier(.34,1.56,.64,1);
+}
+body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+.d,h1,h2,h3,h4,.brand b,.mark,.fact b,.f b,.steps b,.steps .n,.opt b,.btn,.b-ink,.b-ghost{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
+
+/* الهيدر: من أصفر صريح إلى أرضية دافية وعنوان بني */
+.hero{background:linear-gradient(180deg,#FBF3EA 0%,var(--bg) 100%);color:var(--tx);padding-bottom:64px}
+.hero::after{border-color:rgba(245,197,24,.22)}
+.tape{display:none}
+.mark{background:linear-gradient(165deg,#FFD84D,#F5C518 55%,#E0A200);color:#fff;border-radius:14px;box-shadow:0 10px 18px -10px rgba(184,134,11,.9),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.08)}
+.langbtn,.homebtn{border:0;background:var(--card);color:var(--tx);box-shadow:0 1px 0 rgba(0,0,0,.05);padding:9px 16px;font-weight:700}
+.eyebrow{color:var(--mu);opacity:1;font-size:15px}
+.hero h1{font-weight:800;line-height:1.3;color:var(--tx)}
+.hero h1 em{background:var(--y);color:var(--tx);border-radius:999px;padding:0 .4em;transform:rotate(-1.5deg)}
+.lead{color:#5E5046;opacity:1}
+.b-ink,.b-ghost{border-radius:999px;min-height:58px;display:inline-flex;align-items:center;padding:0 30px;font-size:19px;font-weight:800;transition:transform .28s var(--spring)}
+.b-ink{background:var(--y);color:var(--tx);box-shadow:0 10px 22px -10px rgba(184,134,11,.8)}
+.b-ghost{border:0;background:var(--soft);color:#5E5046}
+.b-ink:active,.b-ghost:active,.btn:active,.chip:active{transform:scale(.95)}
+
+.ticket{border-radius:26px;box-shadow:var(--sh);background:var(--card)}
+.fact b{color:var(--tx)}
+.sec h2,.fh h2{font-weight:800;line-height:1.4}
+.tag{background:var(--y2);color:var(--yd);border-radius:999px;padding:4px 14px}
+
+/* البطاقات والبلاطات الملوّنة */
+.f{border:0;border-radius:26px;padding:16px;background:var(--card)}
+.f .ic,.steps .n{--c:var(--c1);width:48px;height:48px;border-radius:15px;color:#fff;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 12px 20px -10px color-mix(in srgb,var(--c) 85%,transparent),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.f:nth-child(2) .ic,.steps li:nth-child(2) .n{--c:var(--c2)} .f:nth-child(3) .ic,.steps li:nth-child(3) .n{--c:var(--c3)}
+.f:nth-child(4) .ic,.steps li:nth-child(4) .n{--c:var(--c4)} .f:nth-child(5) .ic{--c:var(--c5)} .f:nth-child(6) .ic{--c:var(--c6)}
+.steps li{grid-template-columns:48px 1fr}
+.steps li::before{inset-inline-start:23px;top:52px}
+
+/* قسم رزق: من أسود إلى بني */
+.rizq{background:var(--ink);color:#FFF8EF;border-radius:32px}
+.rizq .sub,.rizq .note{color:#D9CCBE}
+.stores a{border-radius:999px;padding:10px 18px;background:#FFF8EF;color:var(--tx)}
+.scr{background:var(--bg)}
+.job,.mini{border-radius:16px;background:var(--card)}
+.job .ac span{border-radius:999px}
+.job .ac span:first-child{background:var(--y);color:var(--tx)}
+.stat{background:var(--ink);border-radius:16px}
+
+/* النموذج */
+.form{border:0;border-radius:32px;background:var(--card);box-shadow:var(--sh)}
+.prog i{height:8px;border-radius:999px}
+.prog i.done{background:var(--ink)}
+input,select,textarea{border:0;background:#fff;border-radius:20px;min-height:56px;padding:14px 18px;box-shadow:inset 0 0 0 1.5px transparent;transition:box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--y)}
+.chip{border:0;background:#fff;min-height:48px;padding:0 18px;font-weight:700;font-size:15px;transition:transform .25s var(--spring),background .2s}
+.chip::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--c1)}
+.chip:nth-child(3n+2)::before{background:var(--c2)} .chip:nth-child(3n)::before{background:var(--c3)}
+.chip.on{background:var(--c1);color:#fff}
+.chip:nth-child(3n+2).on{background:var(--c2)} .chip:nth-child(3n).on{background:var(--c3)}
+.chip.on::before{content:"";background:#fff}
+.opt{border:0;border-radius:26px;background:#fff;padding:18px}
+.opt.on{background:var(--y2);box-shadow:inset 0 0 0 2.5px var(--y)}
+.btn{border-radius:999px;min-height:58px;padding:0 28px;font-size:19px;font-weight:800;transition:transform .28s var(--spring)}
+.btn.y{box-shadow:0 10px 22px -10px rgba(184,134,11,.8)}
+.btn.g{border:0;background:var(--soft);color:#5E5046}
+
+</style><!--/kh-skin-->
 </head>
 <body>
 
@@ -204,10 +290,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 <header class="hero">
   <div class="tape"></div>
   <div class="in">
-    <div class="brand"><span class="mark">خ</span><b data-i="brand">خافِت</b><a class="homebtn" href="index.html#stay" data-i="home">الرئيسية</a><button type="button" class="langbtn" id="langBtn">English</button></div>
+    <div class="brand"><span class="mark">خ</span><b data-i="brand">خافِت</b><a class="homebtn" href="index.html#stay" data-i="home">الرئيسية</a><button type="button" class="langbtn" id="langBtn" hidden>English</button></div>
+    <div class="langrow" id="langRow" role="group" aria-label="Language"></div>
     <p class="eyebrow" data-i="eyebrow">انضمام الفنيين ومقدمي الخدمات</p>
     <h1><span data-i="h1a">طلبات صيانة</span> <em data-i="h1em">جاهزة</em><br><span data-i="h1b">على جوالك.</span></h1>
-    <p class="lead" data-i="lead">خافت يجيب لك عملاء الخبر والدمام والظهران، ورزق يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.</p>
+    <p class="lead" data-i="lead">خافت يجيب لك عملاء الخبر والدمام والظهران، وخافت شركاء يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.</p>
     <div class="cta"><a class="b-ink" href="#apply" data-i="ctaApply">قدّم طلب الانضمام</a><a class="b-ghost" href="#how" data-i="ctaHow">كيف يشتغل؟</a></div>
   </div>
 </header>
@@ -236,7 +323,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
   <section class="rizq" id="rizq">
     <div class="rz">
       <div>
-        <span class="tag" data-i="rzTag">تطبيق رزق</span>
+        <span class="tag" data-i="rzTag">تطبيق خافت شركاء</span>
         <h2 data-i="rzH">مكتبك كله في جيبك</h2>
         <p class="sub" data-i="rzP">تستقبل الطلب، تضغط «في الطريق» و«وصلت»، تسجّل القطع، وتطلع الفاتورة. وتشوف دخلك وتقييماتك ومسار يومك على الخريطة.</p>
         <div class="stores">
@@ -249,7 +336,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
         <div class="toast" data-i="phToast">🔔 طلب جديد قريب منك</div>
         <div class="phone"><div class="scr">
           <div class="sb"><span>4:12</span><span>▮▮▮ 92%</span></div>
-          <div class="ah"><span data-i="phApp">رزق</span><i>🔔</i></div>
+          <div class="ah"><span data-i="phApp">خافت شركاء</span><i>🔔</i></div>
           <div class="job"><span class="nw" data-i="phNew">طلب جديد</span><b data-i="phSvc">تغيير سيفون أوتوماتيك</b><small data-i="phLoc">📍 الخبر · الراكة</small><small data-i="phTime">🕓 اليوم 4:15 م · 60 ر.س مدفوع</small><div class="ac"><span data-i="phAccept">قبول</span><span data-i="phDetails">التفاصيل</span></div></div>
           <div class="mini"><span data-i="phR1">تركيب مروحة سقف · الدمام</span><span>6:00</span></div>
           <div class="mini"><span data-i="phR2">تنظيف سبلت · الظهران</span><span data-i="phTomorrow">غدًا</span></div>
@@ -267,9 +354,17 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
     <ol class="steps">
       <li><span class="n">1</span><div><b data-i="s1">عبّ النموذج</b><p data-i="s1p">خدماتك وأسعارك ومدنك، ياخذ دقيقتين.</p></div></li>
       <li><span class="n">2</span><div><b data-i="s2">نتواصل معك</b><p data-i="s2p">نراجع طلبك ونعتمد حسابك.</p></div></li>
-      <li><span class="n">3</span><div><b data-i="s3">حمّل رزق وسجّل</b><p data-i="s3p">برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».</p></div></li>
+      <li><span class="n">3</span><div><b data-i="s3">حمّل خافت شركاء وسجّل</b><p data-i="s3p">برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».</p></div></li>
       <li><span class="n">4</span><div><b data-i="s4">استقبل أول طلب</b><p data-i="s4p">الطلبات توصلك بإشعار، وتقبلها من جوالك.</p></div></li>
     </ol>
+  </section>
+
+  <section class="guidecard" id="guide">
+    <div class="gc-ic">📘</div>
+    <h2 data-i="gT">شرح التسجيل للعامل</h2>
+    <p data-i="gP">8 خطوات سهلة بالصور. أرسله لعاملك، وهو يختار لغته من أول الشرح ويسجل بنفسه.</p>
+<!--guide-lang-inside-->
+    <div class="gc-acts"><button type="button" class="btn wa" id="guideSend" data-i="gSend">أرسله بالواتساب</button><a class="btn g" id="guideOpen" href="guide.html" target="_blank" rel="noopener" data-i="gOpen">افتح الشرح</a></div>
   </section>
 
   <section class="form" id="apply">
@@ -325,9 +420,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
       <div class="ref"><span id="refNo">#0</span><small data-i="refLbl">رقم طلبك، احفظه</small></div>
       <p id="doneMsg"></p>
       <ul class="nextl">
-        <li><i>📲</i><span data-i="n1">حمّل رزق من المتجر وخلّه جاهز.</span></li>
+        <li><i>📲</i><span data-i="n1">حمّل خافت شركاء من المتجر وخلّه جاهز.</span></li>
         <li><i>📸</i><span data-i="n2">أرسل لنا صور من أعمالك على واتساب، تسرّع القبول.</span></li>
-        <li><i>✅</i><span data-i="n3">لما نعتمد حسابك، سجّل في رزق بنفس رقم الجوال.</span></li>
+        <li><i>✅</i><span data-i="n3">لما نعتمد حسابك، سجّل في خافت شركاء بنفس رقم الجوال.</span></li>
       </ul>
       <div class="stores">
         <a href="https://play.google.com/store/apps/details?id=com.khafet.partners" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M6 3v18l15-9z" fill="currentColor"/></svg><span><small data-i="getOn3">حمّله من</small>Google Play</span></a>
@@ -348,7 +443,7 @@ var L='ar';
 var T={
 brand:['خافِت','Khafet'], eyebrow:['انضمام الفنيين ومقدمي الخدمات','Technician and provider onboarding'],
 h1a:['طلبات صيانة','Maintenance jobs,'], h1em:['جاهزة','ready,'], h1b:['على جوالك.','on your phone.'],
-lead:['خافت يجيب لك عملاء الخبر والدمام والظهران، ورزق يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.','Khafet brings you customers across Al Khobar, Dammam and Dhahran, and Rizq organizes your work from the job to the invoice. Register now and start receiving jobs.'],
+lead:['خافت يجيب لك عملاء الخبر والدمام والظهران، وخافت شركاء يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.','Khafet brings you customers across Al Khobar, Dammam and Dhahran, and Khafet Partner organizes your work from the job to the invoice. Register now and start receiving jobs.'],
 ctaApply:['قدّم طلب الانضمام','Apply to join'], ctaHow:['كيف يشتغل؟','How it works'],
 f1v:['3 مدن','3 cities'], f1l:['الخبر والدمام والظهران','Al Khobar, Dammam and Dhahran'],
 f2v:['دفع مقدّم','Paid upfront'], f2l:['العميل يدفع أجرة اليد قبل الشغل','Customers pay labor before the work'],
@@ -360,15 +455,15 @@ w3:['تحكم كامل','Full control'], w3p:['تختار خدماتك وأسع�
 w4:['فاتورة بضغطة','One tap invoice'], w4p:['خدمات وقطع في فاتورة مرتبة تطبعها أو ترسلها للعميل.','Services and parts in a clean invoice to print or send.'],
 w5:['مستودعك في جيبك','Your stock in your pocket'], w5p:['أصنافك وكمياتك، وطلب شراء PDF جاهز للمحل.','Your items and quantities, plus a ready PDF purchase order.'],
 w6:['سمعتك تكبر','Your reputation grows'], w6p:['تقييمات العملاء تبني اسمك مع كل طلب.','Customer ratings build your name with every job.'],
-rzTag:['تطبيق رزق','The Rizq app'], rzH:['مكتبك كله في جيبك','Your whole office in your pocket'],
+rzTag:['تطبيق خافت شركاء','The Khafet Partner app'], rzH:['مكتبك كله في جيبك','Your whole office in your pocket'],
 rzP:['تستقبل الطلب، تضغط «في الطريق» و«وصلت»، تسجّل القطع، وتطلع الفاتورة. وتشوف دخلك وتقييماتك ومسار يومك على الخريطة.','Receive the job, tap On my way and Arrived, log the parts and issue the invoice. See your income, ratings and day route on the map.'],
 getOn:['حمّله من','Get it on'], getOn2:['حمّله من','Download on the'], getOn3:['حمّله من','Get it on'], getOn4:['حمّله من','Download on the'],
 rzLangs:['التطبيق بالعربي والإنجليزي والأردو والهندي والنيبالي.','The app speaks Arabic, English, Urdu, Hindi and Nepali.'],
-phToast:['🔔 طلب جديد قريب منك','🔔 New job near you'], phApp:['رزق','Rizq'], phNew:['طلب جديد','New job'], phSvc:['تغيير سيفون أوتوماتيك','Replace automatic flush'], phLoc:['📍 الخبر · الراكة','📍 Al Khobar · Al Rakah'], phTime:['🕓 اليوم 4:15 م · 60 ر.س مدفوع','🕓 Today 4:15 PM · 60 SAR paid'], phAccept:['قبول','Accept'], phDetails:['التفاصيل','Details'], phR1:['تركيب مروحة سقف · الدمام','Ceiling fan · Dammam'], phR2:['تنظيف سبلت · الظهران','Split AC cleaning · Dhahran'], phTomorrow:['غدًا','Tomorrow'], phInc:['دخلك هذا الأسبوع','Your income this week'], phSar:['ر.س','SAR'], phT1:['الطلبات','Jobs'], phT2:['المستودع','Stock'], phT3:['دخلي','Income'], phT4:['حسابي','Account'],
+phToast:['🔔 طلب جديد قريب منك','🔔 New job near you'], phApp:['خافت شركاء','Khafet Partner'], phNew:['طلب جديد','New job'], phSvc:['تغيير سيفون أوتوماتيك','Replace automatic flush'], phLoc:['📍 الخبر · الراكة','📍 Al Khobar · Al Rakah'], phTime:['🕓 اليوم 4:15 م · 60 ر.س مدفوع','🕓 Today 4:15 PM · 60 SAR paid'], phAccept:['قبول','Accept'], phDetails:['التفاصيل','Details'], phR1:['تركيب مروحة سقف · الدمام','Ceiling fan · Dammam'], phR2:['تنظيف سبلت · الظهران','Split AC cleaning · Dhahran'], phTomorrow:['غدًا','Tomorrow'], phInc:['دخلك هذا الأسبوع','Your income this week'], phSar:['ر.س','SAR'], phT1:['الطلبات','Jobs'], phT2:['المستودع','Stock'], phT3:['دخلي','Income'], phT4:['حسابي','Account'],
 howTag:['4 خطوات','4 steps'], howH:['كيف تبدأ','How to start'], howP:['من النموذج إلى أول طلب.','From the form to your first job.'],
 s1:['عبّ النموذج','Fill the form'], s1p:['خدماتك وأسعارك ومدنك، ياخذ دقيقتين.','Your services, prices and cities. Takes two minutes.'],
 s2:['نتواصل معك','We contact you'], s2p:['نراجع طلبك ونعتمد حسابك.','We review your request and approve your account.'],
-s3:['حمّل رزق وسجّل','Download Rizq and sign in'], s3p:['برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».','With your mobile number. Technicians pick “Khafet technicians”, companies pick “Khafet providers”.'],
+s3:['حمّل خافت شركاء وسجّل','Download Khafet Partner and sign in'], s3p:['برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».','With your mobile number. Technicians pick “Khafet technicians”, companies pick “Khafet providers”.'],
 s4:['استقبل أول طلب','Get your first job'], s4p:['الطلبات توصلك بإشعار، وتقبلها من جوالك.','Jobs arrive as notifications, accept them on your phone.'],
 fTag:['طلب الانضمام','Join request'], fH:['سجّل خدماتك','Register your services'], fP:['دقيقتين، وبياناتك ما يشوفها أحد غير إدارة خافت.','Two minutes. Only Khafet management sees your details.'],
 st1:['عنك','About you'], st2:['خدماتك وأسعارك','Services and prices'], st3:['الضمان وأرسل','Warranty and send'],
@@ -393,7 +488,7 @@ errInvalid:['راجع الاسم ورقم الجوال.','Check the name and mob
 errNet:['ما قدرنا نرسل الطلب. أرسله لنا على واتساب:','We could not send the request. Send it to us on WhatsApp:'],
 stamp:['وصلنا طلبك','Request received'], refLbl:['رقم طلبك، احفظه','Your request number, keep it'],
 doneMsg:['شكرًا {name}! نراجع طلبك ونتواصل معك على {phone}.','Thank you {name}! We will review your request and contact you on {phone}.'],
-n1:['حمّل رزق من المتجر وخلّه جاهز.','Download Rizq from the store and keep it ready.'], n2:['أرسل لنا صور من أعمالك على واتساب، تسرّع القبول.','Send us photos of your work on WhatsApp, it speeds up approval.'], n3:['لما نعتمد حسابك، سجّل في رزق بنفس رقم الجوال.','Once we approve your account, sign in to Rizq with the same mobile number.'],
+n1:['حمّل خافت شركاء من المتجر وخلّه جاهز.','Download Khafet Partner from the store and keep it ready.'], n2:['أرسل لنا صور من أعمالك على واتساب، تسرّع القبول.','Send us photos of your work on WhatsApp, it speeds up approval.'], n3:['لما نعتمد حسابك، سجّل في خافت شركاء بنفس رقم الجوال.','Once we approve your account, sign in to Khafet Partner with the same mobile number.'],
 photosBtn:['📸 أرسل صور أعمالك','📸 Send photos of your work'], again:['تعبئة طلب آخر','Fill another request'],
 waPhotos:['طلب انضمام خافت رقم {ref}. هذي صور من أعمالي:','Khafet join request #{ref}. Here are photos of my work:'],
 waFallback:['طلب انضمام خافت','Khafet join request'],
@@ -401,12 +496,19 @@ foot:['مؤسسة خافت للسباكة والكهرباء · الخبر','Kha
 sType:['النوع','Type'], sName:['الاسم','Name'], sCompany:['المؤسسة','Company'], sTeam:['الفريق','Team'], sPhone:['الجوال','Mobile'], sCities:['المدن','Cities'], sWar:['الضمان','Warranty'], sNotes:['ملاحظات','Notes'], sar:['ر.س','SAR'], noPrice:['بدون سعر','no price'], noSvcs:['ما أضفت خدمات، نحددها معك عند التواصل.','No services added, we will set them with you when we talk.']
 };
 T.home=['الرئيسية','Home'];
-/* داخل تطبيق رزق: بدون روابط المتاجر، ونصوص «سجّل» بدل «حمّل» */
+/* نيبالي، هندي، أردو: [ne,hi,ur] لكل مفتاح. الناقص يرجع للإنجليزي */
+var TX={"brand":["Khafet","Khafet","Khafet"],"eyebrow":["टेक्निसियन र कम्पनी दर्ता","टेक्नीशियन और कंपनी रजिस्ट्रेशन","ٹیکنیشن اور کمپنی رجسٹریشن"],"h1a":["मर्मतको काम,","मेंटेनेंस का काम,","مینٹیننس کے کام،"],"h1em":["तयार,","तैयार,","تیار،"],"h1b":["तपाईंको फोनमा।","आपके फोन पर।","آپ کے فون پر۔"],"lead":["Khafet ले तपाईंलाई Al Khobar, Dammam र Dhahran मा ग्राहक ल्याउँछ, र Khafet Partner ले तपाईंको काम अर्डरदेखि बिलसम्म मिलाउँछ। अहिले दर्ता गर्नुहोस् र काम पाउन सुरु गर्नुहोस्।","Khafet आपको Al Khobar, Dammam और Dhahran में ग्राहक देता है, और Khafet Partner आपका काम ऑर्डर से बिल तक संभालता है। अभी रजिस्टर करें और काम पाना शुरू करें।","Khafet آپ کو Al Khobar، Dammam اور Dhahran میں گاہک دیتا ہے، اور Khafet Partner آپ کا کام آرڈر سے بل تک سنبھالتا ہے۔ ابھی رجسٹر کریں اور کام لینا شروع کریں۔"],"ctaApply":["जोडिन आवेदन दिनुहोस्","जुड़ने के लिए अप्लाई करें","شامل ہونے کے لیے اپلائی کریں"],"ctaHow":["यो कसरी चल्छ","यह कैसे काम करता है","یہ کیسے کام کرتا ہے"],"f1v":["3 सहर","3 शहर","3 شہر"],"f1l":["Al Khobar, Dammam र Dhahran","Al Khobar, Dammam और Dhahran","Al Khobar، Dammam اور Dhahran"],"f2v":["पैसा पहिले","पैसा पहले","پیسے پہلے"],"f2l":["ग्राहकले काम अघि ज्याला तिर्छ","ग्राहक काम से पहले मजदूरी देता है","گاہک کام سے پہلے مزدوری دیتا ہے"],"f3v":["तपाईंको रेट","आपके रेट","آپ کے ریٹ"],"f3l":["आफ्नो सेवा, रेट र सहर आफैं छान्नुहोस्","अपनी सर्विस, रेट और शहर आप खुद चुनें","اپنی سروس، ریٹ اور شہر آپ خود چنیں"],"whyTag":["Khafet किन","Khafet क्यों","Khafet کیوں"],"whyH":["Khafet बाट तपाईंले के पाउनुहुन्छ","Khafet से आपको क्या मिलता है","Khafet سے آپ کو کیا ملتا ہے"],"whyP":["ग्राहक हामी ल्याउँछौं, सीप तपाईंको।","ग्राहक हम लाते हैं, हुनर आपका।","گاہک ہم لاتے ہیں، ہنر آپ کا۔"],"w1":["मिलाएर आउने काम","तरीके से काम","ترتیب سے کام"],"w1p":["हरेक काममा सेवा, ठेगाना र समय आउँछ। न फोन, न मोलमोलाइ।","हर काम के साथ सर्विस, पता और समय आता है। न फोन, न मोलभाव।","ہر کام کے ساتھ سروس، پتہ اور وقت آتا ہے۔ نہ فون، نہ بھاؤ تاؤ۔"],"w2":["काम सुरु गर्नु अघि पैसा","काम शुरू करने से पहले पैसा","کام شروع کرنے سے پہلے پیسے"],"w2p":["ग्राहकले एपमै ज्याला तिर्छ, तपाईं काममा ध्यान दिनुहोस्।","ग्राहक ऐप में ही मजदूरी देता है, आप बस काम पर ध्यान दें।","گاہک ایپ میں ہی مزدوری دیتا ہے، آپ بس کام پر دھیان دیں۔"],"w3":["पूरा कन्ट्रोल","पूरा कंट्रोल","پورا کنٹرول"],"w3p":["आफ्नो सेवा, रेट र सहर छान्नुहोस्, र मन परेको काम मात्र लिनुहोस्।","अपनी सर्विस, रेट और शहर चुनें, और जो काम ठीक लगे वही लें।","اپنی سروس، ریٹ اور شہر چنیں، اور جو کام ٹھیک لگے وہی لیں۔"],"w4":["एक ट्यापमा बिल","एक टैप में बिल","ایک ٹیپ میں بل"],"w4p":["सेवा र पार्ट्स एउटै सफा बिलमा, प्रिन्ट गर्नुहोस् वा पठाउनुहोस्।","सर्विस और पार्ट्स एक साफ़ बिल में, प्रिंट करें या भेजें।","سروس اور پارٹس ایک صاف بل میں، پرنٹ کریں یا بھیجیں۔"],"w5":["तपाईंको स्टक तपाईंको खल्तीमा","आपका स्टॉक आपकी जेब में","آپ کا اسٹاک آپ کی جیب میں"],"w5p":["तपाईंको सामान र संख्या, साथै पसलको लागि तयार PDF अर्डर।","आपका सामान और गिनती, साथ में दुकान के लिए तैयार PDF ऑर्डर।","آپ کا سامان اور تعداد، ساتھ میں دکان کے لیے تیار PDF آرڈر۔"],"w6":["तपाईंको नाम बढ्छ","आपका नाम बढ़ता है","آپ کا نام بڑھتا ہے"],"w6p":["हरेक काममा ग्राहकको रेटिङले तपाईंको नाम बनाउँछ।","हर काम पर ग्राहक की रेटिंग से आपका नाम बनता है।","ہر کام پر گاہک کی ریٹنگ سے آپ کا نام بنتا ہے۔"],"rzTag":["Khafet Partner एप","Khafet Partner ऐप","Khafet Partner ایپ"],"rzH":["तपाईंको पूरा अफिस खल्तीमा","आपका पूरा ऑफिस आपकी जेब में","آپ کا پورا آفس آپ کی جیب میں"],"rzP":["काम लिनुहोस्, “बाटोमा छु” र “पुगें” थिच्नुहोस्, पार्ट्स लेख्नुहोस् र बिल बनाउनुहोस्। आफ्नो कमाइ, रेटिङ र दिनको बाटो नक्सामा हेर्नुहोस्।","काम लें, “रास्ते में हूँ” और “पहुँच गया” दबाएँ, पार्ट्स लिखें और बिल बनाएँ। अपनी कमाई, रेटिंग और दिन का रास्ता मैप पर देखें।","کام لیں، “راستے میں ہوں” اور “پہنچ گیا” دبائیں، پارٹس لکھیں اور بل بنائیں۔ اپنی کمائی، ریٹنگ اور دن کا راستہ نقشے پر دیکھیں۔"],"getOn":["यहाँबाट लिनुहोस्","यहाँ से लें","یہاں سے لیں"],"getOn2":["डाउनलोड गर्नुहोस्","डाउनलोड करें","ڈاؤن لوڈ کریں"],"getOn3":["यहाँबाट लिनुहोस्","यहाँ से लें","یہاں سے لیں"],"getOn4":["डाउनलोड गर्नुहोस्","डाउनलोड करें","ڈاؤن لوڈ کریں"],"rzLangs":["एप अरबी, अंग्रेजी, उर्दू, हिन्दी र नेपालीमा छ।","ऐप अरबी, इंग्लिश, उर्दू, हिंदी और नेपाली में है।","ایپ عربی، انگلش، اردو، ہندی اور نیپالی میں ہے۔"],"phToast":["🔔 तपाईं नजिक नयाँ काम","🔔 आपके पास नया काम","🔔 آپ کے قریب نیا کام"],"phApp":["Khafet Partner","Khafet Partner","Khafet Partner"],"phNew":["नयाँ काम","नया काम","نیا کام"],"phSvc":["अटोमेटिक फ्लस फेर्ने","ऑटोमैटिक फ्लश बदलना","آٹومیٹک فلش بدلنا"],"phLoc":["📍 Al Khobar · Al Rakah","📍 Al Khobar · Al Rakah","📍 Al Khobar · Al Rakah"],"phTime":["🕓 आज दिउँसो 4:15 · 60 SAR तिरिसक्यो","🕓 आज शाम 4:15 · 60 SAR मिल चुके","🕓 آج شام 4:15 · 60 SAR مل چکے"],"phAccept":["स्वीकार गर्नुहोस्","स्वीकार करें","قبول کریں"],"phDetails":["विवरण","जानकारी","تفصیل"],"phR1":["सिलिङ फ्यान · Dammam","सीलिंग फैन · Dammam","سیلنگ فین · Dammam"],"phR2":["स्प्लिट AC सफाइ · Dhahran","स्प्लिट AC सफाई · Dhahran","اسپلٹ AC صفائی · Dhahran"],"phTomorrow":["भोलि","कल","کل"],"phInc":["यो हप्ताको कमाइ","इस हफ्ते की कमाई","اس ہفتے کی کمائی"],"phSar":["SAR","SAR","SAR"],"phT1":["काम","काम","کام"],"phT2":["स्टक","स्टॉक","اسٹاک"],"phT3":["कमाइ","कमाई","کمائی"],"phT4":["खाता","अकाउंट","اکاؤنٹ"],"howTag":["4 चरण","4 कदम","4 قدم"],"howH":["कसरी सुरु गर्ने","कैसे शुरू करें","کیسے شروع کریں"],"howP":["फारमदेखि तपाईंको पहिलो कामसम्म।","फॉर्म से आपके पहले काम तक।","فارم سے آپ کے پہلے کام تک۔"],"s1":["फारम भर्नुहोस्","फॉर्म भरें","فارم بھریں"],"s1p":["तपाईंको सेवा, रेट र सहर। 2 मिनेट मात्र लाग्छ।","आपकी सर्विस, रेट और शहर। बस 2 मिनट लगते हैं।","آپ کی سروس، ریٹ اور شہر۔ بس 2 منٹ لگتے ہیں۔"],"s2":["हामी तपाईंलाई सम्पर्क गर्छौं","हम आपसे संपर्क करेंगे","ہم آپ سے رابطہ کریں گے"],"s2p":["हामी तपाईंको आवेदन हेर्छौं र खाता स्वीकृत गर्छौं।","हम आपकी रिक्वेस्ट देखते हैं और आपका अकाउंट मंज़ूर करते हैं।","ہم آپ کی درخواست دیکھتے ہیں اور آپ کا اکاؤنٹ منظور کرتے ہیں۔"],"s3":["Khafet Partner डाउनलोड गरेर लगइन गर्नुहोस्","Khafet Partner डाउनलोड करें और लॉगिन करें","Khafet Partner ڈاؤن لوڈ کریں اور لاگ ان کریں"],"s3p":["आफ्नो मोबाइल नम्बरले। टेक्निसियनले “Khafet technicians” छान्नुहोस्, कम्पनीले “Khafet providers” छान्नुहोस्।","अपने मोबाइल नंबर से। टेक्नीशियन “Khafet technicians” चुनें, कंपनी “Khafet providers” चुनें।","اپنے موبائل نمبر سے۔ ٹیکنیشن “Khafet technicians” چنیں، کمپنی “Khafet providers” چنیں۔"],"s4":["पहिलो काम पाउनुहोस्","अपना पहला काम पाएँ","اپنا پہلا کام لیں"],"s4p":["काम नोटिफिकेसनमा आउँछ, फोनबाटै स्वीकार गर्नुहोस्।","काम नोटिफिकेशन से आता है, फोन से ही स्वीकार करें।","کام نوٹیفکیشن سے آتا ہے، فون سے ہی قبول کریں۔"],"fTag":["जोडिने आवेदन","जुड़ने की रिक्वेस्ट","شامل ہونے کی درخواست"],"fH":["आफ्नो सेवा दर्ता गर्नुहोस्","अपनी सर्विस रजिस्टर करें","اپنی سروس رجسٹر کریں"],"fP":["2 मिनेट। तपाईंको विवरण Khafet को म्यानेजमेन्टले मात्र हेर्छ।","2 मिनट। आपकी जानकारी सिर्फ Khafet का मैनेजमेंट देखता है।","2 منٹ۔ آپ کی معلومات صرف Khafet کی مینجمنٹ دیکھتی ہے۔"],"st1":["तपाईंको बारेमा","आपके बारे में","آپ کے بارے میں"],"st2":["सेवा र रेट","सर्विस और रेट","سروس اور ریٹ"],"st3":["वारेन्टी र पठाउनुहोस्","वारंटी और भेजें","وارنٹی اور بھیجیں"],"typeQ":["तपाईं को हुनुहुन्छ","आप कौन हैं","آپ کون ہیں"],"tTech":["एक्लो टेक्निसियन","अकेला टेक्नीशियन","اکیلا ٹیکنیشن"],"tTechS":["म एक्लै काम गर्छु","मैं अकेले काम करता हूँ","میں اکیلے کام کرتا ہوں"],"tCo":["कम्पनी","कंपनी","کمپنی"],"tCoS":["मेरो टिम छ","मेरी टीम है","میری ٹیم ہے"],"name":["नाम","नाम","نام"],"namePh":["तपाईंको पूरा नाम","आपका पूरा नाम","آپ کا پورا نام"],"eName":["आफ्नो नाम लेख्नुहोस्","अपना नाम लिखें","اپنا نام لکھیں"],"company":["कम्पनीको नाम","कंपनी का नाम","کمپنی کا نام"],"eCompany":["कम्पनीको नाम लेख्नुहोस्","कंपनी का नाम लिखें","کمپنی کا نام لکھیں"],"team":["टेक्निसियन कति जना","कितने टेक्नीशियन हैं","کتنے ٹیکنیشن ہیں"],"team10":["10 भन्दा बढी","10 से ज़्यादा","10 سے زیادہ"],"phone":["मोबाइल नम्बर","मोबाइल नंबर","موبائل نمبر"],"phoneH":["हामी यही नम्बरमा WhatsApp वा कल गर्छौं।","हम इसी नंबर पर WhatsApp या कॉल करेंगे।","ہم اسی نمبر پر WhatsApp یا کال کریں گے۔"],"ePhone":["साउदी मोबाइल नम्बर लेख्नुहोस् 05xxxxxxxx","सऊदी मोबाइल नंबर लिखें 05xxxxxxxx","سعودی موبائل نمبر لکھیں 05xxxxxxxx"],"cities":["तपाईं काम गर्ने सहर","आपके काम के शहर","آپ کے کام کے شہر"],"citiesH":["जति चाहिन्छ सबै छान्नुहोस्","जितने चाहें चुनें","جتنے چاہیں چنیں"],"cityOtherPh":["अर्को सहर (जरुरी छैन)","कोई और शहर (ज़रूरी नहीं)","کوئی اور شہر (ضروری نہیں)"],"eCity":["कम्तीमा एउटा सहर छान्नुहोस्","कम से कम एक शहर चुनें","کم از کم ایک شہر چنیں"],"catsQ":["तपाईंको सीप","आपका हुनर","آپ کا ہنر"],"catsH":["एक वा बढी छान्नुहोस्, अनि आफ्नो सेवा र रेट राख्नुहोस्","एक या ज़्यादा चुनें, फिर अपनी सर्विस और रेट डालें","ایک یا زیادہ چنیں، پھر اپنی سروس اور ریٹ ڈالیں"],"eCat":["कम्तीमा एउटा सीप छान्नुहोस्","कम से कम एक हुनर चुनें","کم از کم ایک ہنر چنیں"],"sugH":["सेवा थप्न त्यसमा ट्याप गर्नुहोस् र आफ्नो रेट राख्नुहोस्, वा लिस्टमा नभएको सेवा लेख्नुहोस्।","सर्विस जोड़ने के लिए उस पर टैप करें और अपना रेट डालें, या जो लिस्ट में नहीं है वह लिखें।","سروس شامل کرنے کے لیے اس پر ٹیپ کریں اور اپنا ریٹ ڈالیں، یا جو لسٹ میں نہیں وہ لکھیں۔"],"addSvc":["+ अर्को सेवा","+ एक और सर्विस","+ ایک اور سروس"],"svcPh":["सेवाको नाम","सर्विस का नाम","سروس کا نام"],"pricePh":["रेट","रेट","ریٹ"],"othCatPh":["सीपको नाम","हुनर का नाम","ہنر کا نام"],"nSvc":["सेवा","सर्विस","سروس"],"uJob":["प्रति काम","हर काम","فی کام"],"uHour":["प्रति घण्टा","हर घंटा","فی گھنٹہ"],"uMeter":["प्रति मिटर","हर मीटर","فی میٹر"],"uPiece":["प्रति पिस","हर पीस","فی پیس"],"uInspect":["हेरेपछि","देखने के बाद","دیکھنے کے بعد"],"warranty":["कामको वारेन्टी","काम की वारंटी","کام کی وارنٹی"],"warrantyH":["तपाईं आफ्नो कामको कति समय वारेन्टी दिनुहुन्छ?","आप अपने काम की कितने समय की वारंटी देते हैं?","آپ اپنے کام کی کتنے وقت کی وارنٹی دیتے ہیں؟"],"eWar":["वारेन्टीको समय छान्नुहोस्","वारंटी का समय चुनें","وارنٹی کا وقت چنیں"],"notes":["नोट (जरुरी छैन)","नोट (ज़रूरी नहीं)","نوٹ (ضروری نہیں)"],"notesPh":["जस्तै: म दिउँसो पछि मात्र काम गर्छु","जैसे: मैं सिर्फ दोपहर बाद काम करता हूँ","مثلاً: میں صرف دوپہر کے بعد کام کرتا ہوں"],"revH":["तपाईंको आवेदनको विवरण","आपकी रिक्वेस्ट की जानकारी","آپ کی درخواست کا خلاصہ"],"agree":["पठाएपछि तपाईं सहमत हुनुहुन्छ कि Khafet ले तपाईंको नम्बरमा सम्पर्क गर्छ र तपाईंको विवरण हेर्छ।","भेजने पर आप मानते हैं कि Khafet आपके नंबर पर संपर्क करे और आपकी जानकारी देखे।","بھیجنے پر آپ مانتے ہیں کہ Khafet آپ کے نمبر پر رابطہ کرے اور آپ کی معلومات دیکھے۔"],"back":["पछाडि","पीछे","پیچھے"],"next":["अगाडि","आगे","آگے"],"send":["आवेदन पठाउनुहोस्","रिक्वेस्ट भेजें","درخواست بھیجیں"],"sending":["पठाउँदै…","भेज रहे हैं…","بھیج رہے ہیں…"],"waBtn":["WhatsApp मा पठाउनुहोस्","WhatsApp पर भेजें","WhatsApp پر بھیجیں"],"errTooMany":["आज यो नम्बरबाट 3 वटा आवेदन पठाइसकिएको छ। हामी छिट्टै सम्पर्क गर्छौं।","आज इस नंबर से 3 रिक्वेस्ट भेजी जा चुकी हैं। हम जल्दी आपसे संपर्क करेंगे।","آج اس نمبر سے 3 درخواستیں بھیجی جا چکی ہیں۔ ہم جلد آپ سے رابطہ کریں گے۔"],"errBusy":["अहिले सिस्टम व्यस्त छ, एकछिन पछि फेरि प्रयास गर्नुहोस्।","अभी सिस्टम व्यस्त है, थोड़ी देर बाद फिर कोशिश करें।","ابھی سسٹم مصروف ہے، تھوڑی دیر بعد دوبارہ کوشش کریں۔"],"errBig":["आवेदन धेरै ठूलो भयो, सेवा वा लेखाइ घटाउनुहोस्।","रिक्वेस्ट बहुत बड़ी है, सर्विस या टेक्स्ट कम करें।","درخواست بہت بڑی ہے، سروس یا تحریر کم کریں۔"],"errInvalid":["नाम र मोबाइल नम्बर जाँच्नुहोस्।","नाम और मोबाइल नंबर चेक करें।","نام اور موبائل نمبر چیک کریں۔"],"errNet":["आवेदन पठाउन सकिएन। हामीलाई WhatsApp मा पठाउनुहोस्:","रिक्वेस्ट नहीं भेज पाए। हमें WhatsApp पर भेजें:","درخواست نہیں بھیج سکے۔ ہمیں WhatsApp پر بھیجیں:"],"stamp":["आवेदन आइपुग्यो","रिक्वेस्ट मिल गई","درخواست مل گئی"],"refLbl":["तपाईंको आवेदन नम्बर, सुरक्षित राख्नुहोस्","आपका रिक्वेस्ट नंबर, संभाल कर रखें","آپ کا درخواست نمبر، سنبھال کر رکھیں"],"doneMsg":["धन्यवाद {name}! हामी तपाईंको आवेदन हेर्छौं र {phone} मा सम्पर्क गर्छौं।","धन्यवाद {name}! हम आपकी रिक्वेस्ट देखेंगे और {phone} पर संपर्क करेंगे।","شکریہ {name}! ہم آپ کی درخواست دیکھیں گے اور {phone} پر رابطہ کریں گے۔"],"n1":["स्टोरबाट Khafet Partner डाउनलोड गरेर तयार राख्नुहोस्।","स्टोर से Khafet Partner डाउनलोड करें और तैयार रखें।","اسٹور سے Khafet Partner ڈاؤن لوڈ کریں اور تیار رکھیں۔"],"n2":["आफ्नो कामको फोटो WhatsApp मा पठाउनुहोस्, यसले स्वीकृति छिटो हुन्छ।","अपने काम की फोटो WhatsApp पर भेजें, इससे मंज़ूरी जल्दी मिलती है।","اپنے کام کی تصویریں WhatsApp پر بھیجیں، اس سے منظوری جلدی ملتی ہے۔"],"n3":["खाता स्वीकृत भएपछि, यही मोबाइल नम्बरले Khafet Partner मा लगइन गर्नुहोस्।","अकाउंट मंज़ूर होने के बाद, इसी मोबाइल नंबर से Khafet Partner में लॉगिन करें।","اکاؤنٹ منظور ہونے کے بعد، اسی موبائل نمبر سے Khafet Partner میں لاگ ان کریں۔"],"photosBtn":["📸 आफ्नो कामको फोटो पठाउनुहोस्","📸 अपने काम की फोटो भेजें","📸 اپنے کام کی تصویریں بھیجیں"],"again":["अर्को आवेदन भर्नुहोस्","एक और रिक्वेस्ट भरें","ایک اور درخواست بھریں"],"waPhotos":["Khafet जोडिने आवेदन #{ref}। यी मेरो कामका फोटो हुन्:","Khafet जुड़ने की रिक्वेस्ट #{ref}। ये मेरे काम की फोटो हैं:","Khafet شامل ہونے کی درخواست #{ref}۔ یہ میرے کام کی تصویریں ہیں:"],"waFallback":["Khafet जोडिने आवेदन","Khafet जुड़ने की रिक्वेस्ट","Khafet شامل ہونے کی درخواست"],"foot":["Khafet प्लम्बिङ र इलेक्ट्रिकल संस्था · Al Khobar","Khafet प्लंबिंग और इलेक्ट्रिकल संस्था · Al Khobar","Khafet پلمبنگ اور الیکٹریکل ادارہ · Al Khobar"],"footWa":["Khafet WhatsApp","Khafet WhatsApp","Khafet WhatsApp"],"sType":["किसिम","टाइप","قسم"],"sName":["नाम","नाम","نام"],"sCompany":["कम्पनी","कंपनी","کمپنی"],"sTeam":["टिम","टीम","ٹیم"],"sPhone":["मोबाइल","मोबाइल","موبائل"],"sCities":["सहर","शहर","شہر"],"sWar":["वारेन्टी","वारंटी","وارنٹی"],"sNotes":["नोट","नोट","نوٹ"],"sar":["SAR","SAR","SAR"],"noPrice":["रेट छैन","रेट नहीं","ریٹ نہیں"],"noSvcs":["कुनै सेवा थपिएको छैन, कुरा हुँदा हामी सँगै तय गर्छौं।","कोई सर्विस नहीं जोड़ी, बात होने पर हम आपके साथ तय करेंगे।","کوئی سروس شامل نہیں کی، بات ہونے پر ہم آپ کے ساتھ طے کریں گے۔"]};
+var TXC={"khobar":["अल खोबर","अल खोबर","الخبر"],"dammam":["दम्माम","दम्माम","دمام"],"dhahran":["दहरान","धहरान","ظہران"],"qatif":["कतिफ","क़तीफ़","قطیف"],"jubail":["जुबेल","जुबैल","جبیل"]}, TXW={"none":["वारेन्टी छैन","वारंटी नहीं","وارنٹی نہیں"],"week":["एक हप्ता","एक हफ्ता","ایک ہفتہ"],"month":["एक महिना","एक महीना","ایک مہینہ"],"3m":["3 महिना","3 महीने","3 مہینے"],"6m":["6 महिना","6 महीने","6 مہینے"],"year":["एक वर्ष","एक साल","ایک سال"]}, TXK={"plumb":["प्लम्बिङ","प्लंबिंग","پلمبنگ"],"elec":["बिजुलीको काम","बिजली का काम","بجلی کا کام"],"ac":["एसी (AC)","एसी (AC)","اے سی (AC)"],"paint":["पेन्टिङ","पेंटिंग","پینٹنگ"],"wood":["काठको काम","कारपेंटर का काम","لکڑی کا کام"],"appl":["घरायसी मेसिन","घरेलू मशीनें","گھریلو مشینیں"],"clean":["सफाइ","सफाई","صفائی"],"garage":["ग्यारेजको ढोका","गैराज के दरवाज़े","گیراج کے دروازے"],"other":["अरू","कुछ और","کچھ اور"]};
+TX.home=['गृह','होम','ہوم'];
+TX.gT=['कामदारका लागि दर्ता गाइड','वर्कर के लिए रजिस्टर गाइड','کارکن کے لیے رجسٹر گائیڈ']; TX.gP=['तस्बिरसहित ८ सजिलो चरण, ५ भाषामा। आफ्नो कामदारलाई पठाउनुहोस्।','तस्वीरों के साथ 8 आसान स्टेप, 5 भाषाओं में। अपने वर्कर को भेजें।','تصویروں کے ساتھ 8 آسان قدم، 5 زبانوں میں۔ اپنے کارکن کو بھیجیں۔']; TX.gOpen=['गाइड खोल्नुहोस्','गाइड खोलें','گائیڈ کھولیں']; TX.gSend=['WhatsApp मा पठाउनुहोस्','WhatsApp पर भेजें','واٹس ایپ پر بھیجیں']; TX.gLang=['कामदारको भाषा','वर्कर की भाषा','کارکن کی زبان']; TX.gMsg=['Khafet Partner एपमा दर्ता गर्ने तरिका:','Khafet Partner ऐप में रजिस्टर करने का तरीका:','Khafet Partner ایپ میں رجسٹر ہونے کا طریقہ:'];
+T.gT=['شرح التسجيل للعامل','Registration guide for your worker']; T.gP=['8 خطوات سهلة بالصور. أرسله لعاملك، وهو يختار لغته من أول الشرح ويسجل بنفسه.','8 easy steps with pictures. Send it to your worker. He picks his language at the top and registers on his own.']; T.gOpen=['افتح الشرح','Open the guide']; T.gSend=['أرسله بالواتساب','Send on WhatsApp']; T.gLang=['لغة العامل','Worker language']; T.gMsg=['طريقة التسجيل في تطبيق خافت شركاء:','How to register in the Khafet Partner app:'];
+var LANGS=[['ar','عربي'],['en','English'],['ne','नेपाली'],['hi','हिन्दी'],['ur','اردو']], LIDX={ne:0,hi:1,ur:2};
+/* داخل تطبيق خافت شركاء: بدون روابط المتاجر، ونصوص «سجّل» بدل «حمّل» */
 var INAPP=document.documentElement.classList.contains('inapp');
 if(INAPP){
-  T.s3=['سجّل في رزق','Sign in to Rizq'];
+  T.s3=['سجّل في خافت شركاء','Sign in to Khafet Partner'];
   T.s3p=['بنفس رقم جوالك: فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».','With the same mobile number: technicians pick “Khafet technicians”, companies pick “Khafet providers”.'];
-  T.n1=['خلّ إشعارات رزق مفعّلة عشان توصلك الطلبات.','Keep Rizq notifications on so jobs reach you.'];
+  T.n1=['خلّ إشعارات خافت شركاء مفعّلة عشان توصلك الطلبات.','Keep Khafet Partner notifications on so jobs reach you.'];
   T.n3=['لما نعتمد حسابك، ارجع للرئيسية وسجّل بنفس رقم الجوال.','Once we approve your account, go back home and sign in with the same mobile number.'];
 }
 var CITIES=[{k:'khobar',ar:'الخبر',en:'Al Khobar'},{k:'dammam',ar:'الدمام',en:'Dammam'},{k:'dhahran',ar:'الظهران',en:'Dhahran'},{k:'qatif',ar:'القطيف',en:'Qatif'},{k:'jubail',ar:'الجبيل',en:'Jubail'}];
@@ -425,8 +527,8 @@ var CATS=[
 ];
 var S={type:'tech',cities:{},cats:{},warranty:'',step:1,ref:null};
 var $=function(id){return document.getElementById(id);};
-function t(k){var v=T[k];return v?(L==='en'?v[1]:v[0]):k;}
-function nm(o){return L==='en'?o.en:o.ar;}
+function t(k){var v=T[k];if(!v)return k;if(L==='ar')return v[0];var x=TX[k];if(x&&LIDX[L]!=null&&x[LIDX[L]])return x[LIDX[L]];return v[1];}
+function nm(o){if(L==='ar')return o.ar;if(LIDX[L]!=null){var k=o.k||o.id,src=TXC[k]||TXW[k]||TXK[k];if(src&&src[LIDX[L]])return src[LIDX[L]];}return o.en;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function unitLabel(u){for(var i=0;i<UNITS.length;i++)if(UNITS[i][0]===u)return t(UNITS[i][1]);return '';}
 function unitAr(u){var m={job:'للخدمة',hour:'للساعة',meter:'للمتر',piece:'للقطعة',inspect:''};return m[u]||'';}
@@ -434,23 +536,28 @@ function warOf(k){for(var i=0;i<WARS.length;i++)if(WARS[i].k===k)return WARS[i];
 
 /* ── اللغة ── */
 function applyLang(){
-  document.documentElement.lang=L; document.documentElement.dir=L==='en'?'ltr':'rtl';
+  document.documentElement.lang=L; document.documentElement.dir=(L==='ar'||L==='ur')?'rtl':'ltr';
   var els=document.querySelectorAll('[data-i]');
   for(var i=0;i<els.length;i++){var el=els[i];el.textContent=t(el.getAttribute('data-i'));}
   var ph=document.querySelectorAll('[data-ip]');
   for(var j=0;j<ph.length;j++){ph[j].placeholder=t(ph[j].getAttribute('data-ip'));}
-  $('langBtn').textContent=L==='en'?'العربية':'English';
+  $('langRow').innerHTML=LANGS.map(function(l){return '<button type="button" data-l="'+l[0]+'" class="'+(l[0]===L?'on':'')+'">'+l[1]+'</button>';}).join('');
+  renderGuide();
   $('next').textContent=S.step===3?t('send'):t('next');
   renderChips(); renderSvc(); if(S.step===3)renderSum();
   try{localStorage.setItem('khafet_join_lang',L);}catch(e){}
 }
-$('langBtn').onclick=function(){L=L==='en'?'ar':'en';applyLang();};
+$('langRow').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;L=b.getAttribute('data-l');applyLang();});
+/* شرح التسجيل للعامل: المدير يختار لغة عامله ويرسل الرابط */
+function guideUrl(){return location.href.replace(/[^\/]*([?#].*)?$/,'')+'guide.html';}
+function renderGuide(){var o=$('guideOpen');if(o)o.href=guideUrl();}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#guideSend')){window.open('https://wa.me/?text='+encodeURIComponent('طريقة التسجيل في خافت شركاء\nHow to register · दर्ता गर्ने तरिका · रजिस्टर करने का तरीका · رجسٹر ہونے کا طریقہ\n'+guideUrl()),'_blank','noopener');}});
 (function pickLang(){
-  var q=/[?&]lang=(en|ar)/.exec(location.search); if(q){L=q[1];return;}
-  if(INAPP){ try{var a=localStorage.getItem('khafet_techlang');if(a){L=a==='ar'?'ar':'en';return;}}catch(e){} }
-  try{var s=localStorage.getItem('khafet_join_lang');if(s==='en'||s==='ar'){L=s;return;}}catch(e){}
+  var q=/[?&]lang=(en|ar|ne|hi|ur)/.exec(location.search); if(q){L=q[1];return;}
+  if(INAPP){ try{var a=localStorage.getItem('khafet_techlang');if(a){L=/^(ar|en|ne|hi|ur)$/.test(a)?a:'en';return;}}catch(e){} }
+  try{var s=localStorage.getItem('khafet_join_lang');if(/^(ar|en|ne|hi|ur)$/.test(s||'')){L=s;return;}}catch(e){}
   var nl=(navigator.language||'').toLowerCase();
-  if(/^(hi|ne|bn|ur|fil|tl|si|ta|ml|te)/.test(nl))L='en';
+  if(/^(hi|ne|ur)/.test(nl))L=nl.slice(0,2); else if(/^(bn|fil|tl|si|ta|ml|te|en)/.test(nl))L='en';
 })();
 
 /* ── الرقائق ── */
@@ -496,7 +603,7 @@ function renderSvc(){
     var h='<h4><span>'+c.ic+'</span>'+esc(nm(c))+'<small>'+st.rows.length+' '+t('nSvc')+'</small></h4>';
     if(c.id==='other')h+='<div class="oth"><input class="othName" data-cat="other" placeholder="'+esc(t('othCatPh'))+'" value="'+esc(st.name||'')+'"></div>';
     h+='<p class="hint" style="margin:0 0 8px">'+esc(t('sugH'))+'</p><div class="sug">';
-    c.s.forEach(function(s,i){var label=L==='en'?s[1]:s[0];h+='<button type="button" data-cat="'+c.id+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+'</button>';});
+    c.s.forEach(function(s,i){var label=L==='ar'?s[0]:s[1];h+='<button type="button" data-cat="'+c.id+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+'</button>';});
     h+='</div><div class="rows">';
     st.rows.forEach(function(r,i){
       h+='<div class="row"><input data-cat="'+c.id+'" data-i2="'+i+'" data-f="name" placeholder="'+esc(t('svcPh'))+'" value="'+esc(r.name)+'">'
@@ -586,7 +693,7 @@ function renderSum(){
   var p=payload(); var rows=[];
   function add(k,v){if(v)rows.push('<dt>'+t(k)+'</dt><dd>'+esc(v)+'</dd>');}
   add('sType',S.type==='co'?t('tCo'):t('tTech')); add('sName',p.name); if(S.type==='co'){add('sCompany',p.company);add('sTeam',p.team);}
-  add('sPhone',p.phone); add('sCities',selNamesL(CITIES,S.cities).concat($('cityOther').value.trim()?[$('cityOther').value.trim()]:[]).join(L==='en'?', ':'، '));
+  add('sPhone',p.phone); add('sCities',selNamesL(CITIES,S.cities).concat($('cityOther').value.trim()?[$('cityOther').value.trim()]:[]).join(L==='ar'?'، ':', '));
   var w=warOf(S.warranty); add('sWar',w?nm(w):''); add('sNotes',p.notes);
   var h='<dl>'+rows.join('')+'</dl>';
   p.categories.forEach(function(c){

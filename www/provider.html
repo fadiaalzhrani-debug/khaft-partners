@@ -293,11 +293,121 @@ html,body{touch-action:manipulation}
   .bottombar button.on{color:var(--gold-deep,#9C7A0A);background:var(--gold-tint,#FBF3D0)}
   .bottombar .bb-book{color:#1a1408}
   .bottombar .bb-book span{background:var(--gold,#F5C518);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:1.05rem;box-shadow:0 4px 10px rgba(245,197,24,.45)}
+  #updWall{position:fixed;inset:0;z-index:99999;background:var(--bg);display:grid;place-items:center;padding:24px;text-align:center}
+  #updWall .uw-box{max-width:360px}
+  #updWall .uw-ic{width:88px;height:88px;border-radius:28px;background:var(--gold);display:grid;place-items:center;font-size:2.5rem;margin:0 auto 18px;box-shadow:0 12px 30px rgba(245,197,24,.35)}
+  #updWall h2{font-size:1.55rem;font-weight:900;margin:0}
+  #updWall p{color:var(--muted);margin:10px 0 22px;line-height:1.9;font-weight:600;font-size:1rem}
+  #updWall .uw-btn{display:block;width:100%;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:16px;font-weight:900;font-size:1.05rem;font-family:inherit;text-decoration:none;cursor:pointer}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
+<style id="kh-skin">
+/* جلد «خافت الجديد» لتطبيق رزق (الفني): ألوان وأشكال فقط */
+:root:root{
+  --gold:#F5C518; --gold-strong:#E9A800; --gold-deep:#B8860B; --gold-soft:#FBF1C9; --gold-tint:#FDF8E7;
+  --ink:#3A3029; --brand-soft:#FBF1C9;
+  --bg:#F1E9DF; --panel:#E7DDD1; --card:#FAF6F1; --line:#E2D7CA;
+  --text:#3A3029; --muted:#8E8175;
+  --ok:#15803D; --ok-soft:#E3F4E8; --danger:#DC2626;
+  --r:26px; --r-sm:20px; --shadow:0 18px 34px -24px rgba(58,48,41,.5);
+  --brown:#4E3F35; --spring:cubic-bezier(.34,1.56,.64,1);
+}
+body{background:var(--bg);color:var(--text)}
+h1,h2,h3,.brand,.hero h1,.tj-when,.stat .n,.tbtn,.day-head,.acc-head b,.inv-toggle{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
+
+header.top{background:rgba(241,233,223,.92);border-bottom:0}
+.brand .mk,.acc-av{background:linear-gradient(165deg,#FFD84D,#F5C518 55%,#E0A200);border-radius:15px;box-shadow:0 10px 18px -10px rgba(184,134,11,.9),inset 0 2px 0 rgba(255,255,255,.45),inset 0 -3px 0 rgba(0,0,0,.08)}
+.langsw{border:0;border-radius:999px;background:var(--card)}
+.langsw button{border-radius:999px}
+
+.hero h1{font-size:1.75rem;font-weight:800;line-height:1.4}
+.stat{border:0;border-radius:22px;padding:14px 18px;box-shadow:var(--shadow)}
+.stat .n{font-weight:800}
+.day-head{border:0;border-radius:999px;background:var(--brown);color:#FFF8EF;padding:9px 20px;display:inline-block;position:static}
+.inv-toggle{border:0;border-radius:22px;box-shadow:var(--shadow)}
+
+/* بطاقة الطلب */
+.tjob,.tj,.job-card,[class^="tjob"]{border:0;border-radius:26px;box-shadow:var(--shadow);background:var(--card)}
+.tj-row{border-bottom-color:var(--line)}
+.status{border:0;padding:6px 14px;font-weight:800}
+.status.new{background:#FBF1C9;color:#8A6400}
+.status.confirmed{background:#DDEEFA;color:#1F6FA8}
+.status.progress{background:#FCE3CF;color:#B4560F}
+.status.done{background:#E3F4E8;color:#15803D}
+.quick-tag{background:var(--gold)}
+.tmap,.tvideo{border-radius:999px;padding:10px 18px}
+.tvideo{background:#9460DC}
+.ttrans{background:#DDEEFA;color:#1F6FA8 !important}
+.tj-row.early-row{background:#E3F4E8;border-radius:16px}
+.tj-row.early-row .tj-v{color:#15803D}
+
+/* الأزرار: حبّة كاملة الاستدارة مع نطّة */
+.tbtn{border-radius:999px;font-weight:800;transition:transform .28s var(--spring)}
+.tbtn:active{transform:scale(.95)}
+.tbtn.start{box-shadow:0 10px 22px -10px rgba(184,134,11,.8)}
+.tbtn.done{background:var(--brown);color:#FFF8EF;box-shadow:0 10px 22px -10px rgba(58,48,41,.7)}
+.tbtn.donelbl{background:#E3F4E8;color:#15803D}
+.tbtn.reject{border:0;background:#FBE4E1;color:#B42318}
+.tbtn.follow{border:0;background:#DDEEFA;color:#1F6FA8}
+.rj-opt,.fu-field input,.fu-field textarea{border:0;border-radius:20px;background:#fff}
+.delay-ctl{background:#FCEBD8}
+.delay-ctl .dc-l,.delay-ctl .dc-l b{color:#B4560F}
+.delay-ctl .dc-btns button{background:#fff;border:0;color:#B4560F;border-radius:999px}
+.acc-panel{border:0;border-radius:26px;box-shadow:var(--shadow)}
+
+/* الشريط السفلي: كبسولة بنية عائمة */
+.tabbar{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));border:0;border-radius:999px;background:var(--brown);padding:4px 6px;box-shadow:0 16px 30px -14px rgba(58,48,41,.75)}
+.tb{color:#C9BBAD;border-radius:999px;padding:7px 3px 6px}
+.tb.on{color:var(--brown);background:var(--gold)}
+.tb.on::before{display:none}
+body{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+
+/* بطاقات الرئيسية وبطاقة الطلب */
+.tjob{border:0;border-radius:26px}
+.tj-head{background:var(--gold-soft);border-bottom:0}
+.hcard{border:0;border-radius:26px;transition:transform .28s var(--spring)}
+.hcard:hover{transform:none}
+.hcard:active{transform:scale(.96)}
+.hcard .hc-ic{--c:#27B9B5;width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:1.6rem;margin-bottom:6px;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 12px 20px -10px color-mix(in srgb,var(--c) 85%,transparent),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.hcard:nth-child(2) .hc-ic{--c:#F0B21A} .hcard:nth-child(3) .hc-ic{--c:#3796D3} .hcard:nth-child(4) .hc-ic{--c:#EC8434} .hcard:nth-child(5) .hc-ic{--c:#E45C86} .hcard:nth-child(6) .hc-ic{--c:#9460DC}
+.hcard h3{font-weight:800}
+.home-link{border-radius:999px}
+.cal-filter button{border:0}
+
+/* ═ إضافات مشتركة: صفحة المزوّد + الرئيسية + شاشات الدخول ═ */
+.tjob.unread{border:0;box-shadow:0 0 0 3px #46B064,var(--shadow)}
+.tjob-offer{border:0;border-radius:26px}
+.login h1{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;font-weight:800}
+.login input,.biz-add input,.set-body input,.city-search{border:0;border-radius:20px;background:#fff;min-height:56px}
+.login input:focus,.set-body input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+.btn,.login .btn,.login button.btn{border-radius:999px;min-height:58px;font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;font-weight:800;font-size:1.15rem;box-shadow:0 10px 22px -10px rgba(184,134,11,.8);transition:transform .28s var(--spring)}
+.btn:active{transform:scale(.95)}
+.logout,.login-back{border:0;border-radius:999px;background:var(--card)}
+.tabs .tab{border:0;border-radius:999px;min-height:46px;padding:0 18px}
+.tabs .tab.active{background:var(--brown);color:#FFF8EF}
+.fin-cell,.irow,.owed,.mchip,.pick-chip,.ccity,.assign-sel{border:0;border-radius:20px}
+.mchip.on,.pick-chip:has(input:checked){background:var(--brown);color:#FFF8EF}
+.offer-banner{border-radius:26px 26px 0 0}
+/* الرئيسية (index.html) */
+.head h1{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;font-weight:800}
+.biz{border:0;background:var(--gold-soft)}
+.langbar button,.langbar .lb{border:0;border-radius:999px}
+a.card,.card{border:0;border-radius:26px;box-shadow:var(--shadow);transition:transform .28s var(--spring)}
+a.card:active,.card:active{transform:scale(.97)}
+.card .ic{--c:#27B9B5;border-radius:19px;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 12px 20px -10px color-mix(in srgb,var(--c) 85%,transparent),inset 0 2px 0 rgba(255,255,255,.4),inset 0 -4px 0 rgba(0,0,0,.08)}
+.card.tech .ic{--c:#F0B21A} .card.prov .ic{--c:#3796D3;background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%)} .card.join .ic{--c:#46B064;background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%)} .card.sufrah .ic{--c:#EC8434}
+.card h2,.card h3,.card b{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
+.langpick .sheet,.lp-sheet{border-radius:32px}
+
+</style><!--/kh-skin-->
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="brand"><span class="mk">🤝</span><span>خافِت<small>بوابة المزوّد</small></span></div>
+  <div class="brand"><span class="mk" style="background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;padding:0"><svg viewBox="129 55 800 800" style="width:100%;height:100%;display:block" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span><span>خافت شركاء<small>بوابة المزوّد</small></span></div>
   <a class="home-link" style="cursor:pointer" onclick="goHome()">🏠 <span class="ht">الرئيسية</span></a>
   <span class="spacer"></span>
   <button class="logout" id="langBtn" onclick="toggleLang()" title="English / عربي">🌐 <span class="ht">EN</span></button>
@@ -327,7 +437,9 @@ const KH_STORE={
   async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
-const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false } };
+/* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
+const RIZQ_BUILD=101;
+const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
   Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
@@ -472,7 +584,7 @@ async function loadPrices(){
 }
 async function initCloud(){
   try{ await khRestore(); }catch(e){}
-  try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
+  try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; registerInstall('rizq', RIZQ_BUILD); sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET_P[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{}); loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
   render();
 }
 /* ===== إشعارات المزوّد: تسجيل الجهاز لاستقبال «طلب جديد وصلك» ===== */
@@ -770,7 +882,7 @@ function settingsPanel(){
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> حذف الحساب</div><span class="sr-ar">›</span></div>
     </div>
     <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>
-    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:14px">رزق · خافِت © ٢٠٢٦</div>`;
+    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:14px">خافت شركاء © ٢٠٢٦</div>`;
 }
 
 /* ---- قبول الطلب ---- */
@@ -976,7 +1088,9 @@ function showSignup(msg){
     <div id="su_cities" class="picks">
       ${SA_CITIES.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${cityLabel(c)}</label>`).join('')}
     </div>
-    <input id="su_cr" inputmode="numeric" placeholder="رقم السجل التجاري" />
+    <input id="su_cr" inputmode="numeric" maxlength="10" placeholder="رقم السجل التجاري (10 أرقام) *" />
+    <label style="display:block;text-align:start;font-weight:800;font-size:.88rem;margin:2px 0 6px">📎 صورة السجل التجاري *</label>
+    <input id="su_crdoc" type="file" accept="image/*,application/pdf" />
     <div style="text-align:${_uiEN()?'left':'right'};margin:8px 2px 4px;font-size:.9rem;font-weight:700">نوع الخدمات (اختر واحدة أو أكثر):</div>
     <div id="su_svcs" class="picks">
       ${SIGNUP_CATS.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${catLabel(c)}</label>`).join('')}
@@ -991,14 +1105,18 @@ async function submitSignup(){
   const name=g('su_name'), pass=g('su_pass'), d=normPhone(g('su_phone'));
   const cities=[...document.querySelectorAll('#su_cities input:checked')].map(c=>c.value);
   const svcs=[...document.querySelectorAll('#su_svcs input:checked')].map(c=>c.value);
-  const cr=g('su_cr');
+  const cr=g('su_cr').replace(/[^0-9]/g,'');
+  const crEl=document.getElementById('su_crdoc'); const crFile=crEl&&crEl.files&&crEl.files[0];
   if(!name){ showSignup('اكتب الاسم'); return; }
   if(d.length<12){ showSignup('رقم الجوال غير صحيح'); return; }
   if(pass.length<6){ showSignup('كلمة المرور ٦ أحرف على الأقل'); return; }
   if(!cities.length){ showSignup('اكتب مدن الخدمة'); return; }
   if(!svcs.length){ showSignup('اختر نوع الخدمات'); return; }
+  if(!/^[0-9]{10}$/.test(cr)){ showSignup('اكتب رقم السجل التجاري (10 أرقام)'); return; }
+  if(!crFile){ showSignup('أرفق صورة السجل التجاري'); return; }
+  if(crFile.size>8*1024*1024){ showSignup('حجم ملف السجل أكبر من 8 ميجا'); return; }
   if(!cloudReady){ showSignup('لا يوجد اتصال، حاول بعد قليل'); return; }
-  signupCtx={ name, pass, cities, svcs, cr, e164:'+'+d, local:'0'+d.slice(3) };
+  signupCtx={ name, pass, cities, svcs, cr, crFile, e164:'+'+d, local:'0'+d.slice(3) };
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ نرسل رمز التحقق...'; }
   try{
     const { data, error }=await sb.auth.signUp({ phone:signupCtx.e164, password:pass });
@@ -1031,12 +1149,16 @@ async function verifySignupOtp(){
     const { error }=await sb.auth.verifyOtp({ phone:signupCtx.e164, token:code, type:'sms' });
     if(error){ showSignupOtp('❌ الرمز غير صحيح — حاول ثانية'); return; }
     if(signupCtx.existing){ try{ await sb.auth.updateUser({ password:signupCtx.pass }); }catch(e){} }
-    // أنشئ ملف المزوّد — الخادم يعتمده فوراً إذا مكتمل
-    try{ await sb.from('khafet_providers').insert({ name:signupCtx.name, phone:signupCtx.local, city:signupCtx.cities[0]||'', cities:signupCtx.cities, services:signupCtx.svcs, cr_number:signupCtx.cr||null }); }catch(e){}
+    // صورة السجل التجاري إلى الخزن الخاص (مجلد صاحب الحساب)، ثم ملف المزوّد. الاعتماد يدوي من الإدارة بعد مراجعة السجل
+    let crPath=null;
+    try{ const u=(await sb.auth.getUser()).data.user; const f=signupCtx.crFile;
+      if(u&&f){ const ext=(((f.name||'').split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,''))||'jpg'; const p=u.id+'/cr_'+Date.now()+'.'+ext;
+        const up=await sb.storage.from('khafet-docs').upload(p,f,{upsert:false,contentType:f.type||'image/jpeg'}); if(!up.error) crPath=p; } }catch(e){}
+    try{ await sb.from('khafet_providers').insert({ name:signupCtx.name, phone:signupCtx.local, city:signupCtx.cities[0]||'', cities:signupCtx.cities, services:signupCtx.svcs, cr_number:signupCtx.cr||null, cr_doc_path:crPath }); }catch(e){}
     const { data }=await sb.from('khafet_providers').select('*').in('phone',[signupCtx.local, signupCtx.e164.slice(1), signupCtx.e164]);
     const p=(data||[])[0];
     if(p && (p.status||'')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush(); }
-    else{ showLogin('✅ تم التسجيل — ادخل بجوالك وكلمة المرور', true); }
+    else{ showLogin('✅ تم التسجيل. نراجع السجل التجاري ونعتمد حسابك، وبعدها تدخل بجوالك وكلمة المرور', true); }
   }catch(e){ showSignupOtp('تعذّر الإكمال — حاول مرة ثانية'); }
 }
 /* ---- تسجيل فني بكود مزوّد ---- */
@@ -1086,7 +1208,7 @@ function showJoinWait(orgName){
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">⏳</div><h1>${LX(`بانتظار اعتماد ${esc(orgName||'')}`, `Waiting for ${esc(svcName(orgName||''))} to approve`)}</h1>
-    <p>${LX(`طلبك وصل إلى <b>${esc(orgName||'')}</b>. بعد الاعتماد افتح تطبيق <b>رزق</b> وسجّل الدخول برقمك وكلمة مرورك.`, `Your request reached <b>${esc(svcName(orgName||''))}</b>. Once approved, open the <b>Rizq</b> app and sign in with your number and password.`)}</p>
+    <p>${LX(`طلبك وصل إلى <b>${esc(orgName||'')}</b>. بعد الاعتماد افتح تطبيق <b>خافت شركاء</b> وسجّل الدخول برقمك وكلمة مرورك.`, `Your request reached <b>${esc(svcName(orgName||''))}</b>. Once approved, open the <b>Khafet Partner</b> app and sign in with your number and password.`)}</p>
     <button class="btn" onclick="location.reload()">🔄 تحقق الآن</button>
     <a class="reg2" onclick="showJoinCode('')" style="cursor:pointer;display:block;margin-top:12px">تغيير الجهة</a>
     <a class="reg2" onclick="doLogout()" style="cursor:pointer;display:block;margin-top:8px;color:var(--muted)">خروج من الحساب</a>
@@ -1101,6 +1223,68 @@ async function submitJoinCode(){
   }catch(e){ showJoinCode('تعذّر الاتصال، حاول مرة ثانية'); }
 }
 async function doLogout(){ try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){} me=null; location.reload(); }
+let KHSET_P={};
+/* ═ إجبار التحديث: إذا النسخة أقدم من rizq_min_build في الإعدادات يظهر حاجز يوجّه للمتجر (أو لتحديث الصفحة على الويب) ═ */
+function checkRizqBuild(){
+  const S=KHSET_P||{}; const min=parseInt(S.rizq_min_build,10)||0; let w=document.getElementById('updWall');
+  if(!(min>RIZQ_BUILD)){ if(w) w.remove(); return false; }
+  if(w) return true;
+  const A=!(typeof _uiEN==='function'&&_uiEN());
+  const plat=(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'web';
+  const msg=String(S.app_update_msg||'').trim()||(A?'فيه تحديث مهم. حدّث التطبيق عشان تكمل.':'An important update is available. Update the app to continue.');
+  const btn = plat==='ios' ? '<a class="uw-btn" href="https://apps.apple.com/sa/app/id6791782517" target="_blank" rel="noopener">'+(A?'افتح آب ستور':'Open App Store')+'</a>'
+            : plat==='android' ? '<a class="uw-btn" href="https://play.google.com/store/apps/details?id=com.khafet.partners" target="_blank" rel="noopener">'+(A?'افتح قوقل بلاي':'Open Google Play')+'</a>'
+            : '<button type="button" class="uw-btn" onclick="location.reload()">'+(A?'حدّث الصفحة':'Reload')+'</button>';
+  w=document.createElement('div'); w.id='updWall'; w.setAttribute('role','dialog'); w.setAttribute('aria-modal','true');
+  w.innerHTML='<div class="uw-box"><div class="uw-ic">⬆️</div><h2>'+(A?'حدّث التطبيق':'Update required')+'</h2><p>'+esc(msg)+'</p>'+btn+'</div>';
+  document.body.appendChild(w); return true;
+}
+/* ═ عدّاد التثبيتات الفريدة: معرّف ثابت لكل جهاز (يبقى حتى لو انمسح تخزين المتصفح)، يُسجَّل مرة باليوم. يعطي الإدارة عدد الأجهزة الفعلي بدون تكرار ═ */
+async function registerInstall(app, build){
+  try{
+    if(!sb) return;
+    const day=new Date().toISOString().slice(0,10);
+    try{ if(localStorage.getItem('kh_install_day')===day) return; }catch(e){}
+    let id=await KH_STORE.getItem('kh_install_id');
+    if(!id || !/^[0-9a-f-]{36}$/i.test(id)){
+      id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{ const r=Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16); });
+      await KH_STORE.setItem('kh_install_id',id);
+    }
+    const C=window.Capacitor; const p=(C&&C.isNativePlatform&&C.isNativePlatform()&&C.getPlatform)?C.getPlatform():'web';
+    const r=await sb.rpc('register_install',{ p_id:id, p_app:app, p_platform:(p==='ios'||p==='android')?p:'web', p_build:build });
+    if(r && !r.error){ try{ localStorage.setItem('kh_install_day',day); }catch(e){} }
+  }catch(e){}
+}
+/* ═ تحديث تلقائي زي أي تطبيق: نسأل المتجر، ولو فيه نسخة أحدث يطلع حاجز «حدّث التطبيق». أندرويد يحدّث من داخل التطبيق، وآيفون يفتح آب ستور ═ */
+function verGt(a,b){ const x=String(a||'').split('.').map(n=>parseInt(n,10)||0), y=String(b||'').split('.').map(n=>parseInt(n,10)||0); for(let i=0;i<Math.max(x.length,y.length);i++){ if((x[i]||0)!==(y[i]||0)) return (x[i]||0)>(y[i]||0); } return false; }
+let _storeChk=0;
+async function checkStoreUpdate(){
+  try{
+    const C=window.Capacitor; if(!(C&&C.isNativePlatform&&C.isNativePlatform())) return;
+    if(Date.now()-_storeChk < 3600000) return; _storeChk=Date.now();
+    const AU=(C.Plugins&&C.Plugins.AppUpdate)||(typeof C.registerPlugin==='function'?C.registerPlugin('AppUpdate'):null); if(!AU) return;
+    const info=await AU.getAppUpdateInfo({ country:'SA' }); if(!info) return;
+    const plat=C.getPlatform();
+    const newer = plat==='android' ? (info.updateAvailability===2 && (+info.availableVersionCode||0) > (+info.currentVersionCode||0))
+                                   : verGt(info.availableVersionName, info.currentVersionName);
+    if(!newer || document.getElementById('updWall')) return;
+    // أول يوم من نزول النسخة في آب ستور: ممكن ما توصل لكل الأجهزة، فنسمح بـ«لاحقًا»
+    const rel=info.availableVersionReleaseDate ? new Date(info.availableVersionReleaseDate).getTime() : 0;
+    const soft = plat==='ios' && rel>0 && (Date.now()-rel < 86400000);
+    const A=!(typeof _uiEN==='function'&&_uiEN());
+    const w=document.createElement('div'); w.id='updWall'; w.setAttribute('role','dialog'); w.setAttribute('aria-modal','true');
+    w.innerHTML='<div class="uw-box"><div class="uw-ic">⬆️</div><h2>'+(A?'فيه نسخة جديدة':'New version available')+'</h2><p>'+(A?'حدّث خافت شركاء لآخر نسخة عشان تكمل.':'Update خافت شركاء to the latest version to continue.')+'</p>'
+      +'<button type="button" class="uw-btn" id="uwGo">'+(A?'حدّث الآن':'Update now')+'</button>'
+      +(soft?'<button type="button" id="uwLater" style="margin-top:12px;background:none;border:none;color:var(--muted);font-weight:800;font-family:inherit;font-size:.95rem;cursor:pointer">'+(A?'لاحقًا':'Later')+'</button>':'')+'</div>';
+    document.body.appendChild(w);
+    document.getElementById('uwGo').onclick=async function(){
+      try{ if(plat==='android' && info.immediateUpdateAllowed){ await AU.performImmediateUpdate(); } else { await AU.openAppStore({ country:'SA' }); } }
+      catch(e){ try{ await AU.openAppStore({ country:'SA' }); }catch(_){} } };
+    const l=document.getElementById('uwLater'); if(l) l.onclick=function(){ w.remove(); };
+  }catch(e){}
+}
+document.addEventListener('DOMContentLoaded',function(){ setTimeout(checkStoreUpdate,1500); });
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') checkStoreUpdate(); });
 function showTechReg(msg){
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
@@ -1776,7 +1960,7 @@ function renderJoinPanel(){
   const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · ${LX('كوده','Code')} ${esc(t.code||'')}</small></div>
       <button class="tbtn done" style="padding:8px 14px" onclick="approveTechP('${t.user_id}',true)">✔️ اعتماد</button><button class="x-btn" onclick="approveTechP('${t.user_id}',false)">رفض</button></div>`).join('') : '';
   return `<div class="mpanel"><h3>🔑 كود انضمام فريقك</h3>
-    <div class="hint">أعطِ هذا الكود لعمالك. الفني يسجّل في رزق، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.</div>
+    <div class="hint">أعطِ هذا الكود لعمالك. الفني يسجّل في خافت شركاء، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.</div>
     <div class="jcode" id="jcodeBox">${esc(me.code||'')}</div>
     <div class="jrow"><button class="tbtn inv" style="flex:1" onclick="copyJoinCodeP()">📋 نسخ</button><button class="tbtn inv" style="flex:1" onclick="regenJoinCodeP()">🎲 كود جديد عشوائي</button></div>
   </div>
@@ -1860,7 +2044,7 @@ const T_DICT = {
   // العلامة والهيدر والتنقّل
   "خافِت":"Khafet","بوابة المزوّد":"Provider Portal","خافِت | بوابة المزوّد":"Khafet | Provider Portal",
   "الرئيسية":"Home","‹ الرئيسية":"‹ Home","👤 حسابي":"👤 Account","حسابي":"Account","خروج":"Sign out","🚪 تسجيل الخروج":"🚪 Sign out","دخول":"Sign in",
-  "رزق · خافِت © ٢٠٢٦":"Rizq · Khafet © 2026","خاص بالمزوّد":"Provider only","غير متاح":"Unavailable","فتح ›":"Open ›",
+  "خافت شركاء © ٢٠٢٦":"Khafet Partner © 2026","خاص بالمزوّد":"Provider only","غير متاح":"Unavailable","فتح ›":"Open ›",
   // بطاقات الرئيسية / الأقسام
   "📥 الطلبات المتاحة":"📥 Available jobs","طلبات متاحة":"Available jobs","🏆 أكثر خدماتك طلباً":"🏆 Your top services",
   "💰 لوحة الأرقام":"💰 Numbers board","⭐ تقييماتي":"⭐ My ratings","🗺️ الخريطة":"🗺️ Map","🗺️ مسار اليوم والطلبات القادمة":"🗺️ Today's route & upcoming jobs",
@@ -1984,7 +2168,7 @@ const T_DICT = {
   // الأرقام، الفريق، المخزن، التذكيرات، الحجز، المدن
   "المصاريف الشهرية (ر.س)":"Monthly costs (SAR)","رقمي المهم (اسمه)":"My key number (its name)","قيمته":"Value",
   "كود انضمام فريقك":"Your team join code","نسخ":"Copy","كود جديد عشوائي":"New random code","كود الفني أو جواله":"Technician code or phone","اعتماد":"Approve","رفض":"Reject","تم الرفض":"Rejected","تعذّر":"Something went wrong",
-  "أعطِ هذا الكود لعمالك. الفني يسجّل في رزق، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.":"Give this code to your workers. The technician signs up in Rizq, enters the code, and shows up here for you to approve. Change it any time and the old one stops working.",
+  "أعطِ هذا الكود لعمالك. الفني يسجّل في خافت شركاء، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.":"Give this code to your workers. The technician signs up in Khafet Partner, enters the code, and shows up here for you to approve. Change it any time and the old one stops working.",
   "كمية":"Qty","تعذّر التعديل":"Couldn't update","حُذف":"Deleted","تعذّر الحذف":"Couldn't delete",
   "اسم العميل":"Customer name","الخدمة (صيانة مكيف، تسليك...)":"Service (AC service, drain cleaning...)","أُضيف التذكير":"Reminder added","أُضيف العميل":"Customer added",
   "جوال العميل":"Customer phone","المدينة":"City","الخدمة / المشكلة":"Service or problem",
