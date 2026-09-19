@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>خافت شركاء · طريقة التسجيل</title>
+<meta property="og:title" content="خافت شركاء · طريقة التسجيل">
+<meta property="og:description" content="8 خطوات سهلة بالصور · عربي · English · नेपाली · हिन्दी · اردو">
+<meta property="og:image" content="https://fadiaalzhrani-debug.github.io/khaft-partners/www/guide-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://fadiaalzhrani-debug.github.io/khaft-partners/www/guide.html">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="شرح مبسط بالصور لتسجيل الفني في تطبيق خافت شركاء، بخمس لغات.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +23,8 @@
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo','Noto Sans Devanagari',system-ui,sans-serif;font-size:18px;line-height:1.7;padding:env(safe-area-inset-top) 16px calc(40px + env(safe-area-inset-bottom))}
 main{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1,h2,.num,.btn,.lang button{font-family:'Baloo Bhaijaan 2','Noto Sans Devanagari','Cairo',sans-serif}
+.backbtn{align-self:flex-start;margin-top:calc(10px + env(safe-area-inset-top));display:inline-flex;align-items:center;gap:6px;min-height:46px;padding:0 18px;border-radius:999px;background:var(--card);color:var(--ink);text-decoration:none;font-weight:800;font-size:16px}
+.backbtn[hidden]{display:none}
 .top{display:flex;align-items:center;gap:12px;padding-top:18px}
 .mk{width:56px;height:56px;border-radius:22%;background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;flex:none;box-shadow:0 12px 20px -12px rgba(43,36,31,.9)}
 .mk svg{width:100%;height:100%;display:block}
@@ -70,6 +80,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--brown);outline-offs
 </head>
 <body>
 <main>
+  <a class="backbtn" id="backBtn" href="index.html#stay" hidden>‹ <span id="backT">رجوع</span></a>
   <div class="top">
     <span class="mk"><svg viewBox="129 55 800 800" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span>
     <span><b id="brand">خافت شركاء</b><small id="brandSub">Khafet Partner</small></span>
@@ -93,7 +104,7 @@ a:focus-visible,button:focus-visible{outline:3px solid var(--brown);outline-offs
 var IOS='https://apps.apple.com/sa/app/id6791782517', AND='https://play.google.com/store/apps/details?id=com.khafet.partners';
 var LANGS=[['ar','عربي'],['en','English'],['ne','नेपाली'],['hi','हिन्दी'],['ur','اردو']];
 var RTL={ar:1,ur:1};
-/* نفس أسماء الأزرار اللي يشوفها العامل داخل التطبيق */
+/* نفس أسماء الأزرار اللي يشوفها الفني داخل التطبيق */
 var BTN_TECH={ar:'فنيين خافِت',en:'Khafet technicians',ne:'Khafet प्राविधिकहरू',hi:'Khafet तकनीशियन',ur:'خافت ٹیکنیشن'};
 var BTN_NEW={ar:'🤝 تسجيل فني جديد',en:'🤝 Register as a technician',ne:'🤝 नयाँ प्राविधिक दर्ता',hi:'🤝 नया तकनीशियन रजिस्टर',ur:'🤝 نیا ٹیکنیشن رجسٹر'};
 var T={
@@ -108,7 +119,7 @@ ar:{h1:'سجّل في التطبيق في 8 خطوات',lead:'خمس دقائق.
     ['انتظر الموافقة','مديرك يوافق عليك. بعدها توصلك الطلبات على جوالك.']],
  name:'اسمك',phone:'05xxxxxxxx',pass:'كلمة السر ••••••',ios:'آيفون',and:'أندرويد',org:'مؤسسة مديرك',other:'مؤسسة أخرى',docs:'📄 وثائقي',wait:'⏳ بانتظار الموافقة',
  tipT:'مهم: خلّ الإشعارات شغالة 🔔',tipP:'إذا سألك الجوال «تسمح بالإشعارات؟» اضغط «سماح». بدونها ما توصلك الطلبات.',
- mgrT:'للمدير',mgrP:'أرسل هذا الشرح لعاملك، وهو يختار لغته من فوق.',share:'أرسل الشرح بالواتساب',msg:'طريقة التسجيل في تطبيق خافت شركاء:'},
+ mgrT:'للمدير',mgrP:'أرسل هذا الشرح للفني، وهو يختار لغته من فوق.',share:'أرسل الشرح بالواتساب',msg:'طريقة التسجيل في تطبيق خافت شركاء:'},
 en:{h1:'Register in the app in 8 steps',lead:'Five minutes. Follow the numbers one by one.',
  s:[['Download the app','It is called “Khafet Partner”. Tap the button for your phone.'],
     ['Choose your language','When the app opens, tap your language.'],
@@ -120,7 +131,7 @@ en:{h1:'Register in the app in 8 steps',lead:'Five minutes. Follow the numbers o
     ['Wait for approval','Your manager approves you. Then jobs come to your phone.']],
  name:'Your name',phone:'05xxxxxxxx',pass:'Password ••••••',ios:'iPhone',and:'Android',org:'Your manager’s company',other:'Another company',docs:'📄 My documents',wait:'⏳ Waiting for approval',
  tipT:'Important: keep notifications ON 🔔',tipP:'If the phone asks “Allow notifications?” tap “Allow”. Without it, jobs will not reach you.',
- mgrT:'For the manager',mgrP:'Send this guide to your worker. He picks his language at the top.',share:'Send the guide on WhatsApp',msg:'How to register in the Khafet Partner app:'},
+ mgrT:'For the manager',mgrP:'Send this guide to your technician. He picks his language at the top.',share:'Send the guide on WhatsApp',msg:'How to register in the Khafet Partner app:'},
 ne:{h1:'८ चरणमा एपमा दर्ता गर्नुहोस्',lead:'पाँच मिनेट लाग्छ। नम्बर अनुसार एक एक गर्दै जानुहोस्।',
  s:[['एप डाउनलोड गर्नुहोस्','नाम “Khafet Partner” हो। आफ्नो फोन अनुसार बटन थिच्नुहोस्।'],
     ['आफ्नो भाषा छान्नुहोस्','एप खुलेपछि आफ्नो भाषामा थिच्नुहोस्।'],
@@ -184,7 +195,9 @@ function render(){
   $('tipT').textContent=x.tipT; $('tipP').textContent=x.tipP; $('mgrT').textContent=x.mgrT; $('mgrP').textContent=x.mgrP; $('share').textContent='💬 '+x.share;
 }
 $('lang').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; L=b.getAttribute('data-l'); try{localStorage.setItem('khafet_join_lang',L);}catch(er){} render(); window.scrollTo(0,0); });
-$('share').addEventListener('click',function(){ var u=location.origin+location.pathname; window.open('https://wa.me/?text='+encodeURIComponent('طريقة التسجيل في خافت شركاء\nHow to register · दर्ता गर्ने तरिका · रजिस्टर करने का तरीका · رجسٹر ہونے کا طریقہ\n'+u),'_blank','noopener'); });
+$('share').addEventListener('click',function(){ var u='https://fadiaalzhrani-debug.github.io/khaft-partners/www/guide.html'; (function(x){ try{ var w=window.open(x,'_blank'); if(!w) location.href=x; }catch(e){ location.href=x; } })('https://wa.me/?text='+encodeURIComponent('طريقة التسجيل في خافت شركاء\nHow to register · दर्ता गर्ने तरिका · रजिस्टर करने का तरीका · رجسٹر ہونے کا طریقہ\n'+u)); });
+/* داخل التطبيق: زر رجوع ظاهر (للنموذج لو جاي منه، وإلا للرئيسية) */
+(function(){ var inapp=!/^https?:/.test(location.protocol)||/localhost/.test(location.host)||!!window.Capacitor; var b=$('backBtn'); if(b&&inapp){ b.hidden=false; if(/[?&]from=join/.test(location.search)) b.href='join.html'; } })();
 render();
 })();
 </script>

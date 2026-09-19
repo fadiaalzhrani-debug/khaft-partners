@@ -282,6 +282,10 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px 
 .btn.y{box-shadow:0 10px 22px -10px rgba(184,134,11,.8)}
 .btn.g{border:0;background:var(--soft);color:#5E5046}
 
+/* الشريط المخطط انشال ومعه مسافة شريط الجوال، فنرجعها هنا عشان زر الرئيسية ينضغط */
+.hero{padding-top:env(safe-area-inset-top)}
+.brand{position:relative;z-index:3}
+
 </style><!--/kh-skin-->
 </head>
 <body>
@@ -361,8 +365,8 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px 
 
   <section class="guidecard" id="guide">
     <div class="gc-ic">📘</div>
-    <h2 data-i="gT">شرح التسجيل للعامل</h2>
-    <p data-i="gP">8 خطوات سهلة بالصور. أرسله لعاملك، وهو يختار لغته من أول الشرح ويسجل بنفسه.</p>
+    <h2 data-i="gT">شرح التسجيل للفني</h2>
+    <p data-i="gP">8 خطوات سهلة بالصور. أرسله للفني عندك، وهو يختار لغته من أول الشرح ويسجل بنفسه.</p>
 <!--guide-lang-inside-->
     <div class="gc-acts"><button type="button" class="btn wa" id="guideSend" data-i="gSend">أرسله بالواتساب</button><a class="btn g" id="guideOpen" href="guide.html" target="_blank" rel="noopener" data-i="gOpen">افتح الشرح</a></div>
   </section>
@@ -501,7 +505,7 @@ var TX={"brand":["Khafet","Khafet","Khafet"],"eyebrow":["टेक्निस�
 var TXC={"khobar":["अल खोबर","अल खोबर","الخبر"],"dammam":["दम्माम","दम्माम","دمام"],"dhahran":["दहरान","धहरान","ظہران"],"qatif":["कतिफ","क़तीफ़","قطیف"],"jubail":["जुबेल","जुबैल","جبیل"]}, TXW={"none":["वारेन्टी छैन","वारंटी नहीं","وارنٹی نہیں"],"week":["एक हप्ता","एक हफ्ता","ایک ہفتہ"],"month":["एक महिना","एक महीना","ایک مہینہ"],"3m":["3 महिना","3 महीने","3 مہینے"],"6m":["6 महिना","6 महीने","6 مہینے"],"year":["एक वर्ष","एक साल","ایک سال"]}, TXK={"plumb":["प्लम्बिङ","प्लंबिंग","پلمبنگ"],"elec":["बिजुलीको काम","बिजली का काम","بجلی کا کام"],"ac":["एसी (AC)","एसी (AC)","اے سی (AC)"],"paint":["पेन्टिङ","पेंटिंग","پینٹنگ"],"wood":["काठको काम","कारपेंटर का काम","لکڑی کا کام"],"appl":["घरायसी मेसिन","घरेलू मशीनें","گھریلو مشینیں"],"clean":["सफाइ","सफाई","صفائی"],"garage":["ग्यारेजको ढोका","गैराज के दरवाज़े","گیراج کے دروازے"],"other":["अरू","कुछ और","کچھ اور"]};
 TX.home=['गृह','होम','ہوم'];
 TX.gT=['कामदारका लागि दर्ता गाइड','वर्कर के लिए रजिस्टर गाइड','کارکن کے لیے رجسٹر گائیڈ']; TX.gP=['तस्बिरसहित ८ सजिलो चरण, ५ भाषामा। आफ्नो कामदारलाई पठाउनुहोस्।','तस्वीरों के साथ 8 आसान स्टेप, 5 भाषाओं में। अपने वर्कर को भेजें।','تصویروں کے ساتھ 8 آسان قدم، 5 زبانوں میں۔ اپنے کارکن کو بھیجیں۔']; TX.gOpen=['गाइड खोल्नुहोस्','गाइड खोलें','گائیڈ کھولیں']; TX.gSend=['WhatsApp मा पठाउनुहोस्','WhatsApp पर भेजें','واٹس ایپ پر بھیجیں']; TX.gLang=['कामदारको भाषा','वर्कर की भाषा','کارکن کی زبان']; TX.gMsg=['Khafet Partner एपमा दर्ता गर्ने तरिका:','Khafet Partner ऐप में रजिस्टर करने का तरीका:','Khafet Partner ایپ میں رجسٹر ہونے کا طریقہ:'];
-T.gT=['شرح التسجيل للعامل','Registration guide for your worker']; T.gP=['8 خطوات سهلة بالصور. أرسله لعاملك، وهو يختار لغته من أول الشرح ويسجل بنفسه.','8 easy steps with pictures. Send it to your worker. He picks his language at the top and registers on his own.']; T.gOpen=['افتح الشرح','Open the guide']; T.gSend=['أرسله بالواتساب','Send on WhatsApp']; T.gLang=['لغة العامل','Worker language']; T.gMsg=['طريقة التسجيل في تطبيق خافت شركاء:','How to register in the Khafet Partner app:'];
+T.gT=['شرح التسجيل للفني','Registration guide for your technician']; T.gP=['8 خطوات سهلة بالصور. أرسله للفني عندك، وهو يختار لغته من أول الشرح ويسجل بنفسه.','8 easy steps with pictures. Send it to your technician. He picks his language at the top and registers on his own.']; T.gOpen=['افتح الشرح','Open the guide']; T.gSend=['أرسله بالواتساب','Send on WhatsApp']; T.gLang=['لغة العامل','Worker language']; T.gMsg=['طريقة التسجيل في تطبيق خافت شركاء:','How to register in the Khafet Partner app:'];
 var LANGS=[['ar','عربي'],['en','English'],['ne','नेपाली'],['hi','हिन्दी'],['ur','اردو']], LIDX={ne:0,hi:1,ur:2};
 /* داخل تطبيق خافت شركاء: بدون روابط المتاجر، ونصوص «سجّل» بدل «حمّل» */
 var INAPP=document.documentElement.classList.contains('inapp');
@@ -511,7 +515,7 @@ if(INAPP){
   T.n1=['خلّ إشعارات خافت شركاء مفعّلة عشان توصلك الطلبات.','Keep Khafet Partner notifications on so jobs reach you.'];
   T.n3=['لما نعتمد حسابك، ارجع للرئيسية وسجّل بنفس رقم الجوال.','Once we approve your account, go back home and sign in with the same mobile number.'];
 }
-var CITIES=[{k:'khobar',ar:'الخبر',en:'Al Khobar'},{k:'dammam',ar:'الدمام',en:'Dammam'},{k:'dhahran',ar:'الظهران',en:'Dhahran'},{k:'qatif',ar:'القطيف',en:'Qatif'},{k:'jubail',ar:'الجبيل',en:'Jubail'}];
+var CITIES=[{k:'khobar',ar:'الخبر',en:'Al Khobar'},{k:'dammam',ar:'الدمام',en:'Dammam'},{k:'dhahran',ar:'الظهران',en:'Dhahran'},{k:'qatif',ar:'القطيف',en:'Qatif'},{k:'jubail',ar:'الجبيل',en:'Jubail'},{k:'ahsa',ar:'الأحساء',en:'Al Ahsa'},{k:'riyadh',ar:'الرياض',en:'Riyadh'},{k:'jeddah',ar:'جدة',en:'Jeddah'},{k:'makkah',ar:'مكة',en:'Makkah'},{k:'madinah',ar:'المدينة',en:'Madinah'},{k:'taif',ar:'الطائف',en:'Taif'},{k:'qassim',ar:'القصيم',en:'Qassim'},{k:'abha',ar:'أبها وخميس مشيط',en:'Abha and Khamis'},{k:'tabuk',ar:'تبوك',en:'Tabuk'},{k:'hail',ar:'حائل',en:'Hail'},{k:'jazan',ar:'جازان',en:'Jazan'},{k:'najran',ar:'نجران',en:'Najran'},{k:'yanbu',ar:'ينبع',en:'Yanbu'},{k:'kharj',ar:'الخرج',en:'Al Kharj'}];
 var WARS=[{k:'none',ar:'بدون ضمان',en:'No warranty'},{k:'week',ar:'أسبوع',en:'One week'},{k:'month',ar:'شهر',en:'One month'},{k:'3m',ar:'3 أشهر',en:'3 months'},{k:'6m',ar:'6 أشهر',en:'6 months'},{k:'year',ar:'سنة',en:'One year'}];
 var UNITS=[['job','uJob'],['hour','uHour'],['meter','uMeter'],['piece','uPiece'],['inspect','uInspect']];
 var CATS=[
@@ -548,10 +552,11 @@ function applyLang(){
   try{localStorage.setItem('khafet_join_lang',L);}catch(e){}
 }
 $('langRow').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;L=b.getAttribute('data-l');applyLang();});
-/* شرح التسجيل للعامل: المدير يختار لغة عامله ويرسل الرابط */
-function guideUrl(){return location.href.replace(/[^\/]*([?#].*)?$/,'')+'guide.html';}
-function renderGuide(){var o=$('guideOpen');if(o)o.href=guideUrl();}
-document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#guideSend')){window.open('https://wa.me/?text='+encodeURIComponent('طريقة التسجيل في خافت شركاء\nHow to register · दर्ता गर्ने तरिका · रजिस्टर करने का तरीका · رجسٹر ہونے کا طریقہ\n'+guideUrl()),'_blank','noopener');}});
+/* شرح التسجيل للفني: المدير يرسل الرابط للفني */
+var GUIDE_PUB='https://fadiaalzhrani-debug.github.io/khaft-partners/www/guide.html';
+function guideUrl(){return GUIDE_PUB;}
+function renderGuide(){var o=$('guideOpen');if(o){o.href=INAPP?'guide.html?from=join':guideUrl(); if(INAPP){o.removeAttribute('target');}}}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#guideSend')){(function(u){ try{ var w=window.open(u,'_blank'); if(!w) location.href=u; }catch(e){ location.href=u; } })('https://wa.me/?text='+encodeURIComponent('طريقة التسجيل في خافت شركاء\nHow to register · दर्ता गर्ने तरिका · रजिस्टर करने का तरीका · رجسٹر ہونے کا طریقہ\n'+guideUrl()));}});
 (function pickLang(){
   var q=/[?&]lang=(en|ar|ne|hi|ur)/.exec(location.search); if(q){L=q[1];return;}
   if(INAPP){ try{var a=localStorage.getItem('khafet_techlang');if(a){L=/^(ar|en|ne|hi|ur)$/.test(a)?a:'en';return;}}catch(e){} }

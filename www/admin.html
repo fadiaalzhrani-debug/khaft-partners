@@ -542,12 +542,16 @@ body{background:var(--bg);color:var(--ink)}
 h1,h2,h3,.brand{font-family:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif}
 header.top{background:rgba(241,233,223,.92);border-bottom:0}
 
+/* الهيدر ثابت فوق دائمًا (زر الرئيسية ما يختفي مع النزول) */
+header.top{position:fixed;top:0;left:0;right:0;z-index:60}
+body{padding-top:calc(66px + env(safe-area-inset-top))}
+
 </style><!--/kh-skin-->
 </head>
 <body>
 <header class="top"><div class="wrap">
   <div class="brand"><span class="mk">🏢</span><span>خافِت</span></div>
-  <a onclick="setAdminSection('')" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;background:#F5C518;color:#141414;font-weight:800;font-size:.85rem;padding:7px 12px;border-radius:10px;text-decoration:none;white-space:nowrap">🏠 الرئيسية</a>
+  <a onclick="adminHomeTap()" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;background:#F5C518;color:#141414;font-weight:800;font-size:.85rem;padding:7px 12px;border-radius:10px;text-decoration:none;white-space:nowrap">🏠 الرئيسية</a>
   <span class="spacer"></span>
   <button class="logout" id="langBtn" onclick="toggleLang()" title="English / عربي">🌐 <span class="ht">EN</span></button>
   <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
@@ -576,7 +580,7 @@ const KH_STORE={
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=103, KH_RIZQ_BUILD=101;
+const KH_APP_BUILD=104, KH_RIZQ_BUILD=102;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1157,11 +1161,16 @@ const ST_GROUPS=[
     ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
     ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
     ['warranty_days','ضمان الشغل للطلبات اللي يدخلها الموظف (أيام)','Work warranty for staff-entered orders (days)','num'],
-    ['first_free_delivery','توصيل مجاني لأول طلب من التطبيق (تنخصم رسوم الوصول)','Free delivery on the first app order (visit fee waived)','bool'],
-    ['welcome_credit','رصيد ترحيبي لأول طلب من التطبيق (ريال · 0 يوقفه)','Welcome credit for the first app order (SAR · 0 turns it off)','num'],
+    ['min_order','الحد الأدنى للطلب على الخدمات بدون الأغراض (ريال · 0 بدون حد)','Minimum order on services, parts excluded (SAR · 0 for none)','num'],
+    ['fee_parts_only','الرسوم فقط إذا الطلب فيه أغراض (مطفي = على كل طلب)','Fee only when the order has parts (off = on every order)','bool'],
+    ['first_free_delivery','توصيل مجاني لأول طلب من التطبيق (تنخصم قيمة التوصيل)','Free delivery on the first app order','bool'],
+    ['referral_first_bonus','مكافأة صاحب الكود بعد ما يدفع صديقه أول طلب، مرة واحدة (ريال · 0 يوقفها)','Code owner reward after the friend pays their first order, once (SAR · 0 turns it off)','num'],
+    ['referral_friend_pct','خصم إضافي للصديق على أول طلب بالكود (٪ · 0 = يكفيه الرصيد الترحيبي)','Extra discount for the friend on the first order with a code (% · 0 = welcome credit only)','num'],
+    ['welcome_enabled','عرض «هدية أول طلب» شغّال (اطفيه ويختفي من التطبيق فورًا)','First order gift offer on (switch off and it disappears from the app)','bool'],
+    ['welcome_credit','مبلغ هدية أول طلب (ريال)','First order gift amount (SAR)','num'],
     ['media_retention_days','حذف مقاطع العملاء وصور المنازل بعد كم يوم من موعد الطلب المغلق','Delete customer videos and house photos N days after the closed order date','num'],
     ['complaint_sla_days','مدة الرد على الشكوى (أيام عمل) كما تظهر للعميل','Complaint reply time (working days) shown to customers','num'],
-    ['delivery_fee','رسوم التوصيل (ريال)','Delivery fee (SAR)','num'],
+    ['delivery_fee','رسوم توصيل الأغراض (ريال · 0 يلغيها)','Parts delivery fee (SAR · 0 removes it)','num'],
     ['close_requires_payment','إقفال الطلب يتطلب دفع المتبقي','Closing an order requires payment of the balance','bool'] ] },
   { id:'coverage', t:['📍 التغطية','📍 Coverage'], d:['المدن اللي تخدمها. أي عميل خارجها يشوف الرسالة تحت ولا يقدر يحجز.','Cities you serve. Customers outside them see the message and cannot book.'], f:[
     ['coverage_cities','المدن (افصل بينها بفاصلة)','Cities (comma separated)','list'],
@@ -2016,6 +2025,7 @@ function audiencePanelHtml(){
     </div>
   </div>`;
 }
+function adminHomeTap(){ try{ if(typeof loggedIn!=='undefined' && loggedIn && typeof adminSection!=='undefined' && adminSection){ setAdminSection(''); window.scrollTo(0,0); return; } }catch(e){} location.href='index.html#stay'; }
 function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
 
 /* ═══════ 📨 طلبات الانضمام: من النموذج العام (rezq/join) مباشرة إلى جدول khafet_join_requests ═══════ */
