@@ -93,6 +93,20 @@
   .status.done{background:rgba(34,197,94,.15);color:#6ee7a0}
   .tj-body{padding:16px 18px}
   .tj-row{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);font-size:1.12rem}
+  .cinv{margin:12px 0;padding:12px 14px;border-radius:16px;background:#fff;border:1.5px solid var(--line)}
+  .cinv .ci-h{font-weight:900;font-size:1.02rem;margin-bottom:6px}
+  .cinv .ci-s{color:var(--muted);font-weight:800;font-size:.8rem;margin:8px 0 2px}
+  .cinv .ci-r{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-weight:700;font-size:.98rem}
+  .cinv .ci-r em{font-style:normal;color:var(--muted);font-weight:800}
+  .cinv .ci-r b{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .cinv .ci-r.disc{color:#15803D}
+  .cinv .ci-t{display:flex;justify-content:space-between;gap:10px;margin-top:8px;padding-top:8px;border-top:1.5px dashed var(--line);font-weight:900;font-size:1.06rem}
+  .cinv .ci-r.paid{color:#15803D}
+  .cinv .ci-r.due{color:#B4560F}
+  .tjob-cx{display:flex;align-items:center;gap:10px;margin:10px 0;padding:12px 14px;border-radius:16px;background:#FBE4E1;color:#B91C1C;font-weight:800}
+  .tjob-cx .cx-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.4}
+  .tjob-cx .cx-tx small{font-weight:700;opacity:.85;font-size:.8rem}
+  .tjob-cx .cx-amt{white-space:nowrap;font-size:1.08rem}
   .tj-row:last-child{border-bottom:none}
   .tj-k{min-width:124px;color:var(--muted);font-weight:700;font-size:1rem;flex-shrink:0}
   .tj-v{flex:1;font-weight:800}
@@ -1702,6 +1716,42 @@ const LG2={
 };
 Object.keys(LG2).forEach(k=>{ Object.assign(LG[k],LG2[k]); });
 /* نصوص الدفع (باقي اللغات ترجع للعربي) */
+Object.assign(LG.ar,{custInv:'فاتورة العميل',ciSvcs:'الخدمات',ciParts:'الأغراض',ciFees:'الرسوم',ciDisc:'خصم',ciTotal:'الإجمالي',ciPaid:'دفع العميل',ciDue:'باقي على العميل',ciRefund:'رجع للعميل',ciCancelled:'ملغي',feeDelivery:'رسوم توصيل الأغراض',feeSmall:'رسوم طلب صغير'});
+Object.assign(LG.en,{custInv:'Customer invoice',ciSvcs:'Services',ciParts:'Parts',ciFees:'Fees',ciDisc:'Discount',ciTotal:'Total',ciPaid:'Customer paid',ciDue:'Still to pay',ciRefund:'Refunded to customer',ciCancelled:'Cancelled',feeDelivery:'Parts delivery fee',feeSmall:'Small order fee'});
+Object.assign(LG.ne,{custInv:'ग्राहकको बिल',ciSvcs:'सेवाहरू',ciParts:'सामानहरू',ciFees:'शुल्क',ciDisc:'छुट',ciTotal:'जम्मा',ciPaid:'ग्राहकले तिरेको',ciDue:'तिर्न बाँकी',ciRefund:'ग्राहकलाई फिर्ता',ciCancelled:'रद्द',feeDelivery:'सामान डेलिभरी शुल्क',feeSmall:'सानो अर्डर शुल्क'});
+Object.assign(LG.hi,{custInv:'ग्राहक का बिल',ciSvcs:'सेवाएँ',ciParts:'सामान',ciFees:'शुल्क',ciDisc:'छूट',ciTotal:'कुल',ciPaid:'ग्राहक ने चुकाया',ciDue:'बाकी भुगतान',ciRefund:'ग्राहक को वापस',ciCancelled:'रद्द',feeDelivery:'सामान डिलीवरी शुल्क',feeSmall:'छोटे ऑर्डर का शुल्क'});
+Object.assign(LG.ur,{custInv:'گاہک کا بل',ciSvcs:'خدمات',ciParts:'سامان',ciFees:'فیس',ciDisc:'رعایت',ciTotal:'کل',ciPaid:'گاہک نے ادا کیا',ciDue:'باقی ادائیگی',ciRefund:'گاہک کو واپس',ciCancelled:'منسوخ',feeDelivery:'سامان کی ترسیل فیس',feeSmall:'چھوٹے آرڈر کی فیس'});
+Object.assign(LG.ne,{paidLbl:'💳 तिरेको'}); Object.assign(LG.hi,{paidLbl:'💳 भुगतान हुआ'}); Object.assign(LG.ur,{paidLbl:'💳 ادا شدہ'});
+/* اسم القطعة بلغة الفني: الإنجليزي من المستودع لغير العربي */
+function partNameL(i){ if(lang!=='ar'){ const inv=(typeof INV!=='undefined'&&INV||[]).find(x=>x.id===i.stockId); if(inv&&inv.name_en) return inv.name_en; } return i.name||''; }
+/* فاتورة العميل داخل بطاقة الطلب: وش طلب العميل وكم دفع، حتى يجهّز الفني الأغراض ويعرف المتبقي */
+function custInvoiceHtml(o){
+  const its=(o.items||[]).filter(i=>i&&i.id&&i.id!=='quick'); if(!its.length) return '';
+  const isPart=i=>!!(i.part||i.stockId||i.id==='stock'||String(i.id||'').startsWith('part:'));
+  const isFee=i=>i.id==='fee'||i.id==='smallfee';
+  const nm=i=>{ if(i.id==='fee') return lg('feeDelivery'); if(i.id==='smallfee') return lg('feeSmall');
+    if(isPart(i)){ if(lang!=='ar'){ const inv=(typeof INV!=='undefined'&&INV||[]).find(x=>x.id===i.stockId); if(inv&&inv.name_en) return esc(inv.name_en); } return esc(i.name||''); }
+    return esc(svcName(i)); };
+  const amt=i=>(+i.price||0)*(+i.qty||1);
+  const row=i=>`<div class="ci-r"><span>${nm(i)}${(+i.qty>1)?' <em>×'+ar(i.qty)+'</em>':''}</span><b>${amt(i)>0?ar(amt(i)):''}</b></div>`;
+  const sec=(title,list)=>list.length?`<div class="ci-s">${title}</div>`+list.map(row).join(''):'';
+  const sum=its.reduce((a,i)=>a+amt(i),0), total=+o.finalPrice||0, disc=Math.max(0,Math.round((sum-total)*100)/100);
+  const paid=+o.paidAmount||0, due=payDue(o);
+  return `<div class="cinv"><div class="ci-h">🧾 ${lg('custInv')}</div>
+    ${sec(lg('ciSvcs'),its.filter(i=>!isPart(i)&&!isFee(i)))}${sec(lg('ciParts'),its.filter(isPart))}${sec(lg('ciFees'),its.filter(isFee))}
+    ${disc>0&&total>0?`<div class="ci-r disc"><span>${lg('ciDisc')}</span><b>− ${ar(disc)}</b></div>`:''}
+    ${total>0?`<div class="ci-t"><span>${lg('ciTotal')}</span><b>${ar(total)} ${lg('cur')}</b></div>`:''}
+    ${paid>0?`<div class="ci-r paid"><span>${lg('ciPaid')}</span><b>${ar(paid)} ${lg('cur')}</b></div>`:''}
+    ${due>0?`<div class="ci-r due"><span>${lg('ciDue')}</span><b>${ar(due)} ${lg('cur')}</b></div>`:''}
+  </div>`;
+}
+/* الطلبات الملغية المدفوعة (اليوم وما بعده وأمس): سطر أحمر بالمبلغ اللي رجع للعميل */
+function cancelledRefundRows(){
+  const d=new Date(); d.setDate(d.getDate()-1); const from=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const list=(ORDERS||[]).filter(o=>o.status==='cancelled' && o.date>=from && (+o.paidAmount>0 || /refund/.test(String(o.payStatus||''))));
+  return list.map(o=>{ const amt=(+o.paidAmount>0?+o.paidAmount:(+o.bookedFinal||+o.finalPrice||0));
+    return `<div class="tjob-cx"><span class="cx-ic">🚫</span><span class="cx-tx"><b>${lg('ciCancelled')} · ${esc(o.id||'')}</b><small>${jobTime(o.startMin)} · ${jobDate(o.date)} · ${lg('ciRefund')}</small></span><b class="cx-amt"><span dir="ltr">−${ar(amt)}</span> ${lg('cur')}</b></div>`; }).join('');
+}
 Object.assign(LG.ar,{paidLbl:'💳 مدفوع',waitPay:'💳 بانتظار الدفع',deviceBtn:'💳 دفع بجهاز الفني',deviceConfirm:'تأكيد استلام',deviceDone:'✓ تم تسجيل الدفع',unpaidDone:'فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.',serverErr:'ما انحفظ، حاول مرة ثانية',booked:'محجوز',bookedFee:'أجرة الحجز',extras:'الإضافات',dueNow:'المتبقي على العميل'});
 Object.assign(LG.en,{paidLbl:'💳 Paid',waitPay:'💳 Awaiting payment',deviceBtn:'💳 Paid by card machine',deviceConfirm:'Confirm you received',deviceDone:'✓ Payment recorded',unpaidDone:'The customer still owes money. Ask them to pay in the app or record a card machine payment.',serverErr:'Not saved, try again',booked:'Booked',bookedFee:'Booking fee',extras:'Extras',dueNow:'Customer owes'});
 function lg(k){ const d=LG[lang]||LG.ar; return d[k]||LG.ar[k]||''; }
@@ -2461,7 +2511,7 @@ function render(){
     const sep=isRTL()?'، ':', ';
     const isPart=i=>i&&(i.part||String(i.id||'').startsWith('part:'));
     const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee'&&i.id!=='smallfee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
-    const partsTxt=(o.items||[]).filter(isPart).map(i=>'🔩 '+esc(i.name)+(i.qty>1?' ×'+i.qty:'')).join(sep);
+    const partsTxt=(o.items||[]).filter(isPart).map(i=>'🔩 '+esc(partNameL(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const addr=[a.city,a.district,a.street].filter(Boolean).join(' · ');
     const mapFallback='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')); const mapUrl=safeUrl(a.mapUrl, mapFallback);
     const gpsPin=!!(a.lat&&a.lng);
@@ -2516,6 +2566,7 @@ function render(){
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
         ${partsTxt?`<div class="tj-row"><span class="tj-k">🔩 ${lang==='ar'?'قطع محجوزة مع الطلب':lang==='en'?'Parts booked':lang==='ur'?'بک شدہ پارٹس':'बुक पार्ट्स'}</span><span class="tj-v">${partsTxt}<div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:2px">${lang==='ar'?'خذها معك من المستودع، مدفوعة مع الحجز':'Take them from stock, paid with the booking'}</div></span></div>`:''}
+        ${custInvoiceHtml(o)}
         ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ ${t('problem')}</span><span class="tj-v">${esc(o.note)}${lang!=='ar'?` <a class="ttrans" href="https://translate.google.com/?sl=auto&tl=${lang}&text=${encodeURIComponent(o.note)}&op=translate" target="_blank" rel="noopener">${t('translate')}</a>`:''}</span></div>`:''}
         ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 ${lang==='ne'?'फोटो/भिडियो':lang==='en'?'Photo/Video':lang==='hi'?'फोटो/वीडियो':lang==='ur'?'تصویر/ویڈیو':'صورة/مقطع'}</span><span class="tj-v"><button class="tvideo" data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)">${t('watchVideo')}</button></span></div>`:''}
         <div class="tj-row"><span class="tj-k">⏱️ ${t('duration')}</span><span class="tj-v">${jobDur(o.duration)}</span></div>
@@ -2556,7 +2607,7 @@ function render(){
       </div>
       ${!usingCloud?`<div class="offline">⚠️ ${t('offline')}</div>`:''}
     </div>`;
-  const ordersContent=`${renderCalendar()}<div class="jobs">${cards}</div>`;
+  const ordersContent=`${renderCalendar()}${cancelledRefundRows()}<div class="jobs">${cards}</div>`;
 
   // ═ مربّعات الرئيسية (زي لوحة الإدارة) — متعددة اللغات ═
   const CARDS=[['orders','📋',tl(0),ar(openCount)],['inv','📦',tl(1),ar((INV||[]).length)],['book','📅',tl(2),''],['invoices','🧾',tl(3),'']];

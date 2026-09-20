@@ -1162,6 +1162,7 @@ const ST_GROUPS=[
     ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
     ['warranty_days','ضمان الشغل للطلبات اللي يدخلها الموظف (أيام)','Work warranty for staff-entered orders (days)','num'],
     ['small_order_under','رسوم الطلب الصغير تنضاف إذا مجموع الطلب (الخدمات مع الأغراض) أقل من (ريال · 0 يوقفها)','Small order fee applies when the order total (services plus parts) is under (SAR · 0 turns it off)','num'],
+    ['small_order_note','التوضيح الصغير تحت رسوم الطلب الصغير في الفاتورة (فاضي = النص التلقائي)','Small note under the small order fee in the invoice (empty = automatic text)','text'],
     ['small_order_fee','مبلغ رسوم الطلب الصغير (ريال)','Small order fee amount (SAR)','num'],
     ['_note_smallfee','كيف تشتغل: أي طلب يمشي وما ينرفض مهما كان صغير. إذا مجموع الطلب (الخدمات مع الأغراض) أقل من الحد اللي فوق، ينضاف في الفاتورة سطر «رسوم طلب صغير» بالمبلغ المحدد. وإذا وصل مجموع الطلب الحد أو تعداه تروح الرسوم لحالها. مثال والحد 50: لمبة مع غرضها 16 ريال تنضاف لها الرسوم، وشطاف مع غرضه 67 ريال بدون رسوم. الرسوم ما تنحسب من أجرة اليد، فما تدخل في العمولة ولا الخصومات.','How it works: every order goes through, however small. When the order total (services plus parts) is under the limit above, a “Small order fee” line is added to the invoice. Once the total reaches the limit the fee disappears. The fee is not labour, so it is excluded from commission and discounts.','note'],
     ['min_order','الحد الأدنى للطلب على الخدمات بدون الأغراض (ريال · 0 بدون حد)','Minimum order on services, parts excluded (SAR · 0 for none)','num'],
@@ -1205,6 +1206,9 @@ const ST_GROUPS=[
     ['advance_pct','نسبة خصم الحجز المبكر (%)، صفر يوقفه','Early booking discount (%), 0 disables','num'],
     ['blocked_phones','أرقام محظورة من الطلب (رقم في كل سطر أو بفاصلة). يوصلهم «تواصل معنا» بدل الطلب','Blocked phone numbers (one per line or comma separated). They see “contact us” instead of booking','text'] ] },
   { id:'home', t:['🏠 الرئيسية','🏠 Home screen'], d:['نصوص وبطاقات الشاشة الأولى في تطبيق خافت. تتطبق فور فتح التطبيق.','Texts and cards on the first screen of the Khafet app. Apply when the app opens.'], f:[
+    ['home_card_enabled','البطاقة البنية في الرئيسية ظاهرة','Brown card on the home screen visible','bool'],
+    ['home_card_title','نص البطاقة البنية (فاضي = هدية أول طلب تلقائيًا لمن ما له طلبات)','Brown card text (empty = automatic first order gift for new customers)','text'],
+    ['home_card_badge','المربع الذهبي في البطاقة: رقم أو إيموجي ثم كلمة صغيرة (مثال: 20 ريال)','Gold tile in the card: a number or emoji then a small word (e.g. 20 SAR)','text'],
     ['hero_title','العنوان الكبير','Main title','text'],
     ['hero_sub','السطر الثاني','Second line','text'],
     ['hero_sub2','السطر الثالث','Third line','text'],
