@@ -159,6 +159,24 @@
   .cg-eye{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:.76rem;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap}
   .cg-eye.off{background:#fde8e8;color:#b91c1c;border-color:#fca5a5}
   .cg-eye.soon{background:var(--gold-soft,#FBF1C9);color:#8a6d00;border-color:#e8d48a}
+  .so-img{margin-top:6px;border:1.5px dashed var(--line,#e5e0d8);border-radius:14px;min-height:96px;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px;position:relative;overflow:hidden}
+  .so-img img{max-height:150px;max-width:100%;border-radius:10px;display:block}
+  .so-img .so-ph{color:var(--muted,#8b8178);font-size:.85rem;font-weight:700;text-align:center}
+  .so-img .so-x{position:absolute;inset-inline-end:10px;top:10px}
+  .sol-thumb{width:54px;height:54px;border-radius:12px;object-fit:cover;flex:none;background:var(--group,#efe8df)}
+  .sol-thumb.ph{display:grid;place-items:center;font-size:1.4rem}
+  .stat .l.sub{font-size:.72rem;opacity:.8;margin-top:2px;font-weight:700}
+  .stat.warn{background:#FFF6E5;border-color:#F0C24B}
+  .dash-edit{display:block;margin:8px 0 0;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line,#e5e0d8);background:var(--card,#fff);color:var(--muted,#8b8178);font:inherit;font-size:.8rem;font-weight:800;cursor:pointer}
+  .dash-pick{display:grid;gap:2px;max-height:52vh;overflow:auto;margin:6px 0 4px}
+  .smsbal{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;border-radius:16px;background:var(--card,#fff);border:1.5px solid var(--line,#e5e0d8)}
+  .smsbal.low{background:#FFF6E5;border-color:#F0C24B}
+  .smsbal .sb-ic{font-size:1.35rem;flex:none}
+  .smsbal .sb-t{flex:1;min-width:0;line-height:1.5}
+  .smsbal .sb-t b{display:block;font-weight:900;font-size:1.02rem}
+  .smsbal .sb-t small{color:var(--muted,#8b8178);font-size:.82rem}
+  .smsbal .sb-a{display:flex;gap:8px;flex:none}
+  .smsbal .sb-a .sbtn{text-decoration:none;display:inline-flex;align-items:center}
   .cg-warn{display:inline-block;font-size:.72rem;font-weight:800;color:#b45309;background:#fff4e0;border-radius:999px;padding:1px 8px;margin-inline-start:6px}
   /* الإعدادات */
   .st-g{margin-top:12px}.st-g h3{margin:0 0 4px;font-size:1.02rem}
@@ -1042,6 +1060,7 @@ async function retryRefund(id){
 let JOINREQ=[], joinReqLoaded=false, joinFilter='new';
 async function loadAll(){
   if(!cloudReady||!loggedIn){ render(); return; }
+  loadSmsBalance();
   // كل الاستعلامات مع بعض بدل واحد ورا الثاني (كانت تاخذ وقت طويل على شبكة الجوال)
   const Q=(p,f)=>Promise.resolve().then(()=>p).then(r=>{ try{ f(r); }catch(e){} }).catch(()=>{});
   await Promise.all([
@@ -1065,6 +1084,98 @@ async function loadAll(){
   if(location.hash==='#po' && !whPoOpen()){ try{ history.replaceState(null,'',location.pathname); }catch(e){} whOpenPO(); }
 }
 /* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
+/* ═══════ داشبورد الرئيسية ═══════
+   أرقام مختصرة تظهر فوق. تختارين اللي يهمك من زر «تخصيص»، والاختيار ينحفظ في الإعدادات
+   فيتبعك على أي جهاز تفتحين منه اللوحة. */
+const DASH_DEFAULT=['today','new','booked','unpaid','stock_val','stock_low','rev_month','sms'];
+function dashDefs(){
+  const iso=d=>{ const x=new Date(d); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); };
+  const today=iso(new Date()), mStart=today.slice(0,8)+'01';
+  const O=ORDERS||[], I=INV||[];
+  const live=o=>o.status!=='cancelled';
+  const sum=(arr,f)=>Math.round(arr.reduce((a,x)=>a+(+f(x)||0),0));
+  const lowItems=I.filter(it=>['low','out'].includes(invState(it)));
+  const unpaid=O.filter(o=>live(o) && +o.amountDue>0);
+  const doneMonth=O.filter(o=>o.status==='done' && String(o.date||'')>=mStart);
+  const rated=O.filter(o=>+o.rating>0);
+  const avg=rated.length? (sum(rated,o=>o.rating)/rated.length) : 0;
+  const booked=O.filter(o=>['new','confirmed'].includes(o.status) && String(o.date||'')>=today);
+  return [
+    ['today','📅',LX('طلبات اليوم','Orders today'), ar(O.filter(o=>o.date===today&&live(o)).length), '', 'orders', 'gold'],
+    ['new','🆕',LX('بانتظار التأكيد','Awaiting confirmation'), ar(O.filter(o=>o.status==='new').length), '', 'orders', ''],
+    ['booked','📌',LX('محجوزة قادمة','Upcoming booked'), ar(booked.length), LX('اليوم وبعده','Today onward'), 'orders', ''],
+    ['unpaid','💳',LX('بانتظار الدفع','Awaiting payment'), ar(unpaid.length), money(sum(unpaid,o=>o.amountDue)), 'orders', ''],
+    ['rev_month','💰',LX('إيراد هذا الشهر','Revenue this month'), money(sum(doneMonth,o=>o.finalPrice)), ar(doneMonth.length)+' '+LX('طلب منجز','completed'), 'orders', 'green'],
+    ['rev_all','🏦',LX('إيراد مكتمل','Completed revenue'), money(sum(O.filter(o=>o.status==='done'),o=>o.finalPrice)), '', 'orders', 'green'],
+    ['stock_val','📦',LX('قيمة المستودع','Stock value'), money(sum(I,it=>(+it.qty||0)*(+it.buy_price||0))), LX('بسعر الشراء','at cost'), 'store', ''],
+    ['stock_sell','🏷️',LX('قيمة البيع المتوقعة','Expected sale value'), money(sum(I,it=>(+it.qty||0)*(+it.sell_price||0))), LX('لو انباع كله','if all sold'), 'store', 'green'],
+    ['stock_items','🔢',LX('أصناف المستودع','Stock items'), ar(I.length), ar(sum(I,it=>it.qty))+' '+LX('قطعة','pieces'), 'store', ''],
+    ['stock_low','⚠️',LX('أصناف ناقصة','Items to reorder'), ar(lowItems.length), lowItems.slice(0,2).map(it=>it.name).join(' · '), 'store', lowItems.length?'warn':''],
+    ['sms','✉️',LX('رصيد الرسائل','SMS balance'), SMS_BAL?ar(SMS_BAL.balance):'…', SMS_BAL&&SMS_BAL.is_low?LX('اشحن قريبًا','top up soon'):'', '', (SMS_BAL&&SMS_BAL.is_low)?'warn':''],
+    ['cmp','📣',LX('شكاوى مفتوحة','Open complaints'), ar((COMPLAINTS_A||[]).filter(c=>c.status!=='closed').length), '', 'cust', ''],
+    ['rating','⭐',LX('متوسط التقييم','Average rating'), avg? avg.toFixed(1):'—', ar(rated.length)+' '+LX('تقييم','ratings'), 'orders', ''],
+    ['techs','🧑‍🔧',LX('فنيون نشطون','Active technicians'), ar((STAFF||[]).filter(s=>s.role==='tech'&&s.active!==false).length), '', 'team', ''],
+    ['provs','🤝',LX('مزوّدون للمراجعة','Providers to review'), ar((PROVIDERS||[]).filter(p=>(p.status||'pending')==='pending').length), '', 'team', ''],
+    ['joins','📨',LX('طلبات انضمام','Join requests'), ar((JOINREQ||[]).filter(x=>x.status==='new').length), '', 'joins', '']
+  ];
+}
+function dashKeys(){
+  const raw=String(SETTINGS.dash_widgets==null?'':SETTINGS.dash_widgets).trim();
+  if(!raw) return DASH_DEFAULT.slice();
+  const all=dashDefs().map(d=>d[0]);
+  const keys=raw.split(',').map(x=>x.trim()).filter(x=>all.includes(x));
+  return keys.length?keys:DASH_DEFAULT.slice();
+}
+function dashHtml(){
+  const defs=dashDefs(), keys=dashKeys();
+  const cards=keys.map(k=>defs.find(d=>d[0]===k)).filter(Boolean).map(function(d){
+    const go=d[5]?' onclick="setAdminSection(\''+d[5]+'\')" style="cursor:pointer"':'';
+    return '<div class="stat '+(d[6]||'')+'"'+go+'><div class="n">'+d[3]+'</div><div class="l">'+d[1]+' '+d[2]+'</div>'+(d[4]?'<div class="l sub">'+esc(d[4])+'</div>':'')+'</div>';
+  }).join('');
+  return '<div class="stats">'+cards+'</div>'+
+    '<button class="dash-edit" onclick="dashCustomize()">✏️ '+LX('تخصيص الداشبورد','Customize dashboard')+'</button>';
+}
+function dashCustomize(){
+  const defs=dashDefs(), keys=dashKeys();
+  cgModal('<h3>'+LX('وش تبين يظهر فوق؟','What do you want on top?')+'</h3>'+
+    '<p class="sp-hint">'+LX('اختاري الأرقام اللي تهمك، وترتيبها زي ما تختارينها هنا.','Pick the numbers that matter to you.')+'</p>'+
+    '<div class="dash-pick">'+defs.map(function(d){
+      return '<label class="cg-sw"><input type="checkbox" class="dash-cb" value="'+d[0]+'" '+(keys.includes(d[0])?'checked':'')+'> '+d[1]+' '+d[2]+'</label>';
+    }).join('')+'</div>'+
+    '<div class="cg-acts"><button class="sbtn ok" onclick="dashSave()">💾 '+LX('حفظ','Save')+'</button><button class="sbtn" onclick="closeCg()">'+LX('إلغاء','Cancel')+'</button></div>');
+}
+async function dashSave(){
+  const picked=Array.from(document.querySelectorAll('.dash-cb')).filter(c=>c.checked).map(c=>c.value);
+  const val=picked.join(',');
+  SETTINGS.dash_widgets=val;
+  closeCg(); render();
+  try{ const r=await sb.from('khafet_settings').upsert([{key:'dash_widgets',value:val}],{ onConflict:'key' }); if(r.error) throw r.error; toast(LX('✓ انحفظ شكل الداشبورد','✓ Dashboard saved')); }
+  catch(e){ toast(LX('انحفظ على الجهاز فقط','Saved on this device only')); }
+}
+/* ═══ رصيد رسائل الجوال (Authentica) ═══
+   المفتاح يبقى في الخادم؛ الدالة sms-balance ترجّع الرقم للمدير فقط. */
+let SMS_BAL=null, _smsBalBusy=false;
+async function loadSmsBalance(force){
+  if(_smsBalBusy || (SMS_BAL && !force)) return;
+  _smsBalBusy=true;
+  try{
+    const { data:{ session } }=await sb.auth.getSession(); if(!session) return;
+    const r=await fetch(SUPABASE_URL+'/functions/v1/sms-balance',{ headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token } });
+    const j=await r.json();
+    if(j && j.ok){ SMS_BAL=j; const el=document.getElementById('smsBalBox'); if(el) el.outerHTML=smsBalHtml(); }
+  }catch(e){ /* نعرضه لاحقًا */ } finally{ _smsBalBusy=false; }
+}
+function smsBalHtml(){
+  // الرقم يظهر في الداشبورد دائمًا، وهذا الشريط للتنبيه وزر الشحن فقط لما يقل الرصيد
+  if(SMS_BAL && !SMS_BAL.is_low) return '';
+  if(!SMS_BAL) return `<div class="smsbal" id="smsBalBox"><span class="sb-ic">✉️</span><div class="sb-t"><b>${LX('رصيد الرسائل','SMS balance')}</b><small>${LX('جارٍ القراءة...','Loading...')}</small></div></div>`;
+  const n=Math.max(0, +SMS_BAL.balance||0), low=!!SMS_BAL.is_low;
+  return `<div class="smsbal ${low?'low':''}" id="smsBalBox">
+    <span class="sb-ic">${low?'⚠️':'✉️'}</span>
+    <div class="sb-t"><b>${LX('رصيد الرسائل','SMS balance')}: ${ar(n)}</b><small>${low?LX('الرصيد قارب على الانتهاء، اشحن قبل ما تتوقف رموز الدخول','Running low, top up before sign in codes stop'):LX('رموز الدخول تُخصم منه','Sign in codes are taken from it')}</small></div>
+    <div class="sb-a"><a class="sbtn" href="https://portal.authentica.sa" target="_blank" rel="noopener">${LX('شحن','Top up')}</a><button class="sbtn" onclick="loadSmsBalance(true)">↻</button></div>
+  </div>`;
+}
 async function callStaffAdmin(body){
   try{
     const { data:{ session } }=await sb.auth.getSession();
@@ -1425,6 +1536,7 @@ function renderSolutionsAdmin(){
   const rows=SOLS.length? Object.keys(groups).map(g=>`
     <div class="sub-h" style="margin:12px 0 6px;font-weight:900;color:var(--muted);font-size:.85rem">📍 ${esc(g)}</div>`+groups[g].map(s=>`
     <div class="rline">
+      ${s.image_url?`<img class="sol-thumb" src="${esc(s.image_url)}" alt="" loading="lazy">`:`<span class="sol-thumb ph">${esc(s.icon||'🔧')}</span>`}
       <div class="rl-t"><b>${esc(s.icon||'🔧')} ${esc(s.title)}</b><small>${s.active===false?LX('⚪ مخفي','⚪ Hidden'):LX('🟢 ظاهر','🟢 Visible')} · ${+s.price>0?money(s.price):LX('بعد المعاينة','after inspection')}${s.service_id?'':' · '+LX('⚠️ بلا خدمة مرتبطة','⚠️ no linked service')}</small></div>
       <button class="sbtn" onclick="editSolution('${esc(s.id)}')">✏️</button>
       <button class="sbtn ${s.active===false?'ok':''}" onclick="solToggle('${esc(s.id)}',${s.active===false})">${s.active===false?LX('أظهر','Show'):LX('إخفاء','Hide')}</button>
@@ -1433,8 +1545,33 @@ function renderSolutionsAdmin(){
   return `<p class="sp-hint" style="margin-bottom:10px">${LX('كل حل يظهر للعميل كصفحة: المشكلة، ليش تصير، الحل، وش يشمل، والسعر. زر «اطلب الحل» يحجز الخدمة المرتبطة به. العنوان ووصف الصفحة من ⚙️ الإعدادات.','Each solution is a customer page: problem, cause, fix, what is included, price. The order button books the linked service.')}</p>
     ${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="editSolution('')">➕ ${LX('حل جديد','New solution')}</button>`;
 }
+/* ── صورة الحل: تُضغط في المتصفح وتُرفع على مستودع الصور، والرابط ينحفظ مع الحل ── */
+let _solImg='', _solImgBlob=null, _solImgCleared=false;
+async function solPickPhoto(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  try{
+    _solImgBlob=await compressImage(f,1200,0.85); _solImgCleared=false;
+    _solImg=URL.createObjectURL(_solImgBlob);
+    const box=document.getElementById('so_imgbox'); if(box) box.innerHTML=solImgInner();
+  }catch(e){ toast(LX('ما قدرنا نقرأ الصورة','Could not read the image')); }
+}
+function solClearPhoto(){ _solImg=''; _solImgBlob=null; _solImgCleared=true; const box=document.getElementById('so_imgbox'); if(box) box.innerHTML=solImgInner(); }
+function solImgInner(){
+  return _solImg
+    ? `<img src="${esc(_solImg)}" alt=""><button type="button" class="sbtn danger so-x" onclick="solClearPhoto()">${LX('إزالة الصورة','Remove')}</button>`
+    : `<span class="so-ph">${LX('بدون صورة · تظهر الأيقونة بدلها','No image · the icon shows instead')}</span>`;
+}
+async function solUploadPhoto(key){
+  if(!_solImgBlob) return null;
+  const path='sol/'+String(key||'sol').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,40)+'-'+Date.now().toString(36)+'.jpg';
+  const { error }=await sb.storage.from('khafet-parts').upload(path,_solImgBlob,{ upsert:true, contentType:'image/jpeg' });
+  if(error) throw error;
+  const { data }=sb.storage.from('khafet-parts').getPublicUrl(path);
+  return data.publicUrl;
+}
 function editSolution(id){
   const s=SOLS.find(x=>x.id===id)||{id:'',group_key:'ajyal',title:'',icon:'🔧',problem:'',cause:'',solution:'',includes:'',price:0,sort:(Math.max(0,...SOLS.map(x=>+x.sort||0))+10),active:true};
+  _solImg=s.image_url||''; _solImgBlob=null; _solImgCleared=false;
   cgModal(`<h3>${id?LX('تعديل الحل','Edit solution'):LX('حل جديد','New solution')}</h3>
     <div class="cg-row" style="grid-template-columns:1fr 90px 90px">
       <label>${LX('العنوان','Title')}<input id="so_title" value="${esc(s.title)}" placeholder="${LX('مثال: الإنارة الخارجية DC','e.g. Outdoor DC lighting')}"></label>
@@ -1446,6 +1583,10 @@ function editSolution(id){
     <label>✅ ${LX('الحل (وش نسوي بالضبط)','The fix')}<textarea id="so_solution" rows="3">${esc(s.solution||'')}</textarea></label>
     <label>📦 ${LX('وش يشمل السعر (قطع، ضمان، مدة)','What the price includes')}<textarea id="so_includes" rows="2">${esc(s.includes||'')}</textarea></label>
     <label>🔘 ${LX('نص زر الطلب (مثال: اطلب تغيير المروحة)','Order button text')}<input id="so_cta" value="${esc(s.cta||'')}" placeholder="اطلب الحل"></label>
+    <label>🖼️ ${LX('صورة الحل (تظهر فوق الصفحة وفي القائمة)','Solution photo (top of the page and in the list)')}
+      <div class="so-img" id="so_imgbox">${solImgInner()}</div>
+      <input type="file" accept="image/*" id="so_file" onchange="solPickPhoto(this)" style="margin-top:8px">
+    </label>
     <div class="cg-row" style="grid-template-columns:1fr 1fr">
       <label>${LX('أجرة الحل (ر.س)، 0 = بعد المعاينة','Price (SAR), 0 = after inspection')}<input id="so_price" type="number" min="0" inputmode="decimal" value="${+s.price||0}"></label>
       <label>${LX('الترتيب','Sort')}<input id="so_sort" type="number" inputmode="numeric" value="${+s.sort||0}"></label>
@@ -1467,8 +1608,13 @@ async function saveSolution(id){
     else { await sb.from('khafet_services').update({ name:title, icon:row.icon, price, custom:price<=0, active:true }).eq('id',svcId); }
   }catch(e){ svcId=(old&&old.service_id)||null; }
   if(svcId) row.service_id=svcId;
+  try{
+    if(_solImgBlob){ const u=await solUploadPhoto(svcId||title); if(u) row.image_url=u; }
+    else if(_solImgCleared) row.image_url=null;
+  }catch(e){ toast(LX('الصورة ما انرفعت، انحفظ باقي الحل','The photo was not uploaded, the rest was saved')); }
   const { error }=await sb.from('khafet_solutions').upsert(row);
   if(error){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
+  _solImg=''; _solImgBlob=null; _solImgCleared=false;
   closeCg(); toast(LX('✓ انحفظ الحل','✓ Solution saved')); await loadSolutionsAdmin(); await loadCatalog(); render();
 }
 async function solToggle(id,on){ const { error }=await sb.from('khafet_solutions').update({active:!!on}).eq('id',id); if(error){ toast(LX('ما انحفظ','Not saved')); return; } await loadSolutionsAdmin(); render(); }
@@ -1940,14 +2086,9 @@ function render(){
   const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
-    <div class="stats">
-      <div class="stat gold"><div class="n">${ar(todayOrders.length)}</div><div class="l">📅 طلبات اليوم</div></div>
-      <div class="stat"><div class="n">${ar(cnt('new'))}</div><div class="l">🆕 بانتظار التأكيد</div></div>
-      <div class="stat"><div class="n">${ar(pendingProv)}</div><div class="l">🤝 مزوّدون للمراجعة</div></div>
-      <div class="stat green"><div class="n">${money(revenue)}</div><div class="l">💰 إيراد مكتمل</div></div>
-    </div>
+    ${dashHtml()}
     ${adminSection===''
-      ? homeCards+audiencePanelHtml()
+      ? smsBalHtml()+homeCards+audiencePanelHtml()
       : `<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
            ${KH_FROM_TECH?`<button class="backbtn" style="margin:0" onclick="location.href='fanyeen.html'">‹ ${LX('تطبيق الفني','Tech app')}</button>`:''}<button class="backbtn" style="margin:0" onclick="setAdminSection('')">‹ القائمة</button>
            <b style="font-size:1.15rem;font-weight:900;flex:1">${secTitle}</b>
