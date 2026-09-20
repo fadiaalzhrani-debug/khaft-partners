@@ -70,7 +70,7 @@
   .stat.gold .n{color:var(--gold-strong)} .stat.green .n{color:var(--ok)}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:20px;margin-top:18px}
   .panel h3{font-size:1.05rem;font-weight:800;margin-bottom:12px}
-  /* رأس قابل للطي — اضغط عليه لتصغير/فتح اللوحة */
+  /* رأس قابل للطي · اضغط عليه لتصغير/فتح اللوحة */
   .panel h3.ph{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;user-select:none;
     margin-bottom:0;padding:2px 0;transition:color .15s}
   .panel h3.ph:hover{color:var(--gold-deep)}
@@ -87,7 +87,7 @@
   .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
   .st-new{background:var(--gold-soft);color:#7a5f00} .st-confirmed{background:#E0F2FE;color:#075985}
   .st-progress{background:#FEF0C7;color:#92600A} .st-done{background:var(--ok-soft);color:#166534} .st-cancelled{background:var(--danger-soft);color:#991B1B}
-  /* وصل الفني — يظهر جنب الحالة */
+  /* وصل الفني · يظهر جنب الحالة */
   .st-arrived{background:rgba(37,211,102,.2);color:#0b7a3b;animation:arrBlink 1.8s ease-in-out infinite}
   @keyframes arrBlink{0%,100%{opacity:1}50%{opacity:.6}}
   .st-delay{background:#FEF0C7;color:#92600A}
@@ -102,7 +102,7 @@
   .paychip{display:inline-block;border-radius:8px;padding:2px 9px;font-weight:800;font-size:.84rem}
   .paychip.ok{background:var(--ok-soft);color:#166534} .paychip.due{background:#EEF6FF;color:#0b3d6b} .paychip.wait{background:#FEF0C7;color:#92600A} .paychip.bad{background:var(--danger-soft);color:#991B1B}
   .paylink{background:none;border:none;padding:0;margin-inline-start:6px;color:#7c3aed;font-weight:800;cursor:pointer;font-family:inherit;font-size:inherit}
-  /* شريط الأقسام الرئيسي — يقسّم اللوحة لصفحات واضحة */
+  /* شريط الأقسام الرئيسي · يقسّم اللوحة لصفحات واضحة */
   .secbar{display:flex;gap:8px;overflow-x:auto;margin-top:16px;padding-bottom:4px;scrollbar-width:none;position:sticky;top:0;z-index:20;background:var(--bg);padding-top:8px}
   .secbar::-webkit-scrollbar{display:none}
   .secbtn{flex:1;min-width:96px;padding:12px 8px;border-radius:13px;background:var(--card);border:1.5px solid var(--line);font-weight:800;color:var(--muted);text-align:center;white-space:nowrap;position:relative;font-size:.95rem}
@@ -158,6 +158,7 @@
   .cap-note{color:var(--muted);font-size:.8rem;font-weight:700;margin:-4px 0 12px;line-height:1.6}
   .cg-eye{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:.76rem;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap}
   .cg-eye.off{background:#fde8e8;color:#b91c1c;border-color:#fca5a5}
+  .cg-eye.soon{background:var(--gold-soft,#FBF1C9);color:#8a6d00;border-color:#e8d48a}
   .cg-warn{display:inline-block;font-size:.72rem;font-weight:800;color:#b45309;background:#fff4e0;border-radius:999px;padding:1px 8px;margin-inline-start:6px}
   /* الإعدادات */
   .st-g{margin-top:12px}.st-g h3{margin:0 0 4px;font-size:1.02rem}
@@ -263,7 +264,7 @@
   .log-n{font-weight:800;flex:1}
   .log-a{color:var(--muted);font-weight:600;font-size:.8rem}
   .sec-head h2{font-size:1.25rem;font-weight:900;margin-top:20px}
-  /* رأس اليوم — يفصل الطلبات حسب التاريخ ويلتصق فوق عند التمرير */
+  /* رأس اليوم · يفصل الطلبات حسب التاريخ ويلتصق فوق عند التمرير */
   .day-head{position:sticky;top:64px;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:10px;
     font-weight:900;font-size:1.02rem;color:var(--ink);background:var(--gold);
     border-radius:12px;padding:11px 16px;margin:22px 2px 12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
@@ -271,13 +272,13 @@
   .day-head.today{background:var(--ink);color:#fff}
   .day-head.today .cnt{background:rgba(255,255,255,.2)}
   .day-head.past{background:#e8e5dd;color:var(--muted)}
-  /* شريط الأيام — نظرة سريعة على الشهر وفلترة بضغطة */
+  /* شريط الأيام · نظرة سريعة على الشهر وفلترة بضغطة */
   .calbar{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:14px;margin-top:16px}
   .cal-head{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:11px;font-weight:900;font-size:1.05rem}
   .cal-nav{background:var(--bg);border:1px solid var(--line);color:var(--ink);width:34px;height:34px;border-radius:10px;
     font-size:1.25rem;font-weight:900;cursor:pointer;line-height:1;font-family:inherit}
   .cal-nav:hover{border-color:var(--gold);background:var(--gold)}
-  /* شريط تمرير ظاهر — يبيّن إن فيه أيام أكثر تحت السحب */
+  /* شريط تمرير ظاهر · يبيّن إن فيه أيام أكثر تحت السحب */
   .cal-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;
     scrollbar-width:thin;scrollbar-color:var(--gold) rgba(0,0,0,.06)}
   .cal-strip::-webkit-scrollbar{height:9px}
@@ -305,7 +306,7 @@
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media (max-width:760px){ .stats{grid-template-columns:repeat(2,1fr)} .aorder .abody{grid-template-columns:1fr} }
 
-/* 👁 إظهار/إخفاء كلمة المرور — يلتف حول الحقل */
+/* 👁 إظهار/إخفاء كلمة المرور · يلتف حول الحقل */
 .pwwrap{position:relative;display:block}
 .pwwrap > input{width:100%;padding-inline-end:46px !important}
 .pweye{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);
@@ -593,7 +594,7 @@ const BRAND='خافِت'; const COMMISSION=3;
 /* ---- دخول لوحة المؤسسة ----
    الحساب محفوظ في Supabase → Authentication (ما فيه كلمة مرور مكتوبة هنا).
    لتغيير كلمة المرور: Supabase → Authentication → Users → admin@khafet.app */
-const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط — ليس سرّاً
+const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط · ليس سرّاً
 let loggedIn=(()=>{ try{ return localStorage.getItem('khafet_admin_ok')==='1' && localStorage.getItem('khafet_remember')!=='0'; }catch(e){ return false; } })();   // دخول فوري لو الحساب محفوظ، والتحقق يصير بالخلفية                     // تُحدَّد من جلسة Supabase
 
 let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='';
@@ -721,7 +722,7 @@ function fmtDur(mins){ if(_enUI()){ if(!mins) return 'After inspection'; const H
 function dateISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 const STATUS_AR={new:'قيد المراجعة',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل',cancelled:'ملغي'};
 const STATUS_CLS={new:'st-new',confirmed:'st-confirmed',progress:'st-progress',done:'st-done',cancelled:'st-cancelled'};
-/* ---- كتالوج الأسعار (الأسعار الافتراضية — تُعدَّل من المحرّر وتُحفظ سحابياً) ---- */
+/* ---- كتالوج الأسعار (الأسعار الافتراضية · تُعدَّل من المحرّر وتُحفظ سحابياً) ---- */
 const CAT_I18N={
   plumb:{ar:'🔧 سباكة',en:'🔧 Plumbing',ne:'🔧 प्लम्बिङ',hi:'🔧 प्लंबिंग',ur:'🔧 پلمبنگ'},
   elec:{ar:'⚡ كهرباء',en:'⚡ Electrical',ne:'⚡ बिजुली',hi:'⚡ बिजली',ur:'⚡ بجلی'},
@@ -821,7 +822,7 @@ function renderCatalogEditor(){
     return `<div class="cg-cat ${c.active?'':'off'}">
       <div class="cg-head">
         <button class="cg-main" onclick="editCategory('${esc(c.id)}')"><span class="cg-ic big">${esc(c.icon||'🛠️')}</span><span class="cg-t"><b>${esc(c.name)}${(c.active&&!activeTechsFor(c.id).length)?`<span class="cg-warn">${LX('بدون فني نشط','No active technician')}</span>`:''}</b><small>${c.featured?LX('⭐ في الواجهة تحت صيانة','⭐ On home under Maintenance'):LX('ضمن باقي خدمات المنزل','In other home services')}${c.active?'':' · '+LX('مخفي عن العملاء','Hidden from customers')} · ${LX(ar(svcs.length)+' خدمة',svcs.length+' services')} · ${LX(ar(activeTechsFor(c.id).length)+' فني',activeTechsFor(c.id).length+' techs')}</small></span></button>
-        <button class="cg-eye ${c.active?'':'off'}" onclick="toggleCatActive('${esc(c.id)}',${c.active?'false':'true'})">${c.active?'👁️ '+LX('ظاهر','Visible'):'🚫 '+LX('مخفي','Hidden')}</button>
+        <button class="cg-eye ${c.soon?'soon':(c.active?'':'off')}" onclick="toggleCatActive('${esc(c.id)}',${c.active?'false':'true'})">${c.soon?'⏳ '+LX('قريبًا','Soon'):(c.active?'👁️ '+LX('ظاهر','Visible'):'🚫 '+LX('مخفي','Hidden'))}</button>
         <span class="cg-ord"><button onclick="moveCatalog('cat','${esc(c.id)}',-1)" ${ci===0?'disabled':''}>▲</button><button onclick="moveCatalog('cat','${esc(c.id)}',1)" ${ci===cats.length-1?'disabled':''}>▼</button></span>
       </div>
       <div class="cg-list">${rows||`<div class="cg-empty">${LX('ما فيه خدمات بعد','No services yet')}</div>`}</div>
@@ -843,18 +844,19 @@ function closeCg(){ const m=document.getElementById('cgModal'); if(m) m.remove()
 const cgVal=id=>((document.getElementById(id)||{}).value||'').trim();
 const cgChk=id=>!!(document.getElementById(id)||{}).checked;
 function editCategory(id){
-  const c=CATALOG.cats.find(x=>x.id===id)||{id:'',name:'',name_en:'',icon:'🛠️',featured:false,active:true};
+  const c=CATALOG.cats.find(x=>x.id===id)||{id:'',name:'',name_en:'',icon:'🛠️',featured:false,active:true,soon:false};
   cgModal(`<h3>${id?LX('تعديل القسم','Edit section'):LX('قسم جديد','New section')}</h3>
     <label>${LX('اسم القسم','Section name')}<input id="cg_name" value="${esc(c.name)}" placeholder="${LX('مثال: سباكة','e.g. Plumbing')}"></label>
     <label>${LX('الاسم بالإنجليزي (اختياري)','English name (optional)')}<input id="cg_name_en" dir="ltr" value="${esc(c.name_en||'')}"></label>
     <label>${LX('الأيقونة (إيموجي)','Icon (emoji)')}<input id="cg_icon" value="${esc(c.icon||'')}" maxlength="8"></label>
     <label class="cg-sw"><input type="checkbox" id="cg_featured" ${c.featured?'checked':''}> ${LX('يظهر في الواجهة تحت «صيانة»','Show on home under Maintenance')}</label>
     <label class="cg-sw"><input type="checkbox" id="cg_active" ${c.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
+    <label class="cg-sw"><input type="checkbox" id="cg_soon" ${c.soon?'checked':''}> ${LX('قريبًا (يظهر بعلامة قريبًا وما يفتح للعميل)','Coming soon (shown with a Soon tag, not bookable)')}</label>
     <div class="cg-acts"><button class="sbtn ok" onclick="saveCategory('${esc(c.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
 }
 async function saveCategory(id){
   const name=cgVal('cg_name'); if(!name){ toast(LX('اكتب اسم القسم','Enter the section name')); return; }
-  const row={ id:id||('c'+Date.now().toString(36)), name, name_en:cgVal('cg_name_en')||null, icon:cgVal('cg_icon')||'🛠️', featured:cgChk('cg_featured'), active:cgChk('cg_active') };
+  const row={ id:id||('c'+Date.now().toString(36)), name, name_en:cgVal('cg_name_en')||null, icon:cgVal('cg_icon')||'🛠️', featured:cgChk('cg_featured'), active:cgChk('cg_active'), soon:cgChk('cg_soon') };
   if(!id) row.sort=Math.max(0,...CATALOG.cats.map(c=>+c.sort||0))+10;
   const { error }=await sb.from('khafet_categories').upsert(row);
   if(error){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
@@ -956,14 +958,14 @@ async function savePrices(){
   const rows=SERVICES.map(s=>{ const el=document.getElementById('pr_'+s.id); const v=el?Math.max(0,Math.round(+el.value||0)):svcPrice(s); return {sid:s.id,price:v}; });
   rows.forEach(r=>{ PRICES[r.sid]=r.price; });
   if(!cloudReady){ toast('لا يوجد اتصال بالخادم'); return; }
-  try{ const {error}=await sb.from('khafet_prices').upsert(rows); if(error) throw error; toast('💾 تم حفظ الأسعار — انطبقت على كل الصفحات'); }
-  catch(e){ toast('تعذّر الحفظ — تأكد من تشغيل جدول khafet_prices'); }
+  try{ const {error}=await sb.from('khafet_prices').upsert(rows); if(error) throw error; toast('💾 تم حفظ الأسعار · انطبقت على كل الصفحات'); }
+  catch(e){ toast('تعذّر الحفظ · تأكد من تشغيل جدول khafet_prices'); }
   render();
 }
 
 let sb=null, cloudReady=false;
 /* ---------- وسائط العملاء ----------
-   الباكِت خاص — رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
+   الباكِت خاص · رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
   const s=String(v).trim();
@@ -981,7 +983,7 @@ async function openMedia(v){
     window.open(data.signedUrl, '_blank', 'noopener');
   }catch(e){ console.warn('media:', e.message||e); toast('تعذّر فتح الملف'); }
 }
-/* هل المستخدم الحالي أدمن؟ (يسأل قاعدة البيانات — لا يعتمد على المتصفح) */
+/* هل المستخدم الحالي أدمن؟ (يسأل قاعدة البيانات · لا يعتمد على المتصفح) */
 async function isAdminUser(){ try{ const { data, error }=await sb.rpc('staff_role'); if(error) return 'err'; return data==='admin'; }catch(e){ return 'err'; } }
 let remChoice=true;
 async function initCloud(){
@@ -1066,7 +1068,7 @@ async function loadAll(){
 async function callStaffAdmin(body){
   try{
     const { data:{ session } }=await sb.auth.getSession();
-    if(!session) return { error:'انتهت الجلسة — سجّل دخول' };
+    if(!session) return { error:'انتهت الجلسة · سجّل دخول' };
     const r=await fetch(SUPABASE_URL+'/functions/v1/staff-admin',{ method:'POST',
       headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' },
       body:JSON.stringify(body) });
@@ -1084,14 +1086,14 @@ function renderTechs(){
       <div style="flex-basis:100%">
         <div class="trds">${tradeList().map(([k,ar])=>`<button class="trd ${techTrades(t).includes(k)?'on':''}" onclick="toggleTrade('${t.user_id}','${k}')">${LX(ar[0],ar[1])}</button>`).join('')}</div>
       </div>
-    </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد — أضف أول فني تحت.</p>`;
+    </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد · أضف أول فني تحت.</p>`;
   return `${renderJoinPanelA()}
     ${renderCapacity()}
     <p class="trd-h">${LX('حدد تخصص كل فني. كل فني بتخصص معين يزيد حجزًا متزامنًا واحدًا لنفس التخصص في جدول العملاء.','Set the trades for each technician. Each technician adds one more overlapping booking for that trade.')}</p>
     ${rows}
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
       <b style="display:block;margin-bottom:6px">➕ إضافة فني</b>
-      <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله وكلمة المرور — بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.</p>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله وكلمة المرور · بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.</p>
       <div class="field"><input id="nt_name" placeholder="الاسم (مثال: أحمد علي)" /></div>
       <div class="field"><input id="nt_phone" placeholder="رقم جواله (05xxxxxxxx)" inputmode="tel" /></div>
       <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٦ خانات فأكثر)" /></div>
@@ -1321,7 +1323,7 @@ async function addTech(){
   if(password.length<6){ toast('كلمة المرور ٦ خانات فأكثر'); return; }
   toast('⏳ جارٍ إنشاء الحساب...');
   const d=await callStaffAdmin({ action:'create', name, phone, password, role:'tech' });
-  if(d&&d.ok){ toast(LX('✅ تم — الفني يدخل برقم '+d.phone,'✅ Done, the technician signs in with '+d.phone)); await loadStaff(); }
+  if(d&&d.ok){ toast(LX('✅ تم · الفني يدخل برقم '+d.phone,'✅ Done, the technician signs in with '+d.phone)); await loadStaff(); }
   else toast('⚠️ '+((d&&d.error)||'تعذّر الإنشاء'));
 }
 async function toggleTechActive(uid, makeActive){
@@ -1358,7 +1360,7 @@ function renderSuggestions(){
     const d=s.created_at? new Date(s.created_at).toLocaleDateString(uiLocale()) : '';
     return `<div class="rline" style="align-items:flex-start;${s.handled?'opacity:.55':''}">
       <div class="rl-t" style="flex:1">
-        <b>${SUG_ICON[s.kind]||'💬'} ${_enUI()?esc(trData(s.kind||'رسالة'))+(s.name?' · '+esc(s.name):''):esc(s.kind||'رسالة')+(s.name?' — '+esc(s.name):'')}</b>
+        <b>${SUG_ICON[s.kind]||'💬'} ${_enUI()?esc(trData(s.kind||'رسالة'))+(s.name?' · '+esc(s.name):''):esc(s.kind||'رسالة')+(s.name?' · '+esc(s.name):'')}</b>
         <div style="white-space:pre-wrap;margin:6px 0;font-size:.93rem;line-height:1.7">${esc(s.body||'')}</div>
         <small>${d}${s.phone?' · <a href="tel:'+esc(s.phone)+'">📞 '+esc(s.phone)+'</a>':''}</small>
       </div>
@@ -1368,7 +1370,7 @@ function renderSuggestions(){
   }).join('');
 }
 
-/* ===== 📰 مقالات السلامة — تُنشر للعملاء فوراً بدون تحديث تطبيق ===== */
+/* ===== 📰 مقالات السلامة · تُنشر للعملاء فوراً بدون تحديث تطبيق ===== */
 let ARTICLES=[], artEditing=null;
 async function loadArticles(){
   if(!cloudReady) return;
@@ -1583,7 +1585,7 @@ function renderSubs(){
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_admin').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(loggedIn) loadAll(); }).subscribe(); }catch(e){} }
 async function patch(dbId,p){ if(!cloudReady||!dbId) return; try{ const r=await sb.from('khafet_orders').update(p).eq('id',dbId); if(r&&r.error){ toast(LX('ما انحفظ التعديل','Change not saved')); loadAll(); } }catch(e){} }
 function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return; if(st==='cancelled' && o.paidAmount>0 && !confirm(LX('العميل دافع '+money(o.paidAmount)+'، يرجع له المبلغ تلقائيًا. إلغاء الطلب؟','The customer paid '+money(o.paidAmount)+' and will be refunded automatically. Cancel the order?'))) return; o.status=st; patch(o.dbId,{status:st}); toast(LX('تم تحديث الحالة: '+STATUS_AR[st],'Status updated: '+trData(STATUS_AR[st]))); render(); }
-// تعليم وصول الفني — يفعّل مرحلة «الفني وصل الموقع» ويُشعر العميل تلقائياً
+// تعليم وصول الفني · يفعّل مرحلة «الفني وصل الموقع» ويُشعر العميل تلقائياً
 function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.arrived=true; patch(o.dbId,{arrived:true}); toast('🚪 تم إبلاغ العميل بوصول الفني'); render(); }
 function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
 function toggleReviewAnon(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewAnon=!o.reviewAnon; patch(o.dbId,{review_anon:o.reviewAnon}); toast(o.reviewAnon?'👤 أُخفي اسم العميل':'👤 يظهر اسم العميل'); render(); }
@@ -1628,7 +1630,7 @@ async function sendAdminOtp(){
     const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ channel:'sms' } });
     if(error) throw error;
     otpPhone='+'+d; otpSent=true; showLogin();
-  }catch(e){ lgFail('تعذّر إرسال الرمز — تأكدي من الرقم'); }
+  }catch(e){ lgFail('تعذّر إرسال الرمز · تأكدي من الرقم'); }
 }
 async function verifyAdminOtp(){
   const code=((document.getElementById('ac')||{}).value||'').trim();
@@ -1680,7 +1682,7 @@ async function bulkApprove(){
 async function suspendProvider(phone,to){
   try{ await sb.from('khafet_providers').update({status:to}).eq('phone',phone);
     const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=to;
-    toast(to==='suspended'?'⏸️ أُوقف المزوّد — ما تصله طلبات':'▶️ أُعيد تفعيله');
+    toast(to==='suspended'?'⏸️ أُوقف المزوّد · ما تصله طلبات':'▶️ أُعيد تفعيله');
   }catch(e){ toast('⚠️ تعذّر'); }
   render();
 }
@@ -1737,8 +1739,8 @@ function renderAdminOrder(o){
   else if(o.status==='done') acts=`<span style="color:var(--ok);font-weight:800">${LX('✅ مكتمل','✅ Completed')}${o.rating?' · '+'⭐'.repeat(o.rating):''}</span>`;
   else acts=`<span style="color:var(--danger);font-weight:700">ملغي</span>`;
   const a=o.address||{};
-  // مراحل الطلب — شلنا «جارٍ العمل» لأنها ما تفيد العميل (يشوف الفني قدامه)،
-  // وخلّينا «الفني وصل الموقع» مرحلة أساسية — هذي اللي تخلي العميل يستقبله.
+  // مراحل الطلب · شلنا «جارٍ العمل» لأنها ما تفيد العميل (يشوف الفني قدامه)،
+  // وخلّينا «الفني وصل الموقع» مرحلة أساسية · هذي اللي تخلي العميل يستقبله.
   const done=o.status==='done', conf=['confirmed','progress','done'].includes(o.status);
   const ARW=_enUI()?'→':'←';   // اتجاه السهم يتبع اتجاه الواجهة
   const flow = o.status==='cancelled' ? '' : `<div class="flow">
@@ -1821,7 +1823,7 @@ function renderCalendar(todayISO){
     </button>`;
   }
   const filterBar = calFilter
-    ? `<div class="cal-filter"><span>${LX(`📅 ${dayLabel(calFilter)} — ${ar(jobsOn(calFilter))} طلب`,`📅 ${dayLabel(calFilter)} · ${ordersN(jobsOn(calFilter))}`)}</span><button onclick="calClear()">عرض كل الأيام</button></div>`
+    ? `<div class="cal-filter"><span>${LX(`📅 ${dayLabel(calFilter)} · ${ar(jobsOn(calFilter))} طلب`,`📅 ${dayLabel(calFilter)} · ${ordersN(jobsOn(calFilter))}`)}</span><button onclick="calClear()">عرض كل الأيام</button></div>`
     : '';
   return `<div class="calbar">
     <div class="cal-head">
@@ -1834,13 +1836,13 @@ function renderCalendar(todayISO){
   </div>`;
 }
 
-/* اجمع الطلبات تحت رأس لكل يوم — الأقرب أولاً (اليوم ثم بكرة …)، والفايت بالآخر */
+/* اجمع الطلبات تحت رأس لكل يوم · الأقرب أولاً (اليوم ثم بكرة …)، والفايت بالآخر */
 function groupByDay(list, todayISO){
   if(!list.length) return `<div class="empty"><div class="ico">🗂️</div><h3>لا توجد طلبات</h3></div>`;
   const g={}; list.forEach(o=>{ (g[o.date]=g[o.date]||[]).push(o); });
   const dates=Object.keys(g).sort();
-  const future=dates.filter(d=>d>=todayISO);          // اليوم وما بعده — تصاعدي
-  const past=dates.filter(d=>d<todayISO).reverse();   // الفايت — الأحدث أولاً
+  const future=dates.filter(d=>d>=todayISO);          // اليوم وما بعده · تصاعدي
+  const past=dates.filter(d=>d<todayISO).reverse();   // الفايت · الأحدث أولاً
   return [...future, ...past].map(d=>{
     const cls = d===todayISO ? 'today' : (d<todayISO ? 'past' : '');
     const cards=g[d].sort((a,b)=>a.startMin-b.startMin).map(renderAdminOrder).join('');
@@ -2008,7 +2010,7 @@ const CMP_KINDS_A={quality:['جودة الشغل','Work quality'],late:['تأخ�
 function renderComplaintsA(){
   if(!COMPLAINTS_A.length) return `<p style="color:var(--muted)">${LX('ما فيه شكاوى.','No complaints.')}</p>`;
   const sla=parseInt(SETTINGS.complaint_sla_days,10)||3;
-  return COMPLAINTS_A.map(c=>{ const k=CMP_KINDS_A[c.kind]||[c.kind,c.kind]; const days=Math.floor((Date.now()-new Date(c.created_at).getTime())/864e5); const late=c.status!=='closed' && !c.reply && days>=sla;
+  return COMPLAINTS_A.map(c=>{ const k=CMP_KINDS_A[c.kind]||[esc(c.kind),esc(c.kind)]; const days=Math.floor((Date.now()-new Date(c.created_at).getTime())/864e5); const late=c.status!=='closed' && !c.reply && days>=sla;
     return `<div class="panel" style="margin-top:10px;padding:14px;${late?'border-color:#dc2626':''}">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>#${ar(c.ticket_no)} · ${LX(k[0],k[1])}</b>${late?`<span style="color:#b91c1c;font-weight:800;font-size:.8rem">⏰ ${LX('تجاوزت مدة الرد','Past reply deadline')}</span>`:''}
         <span style="flex:1"></span>
@@ -2346,7 +2348,7 @@ function printReport(){ window.print(); }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=(typeof TR==='function'?TR(m):m); el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
 /* ============================================================
-   🌐 ترجمة الواجهة عربي/إنجليزي — طبقة تلقائية (نفس المحرّك)
+   🌐 ترجمة الواجهة عربي/إنجليزي · طبقة تلقائية (نفس المحرّك)
    ============================================================ */
 let UILANG = localStorage.getItem('khafet_uilang') || 'ar';
 const T_DICT = {
@@ -2361,11 +2363,11 @@ const T_DICT = {
   "✔️ تأكيد الموعد":"✔️ Confirm appointment","✔️ تأكيد":"✔️ Confirm","✔️ اعتماد":"✔️ Approve","❌ رفض الفني":"❌ Declined by technician","رفض":"Reject","ملغي":"Cancelled","🆕 بانتظار التأكيد":"🆕 Awaiting confirmation",
   "العميل يرحّب بموعد أبكر":"Customer is fine with an earlier slot","قيد التنفيذ":"In progress","مكتمل":"Completed","جديد":"New","مؤكد":"Confirmed",
   // الفنيّون
-  "➕ إضافة فني":"➕ Add technician","إنشاء حساب الفني":"Create technician account","لا يوجد فنيّون بعد — أضف أول فني تحت.":"No technicians yet, add the first one below.",
+  "➕ إضافة فني":"➕ Add technician","إنشاء حساب الفني":"Create technician account","لا يوجد فنيّون بعد · أضف أول فني تحت.":"No technicians yet, add the first one below.",
   // المزوّدون
   "لا يوجد مزوّدون مسجّلون بعد.":"No registered providers yet.","لا توجد طلبات منجزة عبر مزوّدين بعد.":"No orders completed via providers yet.","⏸️ إيقاف":"⏸️ Suspend","▶️ تفعيل":"▶️ Activate","تفعيل":"Activate",
   // المخزن
-  "➕ إضافة صنف":"➕ Add item","المخزن فارغ — أضف أصنافك.":"Stock is empty, add your items.","شراء ＋":"Buy ＋","صرف －":"Dispense －","اشتُري:":"Bought:","· المفروض:":"· Expected:","· صُرف:":"· Dispensed:","✅ مطابق":"✅ Matches","لا توجد حركات بعد.":"No movements yet.",
+  "➕ إضافة صنف":"➕ Add item","المخزن فارغ · أضف أصنافك.":"Stock is empty, add your items.","شراء ＋":"Buy ＋","صرف －":"Dispense －","اشتُري:":"Bought:","· المفروض:":"· Expected:","· صُرف:":"· Dispensed:","✅ مطابق":"✅ Matches","لا توجد حركات بعد.":"No movements yet.",
   "اكتب الكمية":"Enter quantity","✅ أُضيف الصنف للمخزن":"✅ Item added to stock","➕ أُضيف للمخزن":"➕ Added to stock","➖ صُرف للعميل":"➖ Issued to customer","الصنف":"Item","الكمية":"Qty",
   // المقالات
   "➕ مقال جديد":"➕ New article","💾 حفظ المقال":"💾 Save article","صورة المقال":"Article image","المقال":"Article","الأيقونة والتصنيف":"Icon & category","العنوان *":"Title *","مقدّمة قصيرة (تظهر في القائمة)":"Short intro (shown in the list)","الترتيب":"Order","منشور للعملاء":"Published to customers","لا توجد مقالات بعد.":"No articles yet.","✅ رُفعت الصورة":"✅ Image uploaded",
@@ -2398,7 +2400,7 @@ const T_DICT = {
   "المستودع":"Warehouse","إشعار للكل":"Notify everyone","رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم":"A message to customer or team phones · one per day",
   // الدخول
   "رقم الجوال · 05xxxxxxxx":"Mobile number · 05xxxxxxxx","رمز التحقق":"Verification code","رقم الجوال غير صحيح":"Invalid mobile number","لا يوجد اتصال بالخادم":"No connection to the server",
-  "تعذّر إرسال الرمز — تأكدي من الرقم":"Couldn't send the code, check the number","أدخلي الرمز":"Enter the code","هذا الرقم ليس له صلاحية إدارة":"This number has no admin access",
+  "تعذّر إرسال الرمز · تأكدي من الرقم":"Couldn't send the code, check the number","أدخلي الرمز":"Enter the code","هذا الرقم ليس له صلاحية إدارة":"This number has no admin access",
   "تعذّر الاتصال بالخادم، حاولي مرة ثانية":"Couldn't reach the server, try again","الرمز غير صحيح":"Wrong code",
   // الطلبات والتذكيرات
   "تذكير":"Remind","✓ أُرسل":"✓ Sent","🚨 شكوى العميل":"🚨 Customer complaint","💬 ملاحظة العميل":"💬 Customer note",
@@ -2407,12 +2409,12 @@ const T_DICT = {
   "🙈 أُخفي التقييم من الرئيسية":"🙈 Rating hidden from the home page","👁️ يظهر التقييم في الرئيسية":"👁️ Rating shown on the home page",
   "✅ تم اعتماد المزوّد":"✅ Provider approved","تم التحديث":"Updated","تعذّر فتح الملف":"Couldn't open the file",
   // الفريق
-  "الفني يدخل برقم جواله وكلمة المرور — بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.":"Technicians sign in with their mobile number and password. No SMS, so signing in costs nothing. The 🔑 button changes their password.",
+  "الفني يدخل برقم جواله وكلمة المرور · بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.":"Technicians sign in with their mobile number and password. No SMS, so signing in costs nothing. The 🔑 button changes their password.",
   "الاسم (مثال: أحمد علي)":"Name (e.g. Ahmed Ali)","رقم جواله (05xxxxxxxx)":"Mobile number (05xxxxxxxx)","كلمة المرور (٦ خانات فأكثر)":"Password (6 characters or more)","إيقاف":"Suspend",
   "عبّي الاسم ورقم الجوال":"Fill in the name and mobile number","كلمة المرور ٦ خانات فأكثر":"Password must be 6 characters or more","⏳ جارٍ إنشاء الحساب...":"⏳ Creating the account...",
   "تعذّر الإنشاء":"Couldn't create","تعذّر":"Failed","✅ فُعّل الفني":"✅ Technician activated","⛔ أُوقف الفني":"⛔ Technician suspended","٦ خانات على الأقل":"At least 6 characters",
-  "✅ تغيّرت كلمة المرور":"✅ Password changed","تم الرفض":"Rejected","انتهت الجلسة — سجّل دخول":"Session ended, please sign in",
-  "لا يوجد معلّقون":"No pending providers","⚠️ تعذّر الاعتماد الجماعي":"⚠️ Bulk approval failed","⏸️ أُوقف المزوّد — ما تصله طلبات":"⏸️ Provider suspended, no new orders","▶️ أُعيد تفعيله":"▶️ Reactivated",
+  "✅ تغيّرت كلمة المرور":"✅ Password changed","تم الرفض":"Rejected","انتهت الجلسة · سجّل دخول":"Session ended, please sign in",
+  "لا يوجد معلّقون":"No pending providers","⚠️ تعذّر الاعتماد الجماعي":"⚠️ Bulk approval failed","⏸️ أُوقف المزوّد · ما تصله طلبات":"⏸️ Provider suspended, no new orders","▶️ أُعيد تفعيله":"▶️ Reactivated",
   // العملاء: الرسائل والاشتراكات والمقالات
   "حُذفت":"Deleted","حُذف":"Deleted","تعذّر الحذف":"Couldn't delete","✅ فُعّل الاشتراك":"✅ Subscription activated",
   "انشر":"Publish","إخفاء":"Hide","سلامة / سباكة / كهرباء":"Safety / Plumbing / Electrical","مثال: ٧ علامات تسريب مياه":"e.g. 7 signs of a water leak",
@@ -2421,7 +2423,7 @@ const T_DICT = {
   // المستودع: ربط الصور
   "🚫 بدون صورة":"🚫 No image","⏳ جارٍ الرفع...":"⏳ Uploading...","✅ انحفظت صورتك":"✅ Photo saved","⚠️ تعذّر الرفع":"⚠️ Upload failed",
   // الأسعار
-  "💾 تم حفظ الأسعار — انطبقت على كل الصفحات":"💾 Prices saved and applied to all pages","تعذّر الحفظ — تأكد من تشغيل جدول khafet_prices":"Couldn't save, make sure the khafet_prices table exists"
+  "💾 تم حفظ الأسعار · انطبقت على كل الصفحات":"💾 Prices saved and applied to all pages","تعذّر الحفظ · تأكد من تشغيل جدول khafet_prices":"Couldn't save, make sure the khafet_prices table exists"
 };
 /* ---- محرّك الترجمة (مطابق) ---- */
 function _west(s){ return String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)); }
@@ -2503,7 +2505,7 @@ if(_uiEN()) applyLang();
 syncLangBtn();
 (function(){ function go(){ if(window.supabase){ initCloud(); return true; } return false; } if(!go()){ document.addEventListener('DOMContentLoaded',function(){ if(!go()) window.addEventListener('load',go); }); } })();   // نبدأ أول ما تجهز المكتبة المحلية، بدون انتظار تحميل الخطوط
 
-/* 👁 إظهار/إخفاء كلمة المرور — يُطبَّق تلقائياً على أي حقل كلمة مرور يظهر بالصفحة */
+/* 👁 إظهار/إخفاء كلمة المرور · يُطبَّق تلقائياً على أي حقل كلمة مرور يظهر بالصفحة */
 const _EYE_OPEN='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
 const _EYE_OFF='<svg viewBox="0 0 24 24"><path d="M10.6 5.2A9.9 9.9 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.8M6.2 6.2A17 17 0 0 0 2 12s3.6 7 10 7a9.8 9.8 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M2 2l20 20"/></svg>';
 function _pwToggle(btn){
