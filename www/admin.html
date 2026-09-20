@@ -1350,6 +1350,12 @@ const ST_GROUPS=[
     ['launch_pct','خصم الإطلاق على أجرة اليد (٪)، صفر يوقفه','Launch labour discount (%), 0 disables','num'],
     ['launch_until','خصم الإطلاق ينتهي بتاريخ','Launch discount ends on','date'],
     ['lead_min','أقل مدة قبل الموعد لقبول الحجز (دقائق)','Minimum lead time before a slot (minutes)','num'] ] },
+  { id:'update', t:['⬆️ إجبار التحديث','⬆️ Force update'], d:['لو حطيت رقمًا أكبر من نسخة العميل، ما يقدر يستخدم التطبيق إلا بعد ما يحدّثه من المتجر. حطّي رقم النسخة اللي نزلت فعلًا في كل متجر، ولا تسبقين المتجر وإلا وقفت العملاء.','If the number is higher than the build on the customer device, the app is blocked until they update from the store.'], rows:[
+    ['app_min_build_ios','أقل نسخة مقبولة على الآيفون (0 = بدون إجبار)','Minimum build on iPhone (0 = off)','num'],
+    ['app_min_build_android','أقل نسخة مقبولة على الأندرويد (0 = بدون إجبار)','Minimum build on Android (0 = off)','num'],
+    ['app_min_build','أقل نسخة للنسخ القديمة جدًا وللويب (احتياطي)','Fallback minimum build (very old versions and web)','num'],
+    ['app_update_msg','نص شاشة التحديث','Update screen message','text'],
+    ['rizq_min_build','أقل نسخة مقبولة في تطبيق خافت شركاء (0 = بدون إجبار)','Minimum build in the Partner app (0 = off)','num'] ] },
   { id:'rizq', t:['🤝 تطبيق خافت شركاء','🤝 Khafet Partner app'], d:['رسالة تظهر للفنيين والمزودين أعلى خافت شركاء (تعليمات، تنبيه، عيد).','A message technicians and providers see at the top of Khafet Partner (instructions, alerts, holidays).'], f:[
     ['tech_docs_required','اعتماد الفني يتطلب وثائق معتمدة (هوية أو إقامة، مهنة، شهادة اعتماد مهني)','Technician approval requires approved documents','bool'],
     ['rizq_announcement','إعلان الفنيين (اتركه فارغًا لإخفائه)','Technician announcement (leave empty to hide)','text'] ] },
@@ -1572,6 +1578,8 @@ async function solUploadPhoto(key){
 function editSolution(id){
   const s=SOLS.find(x=>x.id===id)||{id:'',group_key:'ajyal',title:'',icon:'🔧',problem:'',cause:'',solution:'',includes:'',price:0,sort:(Math.max(0,...SOLS.map(x=>+x.sort||0))+10),active:true};
   _solImg=s.image_url||''; _solImgBlob=null; _solImgCleared=false;
+  const _sv=(CATALOG.svcs||[]).find(x=>x.id===s.service_id)||{};
+  const _dur=+_sv.duration||60, _xdur=(_sv.extra_duration==null?'':+_sv.extra_duration);
   cgModal(`<h3>${id?LX('تعديل الحل','Edit solution'):LX('حل جديد','New solution')}</h3>
     <div class="cg-row" style="grid-template-columns:1fr 90px 90px">
       <label>${LX('العنوان','Title')}<input id="so_title" value="${esc(s.title)}" placeholder="${LX('مثال: الإنارة الخارجية DC','e.g. Outdoor DC lighting')}"></label>
@@ -1591,6 +1599,11 @@ function editSolution(id){
       <label>${LX('أجرة الحل (ر.س)، 0 = بعد المعاينة','Price (SAR), 0 = after inspection')}<input id="so_price" type="number" min="0" inputmode="decimal" value="${+s.price||0}"></label>
       <label>${LX('الترتيب','Sort')}<input id="so_sort" type="number" inputmode="numeric" value="${+s.sort||0}"></label>
     </div>
+    <div class="cg-row" style="grid-template-columns:1fr 1fr">
+      <label>⏱️ ${LX('مدة الخدمة بالدقائق (تحجز من جدول الفني)','Service time in minutes')}<input id="so_dur" type="number" min="15" step="15" inputmode="numeric" value="${_dur}"></label>
+      <label>➕ ${LX('مدة كل وحدة إضافية (فاضي = نفس المدة)','Minutes per extra unit')}<input id="so_xdur" type="number" min="0" step="5" inputmode="numeric" value="${_xdur}"></label>
+    </div>
+    <label>🔢 ${LX('اسم الوحدة لو العميل يقدر يطلب أكثر من وحدة (مثال: شفاط). فاضي = وحدة واحدة فقط','Unit name if customers can order several (e.g. fan). Empty = single')}<input id="so_unit" value="${esc(s.unit_label||'')}" placeholder="${LX('مثال: شفاط','e.g. fan')}"></label>
     <label class="cg-sw"><input type="checkbox" id="so_active" ${s.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
     <div class="cg-acts"><button class="sbtn ok" onclick="saveSolution('${esc(s.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
 }
@@ -1602,10 +1615,13 @@ async function saveSolution(id){
   const row={ group_key:cgVal('so_group')||'ajyal', title, icon:cgVal('so_icon')||'🔧', problem:cgVal('so_problem'), cause:cgVal('so_cause'), solution:cgVal('so_solution'), includes:cgVal('so_includes'), cta:(cgVal('so_cta')||'').trim()||null, price, sort:Math.round(Number(cgVal('so_sort'))||0), active:cgChk('so_active') };
   if(id) row.id=id;
   // الخدمة المرتبطة: تُنشأ تلقائيًا في قسم «حلول» (مخفي من الشبكة) حتى يقدر العميل يحجزها
+  row.unit_label=(cgVal('so_unit')||'').trim()||null;
+  const _durV=Math.min(600,Math.max(15,Math.round(Number(cgVal('so_dur'))||60)));
+  const _xRaw=cgVal('so_xdur'); const _xdurV=(_xRaw===''||_xRaw==null)?null:Math.min(600,Math.max(0,Math.round(Number(_xRaw)||0)));
   let svcId=(old&&old.service_id)||null;
   try{
-    if(!svcId){ svcId=solSlug(title); const ins=await sb.from('khafet_services').upsert({ id:svcId, cat_id:row.group_key==='ajyal'?'ajyal':'gen', name:title, icon:row.icon, price, duration:60, custom:price<=0, hidden:true, active:true, quick:false, description:(row.problem||'').split('\n')[0].slice(0,140), sort:900 }); if(ins.error) svcId=null; }
-    else { await sb.from('khafet_services').update({ name:title, icon:row.icon, price, custom:price<=0, active:true }).eq('id',svcId); }
+    if(!svcId){ svcId=solSlug(title); const ins=await sb.from('khafet_services').upsert({ id:svcId, cat_id:row.group_key==='ajyal'?'ajyal':'gen', name:title, icon:row.icon, price, duration:_durV, extra_duration:_xdurV, custom:price<=0, hidden:true, active:true, quick:false, description:(row.problem||'').split('\n')[0].slice(0,140), sort:900 }); if(ins.error) svcId=null; }
+    else { await sb.from('khafet_services').update({ name:title, icon:row.icon, price, duration:_durV, extra_duration:_xdurV, custom:price<=0, active:true }).eq('id',svcId); }
   }catch(e){ svcId=(old&&old.service_id)||null; }
   if(svcId) row.service_id=svcId;
   try{
