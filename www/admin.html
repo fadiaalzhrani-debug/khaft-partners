@@ -1161,6 +1161,9 @@ const ST_GROUPS=[
     ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
     ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
     ['warranty_days','ضمان الشغل للطلبات اللي يدخلها الموظف (أيام)','Work warranty for staff-entered orders (days)','num'],
+    ['small_order_under','رسوم الطلب الصغير تنضاف إذا مجموع الطلب (الخدمات مع الأغراض) أقل من (ريال · 0 يوقفها)','Small order fee applies when the order total (services plus parts) is under (SAR · 0 turns it off)','num'],
+    ['small_order_fee','مبلغ رسوم الطلب الصغير (ريال)','Small order fee amount (SAR)','num'],
+    ['_note_smallfee','كيف تشتغل: أي طلب يمشي وما ينرفض مهما كان صغير. إذا مجموع الطلب (الخدمات مع الأغراض) أقل من الحد اللي فوق، ينضاف في الفاتورة سطر «رسوم طلب صغير» بالمبلغ المحدد. وإذا وصل مجموع الطلب الحد أو تعداه تروح الرسوم لحالها. مثال والحد 50: لمبة مع غرضها 16 ريال تنضاف لها الرسوم، وشطاف مع غرضه 67 ريال بدون رسوم. الرسوم ما تنحسب من أجرة اليد، فما تدخل في العمولة ولا الخصومات.','How it works: every order goes through, however small. When the order total (services plus parts) is under the limit above, a “Small order fee” line is added to the invoice. Once the total reaches the limit the fee disappears. The fee is not labour, so it is excluded from commission and discounts.','note'],
     ['min_order','الحد الأدنى للطلب على الخدمات بدون الأغراض (ريال · 0 بدون حد)','Minimum order on services, parts excluded (SAR · 0 for none)','num'],
     ['fee_parts_only','الرسوم فقط إذا الطلب فيه أغراض (مطفي = على كل طلب)','Fee only when the order has parts (off = on every order)','bool'],
     ['first_free_delivery','توصيل مجاني لأول طلب من التطبيق (تنخصم قيمة التوصيل)','Free delivery on the first app order','bool'],
@@ -1261,6 +1264,7 @@ function renderSettings(){
   return ST_GROUPS.map(g=>`<div class="panel st-g" id="stg_${g.id}">
     <h3>${LX(g.t[0],g.t[1])}</h3><p class="st-d">${LX(g.d[0],g.d[1])}</p>
     ${g.f.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
+      if(ty==='note') return `<p class="st-d" style="margin:2px 0 12px;line-height:1.7">${LX(ar,en)}</p>`;
       if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
       if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
       if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
@@ -1281,11 +1285,12 @@ async function saveSettingsGroup(gid){
   if(r.error||!r.data||r.data.length!==rows.length){ toast('⚠️ '+LX('ما انحفظ، جرّب مرة ثانية','Not saved, try again')); return; }
   rows.forEach(x=>{ SETTINGS[x.key]=x.value; });
   // رسوم التوصيل تُقرأ في التطبيق من خدمة «رسوم التوصيل» المخفية، فنحدّثها معها
-  if(gid==='policy'){ const fee=parseFloat(SETTINGS.delivery_fee); if(isFinite(fee)){ try{ await sb.from('khafet_services').update({price:fee}).eq('id','fee'); }catch(e){} } }
+  if(gid==='policy'){ const fee=parseFloat(SETTINGS.delivery_fee); if(isFinite(fee)){ try{ await sb.from('khafet_services').update({price:fee}).eq('id','fee'); }catch(e){} }
+    const sf=parseFloat(SETTINGS.small_order_fee); if(isFinite(sf)&&sf>=0){ try{ await sb.from('khafet_services').update({price:sf}).eq('id','smallfee'); }catch(e){} } }
   toast(LX('✅ انحفظت الإعدادات','✅ Settings saved')); render();
 }
 /* العمولة لطلب واحد حسب الإعدادات: نسبة من أجرة اليد فقط، مع نسبة مخفضة لأول الطلبات وسقف للطلب الكبير */
-function orderLabor(o){ return (o.items||[]).filter(it=>it&&it.id!=='fee'&&!it.part&&it.id!=='stock'&&!it.stockId&&!String(it.id||'').startsWith('part:')).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
+function orderLabor(o){ return (o.items||[]).filter(it=>it&&it.id!=='fee'&&it.id!=='smallfee'&&!it.part&&it.id!=='stock'&&!it.stockId&&!String(it.id||'').startsWith('part:')).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
 function commissionFor(o, idxForProvider, isCompany){
   const labor=orderLabor(o); if(!labor) return 0;
   let pct=isCompany?stNum('commission_provider_pct',12):stNum('commission_tech_pct',15);

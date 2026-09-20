@@ -1557,7 +1557,7 @@ function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditin
 /* الفاتورة المطبوعة: أقسام (الشغل، القطع، الرسوم) مع صور القطع، ثم المجموع والمدفوع والمتبقي والضمان (نفس تصميم تطبيق العميل) */
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
-  const kind=it=>{ if(!it) return 'svc'; if(it.id==='fee') return 'fee'; if(it.id==='stock'||it.stockId||it.part||it.id==='part'||String(it.id||'').startsWith('part:')) return 'part'; return 'svc'; };
+  const kind=it=>{ if(!it) return 'svc'; if(it.id==='fee'||it.id==='smallfee') return 'fee'; if(it.id==='stock'||it.stockId||it.part||it.id==='part'||String(it.id||'').startsWith('part:')) return 'part'; return 'svc'; };
   const g={svc:[],part:[],fee:[]}; (inv.items||[]).forEach(it=>g[kind(it)].push(it));
   const m=v=>arNum(Math.round((+v||0)*100)/100)+' ر.س';
   const sub=(inv.items||[]).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); const total=(+inv.total>0)?+inv.total:sub; const disc=inv.discountPct>0?Math.max(0,sub-total):0;
@@ -2460,7 +2460,7 @@ function render(){
     const a=o.address||{};
     const sep=isRTL()?'، ':', ';
     const isPart=i=>i&&(i.part||String(i.id||'').startsWith('part:'));
-    const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
+    const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee'&&i.id!=='smallfee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const partsTxt=(o.items||[]).filter(isPart).map(i=>'🔩 '+esc(i.name)+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const addr=[a.city,a.district,a.street].filter(Boolean).join(' · ');
     const mapFallback='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')); const mapUrl=safeUrl(a.mapUrl, mapFallback);
