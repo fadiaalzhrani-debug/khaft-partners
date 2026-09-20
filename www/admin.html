@@ -1230,19 +1230,41 @@ const ST_GROUPS=[
   { id:'rizq', t:['🤝 تطبيق خافت شركاء','🤝 Khafet Partner app'], d:['رسالة تظهر للفنيين والمزودين أعلى خافت شركاء (تعليمات، تنبيه، عيد).','A message technicians and providers see at the top of Khafet Partner (instructions, alerts, holidays).'], f:[
     ['tech_docs_required','اعتماد الفني يتطلب وثائق معتمدة (هوية أو إقامة، مهنة، شهادة اعتماد مهني)','Technician approval requires approved documents','bool'],
     ['rizq_announcement','إعلان الفنيين (اتركه فارغًا لإخفائه)','Technician announcement (leave empty to hide)','text'] ] },
+  { id:'wabot', t:['🤖 بوت الواتساب','🤖 WhatsApp bot'], d:['يرد على رسائل الواتساب تلقائيًا بالسعر ورابط الحجز. أطفئه ويسكت فورًا.','Replies to WhatsApp messages automatically with the price and a booking link. Switch off and it goes silent.'], f:[
+    ['wa_bot_enabled','البوت شغّال','Bot on','bool'],
+    ['wa_bot_hello','رسالة الترحيب','Greeting message','text'],
+    ['wa_bot_max_hour','أقصى ردود للرقم الواحد في الساعة','Max replies per number per hour','num'] ] },
   { id:'contact', t:['📞 التواصل','📞 Contact'], d:['الرقم اللي يظهر للعميل في التطبيق والفاتورة.','The number customers see in the app and invoice.'], f:[
     ['support_phone','رقم الاتصال','Phone','text'],
     ['support_whatsapp','واتساب بالصيغة الدولية بدون + (9665…)','WhatsApp international format without + (9665…)','text'] ] },
 ];
+/* أرقام بوت الواتساب: كم رسالة، كم رد، كم تحوّل لطلب، ووش الرسائل اللي ما فهمها */
+let WA_STATS=null, waStatsBusy=false;
+async function loadWaStats(){ if(waStatsBusy||!cloudReady) return; waStatsBusy=true; try{ const r=await sb.rpc('khafet_admin_wa_stats',{ p_days:30 }); if(!r.error&&r.data){ WA_STATS=r.data; const el=document.getElementById('waStats'); if(el) el.outerHTML=waStatsBox(); } }catch(e){} waStatsBusy=false; }
+function waStatsBox(){
+  if(!WA_STATS){ setTimeout(loadWaStats,0); return `<div id="waStats" class="st-d">${LX('جاري تحميل الأرقام…','Loading stats…')}</div>`; }
+  const w=WA_STATS, cell=(n,t)=>`<div style="flex:1;min-width:70px;text-align:center;background:var(--bg,#F1E9DF);border-radius:14px;padding:8px 4px"><b style="font-size:20px;display:block">${ar(n||0)}</b><small>${t}</small></div>`;
+  const need=(w.need_human||[]).map(x=>`<div style="padding:6px 0;border-top:1px solid rgba(0,0,0,.06)"><a href="https://wa.me/966${esc(x.phone9)}" target="_blank" rel="noopener">📱 0${esc(x.phone9)}</a> ${esc(x.wa_name||'')}<br><small>${esc(x.kind!=='text'?'['+x.kind+'] ':'')}${esc(x.body||'')}</small></div>`).join('');
+  const unk=(w.unknown||[]).slice(0,8).map(x=>`<div style="padding:4px 0"><small>• ${esc(x.body||'')}</small></div>`).join('');
+  const top=(w.top||[]).map(x=>esc(x.name)+' ('+ar(x.n)+')').join('، ');
+  return `<div id="waStats" style="margin:10px 0">
+    <p class="st-d" style="margin-bottom:6px">${LX('آخر 30 يوم','Last 30 days')}</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${cell(w.messages,LX('رسالة','Messages'))}${cell(w.people,LX('عميل','People'))}${cell(w.replied,LX('رد تلقائي','Auto replies'))}${cell(w.converted,LX('تحوّل لطلب','Converted'))}</div>
+    ${top?`<p class="st-d" style="margin-top:8px">${LX('الأكثر طلبًا','Most asked')}: ${top}</p>`:''}
+    ${need?`<p class="st-d" style="margin-top:8px"><b>${LX('يحتاجون رد منك','Need your reply')}</b></p>${need}`:''}
+    ${unk?`<p class="st-d" style="margin-top:8px"><b>${LX('رسائل ما فهمها البوت','Messages the bot did not understand')}</b></p>${unk}`:''}
+  </div>`;
+}
 function renderSettings(){
   if(!settingsLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
   return ST_GROUPS.map(g=>`<div class="panel st-g" id="stg_${g.id}">
     <h3>${LX(g.t[0],g.t[1])}</h3><p class="st-d">${LX(g.d[0],g.d[1])}</p>
     ${g.f.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
       if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
-      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
+      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
       if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
       return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" type="${ty==='num'?'number':(ty==='date'?'date':'text')}" ${ty==='num'?'inputmode="decimal" step="any"':''} value="${esc(v)}"></label>`; }).join('')}
+    ${g.id==='wabot'?waStatsBox():''}
     <button class="sbtn ok" style="width:100%;margin-top:8px" onclick="saveSettingsGroup('${g.id}')">💾 ${LX('حفظ','Save')}</button>
   </div>`).join('');
 }
