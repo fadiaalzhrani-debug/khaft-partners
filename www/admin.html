@@ -165,6 +165,33 @@
   .so-img .so-x{position:absolute;inset-inline-end:10px;top:10px}
   .sol-thumb{width:54px;height:54px;border-radius:12px;object-fit:cover;flex:none;background:var(--group,#efe8df)}
   .sol-thumb.ph{display:grid;place-items:center;font-size:1.4rem}
+  .biz-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .biz-head b{font-size:1.1rem;font-weight:900;display:block}
+  .biz-head small{color:var(--muted,#8b8178);font-size:.82rem}
+  .biz-acts{display:flex;gap:8px;flex-wrap:wrap}
+  .bizgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .bizgrid.sm{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .bizc{background:var(--card,#fff);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;border:1.5px solid var(--line,#e5e0d8)}
+  .bizc.gold{background:var(--gold-soft,#FBF1C9);border-color:#EAD48A}
+  .bizc.green{background:#E9F5EC;border-color:#BFE3CA}
+  .bizc .bz-t{font-size:.78rem;font-weight:800;color:var(--muted,#8b8178)}
+  .bizc .bz-v{font-size:1.32rem;font-weight:900;line-height:1.3;font-variant-numeric:tabular-nums}
+  .bizc .bz-s{font-size:.74rem;color:var(--muted,#8b8178);font-weight:700}
+  .biz-sec{margin-top:20px}
+  .biz-sec h4{margin:0 0 8px;font-size:1rem;font-weight:900;display:flex;align-items:center;gap:8px}
+  .bz-growth{font-size:.8rem;font-weight:800;padding:2px 9px;border-radius:999px}
+  .bz-growth.up{background:#E9F5EC;color:#15803D}
+  .bz-growth.down{background:#FBE4E1;color:#B91C1C}
+  .biz-tw{overflow-x:auto;border-radius:14px;border:1.5px solid var(--line,#e5e0d8);background:var(--card,#fff)}
+  .biz-t{width:100%;border-collapse:collapse;min-width:520px}
+  .biz-t th,.biz-t td{padding:9px 10px;text-align:right;font-size:.85rem;border-bottom:1px solid var(--line,#eee)}
+  .biz-t th{font-size:.75rem;color:var(--muted,#8b8178);font-weight:800;background:var(--group,#f4efe8)}
+  .biz-t td.n,.biz-t th.n{text-align:left;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .biz-t tr:last-child td{border-bottom:0}
+  .bizmix{display:grid;gap:10px;background:var(--card,#fff);border:1.5px solid var(--line,#e5e0d8);border-radius:16px;padding:14px}
+  .bmx-h{display:flex;justify-content:space-between;font-size:.85rem;font-weight:800;margin-bottom:5px}
+  .bmx-bar{height:9px;border-radius:999px;background:var(--group,#efe8df);overflow:hidden}
+  .bmx-bar i{display:block;height:100%;background:var(--gold,#F5C518)}
   .stat .l.sub{font-size:.72rem;opacity:.8;margin-top:2px;font-weight:700}
   .stat.warn{background:#FFF6E5;border-color:#F0C24B}
   .dash-edit{display:block;margin:8px 0 0;padding:7px 14px;border-radius:999px;border:1.5px solid var(--line,#e5e0d8);background:var(--card,#fff);color:var(--muted,#8b8178);font:inherit;font-size:.8rem;font-weight:800;cursor:pointer}
@@ -589,24 +616,41 @@ const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C
 /* ═ مخزن آمن ═ Keychain على آيفون: يبقى حتى بعد حذف التطبيق وإعادة تحميله، فيرجع حسابك مسجّلًا */
 const _khSec=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('SecureStoragePlugin'):null)||(C.Plugins&&C.Plugins.SecureStoragePlugin)||null; } }catch(e){} return null; })();
 const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_worker_auth','khafet_techlang','khafet_uilang','khafet_lang']);
-async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
+async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ await _khFreshP; }catch(e){} try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
 function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
 function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
 const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
+/* المفاتيح الحسّاسة (توكن الجلسة وأعلام الدخول) لا تُكتب في Preferences،
+   لأنه مخزن غير مشفّر. مكانها الكيتشين المحمي بقفل الجهاز وحده. */
+const _khPlain=k=>!KH_SECURE.has(k);
 const KH_STORE={
-  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} try{ if(_khPrefs) _khPrefs.set({key:k,value:sv}).catch(()=>{}); }catch(e){} return sv; } } return null; },
-  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
+  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs&&_khPlain(k)){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} return sv; } } return null; },
+  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs&&_khPlain(k)) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
+/* الكيتشين يبقى بعد حذف التطبيق. أول تشغيل بعد تثبيت جديد: نمسحه حتى لا تُستأنف
+   جلسة المالك السابق للجهاز. العلامة في Preferences لأنها تُمسح مع التطبيق. */
+let _khFreshP=null;
+async function khFreshInstall(){
+  try{
+    if(!_khPrefs||!_khSec) return;
+    const r=await _khPrefs.get({key:'kh_installed'});
+    if(r&&r.value) return;
+    for(const k of KH_SECURE){ try{ await _khSec.remove({key:k}); }catch(e){} }
+    try{ localStorage.clear(); }catch(e){}
+    await _khPrefs.set({key:'kh_installed',value:'1'});
+  }catch(e){}
+}
+_khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=105, KH_RIZQ_BUILD=102;
+const KH_APP_BUILD=118, KH_RIZQ_BUILD=103;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
   Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
 }catch(e){}
 /* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
-async function khRestore(){ if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
+async function khRestore(){ try{ await _khFreshP; }catch(e){} if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
 
 const BRAND='خافِت'; const COMMISSION=3;
 /* ---- دخول لوحة المؤسسة ----
@@ -728,7 +772,7 @@ function trData(v){ if(!_enUI()||v==null) return v; const k=String(v).trim(), ow
 function ordersN(n){ return LX(ar(n)+' طلب', n+(n===1?' order':' orders')); }
 
 /* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
-function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
+function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/\s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -1060,7 +1104,7 @@ async function retryRefund(id){
 let JOINREQ=[], joinReqLoaded=false, joinFilter='new';
 async function loadAll(){
   if(!cloudReady||!loggedIn){ render(); return; }
-  loadSmsBalance();
+  loadSmsBalance(); loadBiz();
   // كل الاستعلامات مع بعض بدل واحد ورا الثاني (كانت تاخذ وقت طويل على شبكة الجوال)
   const Q=(p,f)=>Promise.resolve().then(()=>p).then(r=>{ try{ f(r); }catch(e){} }).catch(()=>{});
   await Promise.all([
@@ -1084,6 +1128,77 @@ async function loadAll(){
   if(location.hash==='#po' && !whPoOpen()){ try{ history.replaceState(null,'',location.pathname); }catch(e){} whOpenPO(); }
 }
 /* ===== إدارة حسابات الفنيين (عبر دالة staff-admin الآمنة) ===== */
+/* ═══════ أرقام المستثمر ═══════
+   كل الأرقام من دالة khafet_admin_biz_stats في الخادم (للمدير فقط)، محسوبة من الطلبات الحقيقية.
+   الغرض: لو جاك مشترٍ أو ممول وطلب بيانات الشركة، تفتحين هالقسم وتطبعينه. */
+let BIZ=null, _bizBusy=false;
+async function loadBiz(force){
+  if(_bizBusy || (BIZ && !force)) return; _bizBusy=true;
+  try{ const r=await sb.rpc('khafet_admin_biz_stats'); if(!r.error && r.data){ BIZ=r.data; if(adminSection==='biz') render(); } }
+  catch(e){ /* نعيد المحاولة عند فتح القسم */ } finally{ _bizBusy=false; }
+}
+function bizNum(n){ return ar(Math.round(+n||0)); }
+function bizPct(n){ return (n==null||isNaN(+n))?'—':ar((+n).toFixed(1))+'٪'; }
+function bizMonthName(m){ const p=String(m||'').split('-'); const M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  return (M[(+p[1]||1)-1]||m)+' '+ar(p[0]||''); }
+function bizCard(t,v,s,cls){ return '<div class="bizc '+(cls||'')+'"><span class="bz-t">'+t+'</span><b class="bz-v">'+v+'</b>'+(s?'<small class="bz-s">'+s+'</small>':'')+'</div>'; }
+function renderBiz(){
+  if(!BIZ){ loadBiz(); return '<p style="color:var(--muted)">'+LX('جارٍ حساب الأرقام من الخادم…','Loading…')+'</p>'; }
+  const T=BIZ.totals||{}, M=BIZ.mix||{}, PY=BIZ.payments||{}, C=BIZ.company||{};
+  const months=(BIZ.months||[]).filter(function(x){ return x.orders>0 || x.gmv>0; });
+  const last=months.length?months[months.length-1]:null, prev=months.length>1?months[months.length-2]:null;
+  const growth = (last&&prev&&+prev.gmv>0) ? Math.round((+last.gmv - +prev.gmv)*100/+prev.gmv) : null;
+  const mixSum=(+M.labor||0)+(+M.parts||0)+(+M.fees||0);
+  const g=function(k,d){ return (T[k]==null?d:T[k]); };
+  const head='<div class="biz-head"><div><b>'+esc(C.name||'مؤسسة خافت')+'</b><small>'+(C.cr?LX('س.ت ','CR ')+ar(C.cr):'')+(C.city?' · '+esc(C.city):'')+'</small></div>'+
+    '<div class="biz-acts"><button class="sbtn" onclick="loadBiz(true)">↻ '+LX('تحديث','Refresh')+'</button><button class="sbtn" onclick="printReport()">🖨️ '+LX('طباعة','Print')+'</button><button class="sbtn" onclick="bizCopy()">📋 '+LX('نسخ الملخص','Copy summary')+'</button></div></div>';
+  const kpis='<div class="bizgrid">'+
+    bizCard(LX('قيمة الطلبات (GMV)','Gross order value'), money(g('gmv',0)), LX('من '+(T.first_order?ar(String(T.first_order)):'البداية'),''),'gold')+
+    bizCard(LX('المحصّل فعليًا','Collected'), money(g('collected',0)), LX('متبقٍ '+money(g('outstanding',0)),''),'green')+
+    bizCard(LX('متوسط الطلب','Average order'), money(g('aov',0)), LX('عمر النشاط '+ar(g('months_active',0))+' شهر',''),'')+
+    bizCard(LX('الطلبات','Orders'), bizNum(g('orders_live',0)), LX('منجزة '+ar(g('orders_done',0))+' · ملغاة '+ar(g('orders_cancelled',0)),''),'')+
+    bizCard(LX('نسبة الإنجاز','Completion rate'), bizPct(T.done_rate), LX('الإلغاء '+bizPct(T.cancel_rate),''),'')+
+    bizCard(LX('العملاء','Customers'), bizNum(g('customers',0)), LX('نشط آخر ٩٠ يوم '+ar(g('active_90d',0)),''),'')+
+    bizCard(LX('نسبة التكرار','Repeat rate'), bizPct(T.repeat_rate), LX(ar(g('orders_per_customer',0))+' طلب لكل عميل',''),'')+
+    bizCard(LX('متوسط إنفاق العميل','Customer lifetime value'), money(g('ltv',0)), '', '')+
+    bizCard(LX('التقييم','Rating'), (T.avg_rating?ar(T.avg_rating):'—')+' ★', LX(ar(g('ratings',0))+' تقييم · '+ar(g('five_star',0))+' خمس نجوم',''),'')+
+    bizCard(LX('الفريق','Team'), bizNum(g('techs_active',0)), LX('فنيون · مزوّدون معتمدون '+ar(g('providers_ok',0)),''),'')+
+    bizCard(LX('المستودع بسعر الشراء','Stock at cost'), money(g('stock_cost',0)), LX('بيعًا '+money(g('stock_retail',0))+' · '+ar(g('stock_items',0))+' صنف',''),'')+
+    bizCard(LX('تنزيلات التطبيق','App installs'), bizNum(g('installs',0)), LX('آيفون '+ar(g('installs_ios',0))+' · أندرويد '+ar(g('installs_android',0)),''),'')+
+    '</div>';
+  const mrows=months.length? months.map(function(x){
+    return '<tr><td>'+bizMonthName(x.m)+'</td><td class="n">'+ar(x.orders)+'</td><td class="n">'+ar(x.done)+'</td><td class="n">'+ar(x.cancelled)+'</td><td class="n">'+money(x.gmv)+'</td><td class="n">'+money(x.collected)+'</td><td class="n">'+ar(x.new_customers)+'</td><td class="n">'+money(x.aov)+'</td></tr>'; }).join('')
+    : '<tr><td colspan="8" style="color:var(--muted)">'+LX('ما فيه طلبات بعد','No orders yet')+'</td></tr>';
+  const monthly='<div class="biz-sec"><h4>'+LX('الأداء الشهري','Monthly performance')+(growth!=null?' <span class="bz-growth '+(growth>=0?'up':'down')+'">'+(growth>=0?'▲ ':'▼ ')+ar(Math.abs(growth))+'٪</span>':'')+'</h4>'+
+    '<div class="biz-tw"><table class="biz-t"><thead><tr><th>'+LX('الشهر','Month')+'</th><th class="n">'+LX('طلبات','Orders')+'</th><th class="n">'+LX('منجزة','Done')+'</th><th class="n">'+LX('ملغاة','Cancelled')+'</th><th class="n">'+LX('قيمة الطلبات','GMV')+'</th><th class="n">'+LX('المحصّل','Collected')+'</th><th class="n">'+LX('عملاء جدد','New')+'</th><th class="n">'+LX('متوسط الطلب','AOV')+'</th></tr></thead><tbody>'+mrows+'</tbody></table></div></div>';
+  const mixHtml= mixSum>0 ? '<div class="biz-sec"><h4>'+LX('من وين يجي الدخل','Revenue mix')+'</h4><div class="bizmix">'+
+      [[LX('أجرة اليد','Labour'),+M.labor||0],[LX('القطع والأغراض','Parts'),+M.parts||0],[LX('الرسوم','Fees'),+M.fees||0]].map(function(r){
+        const p=Math.round(r[1]*100/mixSum); return '<div class="bmx"><div class="bmx-h"><span>'+r[0]+'</span><b>'+money(r[1])+' · '+ar(p)+'٪</b></div><div class="bmx-bar"><i style="width:'+p+'%"></i></div></div>'; }).join('')+'</div></div>' : '';
+  const svcs=(BIZ.top_services||[]).filter(function(s){ return +s.amount>0; });
+  const topHtml= svcs.length ? '<div class="biz-sec"><h4>'+LX('أعلى الخدمات دخلًا','Top services')+'</h4><div class="biz-tw"><table class="biz-t"><thead><tr><th>'+LX('الخدمة','Service')+'</th><th class="n">'+LX('مرات','Times')+'</th><th class="n">'+LX('الدخل','Revenue')+'</th></tr></thead><tbody>'+
+      svcs.map(function(s){ return '<tr><td>'+esc(s.name||'')+'</td><td class="n">'+ar(s.qty)+'</td><td class="n">'+money(s.amount)+'</td></tr>'; }).join('')+'</tbody></table></div></div>' : '';
+  const cities=(BIZ.cities||[]);
+  const cityHtml= cities.length ? '<div class="biz-sec"><h4>'+LX('المدن','Cities')+'</h4><div class="biz-tw"><table class="biz-t"><thead><tr><th>'+LX('المدينة','City')+'</th><th class="n">'+LX('طلبات','Orders')+'</th><th class="n">'+LX('قيمتها','Value')+'</th></tr></thead><tbody>'+
+      cities.map(function(c){ return '<tr><td>'+esc(c.city||'')+'</td><td class="n">'+ar(c.orders)+'</td><td class="n">'+money(c.gmv)+'</td></tr>'; }).join('')+'</tbody></table></div></div>' : '';
+  const pay='<div class="biz-sec"><h4>'+LX('الدفع','Payments')+'</h4><div class="bizgrid sm">'+
+    bizCard(LX('طلبات مدفوعة','Paid orders'), bizNum(PY.paid_orders), money(PY.paid_amount||0),'')+
+    bizCard(LX('بانتظار الدفع','Unpaid'), bizNum(PY.unpaid_orders), money(PY.unpaid_amount||0),'')+
+    bizCard(LX('دفع إلكتروني','Online'), bizNum(PY.online), LX('تمارا '+ar(PY.tamara||0),''),'')+
+    bizCard(LX('جهاز الفني','Card machine'), bizNum(PY.device), '','')+'</div></div>';
+  const note='<p class="sp-hint" style="margin-top:14px">'+LX('الأرقام محسوبة لحظيًا من قاعدة البيانات، وتشمل الطلبات التجريبية إن وجدت. نظّفي الطلبات التجريبية قبل ما ترسلينها لأي جهة.','Live from the database.')+'</p>';
+  return head+kpis+monthly+mixHtml+topHtml+cityHtml+pay+note;
+}
+function bizCopy(){
+  if(!BIZ) return; const T=BIZ.totals||{};
+  const L=[ (BIZ.company&&BIZ.company.name)||'مؤسسة خافت', 'ملخص الأرقام · '+new Date().toISOString().slice(0,10), '',
+    'قيمة الطلبات: '+Math.round(T.gmv||0)+' ريال', 'المحصّل: '+Math.round(T.collected||0)+' ريال', 'المتبقي: '+Math.round(T.outstanding||0)+' ريال',
+    'الطلبات: '+(T.orders_live||0)+' (منجزة '+(T.orders_done||0)+' · ملغاة '+(T.orders_cancelled||0)+')',
+    'متوسط الطلب: '+Math.round(T.aov||0)+' ريال', 'العملاء: '+(T.customers||0)+' · نسبة التكرار '+(T.repeat_rate||0)+'٪',
+    'متوسط إنفاق العميل: '+Math.round(T.ltv||0)+' ريال', 'التقييم: '+(T.avg_rating||'—')+' من '+(T.ratings||0)+' تقييم',
+    'الفريق: '+(T.techs_active||0)+' فني · '+(T.providers_ok||0)+' مزوّد', 'المستودع: '+Math.round(T.stock_cost||0)+' ريال بسعر الشراء',
+    'تنزيلات التطبيق: '+(T.installs||0) ].join('\n');
+  try{ navigator.clipboard.writeText(L); toast(LX('📋 انتسخ الملخص','📋 Summary copied')); }catch(e){ toast(LX('ما قدرنا ننسخ','Could not copy')); }
+}
 /* ═══════ داشبورد الرئيسية ═══════
    أرقام مختصرة تظهر فوق. تختارين اللي يهمك من زر «تخصيص»، والاختيار ينحفظ في الإعدادات
    فيتبعك على أي جهاز تفتحين منه اللوحة. */
@@ -1453,6 +1568,20 @@ async function resetTechPass(uid){
   if(p.trim().length<6){ toast('٦ خانات على الأقل'); return; }
   const d=await callStaffAdmin({ action:'set_password', user_id:uid, password:p.trim() });
   toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
+}
+/* صلاحية تعديل الأسعار: تُمنح لفني بعينه من هنا، والافتراض مقفول */
+function canPrice(t){ const v=(t&&t.perms||{}).price; return v===true||v==='1'||v==='true'||v==='on'; }
+async function toggleStaffPerm(uid,key){
+  const t=STAFF.find(s=>s.user_id===uid); if(!t) return;
+  const on=!canPrice(t);
+  if(!cloudReady){ toast('لا يوجد اتصال بالخادم'); return; }
+  try{
+    const r=await sb.rpc('set_staff_perm',{ p_uid:uid, p_key:key, p_on:on });
+    if(r.error) throw r.error;
+    t.perms=Object.assign({}, t.perms||{}); t.perms[key]=on;
+    toast(on?LX('✅ صار يقدر يسعّر','✅ Pricing allowed'):LX('🔒 التسعير للإدارة','🔒 Pricing restricted'));
+    render();
+  }catch(e){ toast(LX('تعذّر الحفظ','Could not save')); }
 }
 async function loadStaff(){ if(!cloudReady) return; try{ const { data }=await sb.from('khafet_staff').select('*'); STAFF=data||[]; if(loggedIn) render(); }catch(e){} }
 
@@ -2060,6 +2189,7 @@ function render(){
     ['notify','📣','إشعار للكل', 0, 'رسالة لجوالات العملاء أو الفريق · إشعار واحد باليوم', false],
     ['joins','📨',LX('طلبات الانضمام','Join requests'), JOINREQ.filter(x=>x.status==='new').length, LX('فنيين ومقدمي خدمات · خدماتهم وأسعارهم','Technicians and providers · their services and prices'), false],
     ['solutions','🏘️',LX('الحلول الجاهزة','Ready solutions'), 0, LX('مشاكل معروفة في بيوت أجيال وحلّها بسعر ثابت · تظهر للعميل كصفحة','Known Ajyal home problems with a fixed-price fix · shown to customers as a page'), false],
+    ['biz','📈',LX('أرقام المستثمر','Investor numbers'), 0, LX('كل الأرقام اللي يطلبها مشترٍ أو ممول · جاهزة للطباعة','Everything a buyer or investor asks for'), false],
     ['settings','⚙️',LX('الإعدادات','Settings'), 0, LX('العمولة، الإلغاء، الضمان، التغطية، المواعيد، الباقات، التواصل','Commission, cancellation, warranty, coverage, hours, plans, contact'), false],
   ];
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
@@ -2096,10 +2226,12 @@ function render(){
     body=renderJoinReqs();
   } else if(adminSection==='settings'){
     body=renderSettings();
+  } else if(adminSection==='biz'){
+    body=renderBiz();
   } else if(adminSection==='solutions'){
     body=block(LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'), renderSolutionsAdmin());
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions')})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     ${dashHtml()}

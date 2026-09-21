@@ -428,24 +428,41 @@ const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C
 /* ═ مخزن آمن ═ Keychain على آيفون: يبقى حتى بعد حذف التطبيق وإعادة تحميله، فيرجع حسابك مسجّلًا */
 const _khSec=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('SecureStoragePlugin'):null)||(C.Plugins&&C.Plugins.SecureStoragePlugin)||null; } }catch(e){} return null; })();
 const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_worker_auth','khafet_techlang','khafet_uilang','khafet_lang']);
-async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
+async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ await _khFreshP; }catch(e){} try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
 function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
 function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
 const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
+/* المفاتيح الحسّاسة (توكن الجلسة وأعلام الدخول) لا تُكتب في Preferences،
+   لأنه مخزن غير مشفّر. مكانها الكيتشين المحمي بقفل الجهاز وحده. */
+const _khPlain=k=>!KH_SECURE.has(k);
 const KH_STORE={
-  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} try{ if(_khPrefs) _khPrefs.set({key:k,value:sv}).catch(()=>{}); }catch(e){} return sv; } } return null; },
-  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
+  async getItem(k){ let v=null; try{ v=localStorage.getItem(k); }catch(e){} if(v!=null) return v; try{ if(_khPrefs&&_khPlain(k)){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null){ try{ localStorage.setItem(k,r.value); }catch(e){} return r.value; } } }catch(e){} { const sv=await _secGet(k); if(sv!=null){ try{ localStorage.setItem(k,sv); }catch(e){} return sv; } } return null; },
+  async setItem(k,v){ try{ localStorage.setItem(k,v); }catch(e){} try{ if(_khPrefs&&_khPlain(k)) await _khPrefs.set({key:k,value:String(v)}); }catch(e){} _secSet(k,v); },
   async removeItem(k){ try{ localStorage.removeItem(k); }catch(e){} try{ if(_khPrefs) await _khPrefs.remove({key:k}); }catch(e){} _secRm(k); }
 };
+/* الكيتشين يبقى بعد حذف التطبيق. أول تشغيل بعد تثبيت جديد: نمسحه حتى لا تُستأنف
+   جلسة المالك السابق للجهاز. العلامة في Preferences لأنها تُمسح مع التطبيق. */
+let _khFreshP=null;
+async function khFreshInstall(){
+  try{
+    if(!_khPrefs||!_khSec) return;
+    const r=await _khPrefs.get({key:'kh_installed'});
+    if(r&&r.value) return;
+    for(const k of KH_SECURE){ try{ await _khSec.remove({key:k}); }catch(e){} }
+    try{ localStorage.clear(); }catch(e){}
+    await _khPrefs.set({key:'kh_installed',value:'1'});
+  }catch(e){}
+}
+_khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=102;
+const RIZQ_BUILD=103;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
   Storage.prototype.removeItem=function(k){ _rm.call(this,k); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.remove({key:k}).catch(()=>{}); if(this===localStorage) _secRm(k); }catch(e){} };
 }catch(e){}
 /* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
-async function khRestore(){ if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
+async function khRestore(){ try{ await _khFreshP; }catch(e){} if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
 
 const BRAND='خافِت'; const CONTACT='0590497866'; const COMMISSION=3; const SAVE_KEY='siyanah_v1';
 /* حساب المزوّدين محفوظ في Supabase → Authentication (ما فيه كلمة مرور بالكود).
@@ -519,7 +536,7 @@ function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
 function money(n){ return ar(n)+' ر.س'; }
 
 /* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
-function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
+function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/\s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 const AR_DAYS=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -1430,14 +1447,14 @@ function jobCard(o, mode){
     }
   }
   return `<div class="tjob">
-    <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${mode!=='available'&&payDue(o)>0?`<span class="status dueb">💳 ${payDue(o)}</span>`:(mode!=='available'&&o.paidAmount>0?`<span class="status paidb">💳 ${LX('مدفوع','Paid')}</span>`:'')}</span><span class="status ${o.status}">${({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status}</span></div>
+    <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${mode!=='available'&&payDue(o)>0?`<span class="status dueb">💳 ${payDue(o)}</span>`:(mode!=='available'&&o.paidAmount>0?`<span class="status paidb">💳 ${LX('مدفوع','Paid')}</span>`:'')}</span><span class="status ${esc(o.status)}">${esc(({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status)}</span></div>
     <div class="tj-body">
       ${work}
       ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ المشكلة</span><span class="tj-v">${esc(o.note)}</span></div>`:''}
       ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 صورة/مقطع</span><span class="tj-v"><button class="tvideo" data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)">🎥 عرض</button></span></div>`:''}
       <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
-      <div class="tj-row"><span class="tj-k">📍 الموقع</span><span class="tj-v">${[[cityLabel(a.city),a.district,a.street].filter(Boolean).join(' · '), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||'📍 GPS'}
-        <a class="tmap" href="${mapUrl}" target="_blank" rel="noopener">🗺️ الخريطة</a>
+      <div class="tj-row"><span class="tj-k">📍 الموقع</span><span class="tj-v">${[[cityLabel(a.city),a.district,a.street].filter(Boolean).map(esc).join(' · '), a.house?LX('منزل ','House ')+esc(a.house):''].filter(Boolean).join(' · ')||'📍 GPS'}
+        <a class="tmap" href="${esc(mapUrl)}" target="_blank" rel="noopener">🗺️ الخريطة</a>
         ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" data-media="${esc(a.photoUrl)}" onclick="openMedia(this.dataset.media)">🏠 صورة المنزل</button>`:''}</span></div>
       ${mode==='mine'?`<div class="tj-row"><span class="tj-k">👤 العميل</span><span class="tj-v">${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></span></div>`:''}
       ${mode==='mine'&&o.status==='done'?`<div class="tj-row"><span class="tj-k">🛡️ الضمان</span><span class="tj-v"><select class="assign-sel" style="padding:7px 10px;min-width:120px" onchange="setWarranty('${o.dbId}',this.value)">
@@ -1704,7 +1721,9 @@ function renderRatings(){
     </div>`).join('') : `<div class="hint" style="text-align:center;padding:18px">${rated.length?'تقييماتك بدون ملاحظات مكتوبة.':'ما وصلتك تقييمات بعد · تظهر بعد إنجاز الطلبات وتقييم العملاء.'}</div>`}`;
 }
 /* ═══════════ مسار اليوم (مربّع بالرئيسية) ═══════════ */
-function geoPt(a){ if(a&&a.lat&&a.lng) return a.lat+','+a.lng; return encodeURIComponent([a&&a.city,a&&a.district,a&&a.street].filter(Boolean).join(' ')); }
+function geoPt(a){ const la=Number(a&&a.lat), ln=Number(a&&a.lng);
+  if(isFinite(la)&&isFinite(ln)&&la&&ln&&Math.abs(la)<=90&&Math.abs(ln)<=180) return encodeURIComponent(la.toFixed(6)+','+ln.toFixed(6));
+  return encodeURIComponent([a&&a.city,a&&a.district,a&&a.street].filter(Boolean).join(' ')); }
 function renderRoute(){
   const today=new Date().toISOString().slice(0,10);
   const jobs=myJobsList().filter(o=>o.status!=='done'&&o.status!=='cancelled'&&(o.date||'')>=today)
