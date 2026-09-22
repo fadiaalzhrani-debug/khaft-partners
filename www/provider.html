@@ -224,6 +224,35 @@
   .inv-row .ir-price{width:92px;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:900;text-align:center;font-size:1.1rem}
   .inv-row .ir-del{color:var(--danger);font-size:1.3rem;padding:6px}
   .inv-empty{color:var(--muted);text-align:center;padding:20px;font-weight:700}
+    /* فاتورة الطلب عند المزوّد: عرض فقط */
+  .inv-card.sm{padding:0;overflow:hidden}
+  .sm-head{display:flex;align-items:center;gap:10px;padding:16px 18px;background:var(--gold-tint);border-bottom:1px solid var(--line)}
+  .sm-head>div{flex:1;min-width:0}
+  .sm-head b{display:block;font-size:1.12rem;font-weight:900}
+  .sm-head small{color:var(--muted);font-weight:800;letter-spacing:.02em}
+  .sm-st{font-size:.76rem;font-weight:900;border-radius:999px;padding:5px 12px;background:var(--panel);color:var(--muted);white-space:nowrap}
+  .sm-st.progress{background:#E8F0FE;color:#1A56B8}
+  .sm-st.done{background:var(--ok-soft);color:var(--ok)}
+  .sm-st.confirmed{background:var(--gold-soft);color:var(--gold-deep)}
+  .sm-x{width:34px;height:34px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:1rem;font-weight:900;flex:none}
+  .sm-box{margin:14px 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px 14px;box-shadow:var(--shadow-sm)}
+  .sm-r{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .sm-r:last-child{border-bottom:0}
+  .sm-r .sm-k{color:var(--muted);font-weight:800;font-size:.86rem;white-space:nowrap}
+  .sm-r b{font-weight:800;font-size:.95rem;text-align:end}
+  .sm-list{margin:0 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px 14px;box-shadow:var(--shadow-sm)}
+  .sm-i{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .sm-i:last-child{border-bottom:0}
+  .sm-ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:.95rem;flex:none;background:var(--gold-soft)}
+  .sm-i.part .sm-ic{background:#E8F0FE}
+  .sm-i.fee .sm-ic{background:var(--panel)}
+  .sm-i .sm-n{flex:1;min-width:0;font-weight:800;font-size:.98rem;line-height:1.4}
+  .sm-i .sm-n i{font-style:normal;color:var(--muted);font-weight:800;margin-inline-start:6px}
+  .sm-i b{font-weight:900;font-size:1rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .sm-i.fee .sm-n,.sm-i.fee b{color:var(--muted)}
+  .sm-tot{display:flex;align-items:center;justify-content:space-between;margin:14px 18px 18px;padding:14px 16px;border-radius:14px;background:var(--ink);color:#fff}
+  .sm-tot span{font-weight:800}
+  .sm-tot b{font-size:1.4rem;font-weight:900;color:var(--gold)}
   .inv-total{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:2px solid var(--line);font-weight:900;font-size:1.5rem}
   .inv-total b{color:var(--gold-deep)}
   .inv-acts{display:flex;gap:10px;margin-top:18px}
@@ -455,7 +484,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=103;
+const RIZQ_BUILD=104;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -988,6 +1017,44 @@ function renderInvoice(){
   m.classList.add('show');
 }
 
+/* ---- ملخص الطلب للمزوّد: عرض فقط ---- */
+function sumRow(ic,a,b){ return b? `<div class="sm-r"><span class="sm-k">${ic} ${a}</span><b>${b}</b></div>` : ''; }
+function openSummary(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  const m=document.getElementById('invModal'); if(!m) return;
+  const inv=o.invoice||null;
+  const items=(inv&&inv.items&&inv.items.length) ? inv.items : (o.items||[]);
+  const money=v=>LX(ar(v)+' ر.س', v+' SAR');
+  const tot=inv&&inv.total!=null ? +inv.total : items.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0);
+  const stLbl=({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status||'';
+  const when=[o.date?dayLabel(o.date):'', o.startMin!=null?fmtTime(o.startMin):(o.time||'')].filter(Boolean).join(' · ');
+  const isPart=it=>/^part:/.test(String(it.id||'')) || !!it.part || !!it.stockId || it.id==='stock';
+  const isFee =it=>it.id==='fee'||it.id==='smallfee';
+  const sorted=items.slice().sort((a,b)=>(isFee(a)?2:isPart(a)?1:0)-(isFee(b)?2:isPart(b)?1:0));
+  const rows=sorted.length
+    ? sorted.map(it=>{ const q=+it.qty||1, k=isFee(it)?'fee':(isPart(it)?'part':'svc');
+        return `<div class="sm-i ${k}"><span class="sm-ic">${k==='fee'?'🚚':(k==='part'?'🔩':'🔧')}</span>
+          <span class="sm-n">${esc(svcName(it.name))}${q>1?'<i>×'+ar(q)+'</i>':''}</span>
+          <b>${money((+it.price||0)*q)}</b></div>`; }).join('')
+    : `<div class="inv-empty">${LX('ما فيه بنود بعد','Nothing yet')}</div>`;
+  m.innerHTML=`<div class="inv-card sm">
+    <div class="sm-head"><div><b>🧾 ${LX('فاتورة الطلب','Order invoice')}</b><small>${esc(o.id)}</small></div>
+      <span class="sm-st ${esc(o.status||'')}">${esc(stLbl)}</span>
+      <button class="sm-x" onclick="closeSummary()" aria-label="إغلاق">✕</button></div>
+    <div class="sm-box">
+      ${sumRow('👤', LX('العميل','Customer'), esc(o.customer.name))}
+      ${sumRow('📞', LX('الجوال','Mobile'), esc(o.customer.phone))}
+      ${sumRow('📍', LX('العنوان','Address'), esc(o.address||''))}
+      ${sumRow('🕐', LX('الموعد','Time'), esc(when))}
+    </div>
+    <div class="sm-list">${rows}</div>
+    <div class="sm-tot"><span>${LX('الإجمالي','Total')}</span><b>${money(tot)}</b></div>
+  </div>`;
+  if(_uiEN()) _translateEl(m);
+  m.classList.add('show');
+}
+function closeSummary(){ const m=document.getElementById('invModal'); if(!m) return; m.classList.remove('show'); m.innerHTML=''; }
+
 /* ---- العرض ---- */
 function showLogin(msg, wait){
   document.getElementById('logoutBtn').style.display='none';
@@ -1437,7 +1504,9 @@ function jobCard(o, mode){
       ? `<div class="tbtn waitpay">💳 ${LX('بانتظار الدفع','Awaiting payment')} · ${payDue(o)}</div><button class="tbtn devpay" onclick="markCardPaid('${o.id}')">💳 ${LX('دفع بجهاز الفني','Paid by card machine')}</button>`
       : `<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
     else if(o.status==='done') acts=`<div class="tbtn donelbl">✓ مكتمل</div><button class="tbtn fold" onclick="toggleDone('${o.id}')">▴</button>`;
-    acts+=`<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?'✓ الفاتورة':'🧾 فاتورة'}</button>`;
+    acts+= me.tech
+      ? `<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?'✓ الفاتورة':'🧾 فاتورة'}</button>`
+      : `<button class="tbtn inv" onclick="openSummary('${o.id}')">🧾 ${LX('فاتورة الطلب','Order invoice')}</button>`;
     // المزوّد يوزّع الطلب على فني من فريقه
     if(!me.tech && TECHS.length && o.status!=='done'){
       acts+=`<select class="assign-sel" onchange="assignOrder('${o.dbId}',this.value)">

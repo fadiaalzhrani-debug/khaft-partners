@@ -145,6 +145,8 @@
   .trd.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
   .trd-h{font-size:.78rem;color:var(--muted);font-weight:700;margin-top:10px}
   /* 📨 طلبات الانضمام */
+  .jr-in{display:inline-block;margin-inline-start:6px;font-size:.7rem;font-weight:700;color:#166534;background:#dcfce7;border-radius:999px;padding:2px 8px;vertical-align:middle}
+  .jr-svc .jr-add{margin-inline-start:6px;padding:2px 9px;font-size:.72rem;vertical-align:middle}
   .jr-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .jr-filters button{padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:800;font-size:.85rem;font-family:inherit;cursor:pointer}
   .jr-filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -658,7 +660,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=118, KH_RIZQ_BUILD=103;
+const KH_APP_BUILD=130, KH_RIZQ_BUILD=104;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -2407,9 +2409,10 @@ function audiencePanelHtml(){
 function adminHomeTap(){ try{ if(typeof loggedIn!=='undefined' && loggedIn && typeof adminSection!=='undefined' && adminSection){ setAdminSection(''); window.scrollTo(0,0); return; } }catch(e){} location.href='index.html#stay'; }
 function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
 
-/* ═══════ 📨 طلبات الانضمام: من النموذج العام (rezq/join) مباشرة إلى جدول khafet_join_requests ═══════ */
+/* ═══════ 📨 طلبات الانضمام: من نموذج الانضمام مباشرة إلى جدول khafet_join_requests ═══════ */
 async function loadJoinReqs(){
   if(!cloudReady) return;
+  if(!CATALOG.loaded){ try{ await loadCatalog(); }catch(e){} }
   try{
     const r=await sb.from('khafet_join_requests').select('*').order('created_at',{ascending:false}).limit(500);
     if(!r.error){ JOINREQ=r.data||[]; joinReqLoaded=true; }
@@ -2433,6 +2436,14 @@ function jrWhen(ts){
     return dayLabel(iso)+' · '+fmtTime(d.getHours()*60+d.getMinutes()); }catch(e){ return ''; }
 }
 function jrPhoneIntl(p){ const d=String(p||'').replace(/\D/g,''); return d.startsWith('05')?'966'+d.slice(1):d; }
+/* الخدمة تُعدّ موجودة لو فيه خدمة بنفس القسم ونفس الاسم في كتالوج التطبيق */
+function jrNorm(v){ return String(v==null?'':v).replace(/\s+/g,' ').trim(); }
+function jrFindSvc(catId, s){
+  const list=(CATALOG.svcs||[]);
+  if(s && s.sid){ const byId=list.find(x=>x.id===s.sid); if(byId) return byId; }
+  const n=jrNorm(s&&s.name);
+  return list.find(x=>x.cat_id===catId && jrNorm(x.name)===n) || null;
+}
 function jrPrice(s){
   if(s.inspect) return s.price!=null ? LX('بعد المعاينة، يبدأ من ','After inspection, from ')+ar(s.price) : LX('بعد المعاينة','After inspection');
   return s.price!=null ? ar(s.price)+' '+LX('ريال','SAR') : '';
@@ -2443,7 +2454,7 @@ function renderJoinReqs(){
   const filters=['new','waitlist','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
   // ترتيب تلقائي بالجودة (الأعلى أولًا)، والقائمة مرقّمة
   const list=JOINREQ.filter(x=>joinFilter==='all'||x.status===joinFilter).slice().sort((a,b)=>jrScore(b)-jrScore(a)||new Date(a.created_at)-new Date(b.created_at));
-  const share='https://fadiaalzhrani-debug.github.io/rezq/join/';
+  const share='https://fadiaalzhrani-debug.github.io/khaft-partners/www/join.html';
   const head=renderCapacity()+`<div class="panel" style="margin-top:0">
       <p style="margin:0 0 8px;font-weight:700">${LX('رابط النموذج اللي ترسله للفنيين ومقدمي الخدمات:','Form link to send to technicians and providers:')}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><code style="direction:ltr;background:var(--panel,#f3eee2);padding:6px 10px;border-radius:9px;font-size:.85rem;overflow-wrap:anywhere">${share}</code>
@@ -2455,7 +2466,7 @@ function renderJoinReqs(){
     const d=x.data||{}, cats=Array.isArray(d.categories)?d.categories:[];
     const sc=jrScore(x);
     const svcHtml=cats.map(c=>`<div class="jr-cat"><b>${esc(c.name||c.id||'')}</b>${c.isNew?`<span class="jr-new">${LX('قسم جديد','New section')}</span>`:''}
-      ${(c.services||[]).map(s=>`<div class="jr-svc"><div>${esc(s.name||'')}${s.code==='جديد'?`<span class="jr-new">${LX('خدمة جديدة','New service')}</span>`:''}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`).join('')}</div>`).join('');
+      ${(c.services||[]).map((s,si)=>{ const inApp=jrFindSvc(c.id,s); return `<div class="jr-svc"><div>${esc(s.name||'')}${inApp?`<span class="jr-in">${LX('في التطبيق','In app')}</span>`:`<button class="sbtn jr-add" onclick="jrAddService('${x.id}','${c.id}',${si})">➕ ${LX('أضفها للتطبيق','Add to app')}</button>`}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`; }).join('')}</div>`).join('');
     const kv=[
       [LX('المواد','Materials'), d.materials], [LX('الضمان','Warranty'), d.warranty],
       [LX('المعاينة','Inspection'), d.visit? (d.visit.type==='بسعر' ? (ar(d.visit.price||'')+' '+LX('ريال','SAR')+(d.visit.deduct?LX('، تنخصم إذا تم الشغل','، deducted if the job goes ahead'):'')) : d.visit.type) : ''],
@@ -2481,6 +2492,24 @@ function renderJoinReqs(){
       </div>
     </div>`;
   }).join('');
+}
+/* تضيف خدمة المزوّد لكتالوج التطبيق كما هي، وتقدرين تعدّلينها بعدها من «الأقسام والخدمات» */
+async function jrAddService(reqId, catId, si){
+  const x=JOINREQ.find(r=>r.id===reqId); if(!x) return;
+  const cats=Array.isArray((x.data||{}).categories)?x.data.categories:[];
+  const c=cats.find(q=>q.id===catId); const s=c&&(c.services||[])[si]; if(!s) return;
+  const name=jrNorm(s.name); if(!name){ toast(LX('الخدمة بلا اسم','The service has no name')); return; }
+  if(!(CATALOG.cats||[]).some(q=>q.id===catId)){ toast(LX('القسم مو موجود في التطبيق','That section is not in the app')); return; }
+  if(jrFindSvc(catId,s)){ toast(LX('موجودة أصلًا','Already there')); return; }
+  const price=(s.price==null||s.inspect)?0:Math.max(0,Number(s.price)||0);
+  const row={ id:'s'+Date.now().toString(36), cat_id:catId, name, name_en:jrNorm(s.name_en)||null,
+    icon:'🔧', price, duration:60, custom:price<=0, active:true, quick:false,
+    sort:Math.max(0,...(CATALOG.svcs||[]).filter(q=>q.cat_id===catId).map(q=>+q.sort||0))+10 };
+  const { error }=await sb.from('khafet_services').upsert(row);
+  if(error){ toast(LX('ما انحفظت، حاولي مرة ثانية','Not saved, try again')); return; }
+  s.sid=row.id;
+  await loadCatalog(); render();
+  toast(LX('✅ انضافت للتطبيق · تعدّلينها من «الأقسام والخدمات»','✅ Added to the app'));
 }
 function jrCopy(t){
   try{ navigator.clipboard.writeText(t).then(()=>toast(LX('📋 انتسخ','📋 Copied')),()=>toast(LX('ما قدرت أنسخ','Could not copy'))); }
