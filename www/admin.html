@@ -660,7 +660,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=130, KH_RIZQ_BUILD=104;
+const KH_APP_BUILD=131, KH_RIZQ_BUILD=105;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1384,6 +1384,12 @@ function stStr(k,d){ return (SETTINGS[k]!=null&&SETTINGS[k]!=='')?String(SETTING
 function stJson(k,d){ try{ const v=JSON.parse(SETTINGS[k]); return v==null?d:v; }catch(e){ return d; } }
 async function loadSettings(){ if(!cloudReady) return; try{ const r=await sb.from('khafet_settings').select('key,value'); if(!r.error){ SETTINGS={}; (r.data||[]).forEach(x=>{ SETTINGS[x.key]=x.value; }); settingsLoaded=true; } }catch(e){} }
 const ST_GROUPS=[
+  { id:'shades', t:['⛱️ المظلات والسواتر','⛱️ Shades & screens'], d:['قسم المظلات في التطبيق: تشغيله، سعر المتر، الضمان، الأنواع، والإضافات.','The shades section in the app: switch, price per m², warranty, types and add-ons.'], f:[
+    ['shades_enabled','عرض القسم في التطبيق','Show the section in the app','bool'],
+    ['shade_price_m2','سعر المتر المربع (ريال)','Price per m² (SAR)','num'],
+    ['shade_warranty_years','الضمان (سنوات)','Warranty (years)','num'],
+    ['shade_min','أقل قيمة للطلب (ريال · صفر = بدون)','Minimum order (SAR · 0 = none)','num'],
+    ['shade_kinds','الأنواع · سطر لكل نوع بالشكل: الأيقونة|عربي|English','Types · one per line: icon|Arabic|English','text'] ] },
   { id:'legal', t:['⚖️ بيانات المنشأة','⚖️ Business identity'], d:['تظهر في الفواتير وصفحة الحساب كما تطلبه أنظمة التجارة الإلكترونية. لو سجّلت في ضريبة القيمة المضافة فعّل الخيار واكتب الرقم الضريبي، فتصير الفواتير ضريبية مبسطة برمز QR.','Shown on invoices and the account page as required by the e-commerce regulations. If VAT registered, switch it on and enter the VAT number; invoices become simplified tax invoices with a QR code.'], f:[
     ['company_name','اسم المنشأة','Business name','text'],
     ['cr_number','رقم السجل التجاري','Commercial registration number','text'],
@@ -1521,7 +1527,7 @@ function renderSettings(){
     ${g.f.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
       if(ty==='note') return `<p class="st-d" style="margin:2px 0 12px;line-height:1.7">${LX(ar,en)}</p>`;
       if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
-      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
+      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello','shade_kinds'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
       if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
       return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" type="${ty==='num'?'number':(ty==='date'?'date':'text')}" ${ty==='num'?'inputmode="decimal" step="any"':''} value="${esc(v)}"></label>`; }).join('')}
     ${g.id==='wabot'?waStatsBox():''}
