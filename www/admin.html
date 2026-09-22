@@ -81,7 +81,22 @@
   .rline{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
   .rline:last-child{border-bottom:none}
   .rl-t{flex:1} .rl-t small{color:var(--muted);display:block;font-size:.8rem}
-  .prov-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;background:#fcfbf6}
+  .pc-warn{margin-top:7px;background:#FDECEC;color:#9B1C1C;border-radius:10px;padding:7px 10px;font-size:.83rem;font-weight:700}
+.pc-meta{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:.82rem;color:var(--muted)}
+.pc-meta b{color:var(--ink)}
+.pc-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.pc-nums div{background:var(--bg);border-radius:12px;padding:8px 6px;text-align:center}
+.pc-nums b{display:block;font-size:1.02rem;font-weight:900}
+.pc-nums small{color:var(--muted);font-size:.72rem}
+.pc-team{margin-top:10px;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:9px;font-weight:800;font-size:.88rem;color:var(--ink);cursor:pointer}
+.pc-team-box{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.pc-t{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--bg);border-radius:12px;padding:8px 10px}
+.pc-t-n{flex:1;min-width:120px}
+.pc-t-n b{display:block;font-size:.93rem}
+.pc-t-n small{color:var(--muted)}
+.pc-t-tr{font-size:.8rem;color:var(--muted);font-weight:700}
+@media (max-width:420px){.pc-nums{grid-template-columns:repeat(2,1fr)}}
+.prov-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;background:#fcfbf6}
   .prov-card .pc-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
   .prov-card b{font-size:1.02rem}
   .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
@@ -1975,6 +1990,23 @@ async function suspendProvider(phone,to){
   }catch(e){ toast('⚠️ تعذّر'); }
   render();
 }
+/* ── فريق المزوّد وأرقامه · تُعرض داخل بطاقته في اللوحة ── */
+let provOpen = {};   // أي بطاقة مفتوحة على فريقها
+function toggleProvTeam(code){ provOpen[code]=!provOpen[code]; render(); }
+function provTeam(p){
+  const code=String(p.code||'').toUpperCase(); if(!code) return [];
+  return (STAFF||[]).filter(x=>String(x.provider_code||'').toUpperCase()===code);
+}
+function provStats(p){
+  const ph9=v=>String(v||'').replace(/\D/g,'').slice(-9);
+  const mine=(ORDERS||[]).filter(o=>ph9(o.providerPhone)===ph9(p.phone));
+  const done=mine.filter(o=>o.status==='done');
+  const active=mine.filter(o=>o.status==='confirmed'||o.status==='progress');
+  const rated=done.filter(o=>+o.rating>0);
+  const avg=rated.length? (rated.reduce((a,o)=>a+(+o.rating||0),0)/rated.length) : 0;
+  const sum=done.reduce((a,o)=>a+(+o.finalPrice||0),0);
+  return {all:mine.length, done:done.length, active:active.length, avg:avg, sum:sum, rated:rated.length};
+}
 function renderProviders(){
   if(!PROVIDERS.length) return `<p style="color:var(--muted)">لا يوجد مزوّدون مسجّلون بعد.</p>`;
   const stL={pending:'قيد المراجعة',approved:'معتمد',rejected:'مرفوض',suspended:'موقوف'},
@@ -1999,7 +2031,30 @@ function renderProviders(){
       <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div>
       <div style="margin-top:3px;font-size:.88rem">🧾 ${LX('السجل التجاري','CR')}: ${/^[0-9]{10}$/.test(String(p.cr_number||''))?'<b dir="ltr">'+esc(p.cr_number)+'</b>':'<b style="color:#b91c1c">'+LX('غير مرفق','missing')+'</b>'} ${p.cr_doc_path?`<button class="sbtn" style="padding:4px 10px" data-path="${esc(p.cr_doc_path)}" onclick="openDocA(this.dataset.path)">📎 ${LX('عرض السجل','View')}</button>`:''}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
-      <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)}${p.experience?LX(' · خبرة ',' · Experience: ')+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
+      <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)||LX('(ما حدّد خدماته)','(no services set)')}${p.experience?LX(' · خبرة ',' · Experience: ')+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
+      ${(!sv? `<div class="pc-warn">⚠️ ${LX('ما حدّد خدماته، فما تُعرض عليه أي طلبات','No services set, so no orders are offered to him')}</div>` : '')}
+      <div class="pc-meta">
+        ${p.code? `<span>🔑 ${LX('رمز الانضمام','Join code')}: <b dir="ltr">${esc(p.code)}</b></span>` : ''}
+        ${p.org_no? `<span>#${LX('رقم المؤسسة','Org no')} ${esc(String(p.org_no))}</span>` : ''}
+        ${p.monthly_cost? `<span>💳 ${LX('اشتراك شهري','Monthly')}: ${money(p.monthly_cost)}</span>` : ''}
+        <span>📅 ${LX('مسجّل','Joined')}: ${esc(String(p.created_at||'').slice(0,10))}</span>
+      </div>
+      ${(function(){ const t=provTeam(p), k=provStats(p), open=!!provOpen[String(p.code||'').toUpperCase()];
+        const nums = `<div class="pc-nums">
+            <div><b>${ar(k.done)}</b><small>${LX('طلب منجز','Completed')}</small></div>
+            <div><b>${ar(k.active)}</b><small>${LX('جارٍ الآن','Active now')}</small></div>
+            <div><b>${k.rated? (k.avg.toFixed(1)+'★') : '—'}</b><small>${LX('التقييم','Rating')}</small></div>
+            <div><b>${money(k.sum)}</b><small>${LX('إجمالي أعماله','Total value')}</small></div>
+          </div>`;
+        if(!p.code) return nums;
+        const rows = t.length ? t.map(x=> `<div class="pc-t"><span class="pc-t-n"><b>${esc(x.name||LX('فني','Technician'))}</b>
+              <small dir="ltr">${esc(x.phone||'')}</small></span>
+            <span class="pc-t-tr">${((x.trades||[]).map(tr=>esc((CATALOG.cats.find(c=>c.id===tr)||{}).name||tr)).join(LX('، ',', '))||LX('بلا تخصص','No trade'))}</span>
+            <span class="status ${(x.active===false?'st-cancelled':'st-done')}">${(x.active===false?LX('موقوف','Off'):LX('فعّال','On'))}</span></div>` ).join('')
+          : `<p style="color:var(--muted);margin:6px 2px">${LX('ما انضم له فنيون بعد','No technicians joined yet')}</p>`;
+        return nums + `<button class="pc-team" onclick="toggleProvTeam('${esc(String(p.code).toUpperCase())}')">👥 ${LX('الفريق','Team')} (${ar(t.length)}) ${open?'▲':'▼'}</button>
+          ${open? `<div class="pc-team-box">${rows}</div>` : ''}`;
+      })()}
       <div style="display:flex;gap:8px;margin-top:10px">${acts}</div></div>`;
   }).join('');
   return `

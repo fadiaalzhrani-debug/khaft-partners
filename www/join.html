@@ -149,15 +149,15 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .btn.g{background:var(--soft);color:var(--tx);border:1.5px solid var(--ln)}
 .btn:disabled{opacity:.6;cursor:default}
 
-.svcblk{border:1.5px solid var(--ln);border-radius:16px;padding:14px;margin-bottom:12px;background:var(--soft)}
+.svcblk{border:1.5px solid var(--ln);border-radius:16px;padding:12px;margin-bottom:10px;background:var(--soft)}
 .svcblk h4{margin:0 0 8px;font-size:17px;display:flex;align-items:center;gap:8px}
 .svcblk h4 small{font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:400;color:var(--mu);font-size:12.5px;margin-inline-start:auto}
 .sug{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .sug button{font-size:13px;border:1px dashed var(--mu);background:transparent;color:var(--tx);border-radius:999px;padding:5px 11px;cursor:pointer}
-.sug button:disabled{opacity:.35;cursor:default;text-decoration:line-through}
-.row{display:grid;grid-template-columns:1fr 124px 28px;gap:6px;margin-bottom:8px;align-items:center;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:8px}
+.sug button:disabled{display:none}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 92px 24px;gap:5px;margin-bottom:6px;align-items:center;background:var(--card);border:1px solid var(--ln);border-radius:11px;padding:6px}
 .row input[data-f="name"]{grid-column:1/-1;font-weight:600}
-.row input,.row select{padding:10px 10px;font-size:14px;border-radius:9px;background:var(--soft)}
+.row input,.row select{padding:8px 8px;font-size:13.5px;border-radius:8px;background:var(--soft);min-width:0}
 .row .x{border:0;background:transparent;color:var(--mu);font-size:22px;cursor:pointer;padding:0;line-height:1;width:28px;height:28px}
 .addrow{font-size:13px;font-weight:700;color:var(--tx);background:transparent;border:0;cursor:pointer;padding:6px 0;text-decoration:underline}
 .oth{margin-bottom:10px}
@@ -193,7 +193,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .foot{padding:40px 16px 44px;text-align:center;color:var(--mu);font-size:13px}
 .foot a{color:var(--tx);font-weight:600}
 .hp{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0}
-@media (max-width:380px){.row{grid-template-columns:1fr 112px 24px}.fact b{font-size:17px}}
+@media (max-width:380px){.row{grid-template-columns:minmax(0,1fr) 84px 22px}.fact b{font-size:17px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .langrow{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none;position:relative;z-index:1}
@@ -519,15 +519,15 @@ var CITIES=[{k:'khobar',ar:'الخبر',en:'Al Khobar'},{k:'dammam',ar:'الدم
 var WARS=[{k:'none',ar:'بدون ضمان',en:'No warranty'},{k:'week',ar:'أسبوع',en:'One week'},{k:'month',ar:'شهر',en:'One month'},{k:'3m',ar:'3 أشهر',en:'3 months'},{k:'6m',ar:'6 أشهر',en:'6 months'},{k:'year',ar:'سنة',en:'One year'}];
 var UNITS=[['job','uJob'],['hour','uHour'],['meter','uMeter'],['piece','uPiece'],['inspect','uInspect']];
 var CATS=[
-{id:'plumb',ar:'سباكة',en:'Plumbing',ic:'🔧',s:[['تسليك مجاري','Drain unblocking'],['تغيير سيفون','Replace flush'],['تركيب خلاط','Install mixer tap'],['تغيير محبس','Replace valve'],['تركيب سخان','Install water heater'],['إصلاح تسريب','Fix a leak'],['تركيب مغسلة','Install a sink'],['تركيب كرسي حمام','Install a toilet']]},
-{id:'elec',ar:'كهرباء',en:'Electrical',ic:'💡',s:[['تغيير لمبة','Replace bulb'],['تركيب مروحة','Install ceiling fan'],['تركيب بريزة أو مفتاح','Install socket or switch'],['إصلاح قاطع','Fix breaker'],['تركيب ثريا','Install chandelier'],['تمديد كهرباء','Wiring'],['تركيب سخان كهرباء','Install electric heater']]},
-{id:'ac',ar:'تكييف',en:'Air conditioning',ic:'❄️',s:[['تنظيف سبلت','Split AC cleaning'],['تنظيف شباك','Window AC cleaning'],['تعبئة فريون','Refrigerant top up'],['تركيب سبلت','Install split AC'],['فك ونقل مكيف','Uninstall and move AC'],['صيانة دورية','Regular maintenance']]},
-{id:'paint',ar:'دهان',en:'Painting',ic:'🎨',s:[['دهان غرفة','Paint a room'],['دهان شقة كاملة','Paint a whole apartment'],['معجون وترميم','Filler and repair'],['دهان أبواب','Paint doors'],['ورق جدران','Wallpaper']]},
-{id:'wood',ar:'نجارة',en:'Carpentry',ic:'🪚',s:[['تركيب باب','Install a door'],['إصلاح خزانة','Repair a cabinet'],['تركيب رفوف','Install shelves'],['تركيب مطبخ','Install a kitchen'],['إصلاح قفل','Fix a lock']]},
-{id:'appl',ar:'أجهزة منزلية',en:'Appliances',ic:'🧺',s:[['إصلاح غسالة','Washing machine repair'],['إصلاح ثلاجة','Fridge repair'],['إصلاح فرن','Oven repair'],['إصلاح نشافة','Dryer repair'],['تركيب غسالة صحون','Install dishwasher']]},
-{id:'clean',ar:'تنظيف',en:'Cleaning',ic:'🧽',s:[['تنظيف شقة','Apartment cleaning'],['تنظيف كنب وسجاد','Sofa and carpet cleaning'],['تنظيف خزانات مياه','Water tank cleaning'],['تنظيف واجهات','Facade cleaning'],['مكافحة حشرات','Pest control']]},
-{id:'garage',ar:'أبواب كراج',en:'Garage doors',ic:'🚪',s:[['صيانة باب كراج','Garage door service'],['تركيب موتور','Install motor'],['برمجة ريموت','Program remote'],['تغيير سبرنج','Replace spring']]},
-{id:'other',ar:'أخرى',en:'Other',ic:'➕',s:[['تركيب تلفزيون','Mount a TV'],['تركيب ستائر','Install curtains'],['تعليق مرايا ولوحات','Hang mirrors and frames'],['نقل عفش','Furniture moving']]}
+{id:'plumb',ar:'سباكة',en:'Plumbing',ic:'🔧',s:[['تسليك مجاري','Drain unblocking',120],['إصلاح تسريب مياه','Fix a water leak',150],['تركيب خلاط','Install mixer tap',80],['تغيير محبس','Replace valve',60],['تركيب سخان','Install water heater',260],['إصلاح سيفون','Fix toilet flush',80],['تركيب كرسي حمام','Install a toilet',150],['تركيب مغسلة','Install a basin',90]]},
+{id:'elec',ar:'كهرباء',en:'Electrical',ic:'💡',s:[['إصلاح قصر أو انقطاع','Fix a short or outage',150],['تركيب مروحة سقف','Install ceiling fan',210],['تركيب بريزة أو مفتاح','Install socket or switch',70],['تركيب ثريا','Install a chandelier',80],['فحص لوحة الكهرباء','Check the breaker panel',140],['تمديد خط جديد','Run a new line',200],['تغيير لمبة','Replace bulb',30]]},
+{id:'ac',ar:'تكييف',en:'Air conditioning',ic:'❄️',s:[['تنظيف سبلت','Split AC cleaning',130],['تعبئة فريون','Refrigerant top up',210],['تركيب سبلت','Install split AC',350],['فك ونقل مكيف','Remove and relocate AC',300],['تنظيف شباك','Window AC cleaning',100],['إصلاح تسريب ماء','Fix water leak',150]]},
+{id:'paint',ar:'دهان',en:'Painting',ic:'🎨',s:[['دهان غرفة','Paint a room',410],['ترميم وتلميس','Touch up and repair',210],['معالجة تشققات ورطوبة','Treat cracks and damp',310],['دهان شقة كاملة','Paint a whole apartment',1800],['ورق جدران','Wallpaper',35]]},
+{id:'wood',ar:'نجارة',en:'Carpentry',ic:'🪚',s:[['تركيب باب','Install a door',180],['إصلاح باب أو مفصلات','Fix a door or hinges',80],['إصلاح دولاب أو مطبخ','Repair a cabinet',160],['تركيب رفوف','Install shelves',90],['تغيير قفل','Change a lock',70],['تركيب مطبخ','Install a kitchen',900]]},
+{id:'appl',ar:'أجهزة منزلية',en:'Appliances',ic:'🧺',s:[['إصلاح غسالة','Washing machine repair',190],['إصلاح ثلاجة','Fridge repair',210],['إصلاح فرن','Oven repair',180],['إصلاح غسالة صحون','Dishwasher repair',190],['تركيب غسالة','Install a washing machine',120]]},
+{id:'clean',ar:'تنظيف',en:'Cleaning',ic:'🧽',s:[['تنظيف شقة','Apartment cleaning',260],['تنظيف كنب وسجاد','Sofa and carpet cleaning',210],['تنظيف خزان المياه','Water tank cleaning',230],['تنظيف واجهات','Facade cleaning',300],['تنظيف مطبخ','Kitchen deep clean',180]]},
+{id:'garage',ar:'أبواب كراج',en:'Garage doors',ic:'🚪',s:[['صيانة باب كراج','Garage door service',200],['تركيب موتور','Install a motor',700],['برمجة ريموت','Program a remote',60],['تغيير سبرنج','Replace a spring',250]]},
+{id:'other',ar:'أخرى',en:'Other',ic:'➕',s:[['تعليق تلفزيون','Mount a TV',80],['تركيب ستائر','Install curtains',55],['تعليق مرايا ولوحات','Hang mirrors and frames',60],['تعليق رفوف','Install shelves',60],['زيارة فحص وكشف','Inspection visit',0]]}
 ];
 var S={type:'tech',cities:{},cats:{},warranty:'',step:1,ref:null};
 var $=function(id){return document.getElementById(id);};
@@ -588,7 +588,11 @@ function renderChips(){
   chips($('cityChips'),CITIES,S.cities,function(){$('fCities').classList.remove('bad');});
   single($('warChips'),WARS,'warranty',function(){$('fWar').classList.remove('bad');renderSum();});
   chips($('catChips'),CATS.map(function(c){return {k:c.id,ar:c.ar,en:c.en,ic:c.ic};}),S.cats,function(k,on){
-    if(on&&S.cats[k]===true)S.cats[k]={rows:[],name:''};
+    if(on&&S.cats[k]===true){
+      var _c=CATS.find(function(x){return x.id===k;}), _r=[];
+      if(_c) _c.s.slice(0,4).forEach(function(sv){ _r.push({name:sv[0],name_en:sv[1],price:(sv[2]||''),unit:'job',code:'مقترح'}); });
+      S.cats[k]={rows:_r,name:''};   // يجي معبّى، ويعدّل أو يحذف اللي ما يناسبه
+    }
     $('fCats').classList.remove('bad'); renderSvc();
   });
 }
@@ -608,7 +612,8 @@ function renderSvc(){
     var h='<h4><span>'+c.ic+'</span>'+esc(nm(c))+'<small>'+st.rows.length+' '+t('nSvc')+'</small></h4>';
     if(c.id==='other')h+='<div class="oth"><input class="othName" data-cat="other" placeholder="'+esc(t('othCatPh'))+'" value="'+esc(st.name||'')+'"></div>';
     h+='<p class="hint" style="margin:0 0 8px">'+esc(t('sugH'))+'</p><div class="sug">';
-    c.s.forEach(function(s,i){var label=L==='ar'?s[0]:s[1];h+='<button type="button" data-cat="'+c.id+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+'</button>';});
+    c.s.forEach(function(s,i){var label=L==='ar'?s[0]:s[1];
+      h+='<button type="button" data-cat="'+c.id+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+(s[2]?' <b>'+s[2]+'</b>':'')+'</button>';});
     h+='</div><div class="rows">';
     st.rows.forEach(function(r,i){
       h+='<div class="row"><input data-cat="'+c.id+'" data-i2="'+i+'" data-f="name" placeholder="'+esc(t('svcPh'))+'" value="'+esc(r.name)+'">'
@@ -622,7 +627,7 @@ function renderSvc(){
 }
 $('svcBlocks').addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b)return; var cid=b.getAttribute('data-cat'); var c=CATS.find(function(x){return x.id===cid;}); var st=S.cats[cid]; if(!c||!st)return;
-  if(b.hasAttribute('data-sug')){var s=c.s[+b.getAttribute('data-sug')];st.rows.push({name:s[0],name_en:s[1],price:'',unit:'job',code:'مقترح'});renderSvc();focusRow(cid,st.rows.length-1,'price');}
+  if(b.hasAttribute('data-sug')){var s=c.s[+b.getAttribute('data-sug')];st.rows.push({name:s[0],name_en:s[1],price:(s[2]||''),unit:'job',code:'مقترح'});renderSvc();focusRow(cid,st.rows.length-1,'price');}
   else if(b.hasAttribute('data-add')){st.rows.push({name:'',price:'',unit:'job',code:'جديد'});renderSvc();focusRow(cid,st.rows.length-1,'name');}
   else if(b.hasAttribute('data-del')){st.rows.splice(+b.getAttribute('data-del'),1);renderSvc();}
 });
