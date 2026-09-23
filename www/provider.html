@@ -484,7 +484,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=105;
+const RIZQ_BUILD=106;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1148,12 +1148,12 @@ async function autoLoginAfterReset(){
   }catch(e){ showLogin('✅ تم تغيير كلمة المرور · سجّل الدخول الآن.'); }
 }
 /* ---- تسجيل مزوّد جديد (داخل التطبيق) ---- */
-const SIGNUP_CATS=['سباكة','كهرباء','تكييف','نجارة','دهان','أجهزة منزلية','تنظيف','مكافحة حشرات','عزل مائي','جبس وديكور','ألمنيوم','زجاج ومرايا','حدادة','سيراميك وبلاط','تمديد غاز','ستائر','كاميرات مراقبة','مصاعد','خزانات مياه','تنسيق حدائق','مسابح','أعمال عامة'];
+const SIGNUP_CATS=['سباكة','كهرباء','تكييف','أبواب','دهان','أجهزة منزلية','تنظيف','مكافحة حشرات','عزل مائي','جبس وديكور','ألمنيوم','زجاج ومرايا','حدادة','سيراميك وبلاط','تمديد غاز','ستائر','كاميرات مراقبة','مصاعد','خزانات مياه','تنسيق حدائق','مسابح','أعمال عامة'];
 const SA_CITIES=['الرياض','جدة','مكة','المدينة','الدمام','الخبر','الظهران','الأحساء','القطيف','الجبيل','بريدة','عنيزة','حائل','تبوك','أبها','خميس مشيط','نجران','جازان','ينبع','الطائف','عرعر','سكاكا','الباحة','حفر الباطن'];
 /* 🌐 أسماء المدن وأنواع الخدمات بالإنجليزي للعرض فقط؛ القيم المحفوظة والمطابقة تبقى عربية (الطلبات تخزّن اسم المدينة بالعربي).
    المدن هنا وليست في T_DICT لأن كلمة «المدينة» تُستخدم أيضاً كعنوان حقل (City). */
 const CITY_EN={'الرياض':'Riyadh','جدة':'Jeddah','مكة':'Makkah','مكة المكرمة':'Makkah','المدينة':'Madinah','المدينة المنورة':'Madinah','الدمام':'Dammam','الخبر':'Khobar','الظهران':'Dhahran','الأحساء':'Al Ahsa','القطيف':'Qatif','الجبيل':'Jubail','بريدة':'Buraidah','عنيزة':'Unaizah','حائل':'Hail','تبوك':'Tabuk','أبها':'Abha','خميس مشيط':'Khamis Mushait','نجران':'Najran','جازان':'Jazan','ينبع':'Yanbu','الطائف':'Taif','عرعر':'Arar','سكاكا':'Sakaka','الباحة':'Al Baha','حفر الباطن':'Hafar Al Batin','الخرج':'Al Kharj'};
-const CAT_EN={'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','دهان':'Painting','أجهزة منزلية':'Home appliances','تنظيف':'Cleaning','مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum & decor','ألمنيوم':'Aluminum','زجاج ومرايا':'Glass & mirrors','حدادة':'Metal work','سيراميك وبلاط':'Ceramics & tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras','مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Swimming pools','أعمال عامة':'General work'};
+const CAT_EN={'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','أبواب ونوافذ':'Doors & windows','أبواب':'Doors','دهان':'Painting','أجهزة منزلية':'Home appliances','تنظيف':'Cleaning','مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum & decor','ألمنيوم':'Aluminum','زجاج ومرايا':'Glass & mirrors','حدادة':'Metal work','سيراميك وبلاط':'Ceramics & tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras','مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Swimming pools','أعمال عامة':'General work'};
 function cityLabel(c){ if(c==null || !_uiEN()) return c; const v=CITY_EN[String(c).trim()]; return typeof v==='string'?v:c; }
 function catLabel(c){ const v=_uiEN()?CAT_EN[c]:null; return typeof v==='string'?v:c; }
 /* اسم محفوظ بالعربي (خدمة أو جهة) ← مقابله الإنجليزي من T_DICT عند العرض فقط */
@@ -2192,7 +2192,7 @@ const T_DICT = {
   "كودك · أعطه لمزوّدك يضيفك لفريقه":"Your code. Give it to your provider so they can add you to their team","تعطيه لمزوّدك ليضيفك لفريقه.":"Give it to your provider to add you to their team.","لضم فنيّيك.":"to add your technicians.",
   "هنا فينضم لفريقك.":"here to join your team.","ويأخذون كودهم، وتضيفهم أنت من":"and they get their code, and you add them from","بعد الدخول.":"after signing in.","سجّل الآن 👇":"Register now 👇",
   // أنواع الخدمات
-  "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتبريد":"AC & Cooling","نجارة":"Carpentry","دهان":"Painting","تنظيف":"Cleaning","أعمال عامة":"General work","أجهزة منزلية":"Home appliances",
+  "سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتبريد":"AC & Cooling","نجارة":"Carpentry","أبواب ونوافذ":"Doors & windows","أبواب":"Doors","دهان":"Painting","تنظيف":"Cleaning","أعمال عامة":"General work","أجهزة منزلية":"Home appliances",
   // خدمات مفردة
   "تغيير شطّاف":"Change bidet sprayer","تسليك مجاري/بالوعة":"Unclog drain / sewer","تغيير خلاط ماء":"Change water mixer","إصلاح تسريب مياه":"Fix water leak","تركيب/إصلاح سخان":"Install / repair water heater",
   "إصلاح سيفون الحمام":"Fix toilet flush","تنظيف خزان المياه":"Clean water tank","تغيير لمبة/إضاءة":"Change lamp / light","تركيب ثريا":"Install chandelier","إصلاح قصر/انقطاع":"Fix short circuit / outage",

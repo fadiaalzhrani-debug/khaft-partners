@@ -299,7 +299,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px 
     <p class="eyebrow" data-i="eyebrow">انضمام الفنيين ومقدمي الخدمات</p>
     <h1><span data-i="h1a">طلبات صيانة</span> <em data-i="h1em">جاهزة</em><br><span data-i="h1b">على جوالك.</span></h1>
     <p class="lead" data-i="lead">خافت يجيب لك عملاء الخبر والدمام والظهران، وخافت شركاء يرتّب لك الشغل من الطلب إلى الفاتورة. سجّل الحين وابدأ تستقبل الطلبات.</p>
-    <div class="cta"><a class="b-ink" href="#apply" data-i="ctaApply">قدّم طلب الانضمام</a><a class="b-ghost" href="#how" data-i="ctaHow">كيف يشتغل؟</a></div>
+    <div class="cta"><a class="b-ink" href="#apply" data-i="ctaApply">قدّم طلب الانضمام</a></div>
   </div>
 </header>
 
@@ -351,17 +351,6 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px 
     </div>
   </section>
 
-  <section class="sec" id="how">
-    <span class="tag" data-i="howTag">4 خطوات</span>
-    <h2 data-i="howH">كيف تبدأ</h2>
-    <p class="sub" data-i="howP">من النموذج إلى أول طلب.</p>
-    <ol class="steps">
-      <li><span class="n">1</span><div><b data-i="s1">عبّ النموذج</b><p data-i="s1p">خدماتك وأسعارك ومدنك، ياخذ دقيقتين.</p></div></li>
-      <li><span class="n">2</span><div><b data-i="s2">نتواصل معك</b><p data-i="s2p">نراجع طلبك ونعتمد حسابك.</p></div></li>
-      <li><span class="n">3</span><div><b data-i="s3">حمّل خافت شركاء وسجّل</b><p data-i="s3p">برقم جوالك. فني تختار «فنيين خافت»، ومؤسسة تختار «مزودين خافت».</p></div></li>
-      <li><span class="n">4</span><div><b data-i="s4">استقبل أول طلب</b><p data-i="s4p">الطلبات توصلك بإشعار، وتقبلها من جوالك.</p></div></li>
-    </ol>
-  </section>
 
   <section class="guidecard" id="guide">
     <div class="gc-ic">📘</div>
@@ -523,11 +512,11 @@ var CATS=[], CATS_FB=[
 {id:'elec',ar:'كهرباء',en:'Electrical',ic:'💡',s:[['إصلاح قصر أو انقطاع','Fix a short or outage',150],['تركيب مروحة سقف','Install ceiling fan',210],['تركيب بريزة أو مفتاح','Install socket or switch',70],['تركيب ثريا','Install a chandelier',80],['فحص لوحة الكهرباء','Check the breaker panel',140],['تمديد خط جديد','Run a new line',200],['تغيير لمبة','Replace bulb',30]]},
 {id:'ac',ar:'تكييف',en:'Air conditioning',ic:'❄️',s:[['تنظيف سبلت','Split AC cleaning',130],['تعبئة فريون','Refrigerant top up',210],['تركيب سبلت','Install split AC',350],['فك ونقل مكيف','Remove and relocate AC',300],['تنظيف شباك','Window AC cleaning',100],['إصلاح تسريب ماء','Fix water leak',150]]},
 {id:'paint',ar:'دهان',en:'Painting',ic:'🎨',s:[['دهان غرفة','Paint a room',410],['ترميم وتلميس','Touch up and repair',210],['معالجة تشققات ورطوبة','Treat cracks and damp',310],['دهان شقة كاملة','Paint a whole apartment',1800],['ورق جدران','Wallpaper',35]]},
-{id:'wood',ar:'نجارة',en:'Carpentry',ic:'🪚',s:[['تركيب باب','Install a door',180],['إصلاح باب أو مفصلات','Fix a door or hinges',80],['إصلاح دولاب أو مطبخ','Repair a cabinet',160],['تركيب رفوف','Install shelves',90],['تغيير قفل','Change a lock',70],['تركيب مطبخ','Install a kitchen',900]]},
+{id:'wood',ar:'أبواب',en:'Doors',ic:'🚪',s:[['تركيب باب','Install a door',180],['إصلاح باب أو مفصلات','Fix a door or hinges',80],['تغيير قفل','Change a lock',70]]},
 {id:'appl',ar:'أجهزة منزلية',en:'Appliances',ic:'🧺',s:[['إصلاح غسالة','Washing machine repair',190],['إصلاح ثلاجة','Fridge repair',210],['إصلاح فرن','Oven repair',180],['إصلاح غسالة صحون','Dishwasher repair',190],['تركيب غسالة','Install a washing machine',120]]},
 {id:'clean',ar:'تنظيف',en:'Cleaning',ic:'🧽',s:[['تنظيف شقة','Apartment cleaning',260],['تنظيف كنب وسجاد','Sofa and carpet cleaning',210],['تنظيف خزان المياه','Water tank cleaning',230],['تنظيف واجهات','Facade cleaning',300],['تنظيف مطبخ','Kitchen deep clean',180]]},
 {id:'garage',ar:'أبواب كراج',en:'Garage doors',ic:'🚪',s:[['صيانة باب كراج','Garage door service',200],['تركيب موتور','Install a motor',700],['برمجة ريموت','Program a remote',60],['تغيير سبرنج','Replace a spring',250]]},
-{id:'other',ar:'أخرى',en:'Other',ic:'➕',s:[['تعليق تلفزيون','Mount a TV',80],['تركيب ستائر','Install curtains',55],['تعليق مرايا ولوحات','Hang mirrors and frames',60],['تعليق رفوف','Install shelves',60],['زيارة فحص وكشف','Inspection visit',0]]}
+{id:'other',ar:'أخرى',en:'Other',ic:'➕',s:[['تعليق تلفزيون','Mount a TV',80],['تركيب ستائر','Install curtains',55],['تعليق مرايا ولوحات','Hang mirrors and frames',60],['تعليق رفوف','Install shelves',60],['إصلاح دولاب أو مطبخ','Repair a cabinet',160],['تركيب مطبخ','Install a kitchen',900],['زيارة فحص وكشف','Inspection visit',0]]}
 ];
 /* أقسام التطبيق وخدماته: نفس الكتالوج اللي يشوفه العميل، فأي خدمة يختارها
    المزوّد هي نفسها خدمة التطبيق برقمها، وقبولها ينقلها مباشرة. */

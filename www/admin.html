@@ -660,7 +660,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=131, KH_RIZQ_BUILD=105;
+const KH_APP_BUILD=134, KH_RIZQ_BUILD=106;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -776,7 +776,7 @@ function uiLocale(){ return _enUI()?'en-GB':'ar-SA'; }
 /* قيم بيانات ثابتة تُحفظ بالعربي (مدن التسجيل، خدمات المزوّدين، نوع رسالة العميل، سبب حركة المخزن) ومقابلها الإنجليزي */
 const DATA_EN={
   'مكة':'Makkah','المدينة':'Madinah','عنيزة':'Unaizah','عرعر':'Arar','سكاكا':'Sakaka','الباحة':'Al Baha','حفر الباطن':'Hafar Al Batin',
-  'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','دهان':'Painting','أجهزة منزلية':'Appliances','تنظيف':'Cleaning',
+  'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','أبواب ونوافذ':'Doors & windows','أبواب':'Doors','دهان':'Painting','أجهزة منزلية':'Appliances','تنظيف':'Cleaning',
   'مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum and decor','ألمنيوم':'Aluminium','زجاج ومرايا':'Glass and mirrors',
   'حدادة':'Metalwork','سيراميك وبلاط':'Ceramics and tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras',
   'مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Pools','أعمال عامة':'General work',
@@ -806,7 +806,7 @@ const CAT_I18N={
   plumb:{ar:'🔧 سباكة',en:'🔧 Plumbing',ne:'🔧 प्लम्बिङ',hi:'🔧 प्लंबिंग',ur:'🔧 پلمبنگ'},
   elec:{ar:'⚡ كهرباء',en:'⚡ Electrical',ne:'⚡ बिजुली',hi:'⚡ बिजली',ur:'⚡ بجلی'},
   ac:{ar:'❄️ تكييف وتبريد',en:'❄️ AC & Cooling',ne:'❄️ एसी/कुलिङ',hi:'❄️ एसी/कूलिंग',ur:'❄️ اے سی/کولنگ'},
-  carp:{ar:'🪚 نجارة',en:'🪚 Carpentry',ne:'🪚 काठको काम',hi:'🪚 बढ़ईगीरी',ur:'🪚 بڑھئی'},
+  carp:{ar:'🚪 أبواب',en:'🚪 Doors',ne:'🚪 ढोका',hi:'🚪 दरवाज़े',ur:'🚪 دروازے'},
   paint:{ar:'🎨 دهان',en:'🎨 Painting',ne:'🎨 रंगरोगन',hi:'🎨 पेंटिंग',ur:'🎨 پینٹنگ'},
   appl:{ar:'🔌 أجهزة منزلية',en:'🔌 Appliances',ne:'🔌 उपकरण',hi:'🔌 उपकरण',ur:'🔌 آلات'},
   clean:{ar:'🧽 تنظيف',en:'🧽 Cleaning',ne:'🧽 सफाइ',hi:'🧽 सफाई',ur:'🧽 صفائی'},
@@ -1344,7 +1344,7 @@ function renderTechs(){
     </div>`;
 }
 /* ═══════ 🧰 تخصصات الفنيين: تحدد سعة الحجز المتزامن لكل تخصص ═══════ */
-const TRADES_FALLBACK=[['plumb',['سباكة','Plumbing']],['elec',['كهرباء','Electrical']],['ac',['تكييف','AC']],['carp',['نجارة','Carpentry']],['paint',['دهان','Painting']],['appl',['أجهزة','Appliances']],['clean',['تنظيف','Cleaning']],['gen',['عام','General']]];
+const TRADES_FALLBACK=[['plumb',['سباكة','Plumbing']],['elec',['كهرباء','Electrical']],['ac',['تكييف','AC']],['carp',['أبواب','Doors']],['paint',['دهان','Painting']],['appl',['أجهزة','Appliances']],['clean',['تنظيف','Cleaning']],['gen',['عام','General']]];
 /* التخصصات = أقسام الكتالوج نفسها (أي قسم جديد يصير تخصصًا يمكن اختياره للفني) */
 function tradeList(){ return (CATALOG.loaded&&CATALOG.cats.length) ? [...CATALOG.cats].sort(bySort).map(c=>[c.id,[c.name,c.name_en||c.name]]) : TRADES_FALLBACK; }
 function activeTechsFor(tradeKey){ return STAFF.filter(s=>s.role==='tech'&&!s.provider_code&&s.active!==false&&['active',undefined,null,''].includes(s.status)&&techTrades(s).includes(tradeKey)); }
@@ -1386,7 +1386,9 @@ async function loadSettings(){ if(!cloudReady) return; try{ const r=await sb.fro
 const ST_GROUPS=[
   { id:'shades', t:['⛱️ المظلات والسواتر','⛱️ Shades & screens'], d:['قسم المظلات في التطبيق: تشغيله، سعر المتر، الضمان، الأنواع، والإضافات.','The shades section in the app: switch, price per m², warranty, types and add-ons.'], f:[
     ['shades_enabled','عرض القسم في التطبيق','Show the section in the app','bool'],
-    ['shade_price_m2','سعر المتر المربع (ريال)','Price per m² (SAR)','num'],
+    ['screens_enabled','عرض السواتر في التطبيق (مع المظلات)','Show privacy screens in the app (with shades)','bool'],
+    ['shade_price_m2','سعر متر قماش الشبك (ريال)','Mesh fabric price per m² (SAR)','num'],
+    ['shade_price_pvc_m2','سعر متر قماش PVC (ريال)','PVC fabric price per m² (SAR)','num'],
     ['shade_warranty_years','الضمان (سنوات)','Warranty (years)','num'],
     ['shade_min','أقل قيمة للطلب (ريال · صفر = بدون)','Minimum order (SAR · 0 = none)','num'],
     ['shade_kinds','الأنواع · سطر لكل نوع بالشكل: الأيقونة|عربي|English','Types · one per line: icon|Arabic|English','text'] ] },
