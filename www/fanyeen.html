@@ -676,6 +676,19 @@ a.card:active,.card:active{transform:scale(.97)}
 .tnum-in{background:#e11d48;color:#fff;font-size:.72rem;font-weight:900;border-radius:999px;padding:2px 9px}
 .tb-link{background:none;border:0;color:var(--gold-deep);font-weight:800;font-size:.84rem;cursor:pointer;font-family:inherit;margin-inline-start:auto}
 </style>
+<style id="kp-polish">
+/* ═ مراجعة التصميم 2026-09-25 ═ */
+:root{--muted:#6F6356}
+.pic{flex-shrink:0;vertical-align:-3px}
+.tb i{display:grid!important;place-items:center;height:24px}
+.hbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px}
+.hbtn .pic{flex-shrink:0}
+.hc-open{display:none!important}
+.hc-ic{color:#fff}
+.backbtn{display:inline-flex;align-items:center;gap:4px;min-height:40px}
+[dir=ltr] .backbtn .pic{transform:scaleX(-1)}
+.kp-invbtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font:inherit;font-weight:800;color:var(--ink,#3A3029);cursor:pointer}
+</style>
 </head>
 <body>
 
@@ -683,7 +696,7 @@ a.card:active,.card:active{transform:scale(.97)}
   <div class="wrap">
     <div class="brand" onclick="goHome()" style="cursor:pointer"><span class="mk" style="background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;padding:0"><svg viewBox="129 55 800 800" style="width:100%;height:100%;display:block" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span><span>خافت شركاء<small>فنيو خافِت</small></span></div>
     <span class="spacer"></span>
-    <button class="hbtn" id="langBtn" aria-label="اللغة" onclick="document.getElementById('langpop').classList.toggle('open')">🌐</button>
+    <button class="hbtn" id="langBtn" aria-label="اللغة · Language" onclick="document.getElementById('langpop').classList.toggle('open')"><svg class="pic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></button>
     <button class="hbtn acct" id="acctBtn" style="display:none" onclick="setTab('acct')">👤 حسابي</button>
     <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
     <div class="langpop" id="langpop"><div class="langsw">
@@ -710,6 +723,44 @@ a.card:active,.card:active{transform:scale(.97)}
    من التخزين المحلي (نفس المتصفح مع موقع العملاء).
    ============================================================ */
 const SUPABASE_URL  = 'https://zulogtqxbuqxmdmjpzqj.supabase.co';
+/* ═ أيقونات مرسومة موحّدة (مراجعة التصميم 2026-09-25): بدل الإيموجي في الشريط السفلي والبطاقات والعناوين ═ */
+const PIC={
+  home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  calplus:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12.5v5M9.5 15h5"/>',
+  tasks:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="m9 13 2 2 4-4"/>',
+  orders:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 10h6M9 14h6M9 18h3"/>',
+  team:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
+  customers:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0"/><path d="M15 10h3M15 14h3"/>',
+  grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  box:'<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
+  receipt:'<path d="M5 3h14v18l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21Z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>',
+  chart:'<path d="M3 20h18"/><rect x="5" y="11" width="3" height="7" rx="1"/><rect x="10.5" y="6" width="3" height="12" rx="1"/><rect x="16" y="13" width="3" height="5" rx="1"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  pencil:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  map:'<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
+  inbox:'<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12.5h18"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>',
+  sliders:'<path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  chev:'<path d="M9 6l6 6-6 6"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/>',
+  cancel:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+  chat:'<path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4A8 8 0 1 1 20 12Z"/>',
+  money:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/>',
+  megaphone:'<path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1Z"/><path d="M17 8.5a5 5 0 0 1 0 7"/>',
+  shield:'<path d="M12 3 4.5 6v6c0 4.5 3.2 7.7 7.5 9 4.3-1.3 7.5-4.5 7.5-9V6z"/>',
+  building:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10.5 21v-3h3v3"/>',
+  wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
+  doc:'<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+};
+function pic(n,s){ s=s||22; return '<svg class="pic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(PIC[n]||'')+'</svg>'; }
+
 const SUPABASE_ANON = 'sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
@@ -743,7 +794,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=107;
+const RIZQ_BUILD=108;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -938,9 +989,9 @@ Object.assign(I18N.ne,{ eTooMany:'दैनिक सीमा पुग्य�
 Object.assign(I18N.hi,{ eTooMany:'दैनिक सीमा पूरी हुई, बाद में कोशिश करें', eOrderNotMine:'यह कार्य इस क्रिया के लिए उपयुक्त नहीं है', eJoinBlocked:'जुड़ने का अनुरोध नहीं भेजा जा सकता, प्रबंधन से संपर्क करें' });
 Object.assign(I18N.ur,{ eTooMany:'روزانہ کی حد پوری ہو گئی، بعد میں کوشش کریں', eOrderNotMine:'یہ کام اس عمل کے لیے موزوں نہیں', eJoinBlocked:'شامل ہونے کی درخواست نہیں بھیجی جا سکتی، انتظامیہ سے رابطہ کریں' });
 // أرقام حسب اللغة: عربي ٠-٩ · أردو ۰-۹ · هندي/نيبالي ०-९ · إنجليزي 0-9
-const DIGITS={ ar:'٠١٢٣٤٥٦٧٨٩', ur:'۰۱۲۳۴۵۶۷۸۹', hi:'०१२३४५६७८९', ne:'०१२३४५६७८९', en:'0123456789' };
+const DIGITS={ ar:'0123456789', ur:'۰۱۲۳۴۵۶۷۸۹', hi:'०१२३४५६७८९', ne:'०१२३४५६७८९', en:'0123456789' };
 function ar(n){ const d=DIGITS[lang]||DIGITS.en; return String(n).replace(/[0-9]/g,x=>d[+x]); }
-function arNum(n){ return String(n).replace(/[0-9]/g,x=>'٠١٢٣٤٥٦٧٨٩'[+x]); } // عربي دائماً (للفاتورة المطبوعة للعميل)
+function arNum(n){ return String(n); } // عربي دائماً (للفاتورة المطبوعة للعميل)
 
 /* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
 function safeUrl(u, fallback){ try{ var s=String(u==null?'':u).trim(); if(s.slice(0,8).toLowerCase()==='https://' && !/\s/.test(s) && s.indexOf('"')<0 && s.indexOf(String.fromCharCode(39))<0 && s.indexOf('<')<0 && s.indexOf('>')<0 && s.indexOf(String.fromCharCode(92))<0) return s; }catch(e){} return fallback||''; }
@@ -967,7 +1018,7 @@ function dateISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(
 /* ---- السحابة ---- */
 let sb=null, cloudReady=false;
 /* ---------- وسائط العملاء ----------
-   الباكِت خاص · نولّد رابطاً موقّعاً ينتهي بعد ١٠ دقائق عند كل فتح. */
+   الباكِت خاص · نولّد رابطاً موقّعاً ينتهي بعد 10 دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
   const s=String(v).trim();
@@ -1893,7 +1944,7 @@ function printInvoiceDoc(o){
 <div class="meta"><div><span>العميل</span>${esc((o.customer||{}).name||'')}</div><div><span>الجوال</span>${esc((o.customer||{}).phone||'')}</div>${addr?`<div><span>العنوان</span>${esc(addr)}</div>`:''}${o.date?`<div><span>تاريخ الخدمة</span>${esc(o.date)}</div>`:''}</div>
 ${sec('الشغل',g.svc,'svc')}${sec('القطع والأغراض',g.part,'part')}${sec('الرسوم',g.fee,'fee')}
 <div class="sum">${sumRows}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${khVatOf(total)>0?`<div><span>منها ضريبة القيمة المضافة ${arNum(khLegal().vatPct)}٪</span><span>${m(khVatOf(total))}</span></div>`:''}${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${swapBack.length?`<div class="g"><span>↩️ فرق تبديل يرجع للعميل</span><span>${m(swapBack.reduce((a,x)=>a+(+x.amount||0),0))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
-<div class="wr"><span>🛡️ ضمان الشغل ${o.warrantyDays>0?arNum(o.warrantyDays)+' يوم':'٧ أيام'}</span>${g.part.length?'<span>🔩 ضمان القطع سنتان</span>':''}</div>
+
 ${khQr(total, khVatOf(total), o.date)?`<div id="qr" style="margin:14px auto 0;width:140px"></div>`:''}
 <div class="ft">${khLegalLine()}<br>${khVatLine()}<br>شكراً لتعاملك مع ${BRAND} · ${PHONE}</div>
 <div class="noprint"><button onclick="print()">🖨️ طباعة</button></div>
@@ -1989,7 +2040,7 @@ const LG={
 /* نصوص إضافية بخمس لغات: استعادة كلمة المرور، الهيدر، أزرار ورسائل صغيرة */
 const LG2={
   ar:{fgTitle:'استعادة كلمة المرور',fgSub:'اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد.',fgSend:'📲 أرسل كود التأكيد',fgBack:'‹ رجوع لتسجيل الدخول',fgSending:'⏳ جاري الإرسال...',fgNotReg:'❌ الرقم غير مسجّل، أو تعذّر الإرسال، حاول بعد قليل',fgFail:'تعذّر الإرسال، حاول مرة ثانية',
-      fcTitle:'تعيين كلمة مرور جديدة',fcSent:'أرسلنا كودًا إلى',fcNew:'كلمة المرور الجديدة (٦ فأكثر)',fcRepeat:'أعد كتابة كلمة المرور',fcSave:'✅ حفظ ودخول',fcResend:'لم يصلك الكود؟ إعادة الإرسال',fcNoCode:'اكتب كود التأكيد المرسل لجوالك',fcShort:'كلمة المرور ٦ خانات على الأقل',fcMismatch:'كلمتا المرور غير متطابقتين',fcBadCode:'❌ الكود غير صحيح أو انتهت صلاحيته',fcSaveFail:'تعذّر حفظ كلمة المرور، جرّب كلمة مختلفة',fcDone:'✅ تم تغيير كلمة المرور',tryAgain:'تعذّر، حاول مرة ثانية',
+      fcTitle:'تعيين كلمة مرور جديدة',fcSent:'أرسلنا كودًا إلى',fcNew:'كلمة المرور الجديدة (6 فأكثر)',fcRepeat:'أعد كتابة كلمة المرور',fcSave:'✅ حفظ ودخول',fcResend:'لم يصلك الكود؟ إعادة الإرسال',fcNoCode:'اكتب كود التأكيد المرسل لجوالك',fcShort:'كلمة المرور 6 خانات على الأقل',fcMismatch:'كلمتا المرور غير متطابقتين',fcBadCode:'❌ الكود غير صحيح أو انتهت صلاحيته',fcSaveFail:'تعذّر حفظ كلمة المرور، جرّب كلمة مختلفة',fcDone:'✅ تم تغيير كلمة المرور',tryAgain:'تعذّر، حاول مرة ثانية',
       showPass:'إظهار كلمة المرور',hidePass:'إخفاء كلمة المرور',acct:'👤 حسابي',out:'خروج',brand:'خافت شركاء',brandSub:'للفنيين',home:'الرئيسية',onway:'🚗 أنا في الطريق',onwayDone:'🚗 في الطريق، أُبلغ العميل',onwayToast:'🚗 أُبلغ العميل إنك في الطريق',popup:'اسمح بالنوافذ المنبثقة',cur:'ر.س',tour:'📘 شرح التطبيق'},
   en:{fgTitle:'Reset password',fgSub:'Enter your registered mobile number and we will send you a code.',fgSend:'📲 Send code',fgBack:'‹ Back to sign in',fgSending:'⏳ Sending...',fgNotReg:'❌ Number not registered, or sending failed. Try again shortly',fgFail:'Sending failed, try again',
       fcTitle:'Set a new password',fcSent:'We sent a code to',fcNew:'New password (6+ characters)',fcRepeat:'Repeat the password',fcSave:'✅ Save and sign in',fcResend:'No code? Resend',fcNoCode:'Enter the code sent to your phone',fcShort:'Password must be at least 6 characters',fcMismatch:'Passwords do not match',fcBadCode:'❌ Wrong or expired code',fcSaveFail:'Could not save the password, try a different one',fcDone:'✅ Password changed',tryAgain:'Failed, try again',
@@ -2060,7 +2111,7 @@ function reasonTxt(r){ r=String(r||''); if(lang==='ar') return r; REASON_EN.forE
 function applyChrome(){
   const br=document.querySelector('header.top .brand > span:last-child'); if(br) br.innerHTML=esc(lg('brand'))+'<small>'+esc(lg('brandSub'))+'</small>';
   const hl=document.querySelector('header.top .home-link .ht'); if(hl) hl.textContent=lg('home');
-  const ab=document.getElementById('acctBtn'); if(ab) ab.textContent=lg('acct');
+  const ab=document.getElementById('acctBtn'); if(ab) ab.innerHTML=pic('user',18)+'<span>'+esc(String(lg('acct')).replace(/^[^\p{L}]+/u,''))+'</span>';
   const lo=document.getElementById('logoutBtn'); if(lo) lo.textContent=lg('out');
   document.querySelectorAll('.langsw button').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
   document.documentElement.lang=lang;
@@ -2187,7 +2238,7 @@ function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0
 function toggleSet(k){ const el=document.getElementById('set_'+k); if(el) el.style.display=(el.style.display==='none'?'block':'none'); }
 async function changePass(){
   const a=((document.getElementById('np1')||{}).value)||'', b=((document.getElementById('np2')||{}).value)||'';
-  if(a.length<6){ toast(lang==='ar'?'٦ خانات على الأقل':'Min 6 characters'); return; }
+  if(a.length<6){ toast(lang==='ar'?'6 خانات على الأقل':'Min 6 characters'); return; }
   if(a!==b){ toast(lang==='ar'?'غير متطابقتين':'Do not match'); return; }
   try{ const { error }=await sb.auth.updateUser({ password:a }); if(error) throw error;
     const p1=document.getElementById('np1'),p2=document.getElementById('np2'); if(p1)p1.value=''; if(p2)p2.value=''; toggleSet('pass');
@@ -2364,7 +2415,7 @@ function renderCalendar(){
 let tab='home';                         // home | orders | inv | book | invoices | acct
 function setTab(k){ tab=k; try{window.scrollTo(0,0);}catch(e){} render(); }
 const TABL={
-  ar:['الطلبات','المستودع','حجز لعميل','الفواتير','حسابي'],
+  ar:['الطلبات','المستودع','حجز','الفواتير','حسابي'],
   en:['Jobs','Stock','Book','Invoices','Account'],
   ne:['कामहरू','स्टक','बुकिङ','बिलहरू','खाता'],
   hi:['काम','स्टॉक','बुकिंग','बिल','खाता'],
@@ -2426,13 +2477,13 @@ function renderAccountTab(){
   </div>`;
 }
 function renderTabs(){
-  const K=[['home','🏠'],['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];   // «حسابي» ثابت بالهيدر (acctBtn) بدل تبويب مكرّر
-  if(isOrgTech()) K.push(['tasks','📝']);   // «مهامي» لفني المؤسسة فقط، مع شارة عدد مهام اليوم غير المنجزة
+  const K=[['home','home'],['orders','orders'],['inv','box'],['book','calplus']];   // الفواتير صارت زرًا داخل «الطلبات» (مراجعة 2026-09-25)   // «حسابي» ثابت بالهيدر (acctBtn) بدل تبويب مكرّر
+  if(isOrgTech()) K.push(['tasks','tasks']);   // «مهامي» لفني المؤسسة فقط، مع شارة عدد مهام اليوم غير المنجزة
   const left=tasksTodayLeft();
   return `<nav class="tabbar">${K.map(([k,ic],i)=>{
     const lbl=k==='home'?(({ar:'الرئيسية',en:'Home',ur:'ہوم',ne:'गृह',hi:'होम'})[lang]||'الرئيسية'):(k==='tasks'?t('tkTitle'):tl(i-1));
     const badge=(k==='tasks'&&left)?`<em class="tnum">${ar(left)}</em>`:((k==='inv'&&invLow())?'<em class="tdot"></em>':'');
-    return `<button class="tb ${tab===k?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><i>${ic}</i><span>${lbl}</span>${badge}</button>`; }).join('')}</nav>`;
+    return `<button class="tb ${tab===k?'on':''}" data-k="${k}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><i>${pic(ic,22)}</i><span>${lbl}</span>${badge}</button>`; }).join('')}</nav>`;
 }
 /* ═ مهامي: مهام المؤسسة اليومية (provider_tasks · fix-2026-09-24-prov-app.sql) لفني المؤسسة فقط.
    القراءة عبر RLS (مهامه أو مهام الكل)، والتعديل الوحيد المسموح: done (الحارس يرفض غيره بـ KHAFET_TASK_OWNER_ONLY) ═ */
@@ -2591,7 +2642,7 @@ function schedHTML(){
     <p style="color:var(--muted);font-size:.82rem;font-weight:700;margin-top:10px">${A?'🟢 جديد · الذهبي محجوز · الأزرق مكتمل (اضغطيه للفاتورة) · الرمادي فاضي':'Green = new · Gold = booked · Blue = done (tap for invoice) · Gray = free'}</p>
   </div>`;
 }
-/* نفس إعدادات خافت: دوام ٨ص–١٠م ونافذة وصول ساعتين والجمعة عطلة */
+/* نفس إعدادات خافت: دوام 8ص–10م ونافذة وصول ساعتين والجمعة عطلة */
 const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
 function bkWindowLabel(m){ return jobTime(m)+' – '+jobTime(Math.min(m+BK_WINDOW,BK_WORK_END)); }
 /* ═ حجز لعميل: لصق طلب الواتس، رابط الموقع، وقت محدد، صورة الموقع ═ */
@@ -2781,7 +2832,7 @@ function renderBookTab(){
       : `<small>📅</small><b>＋</b><span class="mon">${A?'تاريخ أبعد':'Later date'}</span>`}
     <input type="date" min="${dateISO(today)}" value="${farActive?bkDate:''}" onchange="if(this.value)pickBkDate(this.value)" />
   </label>`;
-  /* نوافذ اليوم بالترتيب · أول مربع أول ساعتين (٨–١٠ ص) وهكذا؛ المحجوزة تنضغط لتفاصيلها والجديدة بالأخضر */
+  /* نوافذ اليوم بالترتيب · أول مربع أول ساعتين (8–10 ص) وهكذا؛ المحجوزة تنضغط لتفاصيلها والجديدة بالأخضر */
   const now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
   const isToday=bkDate===dateISO(now);
   const seenB=seenJobs();
@@ -2796,7 +2847,7 @@ function renderBookTab(){
       slots.push(`<button class="slot win ${bkTime===m&&!bkExact?'active':''}" onclick="pickBkTime(${m})">${bkWindowLabel(m)}</button>`);
     }
   }
-  /* وقت محدد (مثل ٤:١٥) وتنبيه لو فيه حجز بنفس الوقت */
+  /* وقت محدد (مثل 4:15) وتنبيه لو فيه حجز بنفس الوقت */
   const clash = bkExact && bkTime!=null ? ORDERS.find(o=>o.date===bkDate && o.status!=='cancelled' && (+o.startMin||0)<=bkTime && ((+o.endMin)||((+o.startMin||0)+60))>bkTime) : null;
   const exactRow=`<div class="bk-exact ${bkExact&&bkTime!=null?'on':''}">
       <label for="bk_exact">⏱️ ${A?'أو اختر وقت محدد':'Or pick an exact time'}</label>
@@ -3070,9 +3121,9 @@ function render(){
   const ordersContent=`${renderCalendar()}${cancelledRefundRows()}<div class="jobs">${cards}</div>`;
 
   // ═ مربّعات الرئيسية (زي لوحة الإدارة) · متعددة اللغات ═
-  const CARDS=[['orders','📋',tl(0),ar(openCount)],['inv','📦',tl(1),ar((INV||[]).length)],['book','📅',tl(2),''],['invoices','🧾',tl(3),'']];
+  const CARDS=[['orders','orders',tl(0),ar(openCount)],['inv','box',tl(1),ar((INV||[]).length)],['book','calplus',tl(2),''],['invoices','receipt',tl(3),'']];
   const openLbl=lang==='ar'?'فتح ›':lang==='en'?'Open ›':lang==='ur'?'کھولیں ›':'खोल्नुहोस् ›';
-  const cardsHTML=CARDS.map(([k,ic,lbl,sub])=>`<div class="hcard" onclick="setTab('${k}')"><span class="hc-ic">${ic}</span><h3>${lbl}</h3><p>${sub||'&nbsp;'}</p><span class="hc-open">${openLbl}</span></div>`).join('');
+  const cardsHTML=CARDS.map(([k,ic,lbl,sub])=>`<div class="hcard" onclick="setTab('${k}')"><span class="hc-ic">${pic(ic,26)}</span><h3>${lbl}</h3><p>${sub||'&nbsp;'}</p></div>`).join('');
   const homeLbl=lang==='ar'?'الرئيسية':lang==='en'?'Home':lang==='ur'?'ہوم':'गृह';
   const secLbl=({orders:tl(0),inv:tl(1),book:tl(2),invoices:tl(3),acct:tl(4),tasks:t('tkTitle')})[tab]||'';
 
@@ -3090,10 +3141,12 @@ function render(){
     else if(tab==='acct')     sec=renderAccountTab();
     else if(tab==='tasks')    sec=renderTasksTab();
     else                      sec=ordersContent;
-    view=`<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
-        <button class="backbtn" onclick="goHome()">‹ ${homeLbl}</button>
-        ${tab==='orders'?`<b style="font-size:1.12rem;font-weight:900;flex:1">${secLbl}</b>`:''}
-      </div>
+    const _back=(tab==='invoices'||tab==='acct');
+    const _backLbl=({ar:'رجوع',en:'Back',ur:'واپس',hi:'वापस',ne:'फिर्ता'})[lang]||'رجوع';
+    view=`${(_back||tab==='orders')?`<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
+        ${_back?`<button class="backbtn" onclick="${tab==='invoices'?"setTab('orders')":'goHome()'}">${pic('chev',18)} ${_backLbl}</button>`:''}
+        ${tab==='orders'?`<b style="font-size:1.12rem;font-weight:900;flex:1">${secLbl}</b><button class="kp-invbtn" onclick="setTab('invoices')">${pic('receipt',17)} ${tl(3)}</button>`:''}
+      </div>`:''}
       <div style="margin-top:12px">${sec}</div>`;
   }
   /* الشريط السفلي الثابت + مسافة تمنع تغطية آخر المحتوى */

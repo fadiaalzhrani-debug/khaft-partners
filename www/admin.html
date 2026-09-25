@@ -630,14 +630,39 @@ header.top{position:fixed;top:0;left:0;right:0;z-index:60}
 body{padding-top:calc(66px + env(safe-area-inset-top))}
 
 </style><!--/kh-skin-->
+<style id="kp-polish">
+/* ═ مراجعة التصميم 2026-09-25 ═ */
+:root{--muted:#6F6356}
+.pic{flex-shrink:0;vertical-align:-3px}
+.top .kp-hb{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px}
+.brand .mk{background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F)!important;overflow:hidden;padding:0!important}
+.hgrid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+.hgrid .hcard{padding:14px!important;gap:6px!important;text-align:start!important}
+.hgrid .hcard h3{font-size:1rem!important;line-height:1.35}
+.hgrid .hcard p{font-size:.74rem!important;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.hc-ic{--c:#8E8175;width:52px;height:52px;border-radius:16px;display:grid!important;place-items:center;color:#fff;font-size:0!important;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--c) 72%,#fff) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 88%,#000) 100%);
+  box-shadow:0 10px 18px -12px color-mix(in srgb,var(--c) 80%,transparent)}
+.hc-opts:empty{display:none}
+.hc-opt{min-height:32px;display:inline-flex;align-items:center}
+.kp-abico{display:grid;place-items:center;color:#F5C518}
+.kp-en{margin:10px 0;border:1.5px dashed var(--line,#e5e0d8);border-radius:14px;padding:8px 12px}
+.kp-en summary{cursor:pointer;font-weight:800;padding:4px 0;list-style-position:inside}
+.kp-en[open] summary{margin-bottom:6px}
+.kp-art .field{margin:0 0 12px}
+.kp-art .field>label{display:block;font-weight:800;font-size:.86rem;margin-bottom:5px;color:#333}
+.kp-art input:not([type=checkbox]):not([type=file]),.kp-art textarea{display:block;width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;font-family:inherit;font-size:.95rem;font-weight:600;background:#fff;color:inherit}
+.kp-art textarea{min-height:64px;resize:vertical;line-height:1.6}
+.kp-art .grid2{display:grid;grid-template-columns:84px 1fr;gap:8px}
+.kp-art input[type=file]{font-family:inherit;font-size:.85rem;max-width:100%}
+</style>
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="brand"><span class="mk">🏢</span><span>خافِت</span></div>
-  <a onclick="adminHomeTap()" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;background:#F5C518;color:#141414;font-weight:800;font-size:.85rem;padding:7px 12px;border-radius:10px;text-decoration:none;white-space:nowrap">🏠 الرئيسية</a>
+  <div class="brand" onclick="adminHomeTap()" role="button" tabindex="0" style="cursor:pointer"><span class="mk" style="background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;padding:0"><svg viewBox="129 55 800 800" style="width:100%;height:100%;display:block" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span><span>خافِت</span></div>
   <span class="spacer"></span>
-  <button class="logout" id="langBtn" onclick="toggleLang()" title="English / عربي">🌐 <span class="ht">EN</span></button>
-  <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
+  <button class="logout kp-hb" id="langBtn" onclick="toggleLang()" title="English / عربي" aria-label="English / عربي"><svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="ht">EN</span></button>
+  <button class="logout kp-hb" id="logoutBtn" style="display:none" onclick="logout()"><svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg><span>خروج</span></button>
 </div></header>
 <div class="wrap"><div id="app"></div></div>
 <div id="toast"></div>
@@ -647,6 +672,44 @@ body{padding-top:calc(66px + env(safe-area-inset-top))}
 <script defer src="vendor/supabase.min.js"></script>
 <script>
 const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
+/* ═ أيقونات مرسومة موحّدة (مراجعة التصميم 2026-09-25): بدل الإيموجي في الشريط السفلي والبطاقات والعناوين ═ */
+const PIC={
+  home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  calplus:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12.5v5M9.5 15h5"/>',
+  tasks:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="m9 13 2 2 4-4"/>',
+  orders:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 10h6M9 14h6M9 18h3"/>',
+  team:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
+  customers:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0"/><path d="M15 10h3M15 14h3"/>',
+  grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  box:'<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
+  receipt:'<path d="M5 3h14v18l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21Z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>',
+  chart:'<path d="M3 20h18"/><rect x="5" y="11" width="3" height="7" rx="1"/><rect x="10.5" y="6" width="3" height="12" rx="1"/><rect x="16" y="13" width="3" height="5" rx="1"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  pencil:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  map:'<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
+  inbox:'<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12.5h18"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>',
+  sliders:'<path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  chev:'<path d="M9 6l6 6-6 6"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/>',
+  cancel:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+  chat:'<path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4A8 8 0 1 1 20 12Z"/>',
+  money:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/>',
+  megaphone:'<path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1Z"/><path d="M17 8.5a5 5 0 0 1 0 7"/>',
+  shield:'<path d="M12 3 4.5 6v6c0 4.5 3.2 7.7 7.5 9 4.3-1.3 7.5-4.5 7.5-9V6z"/>',
+  building:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10.5 21v-3h3v3"/>',
+  wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
+  doc:'<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+};
+function pic(n,s){ s=s||22; return '<svg class="pic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(PIC[n]||'')+'</svg>'; }
+
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
@@ -680,7 +743,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=140, KH_RIZQ_BUILD=107;
+const KH_APP_BUILD=141, KH_RIZQ_BUILD=108;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -791,7 +854,7 @@ async function regenJoinCodeA(){
 function copyJoinCodeA(){ try{ navigator.clipboard.writeText(JOIN_CODE); toast(LX('📋 نُسخ الكود ','📋 Code copied ')+JOIN_CODE); }catch(e){ prompt(LX('انسخي الكود:','Copy the code:'), JOIN_CODE); } }
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
 function _enUI(){ try{ return _uiEN(); }catch(e){ return false; } }   // آمنة حتى قبل تهيئة UILANG
-function arDigits(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }   // دائمًا أرقام عربية (للمعرّفات الثابتة مثل رقم الطلب)
+function arDigits(n){ return String(n); }   // الأرقام إنجليزية في كل الشاشات (2026-09-25، مثل تطبيق العميل)   // دائمًا أرقام عربية (للمعرّفات الثابتة مثل رقم الطلب)
 function ar(n){ if(_enUI()) return String(n); return arDigits(n); }
 function money(n){ if(_enUI()) return n+' SAR'; return ar(n)+' ر.س'; }
 function uiLocale(){ return _enUI()?'en-GB':'ar-SA'; }
@@ -907,7 +970,8 @@ async function loadCatalog(){
   if(!cloudReady) return;
   try{
     const [c,s,p]=await Promise.all([ sb.from('khafet_categories').select('*'), sb.from('khafet_services').select('*'), sb.from('khafet_service_parts').select('*').order('sort') ]);
-    if(!c.error && !s.error){ CATALOG={cats:c.data||[], svcs:s.data||[], parts:(!p.error&&p.data)||[], loaded:true}; }
+    if(!c.error && !s.error){ CATALOG={cats:c.data||[], svcs:s.data||[], parts:(!p.error&&p.data)||[], loaded:true};
+      try{ CATALOG.cats.concat(CATALOG.svcs).forEach(x=>{ if(x&&x.name&&x.name_en) T_DICT_N[_west(x.name).trim()]=x.name_en; }); }catch(e){} }
   }catch(e){}
 }
 const bySort=(a,b)=>(+a.sort||0)-(+b.sort||0);
@@ -1066,7 +1130,7 @@ async function savePrices(){
 
 let sb=null, cloudReady=false;
 /* ---------- وسائط العملاء ----------
-   الباكِت خاص · رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
+   الباكِت خاص · رابط موقّع ينتهي بعد 10 دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
   const s=String(v).trim();
@@ -1247,7 +1311,7 @@ async function loadBiz(force){
 }
 function bizNum(n){ return ar(Math.round(+n||0)); }
 function bizPct(n){ return (n==null||isNaN(+n))?'—':ar((+n).toFixed(1))+'٪'; }
-function bizMonthName(m){ const p=String(m||'').split('-'); const M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function bizMonthName(m){ const p=String(m||'').split('-'); if(_enUI()){ const E=['January','February','March','April','May','June','July','August','September','October','November','December']; return (E[(+p[1]||1)-1]||m)+' '+(p[0]||''); } const M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   return (M[(+p[1]||1)-1]||m)+' '+ar(p[0]||''); }
 function bizCard(t,v,s,cls){ return '<div class="bizc '+(cls||'')+'"><span class="bz-t">'+t+'</span><b class="bz-v">'+v+'</b>'+(s?'<small class="bz-s">'+s+'</small>':'')+'</div>'; }
 function renderBiz(){
@@ -1266,7 +1330,7 @@ function renderBiz(){
     bizCard(LX('متوسط الطلب','Average order'), money(g('aov',0)), LX('عمر النشاط '+ar(g('months_active',0))+' شهر',''),'')+
     bizCard(LX('الطلبات','Orders'), bizNum(g('orders_live',0)), LX('منجزة '+ar(g('orders_done',0))+' · ملغاة '+ar(g('orders_cancelled',0)),''),'')+
     bizCard(LX('نسبة الإنجاز','Completion rate'), bizPct(T.done_rate), LX('الإلغاء '+bizPct(T.cancel_rate),''),'')+
-    bizCard(LX('العملاء','Customers'), bizNum(g('customers',0)), LX('نشط آخر ٩٠ يوم '+ar(g('active_90d',0)),''),'')+
+    bizCard(LX('العملاء','Customers'), bizNum(g('customers',0)), LX('نشط آخر 90 يوم '+ar(g('active_90d',0)),''),'')+
     bizCard(LX('نسبة التكرار','Repeat rate'), bizPct(T.repeat_rate), LX(ar(g('orders_per_customer',0))+' طلب لكل عميل',''),'')+
     bizCard(LX('متوسط إنفاق العميل','Customer lifetime value'), money(g('ltv',0)), '', '')+
     bizCard(LX('التقييم','Rating'), (T.avg_rating?ar(T.avg_rating):'—')+' ★', LX(ar(g('ratings',0))+' تقييم · '+ar(g('five_star',0))+' خمس نجوم',''),'')+
@@ -1333,7 +1397,7 @@ function dashDefs(){
     ['stock_val','📦',LX('قيمة المستودع','Stock value'), money(sum(I,it=>(+it.qty||0)*(+it.buy_price||0))), LX('بسعر الشراء','at cost'), 'store', ''],
     ['stock_sell','🏷️',LX('قيمة البيع المتوقعة','Expected sale value'), money(sum(I,it=>(+it.qty||0)*(+it.sell_price||0))), LX('لو انباع كله','if all sold'), 'store', 'green'],
     ['stock_items','🔢',LX('أصناف المستودع','Stock items'), ar(I.length), ar(sum(I,it=>it.qty))+' '+LX('قطعة','pieces'), 'store', ''],
-    ['stock_low','⚠️',LX('أصناف ناقصة','Items to reorder'), ar(lowItems.length), lowItems.slice(0,2).map(it=>it.name).join(' · '), 'store', lowItems.length?'warn':''],
+    ['stock_low','⚠️',LX('أصناف ناقصة','Items to reorder'), ar(lowItems.length), lowItems.slice(0,2).map(it=>(_uiEN()&&it.name_en)?it.name_en:it.name).join(' · '), 'store', lowItems.length?'warn':''],
     ['sms','✉️',LX('رصيد الرسائل','SMS balance'), SMS_BAL?ar(SMS_BAL.balance):'…', SMS_BAL&&SMS_BAL.is_low?LX('اشحن قريبًا','top up soon'):'', '', (SMS_BAL&&SMS_BAL.is_low)?'warn':''],
     ['cmp','📣',LX('شكاوى مفتوحة','Open complaints'), ar((COMPLAINTS_A||[]).filter(c=>c.status!=='closed').length), '', 'cust', ''],
     ['rating','⭐',LX('متوسط التقييم','Average rating'), avg? avg.toFixed(1):'—', ar(rated.length)+' '+LX('تقييم','ratings'), 'orders', ''],
@@ -1431,7 +1495,7 @@ function renderTechs(){
       <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله وكلمة المرور · بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.</p>
       <div class="field"><input id="nt_name" placeholder="الاسم (مثال: أحمد علي)" /></div>
       <div class="field"><input id="nt_phone" placeholder="رقم جواله (05xxxxxxxx)" inputmode="tel" /></div>
-      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٨ خانات فأكثر)" /></div>
+      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (8 خانات فأكثر)" /></div>
       <button class="sbtn ok" style="width:100%;margin-top:6px" onclick="addTech()">إنشاء حساب الفني</button>
     </div>`;
 }
@@ -1506,6 +1570,7 @@ const ST_GROUPS=[
   { id:'policy', t:['🛡️ الإلغاء والضمان','🛡️ Cancellation & warranty'], d:['الإلغاء وتغيير الموعد مجاني قبل الموعد بهذي الساعات، وبعدها عبر التواصل فقط.','Free cancel or reschedule until this many hours before the visit, then only by contacting you.'], f:[
     ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
     ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
+    ['parts_warranty_days','ضمان القطع (أيام)','Parts warranty (days)','num'],
     ['warranty_days','ضمان الشغل للطلبات اللي يدخلها الموظف (أيام)','Work warranty for staff-entered orders (days)','num'],
     ['small_order_under','رسوم الطلب الصغير تنضاف إذا مجموع الطلب (الخدمات مع الأغراض) أقل من (ريال · 0 يوقفها)','Small order fee applies when the order total (services plus parts) is under (SAR · 0 turns it off)','num'],
     ['small_order_note','التوضيح الصغير تحت رسوم الطلب الصغير في الفاتورة (فاضي = النص التلقائي)','Small note under the small order fee in the invoice (empty = automatic text)','text'],
@@ -1715,7 +1780,7 @@ async function addTech(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
   const name=g('nt_name'), phone=g('nt_phone'), password=g('nt_pass');
   if(!name||!phone){ toast('عبّي الاسم ورقم الجوال'); return; }
-  if(password.length<8){ toast('كلمة المرور ٨ خانات فأكثر'); return; }
+  if(password.length<8){ toast('كلمة المرور 8 خانات فأكثر'); return; }
   toast('⏳ جارٍ إنشاء الحساب...');
   const d=await callStaffAdmin({ action:'create', name, phone, password, role:'tech' });
   if(d&&d.ok){
@@ -1731,8 +1796,8 @@ async function toggleTechActive(uid, makeActive){
   else toast('⚠️ '+((d&&d.error)||'تعذّر'));
 }
 async function resetTechPass(uid){
-  const p=prompt(LX('كلمة المرور الجديدة (٨ خانات على الأقل):','New password (at least 8 characters):')); if(p==null) return;
-  if(p.trim().length<8){ toast('٨ خانات على الأقل'); return; }
+  const p=prompt(LX('كلمة المرور الجديدة (8 خانات على الأقل):','New password (at least 8 characters):')); if(p==null) return;
+  if(p.trim().length<8){ toast('8 خانات على الأقل'); return; }
   const d=await callStaffAdmin({ action:'set_password', user_id:uid, password:p.trim() });
   toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
 }
@@ -1799,13 +1864,14 @@ async function artSave(){
   const rec={ emoji:g('ar_emoji').trim()||'💡', category:g('ar_cat').trim()||'سلامة',
     title:g('ar_title').trim(), excerpt:g('ar_exc').trim(), body:g('ar_body'),
     image_url:artEditing.image_url||null, published:!!(document.getElementById('ar_pub')||{}).checked,
-    sort:Number(g('ar_sort'))||0 };
-  if(!rec.title){ toast('اكتب عنوان المقال'); return; }
+    sort:Number(g('ar_sort'))||0,
+    title_en:g('ar_title_en').trim()||null, excerpt_en:g('ar_exc_en').trim()||null, body_en:g('ar_body_en').trim()||null, category_en:g('ar_cat_en').trim()||null };
+  if(!rec.title){ toast(LX('اكتب عنوان المقال','Enter the article title')); return; }
   try{
     if(artEditing.id){ const { error }=await sb.from('khafet_articles').update(rec).eq('id',artEditing.id); if(error) throw error; }
     else { const { error }=await sb.from('khafet_articles').insert(rec); if(error) throw error; }
-    toast('✅ حُفظ المقال'); artEditing=null; await loadArticles();
-  }catch(e){ toast('⚠️ '+(e.message||'تعذّر الحفظ')); }
+    toast(LX('✅ حُفظ المقال','✅ Article saved')); artEditing=null; await loadArticles();
+  }catch(e){ toast('⚠️ '+(e.message||LX('تعذّر الحفظ','Could not save'))); }
 }
 async function artDelete(id){
   if(!confirm(LX('حذف هذا المقال نهائياً؟','Delete this article for good?'))) return;
@@ -1839,7 +1905,7 @@ function renderSolutionsAdmin(){
     <div class="sub-h" style="margin:12px 0 6px;font-weight:900;color:var(--muted);font-size:.85rem">📍 ${esc(g)}</div>`+groups[g].map(s=>`
     <div class="rline">
       ${s.image_url?`<img class="sol-thumb" src="${esc(s.image_url)}" alt="" loading="lazy">`:`<span class="sol-thumb ph">${esc(s.icon||'🔧')}</span>`}
-      <div class="rl-t"><b>${esc(s.icon||'🔧')} ${esc(s.title)}</b><small>${s.active===false?LX('⚪ مخفي','⚪ Hidden'):LX('🟢 ظاهر','🟢 Visible')} · ${+s.price>0?money(s.price):LX('بعد المعاينة','after inspection')}${s.service_id?'':' · '+LX('⚠️ بلا خدمة مرتبطة','⚠️ no linked service')}</small></div>
+      <div class="rl-t"><b>${esc(s.icon||'🔧')} ${esc(_uiEN()&&s.title_en?s.title_en:s.title)}</b><small>${s.active===false?LX('⚪ مخفي','⚪ Hidden'):LX('🟢 ظاهر','🟢 Visible')} · ${+s.price>0?money(s.price):LX('بعد المعاينة','after inspection')}${s.service_id?'':' · '+LX('⚠️ بلا خدمة مرتبطة','⚠️ no linked service')}</small></div>
       <button class="sbtn" data-id="${esc(s.id)}" onclick="editSolution(this.dataset.id)">✏️</button>
       <button class="sbtn ${s.active===false?'ok':''}" data-id="${esc(s.id)}" onclick="solToggle(this.dataset.id,${s.active===false})">${s.active===false?LX('أظهر','Show'):LX('إخفاء','Hide')}</button>
       <button class="sbtn danger" data-id="${esc(s.id)}" onclick="solDelete(this.dataset.id)">🗑️</button>
@@ -1900,6 +1966,14 @@ function editSolution(id){
       <label>➕ ${LX('مدة كل وحدة إضافية (فاضي = نفس المدة)','Minutes per extra unit')}<input id="so_xdur" type="number" min="0" step="5" inputmode="numeric" value="${_xdur}"></label>
     </div>
     <label>🔢 ${LX('اسم الوحدة لو العميل يقدر يطلب أكثر من وحدة (مثال: شفاط). فاضي = وحدة واحدة فقط','Unit name if customers can order several (e.g. fan). Empty = single')}<input id="so_unit" value="${esc(s.unit_label||'')}" placeholder="${LX('مثال: شفاط','e.g. fan')}"></label>
+    <details class="kp-en"${s.title_en?' open':''}><summary>🌐 ${LX('النسخة الإنجليزية','English version')}</summary>
+      <label>${LX('العنوان بالإنجليزي','Title in English')}<input id="so_title_en" dir="ltr" value="${esc(s.title_en||'')}"></label>
+      <label>😕 ${LX('المشكلة بالإنجليزي','Problem in English')}<textarea id="so_problem_en" dir="ltr" rows="3">${esc(s.problem_en||'')}</textarea></label>
+      <label>🔍 ${LX('ليش تصير بالإنجليزي','Why it happens, in English')}<textarea id="so_cause_en" dir="ltr" rows="3">${esc(s.cause_en||'')}</textarea></label>
+      <label>✅ ${LX('الحل بالإنجليزي (كل خطوة بسطر)','The fix in English (one step per line)')}<textarea id="so_solution_en" dir="ltr" rows="3">${esc(s.solution_en||'')}</textarea></label>
+      <label>📦 ${LX('وش يشمل السعر بالإنجليزي','What the price includes, in English')}<textarea id="so_includes_en" dir="ltr" rows="2">${esc(s.includes_en||'')}</textarea></label>
+      <label>🔘 ${LX('نص زر الطلب بالإنجليزي','Order button text in English')}<input id="so_cta_en" dir="ltr" value="${esc(s.cta_en||'')}"></label>
+    </details>
     <label class="cg-sw"><input type="checkbox" id="so_active" ${s.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
     <div class="cg-acts"><button class="sbtn ok" data-id="${esc(s.id)}" onclick="saveSolution(this.dataset.id)">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
 }
@@ -1912,12 +1986,13 @@ async function saveSolution(id){
   if(id) row.id=id;
   // الخدمة المرتبطة: تُنشأ تلقائيًا في قسم «حلول» (مخفي من الشبكة) حتى يقدر العميل يحجزها
   row.unit_label=(cgVal('so_unit')||'').trim()||null;
+  ['title','problem','cause','solution','includes','cta'].forEach(k=>{ row[k+'_en']=cgVal('so_'+k+'_en')||null; });
   const _durV=Math.min(600,Math.max(15,Math.round(Number(cgVal('so_dur'))||60)));
   const _xRaw=cgVal('so_xdur'); const _xdurV=(_xRaw===''||_xRaw==null)?null:Math.min(600,Math.max(0,Math.round(Number(_xRaw)||0)));
   let svcId=(old&&old.service_id)||null;
   try{
-    if(!svcId){ svcId=solSlug(title); const ins=await sb.from('khafet_services').upsert({ id:svcId, cat_id:row.group_key==='ajyal'?'ajyal':'gen', name:title, icon:row.icon, price, duration:_durV, extra_duration:_xdurV, custom:price<=0, hidden:true, active:true, quick:false, description:(row.problem||'').split('\n')[0].slice(0,140), sort:900 }); if(ins.error) svcId=null; }
-    else { await sb.from('khafet_services').update({ name:title, icon:row.icon, price, duration:_durV, extra_duration:_xdurV, custom:price<=0, active:true }).eq('id',svcId); }
+    if(!svcId){ svcId=solSlug(title); const ins=await sb.from('khafet_services').upsert({ id:svcId, cat_id:row.group_key==='ajyal'?'ajyal':'gen', name:title, name_en:row.title_en||null, icon:row.icon, price, duration:_durV, extra_duration:_xdurV, custom:price<=0, hidden:true, active:true, quick:false, description:(row.problem||'').split('\n')[0].slice(0,140), sort:900 }); if(ins.error) svcId=null; }
+    else { await sb.from('khafet_services').update({ name:title, name_en:row.title_en||null, icon:row.icon, price, duration:_durV, extra_duration:_xdurV, custom:price<=0, active:true }).eq('id',svcId); }
   }catch(e){ svcId=(old&&old.service_id)||null; }
   if(svcId) row.service_id=svcId;
   try{
@@ -1940,28 +2015,34 @@ async function solDelete(id){
 function renderArticles(){
   if(artEditing){
     const a=artEditing;
-    return `<div class="field"><label>الأيقونة والتصنيف</label>
+    return `<div class="kp-art"><div class="field"><label>${LX('الأيقونة والتصنيف','Icon and category')}</label>
         <div class="grid2"><input id="ar_emoji" value="${esc(a.emoji||'')}" placeholder="💡" />
         <input id="ar_cat" value="${esc(a.category||'')}" placeholder="سلامة / سباكة / كهرباء" /></div></div>
-      <div class="field"><label>العنوان *</label><input id="ar_title" value="${esc(a.title||'')}" placeholder="مثال: ٧ علامات تسريب مياه" /></div>
-      <div class="field"><label>مقدّمة قصيرة (تظهر في القائمة)</label><textarea id="ar_exc" rows="2">${esc(a.excerpt||'')}</textarea></div>
-      <div class="field"><label>المقال</label><textarea id="ar_body" rows="10" placeholder="اكتبي المقال هنا...">${esc(a.body||'')}</textarea></div>
-      <div class="field"><label>صورة المقال</label>
+      <div class="field"><label>${LX('العنوان','Title')} *</label><input id="ar_title" value="${esc(a.title||'')}" placeholder="مثال: 7 علامات تسريب مياه" /></div>
+      <div class="field"><label>${LX('مقدّمة قصيرة (تظهر في القائمة)','Short intro (shown in the list)')}</label><textarea id="ar_exc" rows="2">${esc(a.excerpt||'')}</textarea></div>
+      <div class="field"><label>${LX('المقال','Article')}</label><textarea id="ar_body" rows="10" placeholder="اكتب المقال هنا...">${esc(a.body||'')}</textarea></div>
+      <details class="kp-en"${a.title_en?' open':''}><summary>🌐 ${LX('النسخة الإنجليزية','English version')}</summary>
+        <div class="field"><label>${LX('التصنيف بالإنجليزي','Category in English')}</label><input id="ar_cat_en" dir="ltr" value="${esc(a.category_en||'')}" placeholder="Safety" /></div>
+        <div class="field"><label>${LX('العنوان بالإنجليزي','Title in English')}</label><input id="ar_title_en" dir="ltr" value="${esc(a.title_en||'')}" /></div>
+        <div class="field"><label>${LX('المقدّمة بالإنجليزي','Intro in English')}</label><textarea id="ar_exc_en" dir="ltr" rows="2">${esc(a.excerpt_en||'')}</textarea></div>
+        <div class="field"><label>${LX('المقال بالإنجليزي','Article in English')}</label><textarea id="ar_body_en" dir="ltr" rows="10">${esc(a.body_en||'')}</textarea></div>
+      </details>
+      <div class="field"><label>${LX('صورة المقال','Article photo')}</label>
         ${a.image_url?`<img src="${esc(a.image_url)}" style="width:100%;max-height:170px;object-fit:cover;border-radius:10px;margin-bottom:8px" />`:''}
         <input type="file" accept="image/*" onchange="artUpload(this)" /></div>
-      <div class="field"><label>الترتيب</label><input id="ar_sort" type="number" value="${a.sort||0}" /></div>
-      <label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="ar_pub" ${a.published!==false?'checked':''} /> منشور للعملاء</label>
-      <button class="sbtn ok" style="width:100%" onclick="artSave()">💾 حفظ المقال</button>
-      <button class="sbtn" style="width:100%;margin-top:8px" onclick="artCancel()">إلغاء</button>`;
+      <div class="field"><label>${LX('الترتيب','Order')}</label><input id="ar_sort" type="number" value="${a.sort||0}" /></div>
+      <label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="ar_pub" ${a.published!==false?'checked':''} /> ${LX('منشور للعملاء','Published to customers')}</label>
+      <button class="sbtn ok" style="width:100%" onclick="artSave()">💾 ${LX('حفظ المقال','Save article')}</button>
+      <button class="sbtn" style="width:100%;margin-top:8px" onclick="artCancel()">${LX('إلغاء','Cancel')}</button></div>`;
   }
   const rows=ARTICLES.length? ARTICLES.map(a=>`
     <div class="rline">
-      <div class="rl-t"><b>${esc(a.emoji||'')} ${esc(a.title)}</b><small>${a.published===false?LX('⚪ مسودّة','⚪ Draft'):LX('🟢 منشور','🟢 Published')} · ${esc(trData(a.category||''))}</small></div>
+      <div class="rl-t"><b>${esc(a.emoji||'')} ${esc(_uiEN()&&a.title_en?a.title_en:a.title)}</b><small>${a.published===false?LX('⚪ مسودّة','⚪ Draft'):LX('🟢 منشور','🟢 Published')} · ${esc(trData(a.category||''))}</small></div>
       <button class="sbtn" data-id="${esc(a.id)}" onclick="artEdit(this.dataset.id)">✏️</button>
-      <button class="sbtn ${a.published===false?'ok':''}" data-id="${esc(a.id)}" onclick="artTogglePub(this.dataset.id,${a.published===false})">${a.published===false?'انشر':'إخفاء'}</button>
+      <button class="sbtn ${a.published===false?'ok':''}" data-id="${esc(a.id)}" onclick="artTogglePub(this.dataset.id,${a.published===false})">${a.published===false?LX('انشر','Publish'):LX('إخفاء','Hide')}</button>
       <button class="sbtn danger" data-id="${esc(a.id)}" onclick="artDelete(this.dataset.id)">🗑️</button>
-    </div>`).join('') : `<p style="color:var(--muted)">لا توجد مقالات بعد.</p>`;
-  return `${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="artNew()">➕ مقال جديد</button>`;
+    </div>`).join('') : `<p style="color:var(--muted)">${LX('لا توجد مقالات بعد.','No articles yet.')}</p>`;
+  return `${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="artNew()">➕ ${LX('مقال جديد','New article')}</button>`;
 }
 async function logStock(it, delta, reason, actor){
   const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:actor||'المؤسسة' };
@@ -2048,7 +2129,15 @@ function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return;
 function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
 function toggleReviewAnon(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewAnon=!o.reviewAnon; patch(o.dbId,{review_anon:o.reviewAnon}); toast(o.reviewAnon?'👤 أُخفي اسم العميل':'👤 يظهر اسم العميل'); render(); }
 function toggleReviewHidden(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewHidden=!o.reviewHidden; patch(o.dbId,{review_hidden:o.reviewHidden}); toast(o.reviewHidden?'🙈 أُخفي التقييم من الرئيسية':'👁️ يظهر التقييم في الرئيسية'); render(); }
-async function approveProvider(phone,status){ const p0=PROVIDERS.find(x=>x.phone===phone); if(status==='approved' && p0 && (!/^[0-9]{10}$/.test(String(p0.cr_number||'')) || !p0.cr_doc_path)){ toast(LX('🧾 لازم رقم السجل التجاري (10 أرقام) وصورته قبل الاعتماد','🧾 The CR number (10 digits) and its document are required before approval')); return; } if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
+async function approveProvider(phone,status){ const p0=PROVIDERS.find(x=>x.phone===phone); const upd={status};
+  if(status==='approved' && p0){
+    let cr=String(p0.cr_number||'');
+    if(!/^[0-9]{10}$/.test(cr)){ const v=prompt(LX('رقم السجل التجاري للمزوّد (10 أرقام):','Provider CR number (10 digits):'),''); if(v==null) return;
+      cr=String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^0-9]/g,'');
+      if(!/^[0-9]{10}$/.test(cr)){ toast(LX('🧾 رقم السجل لازم 10 أرقام','🧾 The CR number must be 10 digits')); return; } upd.cr_number=cr; }
+    if(!p0.cr_doc_path && !confirm(LX('ما فيه صورة سجل مرفوعة. تحققت من السجل بنفسك (مثلًا وصلك بالواتساب)؟','No CR image is uploaded. Did you verify the CR yourself?'))) return;
+  }
+  if(cloudReady){ try{ const { error }=await sb.from('khafet_providers').update(upd).eq('phone',phone); if(error) throw error; }catch(e){ toast(LX('⚠️ ما انحفظ، حاول مرة ثانية','⚠️ Not saved, try again')); return; } if(p0&&upd.cr_number) p0.cr_number=upd.cr_number; } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
 
 /* ---- الدخول ---- */
 /* الدخول بالجوال + رمز SMS (بدون كلمة مرور) */
@@ -2466,12 +2555,13 @@ function render(){
     ['biz','📈',LX('أرقام المستثمر','Investor numbers'), 0, LX('كل الأرقام اللي يطلبها مشترٍ أو ممول · جاهزة للطباعة','Everything a buyer or investor asks for'), false],
     ['settings','⚙️',LX('الإعدادات','Settings'), 0, LX('العمولة، الإلغاء، الضمان، التغطية، المواعيد، الباقات، التواصل','Commission, cancellation, warranty, coverage, hours, plans, contact'), false],
   ];
+  const _ADMIC={orders:['inbox','#27B9B5'],cancels:['cancel','#E45C86'],team:['team','#3796D3'],cust:['chat','#8E6BD8'],store:['box','#F0B21A'],prices:['grid','#EC8434'],notify:['megaphone','#D9534F'],joins:['doc','#27B9B5'],solutions:['home','#3EAD5E'],biz:['chart','#3796D3'],settings:['sliders','#7A6A5C']};
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
     <div class="hcard" onclick="setAdminSection('${k}')">
-      <div class="hc-top"><span class="hc-ic">${ic}</span>${n>0?`<span class="hc-badge">${ar(n)}</span>`:''}</div>
+      <div class="hc-top"><span class="hc-ic" style="--c:${(_ADMIC[k]||[])[1]||'#8E8175'}">${pic((_ADMIC[k]||[])[0]||'grid',26)}</span>${n>0?`<span class="hc-badge">${ar(n)}</span>`:''}</div>
       <h3>${t}</h3>
       <p>${desc}</p>
-      <div class="hc-opts"><span class="hc-opt">فتح ›</span>${exp?`<span class="hc-opt" onclick="event.stopPropagation();exportSection('${k}')">⤓ تصدير</span>`:''}</div>
+      <div class="hc-opts">${exp?`<span class="hc-opt" onclick="event.stopPropagation();exportSection('${k}')">⤓ تصدير</span>`:''}</div>
     </div>`).join('')}</div>`;
   let body='';
   if(adminSection==='orders'){
@@ -2510,7 +2600,7 @@ function render(){
   }
   const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),cancels:LX('❌ طلبات الإلغاء','❌ Cancellation requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
-    <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
+    <div class="admin-bar"><span class="ico kp-abico">${pic('building',26)}</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     ${dashHtml()}
     ${adminSection===''
       ? smsBalHtml()+homeCards+audiencePanelHtml()
@@ -2628,7 +2718,7 @@ function audiencePanelHtml(){
     </div>
   </div>`;
 }
-function adminHomeTap(){ try{ if(typeof loggedIn!=='undefined' && loggedIn && typeof adminSection!=='undefined' && adminSection){ setAdminSection(''); window.scrollTo(0,0); return; } }catch(e){} location.href='index.html#stay'; }
+function adminHomeTap(){ try{ if(typeof loggedIn!=='undefined' && loggedIn){ if(typeof adminSection!=='undefined' && adminSection) setAdminSection(''); window.scrollTo(0,0); return; } }catch(e){} location.href='index.html#stay'; }
 function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='cancels') loadCancelReqs().then(render); if(s==='team') loadCommission().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
 
 /* ═══════ 📨 طلبات الانضمام: من نموذج الانضمام مباشرة إلى جدول khafet_join_requests ═══════ */
@@ -2646,7 +2736,7 @@ function jrScore(x){
   const d=(x&&x.data&&typeof x.data==='object')?x.data:{}; let s=0;
   if(/مؤسسة/.test(String(d.type||''))) s+=2; if(d.doc||d.company) s+=1;
   s+=Math.min(4, Math.max(0, Math.floor((+x.services_count||0)/3)));
-  const w=String(d.warranty||''); if(/سنة/.test(w)) s+=4; else if(/6|٦/.test(w)) s+=3; else if(/3|٣/.test(w)) s+=3; else if(/شهر/.test(w)) s+=2; else if(/أسبوع/.test(w)) s+=1;
+  const w=String(d.warranty||''); if(/سنة/.test(w)) s+=4; else if(/6|6/.test(w)) s+=3; else if(/3|3/.test(w)) s+=3; else if(/شهر/.test(w)) s+=2; else if(/أسبوع/.test(w)) s+=1;
   if((Array.isArray(x.cities)?x.cities:[]).length>=2) s+=1;
   if(d.portfolio) s+=2; if((Array.isArray(d.equipment)?d.equipment:[]).some(e=>/سيارة/.test(String(e||'')))) s+=1;
   const e=String(d.exp||''); if(/10/.test(e)) s+=3; else if(/5/.test(e)) s+=2; else if(/3/.test(e)) s+=1;
@@ -2656,6 +2746,22 @@ function jrStars(n){ const k=Math.max(0,Math.min(5,Math.round(n/3))); return '�
 function jrWhen(ts){
   try{ const d=new Date(ts); const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     return dayLabel(iso)+' · '+fmtTime(d.getHours()*60+d.getMinutes()); }catch(e){ return ''; }
+}
+/* اعتماد طلب الانضمام: الخادم ينشئ صف المزوّد معتمدًا (approve_join_request)، والمزوّد يفعّل دخوله من «أول مرة؟ فعّل حسابك» */
+const JR_LINK='https://fadiaalzhrani-debug.github.io/khaft-partners/www/provider.html';
+const JR_WELCOME='حياك الله في خافت شركاء! تم اعتماد طلبك. حدّث أو حمّل تطبيق «خافت شركاء»، وافتح «مزودين خافِت»، واختر «أول مرة؟ فعّل حسابك» واكتب رقم جوالك هذا، وبعدها تختار كلمة المرور. وتقدر تدخل من المتصفح كمان: '+JR_LINK;
+const JR_WELCOME_EN='Welcome to Khafet Partners! Your request is approved. Update or install the “Khafet Partners” app, open “Khafet providers”, choose “First time? Activate your account” and enter this mobile number, then choose a password. You can also sign in from the browser: '+JR_LINK;
+async function jrApprove(id){
+  const x=JOINREQ.find(r=>String(r.id)===String(id)); if(!x) return;
+  if(!confirm(LX('اعتماد «'+(x.name||'')+'» وإنشاء حساب مزوّد له؟ تأكد إنك راجعت السجل التجاري.','Approve "'+(x.name||'')+'" and create a provider account? Make sure you checked the CR.'))) return;
+  try{
+    const { data, error }=await sb.rpc('approve_join_request',{ p_id:id }); if(error) throw error;
+    if(!data||!data.ok){ const M={ no_cats:LX('ما فيه قسم في الطلب يطابق أقسام التطبيق','No request category matches the app'), no_cities:LX('ما فيه مدينة في الطلب','No city in the request'), no_name:LX('ما فيه اسم','No name'), no_cr:LX('ما فيه رقم سجل تجاري صحيح (10 أرقام) في الطلب','No valid 10-digit CR number in the request'), bad_phone:LX('رقم الجوال غير صحيح','Invalid phone'), provider_suspended:LX('هذا المزوّد موقوف من قبل','This provider is suspended'), provider_rejected:LX('هذا المزوّد مرفوض من قبل','This provider was rejected'), not_found:LX('الطلب غير موجود','Request not found') };
+      toast('⚠️ '+(M[data&&data.error]||LX('ما انحفظ، حاول مرة ثانية','Not saved, try again'))); return; }
+    x.status='accepted'; joinFilter='accepted';   // تبقى البطاقة ظاهرة مع زر إرسال طريقة الدخول
+    try{ const r=await sb.from('khafet_providers').select('*').order('created_at',{ascending:false}); if(!r.error) PROVIDERS=r.data||[]; }catch(e){}
+    toast(LX('✅ اعتُمد المزوّد. أرسل له طريقة الدخول بالواتساب','✅ Provider approved. Send the sign-in steps on WhatsApp')); render();
+  }catch(e){ toast('⚠️ '+LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); }
 }
 function jrPhoneIntl(p){ const d=String(p||'').replace(/\D/g,''); return d.startsWith('05')?'966'+d.slice(1):d; }
 /* الخدمة تُعدّ موجودة لو فيه خدمة بنفس القسم ونفس الاسم في كتالوج التطبيق */
@@ -2676,7 +2782,7 @@ function renderJoinReqs(){
   const filters=['new','waitlist','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
   // ترتيب تلقائي بالجودة (الأعلى أولًا)، والقائمة مرقّمة
   const list=JOINREQ.filter(x=>x&&typeof x==='object'&&(joinFilter==='all'||x.status===joinFilter)).slice().sort((a,b)=>jrScore(b)-jrScore(a)||new Date(a.created_at)-new Date(b.created_at));
-  const share='https://fadiaalzhrani-debug.github.io/khaft-partners/www/join.html';
+  const share='https://tinyurl.com/khafet-join';   // رابط مختصر يحوّل لنموذج الانضمام (join.html)
   const head=renderCapacity()+`<div class="panel" style="margin-top:0">
       <p style="margin:0 0 8px;font-weight:700">${LX('رابط النموذج اللي ترسله للفنيين ومقدمي الخدمات:','Form link to send to technicians and providers:')}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><code style="direction:ltr;background:var(--panel,#f3eee2);padding:6px 10px;border-radius:9px;font-size:.85rem;overflow-wrap:anywhere">${share}</code>
@@ -2686,13 +2792,16 @@ function renderJoinReqs(){
   if(!list.length) return head+`<p style="color:var(--muted)">${joinFilter==='new'?LX('ما فيه طلبات جديدة.','No new requests.'):LX('ما فيه طلبات هنا.','No requests here.')}</p>`;
   // البيانات هنا من نموذج عام بلا حساب: كل قيمة تمر على esc، وأي معرّف يروح للأزرار عبر data-attributes (لا نصوص متغيرة داخل onclick)
   const A=v=>Array.isArray(v)?v:[];
-  const J=v=>A(v).map(x=>(typeof x==='string'||typeof x==='number')?String(x):'').filter(Boolean).join('، ');
+  // قيم النموذج الثابتة (النوع، الضمان، الوحدة، الأوقات…) بالإنجليزي، وباقي ما كتبه المتقدم يبقى كما هو
+  const JV={'مؤسسة':'Company','فرد':'Individual','نوفر القطع':'We supply parts','العميل يوفر القطع':'The customer supplies parts','مجانية':'Free','بدون ضمان':'No warranty','أسبوع':'One week','شهر':'One month','3 أشهر':'3 months','6 أشهر':'6 months','سنة':'One year','30 يوم':'30 days','للخدمة':'per job','للساعة':'per hour','للمتر':'per meter','للقطعة':'per piece','سيارة':'Car','عدة كاملة':'Full tool kit','صباح':'Morning','ظهر':'Noon','مساء':'Evening','ليل':'Night'};
+  const TV=v=>{ if(!_uiEN()||v==null||typeof v!=='string') return v; const k=v.trim(); if(Object.prototype.hasOwnProperty.call(JV,k)) return JV[k]; const m=k.match(/^(\d+)\s*فني(?:ين)?$/); if(m) return m[1]+' technicians'; return trData(v); };
+  const J=v=>A(v).map(x=>(typeof x==='string'||typeof x==='number')?String(TV(String(x))):'').filter(Boolean).join(LX('، ',', '));
   const stl=k=>Object.prototype.hasOwnProperty.call(ST,k)?ST[k]:String(k==null?'':k);
   const card=(x,idx)=>{
     const d=(x.data&&typeof x.data==='object')?x.data:{}, cats=A(d.categories).filter(c=>c&&typeof c==='object');
     const sc=jrScore(x);
-    const svcHtml=cats.map(c=>`<div class="jr-cat"><b>${esc(c.name||c.id||'')}</b>${c.isNew?`<span class="jr-new">${LX('قسم جديد','New section')}</span>`:''}
-      ${A(c.services).map((s,si)=>{ if(!s||typeof s!=='object') return ''; const inApp=jrFindSvc(c.id,s); return `<div class="jr-svc"><div>${esc(s.name||'')}${inApp?`<span class="jr-in">${LX('في التطبيق','In app')}</span>`:`<button class="sbtn jr-add" data-req="${esc(x.id)}" data-cat="${esc(c.id)}" data-si="${si}" onclick="jrAddService(this.dataset.req,this.dataset.cat,+this.dataset.si)">➕ ${LX('أضفها للتطبيق','Add to app')}</button>`}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`; }).join('')}</div>`).join('');
+    const svcHtml=cats.map(c=>`<div class="jr-cat"><b>${esc((_uiEN()&&c.name_en)?c.name_en:TV(c.name||c.id||''))}</b>${c.isNew?`<span class="jr-new">${LX('قسم جديد','New section')}</span>`:''}
+      ${A(c.services).map((s,si)=>{ if(!s||typeof s!=='object') return ''; const inApp=jrFindSvc(c.id,s); return `<div class="jr-svc"><div>${esc((_uiEN()&&s.name_en)?s.name_en:(s.name||''))}${inApp?`<span class="jr-in">${LX('في التطبيق','In app')}</span>`:`<button class="sbtn jr-add" data-req="${esc(x.id)}" data-cat="${esc(c.id)}" data-si="${si}" onclick="jrAddService(this.dataset.req,this.dataset.cat,+this.dataset.si)">➕ ${LX('أضفها للتطبيق','Add to app')}</button>`}<em>${esc(s.inspect?'':TV(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`; }).join('')}</div>`).join('');
     const visit=(d.visit&&typeof d.visit==='object')?d.visit:null;
     const kv=[
       [LX('المواد','Materials'), d.materials], [LX('الضمان','Warranty'), d.warranty],
@@ -2701,8 +2810,11 @@ function renderJoinReqs(){
       [LX('عنده','Has'), J(d.equipment)], [LX('الأوقات','Times'), J(d.times)],
       [LX('الجمعة','Fridays'), d.friday?LX('نعم','Yes'):''], [LX('المستعجل','Urgent'), d.urgent?LX('نعم','Yes'):''],
       [LX('ملاحظات','Notes'), d.notes], [LX('لغة التعبئة','Form language'), x.lang==='en'?'English':'']
-    ].filter(r=>r[1]&&(typeof r[1]==='string'||typeof r[1]==='number')).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('');
-    const acts=['contacted','waitlist','accepted','rejected'].map(k=>`<button class="sbtn ${x.status===k?'on':''}" data-id="${esc(x.id)}" data-st="${x.status===k?'new':k}" onclick="setJoinStatus(this.dataset.id,this.dataset.st)">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
+    ].filter(r=>r[1]&&(typeof r[1]==='string'||typeof r[1]==='number')).map(r=>`<dt>${r[0]}</dt><dd>${esc(TV(r[1]))}</dd>`).join('');
+    const acts=(x.status!=='accepted'
+        ? `<button class="sbtn ok" data-id="${esc(x.id)}" onclick="jrApprove(this.dataset.id)">✅ ${LX('اعتماد وإنشاء حساب','Approve & create account')}</button>`
+        : `<a class="sbtn ok" href="https://wa.me/${jrPhoneIntl(x.phone)}?text=${encodeURIComponent(x.lang&&x.lang!=='ar'?JR_WELCOME_EN:JR_WELCOME)}" target="_blank" rel="noopener">💬 ${LX('أرسل له طريقة الدخول','Send sign-in steps')}</a>`)
+      + (x.status==='accepted'?[]:['contacted','waitlist','rejected']).map(k=>`<button class="sbtn ${x.status===k?'on':''}" data-id="${esc(x.id)}" data-st="${x.status===k?'new':k}" onclick="setJoinStatus(this.dataset.id,this.dataset.st)">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
     return `<div class="jr ${x.status==='new'?'new':''}">
       <div class="jr-top"><h4>${x.status==='waitlist'?`<span class="jr-rank">${ar(idx+1)}</span>`:''}#${ar(esc(x.ref_no))} · ${esc(x.name)}<span class="jr-score" title="${LX('درجة الجودة','Quality score')}">${jrStars(sc)} <b>${ar(sc)}</b>/15</span><small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${esc(x.status)}">${esc(stl(x.status))}</span></div>
       <div class="jr-meta"><span>📍 ${esc(J(x.cities))}</span><span>🧰 ${ar(esc(x.services_count))} ${LX('خدمة','services')}</span>${A(x.categories).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
@@ -3040,6 +3152,7 @@ function toast(m){ const el=document.getElementById('toast'); el.textContent=(ty
    ============================================================ */
 let UILANG = localStorage.getItem('khafet_uilang') || 'ar';
 const T_DICT = {
+  "الشكاوى · الرسائل · الاشتراكات · المقالات":"Complaints · messages · subscriptions · articles","▸ فتح":"▸ Open","فتح":"Open","مؤسسة خافت":"Khafet Est.","سباكة":"Plumbing","كهرباء":"Electrical","تكييف وتبريد":"AC & cooling","أبواب":"Doors","أعمال عامة":"General works","دهان":"Painting","أجهزة منزلية":"Home appliances","تنظيف":"Cleaning",
   // العلامة والهيدر
   "خافِت":"Khafet","لوحة المؤسسة":"Company Dashboard","خافِت | لوحة المؤسسة":"Khafet | Company Dashboard","لوحة الإدارة":"Admin Dashboard","🏠 الرئيسية":"🏠 Home","الرئيسية":"Home","خروج":"Sign out","‹ القائمة":"‹ Menu",
   // بطاقات/أقسام
@@ -3098,14 +3211,14 @@ const T_DICT = {
   "✅ تم اعتماد المزوّد":"✅ Provider approved","تم التحديث":"Updated","تعذّر فتح الملف":"Couldn't open the file",
   // الفريق
   "الفني يدخل برقم جواله وكلمة المرور · بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.":"Technicians sign in with their mobile number and password. No SMS, so signing in costs nothing. The 🔑 button changes their password.",
-  "الاسم (مثال: أحمد علي)":"Name (e.g. Ahmed Ali)","رقم جواله (05xxxxxxxx)":"Mobile number (05xxxxxxxx)","كلمة المرور (٨ خانات فأكثر)":"Password (8 characters or more)","إيقاف":"Suspend",
-  "عبّي الاسم ورقم الجوال":"Fill in the name and mobile number","كلمة المرور ٨ خانات فأكثر":"Password must be 8 characters or more","⏳ جارٍ إنشاء الحساب...":"⏳ Creating the account...",
-  "تعذّر الإنشاء":"Couldn't create","تعذّر":"Failed","✅ فُعّل الفني":"✅ Technician activated","⛔ أُوقف الفني":"⛔ Technician suspended","٨ خانات على الأقل":"At least 8 characters",
+  "الاسم (مثال: أحمد علي)":"Name (e.g. Ahmed Ali)","رقم جواله (05xxxxxxxx)":"Mobile number (05xxxxxxxx)","كلمة المرور (8 خانات فأكثر)":"Password (8 characters or more)","إيقاف":"Suspend",
+  "عبّي الاسم ورقم الجوال":"Fill in the name and mobile number","كلمة المرور 8 خانات فأكثر":"Password must be 8 characters or more","⏳ جارٍ إنشاء الحساب...":"⏳ Creating the account...",
+  "تعذّر الإنشاء":"Couldn't create","تعذّر":"Failed","✅ فُعّل الفني":"✅ Technician activated","⛔ أُوقف الفني":"⛔ Technician suspended","8 خانات على الأقل":"At least 8 characters",
   "✅ تغيّرت كلمة المرور":"✅ Password changed","تم الرفض":"Rejected","انتهت الجلسة · سجّل دخول":"Session ended, please sign in",
   "لا يوجد معلّقون":"No pending providers","⚠️ تعذّر الاعتماد الجماعي":"⚠️ Bulk approval failed","⏸️ أُوقف المزوّد · ما تصله طلبات":"⏸️ Provider suspended, no new orders","▶️ أُعيد تفعيله":"▶️ Reactivated",
   // العملاء: الرسائل والاشتراكات والمقالات
   "حُذفت":"Deleted","حُذف":"Deleted","تعذّر الحذف":"Couldn't delete","✅ فُعّل الاشتراك":"✅ Subscription activated",
-  "انشر":"Publish","إخفاء":"Hide","سلامة / سباكة / كهرباء":"Safety / Plumbing / Electrical","مثال: ٧ علامات تسريب مياه":"e.g. 7 signs of a water leak",
+  "انشر":"Publish","إخفاء":"Hide","سلامة / سباكة / كهرباء":"Safety / Plumbing / Electrical","مثال: 7 علامات تسريب مياه":"e.g. 7 signs of a water leak",
   "اكتبي المقال هنا...":"Write the article here...","اكتب عنوان المقال":"Write the article title","✅ حُفظ المقال":"✅ Article saved","تعذّر الحفظ":"Couldn't save",
   "⏳ جارٍ رفع الصورة...":"⏳ Uploading the image...","تعذّر رفع الصورة":"Couldn't upload the image",
   // المستودع: ربط الصور

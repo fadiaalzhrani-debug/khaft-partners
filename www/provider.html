@@ -546,14 +546,50 @@ a.card:active,.card:active{transform:scale(.97)}
 body.kh-nobuy .we-grid label:first-child{display:none}
 body.kh-nobuy .wh-f label:has(#wf_buy){display:none}
 </style>
+<style id="kp-polish">
+/* ═ مراجعة التصميم 2026-09-25: تنقّل أبسط، أيقونات مرسومة، شبكات بدل التمرير الأفقي، تباين ومساحات لمس أكبر ═ */
+:root{--muted:#6F6356}
+.brand{cursor:pointer}
+.top .kp-hb{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px}
+.top .kp-hb svg{flex-shrink:0}
+.stats{display:grid!important;grid-template-columns:1fr 1fr;overflow:visible!important}
+.stats .stat{min-width:0!important}
+.stats .stat:last-child:nth-child(odd){grid-column:1/-1}
+.pa-quick{display:grid!important;grid-template-columns:1fr 1fr;overflow:visible!important}
+.pa-quick button{justify-content:center;min-height:44px}
+.pa-quick button.main{grid-column:1/-1}
+.pic{flex-shrink:0;vertical-align:-3px}
+.pa-sec span{display:inline-flex;align-items:center;gap:6px}
+.pa-banner .ic{display:grid;place-items:center}
+.hc-open{display:none!important}
+.hc-ic{color:#fff}
+.bottombar button span{display:grid;place-items:center;height:26px}
+.kp-sectitle{display:flex;align-items:center;gap:8px}
+.backbtn{display:inline-flex;align-items:center;gap:4px;min-height:40px}
+[dir=ltr] .backbtn .pic{transform:scaleX(-1)}
+.mpanel h3{display:flex;align-items:center;gap:7px}
+.kp-calpick{position:relative;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--ink,#3A3029);flex-shrink:0;cursor:pointer}
+.kp-calpick input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;margin:0;padding:0;border:0}
+.kp-addbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;margin:10px 0 4px;border-radius:14px;border:1.5px dashed var(--line);background:transparent;font:inherit;font-weight:800;color:var(--ink,#3A3029);cursor:pointer}
+.kp-addbtn:active{transform:scale(.98)}
+.kp-logout{width:100%;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(220,70,70,.1)!important;border:1px solid rgba(220,70,70,.35)!important;color:#b3261e!important}
+.tbtn .pic{vertical-align:-4px}
+.x-btn{min-height:40px;padding:8px 14px}
+/* kp-pillbar: الشريط السفلي مثل شريط الفني: كبسولة بنية عائمة والزر المختار أصفر */
+.bottombar{left:12px!important;right:12px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important;border:0!important;border-radius:999px!important;background:var(--brown,#4E3F35)!important;padding:4px 6px!important;box-shadow:0 16px 30px -14px rgba(58,48,41,.75)!important}
+.bottombar button{color:#C9BBAD!important;border-radius:999px!important;padding:7px 3px 6px!important;font-size:.78rem!important;gap:1px!important;background:none!important}
+.bottombar button.on{color:var(--brown,#4E3F35)!important;background:var(--gold,#F5C518)!important}
+.bottombar .bb-n{top:3px!important;inset-inline-end:16%!important}
+.tj-head small{white-space:nowrap}
+.tj-head>span:last-child{display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap}
+</style>
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <div class="brand"><span class="mk" style="background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;padding:0"><svg viewBox="129 55 800 800" style="width:100%;height:100%;display:block" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span><span>خافت شركاء<small>بوابة المزوّد</small></span></div>
-  <a class="home-link" style="cursor:pointer" onclick="goHome()">🏠 <span class="ht">الرئيسية</span></a>
+  <div class="brand" onclick="goHome()" role="button" tabindex="0"><span class="mk" style="background:linear-gradient(160deg,#5E4D41,#3A3029 60%,#2B241F);overflow:hidden;padding:0"><svg viewBox="129 55 800 800" style="width:100%;height:100%;display:block" aria-hidden="true"><polygon points="230,762 230,322 528,150 667,229 667,148 741,148 743,270 828,322 828,762 648,762 648,671 737,671 737,382 528,263 321,382 321,671 411,671 411,762" fill="#FFF8EF"/><polygon points="389,413 484,355 484,498 528,528 573,498 573,355 668,413 668,579 582,630 582,762 476,762 476,630 389,579" fill="#F5C518"/></svg></span><span>خافت شركاء<small>بوابة المزوّد</small></span></div>
   <span class="spacer"></span>
-  <button class="logout" id="langBtn" onclick="toggleLang()" title="English / عربي">🌐 <span class="ht">EN</span></button>
-  <button class="logout" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('manage')">👤 حسابي</button>
+  <button class="logout kp-hb" id="langBtn" onclick="toggleLang()" title="English / عربي" aria-label="English / عربي"><svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span class="ht">EN</span></button>
+  <button class="logout kp-hb" id="acctBtn" style="display:none;color:var(--gold-deep)" onclick="setTab('manage')"><svg class="pic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/></svg><span>حسابي</span></button>
   <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">خروج</button>
 </div></header>
 
@@ -565,6 +601,44 @@ body.kh-nobuy .wh-f label:has(#wf_buy){display:none}
 <script>
 const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
+/* ═ أيقونات مرسومة موحّدة (مراجعة التصميم 2026-09-25): بدل الإيموجي في الشريط السفلي والبطاقات والعناوين ═ */
+const PIC={
+  home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>',
+  calendar:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  calplus:'<rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M12 12.5v5M9.5 15h5"/>',
+  tasks:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="m9 13 2 2 4-4"/>',
+  orders:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1"/><path d="M9 10h6M9 14h6M9 18h3"/>',
+  team:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8"/>',
+  customers:'<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17a3.5 3.5 0 0 1 7 0"/><path d="M15 10h3M15 14h3"/>',
+  grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  box:'<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
+  receipt:'<path d="M5 3h14v18l-2.3-1.5L14.4 21l-2.4-1.5L9.6 21l-2.3-1.5L5 21Z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/>',
+  chart:'<path d="M3 20h18"/><rect x="5" y="11" width="3" height="7" rx="1"/><rect x="10.5" y="6" width="3" height="12" rx="1"/><rect x="16" y="13" width="3" height="5" rx="1"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  pencil:'<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  map:'<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
+  inbox:'<path d="M3 13h5l1.5 3h5L16 13h5"/><path d="M5.5 5h13L21 13v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12.5h18"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0"/>',
+  sliders:'<path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  chev:'<path d="M9 6l6 6-6 6"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/>',
+  cancel:'<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+  chat:'<path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4A8 8 0 1 1 20 12Z"/>',
+  money:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/>',
+  megaphone:'<path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1Z"/><path d="M17 8.5a5 5 0 0 1 0 7"/>',
+  shield:'<path d="M12 3 4.5 6v6c0 4.5 3.2 7.7 7.5 9 4.3-1.3 7.5-4.5 7.5-9V6z"/>',
+  building:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10.5 21v-3h3v3"/>',
+  wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z"/>',
+  doc:'<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+};
+function pic(n,s){ s=s||22; return '<svg class="pic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(PIC[n]||'')+'</svg>'; }
+
 /* ═ جلسة دائمة ═ داخل التطبيق: مخزن النظام (Preferences) لا يُمسح مثل ذاكرة المتصفح، وعلى الويب localStorage */
 const _khPrefs=(()=>{ try{ const C=window.Capacitor; if(C&&C.isNativePlatform&&C.isNativePlatform()){ return (typeof C.registerPlugin==='function'?C.registerPlugin('Preferences'):null)||(C.Plugins&&C.Plugins.Preferences)||null; } }catch(e){} return null; })();
 /* ═ مخزن آمن ═ Keychain على آيفون: يبقى حتى بعد حذف التطبيق وإعادة تحميله، فيرجع حسابك مسجّلًا */
@@ -597,7 +671,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=107;
+const RIZQ_BUILD=108;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -644,6 +718,7 @@ const FEAT_MISSING={};                 // جدول لم يُفعَّل بعد ف
 let taskDate=dateISO(new Date()), _taskRange=null;
 let schedMode='day', schedDate=dateISO(new Date()), schedTech='', schedOpen=null;
 let custQ='', noteQ='', custOpen=null, bookPrefill=null, pinvLoaded=false;
+let _pvBackTo='more', _taskFormOpen=false, _custFormOpen=false;   // «رجوع» للقسم السابق، ونماذج الإضافة مطوية
 let _rs=null;
 function renderSoon(){ clearTimeout(_rs); _rs=setTimeout(function(){ try{ renderSafe(); }catch(e){} },80); }   // تجميع إعادة الرسم بعد عدة تحميلات متوازية
 function pvNum(n){ return _uiEN()?String(n):ar(n); }
@@ -696,7 +771,7 @@ function exportStock(){
 let doneOpen={};
 function toggleDone(id){ doneOpen[id]=!doneOpen[id]; render(); }
 const AR_DIG='٠١٢٣٤٥٦٧٨٩';
-function ar(n){ return String(n).replace(/[0-9]/g,d=>AR_DIG[d]); }
+function ar(n){ return String(n); }   // الأرقام إنجليزية في كل الشاشات (2026-09-25، مثل تطبيق العميل)
 function money(n){ return ar(n)+' ر.س'; }
 
 /* رابط آمن: https فقط، وإلا نبني رابط بحث من العنوان */
@@ -809,7 +884,7 @@ async function initPush(){
   }catch(e){ console.warn('initPush', e); }
 }
 /* ---------- وسائط العملاء ----------
-   الباكِت خاص · رابط موقّع ينتهي بعد ١٠ دقائق عند كل فتح. */
+   الباكِت خاص · رابط موقّع ينتهي بعد 10 دقائق عند كل فتح. */
 function mediaPath(v){
   if(!v) return '';
   const s=String(v).trim();
@@ -830,7 +905,7 @@ async function openMedia(v){
 function rowToOrder(r){
   return { id:'#'+ar(r.order_no), dbId:r.id, orderNo:+r.order_no||0, items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''},
     address:r.address||{}, date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
-    status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', handledBy:r.handled_by||'',
+    status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', handledBy:r.handled_by||'', userId:r.user_id||null,
     source:r.source||'', cancelReq:r.cancel_req||null, rejectReason:r.reject_reason||'',   // مصدر الطلب + حالة طلب الإلغاء (null | pending | rejected) وسببه
     bookedFinal:+r.booked_final||0,   // أجرة الحجز المدفوعة (أساس فاتورة v2)
     rating:+r.rating||0, feedback:r.feedback||'', reviewAnon:!!r.review_anon, warrantyDays:+r.warranty_days||0,
@@ -859,7 +934,7 @@ async function markCardPaid(id){
    بيانات العميل تظهر فقط بعد ما يقبل المزوّد الطلب ويصير له. */
 function openToOrder(r){
   return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[],
-    customer:{name:'',phone:''}, address:{ city:r.city||'', district:r.district||'' },
+    customer:{name:'',phone:''}, address:{ city:r.city||'', district:r.district||'' }, price:+r.price||0,
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
     status:r.status||'new', quick:!!r.quick, note:'', videoUrl:'', invoice:null, providerPhone:'',
     offeredTo:r.offered_to||null, offerAt:r.offer_at||null, openToAll:!!r.open_to_all,
@@ -930,7 +1005,7 @@ async function loadLoyalty(){
     renderSoon();
   }catch(e){ PLOY=[]; PLOYLOG=[]; }
 }
-/* مهام الفريق اليومية حول تاريخ معيّن (٣٠ يومًا قبله و٦٠ بعده) · الفني يرى مهامه أو مهام الكل فقط (RLS) */
+/* مهام الفريق اليومية حول تاريخ معيّن (30 يومًا قبله و60 بعده) · الفني يرى مهامه أو مهام الكل فقط (RLS) */
 async function loadTasks(center){
   if(!cloudReady||!me||!myPid()){ PTASKS=[]; return; }
   const c=center||dateISO(new Date()); const from=addDays(c,-30), to=addDays(c,60);
@@ -953,14 +1028,14 @@ async function loadNotes(){
     FEAT_MISSING.notes=false; PNOTES=r.data||[]; renderSoon();
   }catch(e){ PNOTES=[]; }
 }
-/* سجل حركة مخزن المؤسسة (آخر ٨٠ حركة) */
+/* سجل حركة مخزن المؤسسة (آخر 80 حركة) */
 async function loadStockLog(){
   if(!cloudReady||!me||!myPid()||!seeStock()){ PSTOCKLOG=[]; return; }
   const g=_pvGen;
   try{ const r=await sb.from('provider_stock_log').select('*').order('created_at',{ascending:false}).limit(80); if(pvStale(g)) return; if(r.error) throw r.error; PSTOCKLOG=r.data||[]; const b=document.getElementById('pvStockLog'); if(b) b.innerHTML=renderPvStockLog(); }catch(e){ PSTOCKLOG=[]; }
 }
 /* صندوق صادر صغير للمخزن: حركة الكمية اللي ما وصلت للخادم بسبب انقطاع الشبكة تُحفظ بالجهاز وتُرسل عند رجوع الاتصال.
-   رفض الخادم (٤xx: صلاحية أو حارس) لا يُحفظ، بل يُعرض سببه ويُرجَع الرقم */
+   رفض الخادم (4xx: صلاحية أو حارس) لا يُحفظ، بل يُعرض سببه ويُرجَع الرقم */
 const PV_OB_KEY='kh_pv_outbox';
 function pvObLoad(){ try{ return JSON.parse(localStorage.getItem(PV_OB_KEY)||'[]'); }catch(e){ return []; } }
 function pvObSave(q){ try{ localStorage.setItem(PV_OB_KEY,JSON.stringify(q.slice(-200))); }catch(e){} }
@@ -1050,7 +1125,7 @@ function notifyFresh(){
   }
   seenOpen=new Set(rel.map(o=>o.dbId));
 }
-/* حزام أمان: حتى لو انقطع البث اللحظي، نحدّث كل ٣٠ ثانية */
+/* حزام أمان: حتى لو انقطع البث اللحظي، نحدّث كل 30 ثانية */
 setInterval(()=>{ if(me && cloudReady && !document.hidden) loadOrders(); }, 30000);
 
 /* ---- الدخول ---- */
@@ -1071,7 +1146,7 @@ async function login(){
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
     const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:pass });
-    if(error){ showLogin('❌ الرقم أو كلمة المرور غير صحيحة.'); return; }
+    if(error){ showLogin(LX('❌ الرقم أو كلمة المرور غير صحيحة. أول مرة؟ اختر «فعّل حسابك» تحت.','❌ Wrong number or password. First time? Choose “Activate your account” below.')); return; }
     // جولة الإصلاح 5 (البند 27): دخول ناجح قد يكون لحساب غير صاحب الكاش (فُتح التطبيق بلا نت فبقي كاش الحساب السابق)، فيُمسح قبل أي شيء
     pvWipeCache();
     const local05='0'+d.slice(3);
@@ -1083,7 +1158,7 @@ async function login(){
       try{ const { data:info }=await sb.rpc('my_staff_info'); if(info && info.role==='tech'){ await enterTechMode(info, d); return; } }catch(e2){}
       try{ const { data:st }=await sb.rpc('my_tech_state'); if(st&&st.exists){ try{ localStorage.setItem('khafet_provider_phone', local05); }catch(e3){} if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; } }catch(e2){}
       try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin('❌ الرقم غير مسجّل · سجّل كمزوّد أو كفني بكودك.'); return; }
-    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
+    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin((p.status==='suspended'||p.status==='rejected')?LX('⛔ حسابك موقوف. تواصل مع الإدارة.','⛔ Your account is suspended. Contact the admin.'):LX('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.','⏳ Your account is under review.'), !(p.status==='suspended'||p.status==='rejected')); return; }
     me=p; localStorage.setItem('khafet_provider_phone',p.phone);
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){}
     loadOrders(); initPush();
@@ -1156,7 +1231,7 @@ function pvPhoneE164(){ return '+966'+String((me&&me.phone)||'').replace(/\D/g,'
 function passStep(){ if(_pendPass) confirmPassOtp(); else changePass(); }
 async function changePass(){
   const a=((document.getElementById('np1')||{}).value)||'', b=((document.getElementById('np2')||{}).value)||'';
-  if(a.length<6){ toast('كلمة المرور ٦ خانات على الأقل'); return; }
+  if(a.length<6){ toast('كلمة المرور 6 خانات على الأقل'); return; }
   if(a!==b){ toast('كلمتا المرور غير متطابقتين'); return; }
   try{
     const { error }=await sb.auth.signInWithOtp({ phone: pvPhoneE164(), options:{ shouldCreateUser:false } });
@@ -1342,7 +1417,7 @@ ${loyaltySettings()}
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> حذف الحساب</div><span class="sr-ar">›</span></div>
     </div>
     <button class="tbtn" style="width:100%;margin-top:6px;background:rgba(220,70,70,.14);border:1px solid rgba(220,70,70,.4);color:#c0392b" onclick="logout()">🚪 تسجيل الخروج</button>
-    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:14px">خافت شركاء © ٢٠٢٦</div>`;
+    <div style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:14px">خافت شركاء © 2026</div>`;
 }
 
 /* ---- قبول الطلب ---- */
@@ -1355,7 +1430,7 @@ async function acceptOrder(id){
     if(error) throw error;
     if(!data || data.ok!==true){
       const R={ taken:'اعتذار · الطلب أخذه مزوّد آخر',
-                limit:'وصلت حدّ ٣ طلبات نشطة · أنجز طلباً قبل ما تقبل جديداً',
+                limit:'وصلت حدّ 3 طلبات نشطة · أنجز طلباً قبل ما تقبل جديداً',
                 not_approved:'حسابك موقوف أو قيد المراجعة · تواصل مع الإدارة',
                 no_profile:'رقمك غير مسجّل كمزوّد',
                 not_provider:'هذا الحساب ليس حساب مزوّد',
@@ -1372,7 +1447,9 @@ async function acceptOrder(id){
   }catch(e){ toast('تعذّر القبول، حاول مرة ثانية'); }
 }
 async function setWarranty(dbId,days){
-  try{ const { data }=await sb.rpc('set_order_warranty',{ p_order:dbId, p_days:+days||0 });
+  try{ const { data, error }=await sb.rpc('set_order_warranty',{ p_order:dbId, p_days:+days||0 });
+    if(error){ toast(srvMsgP(error)); loadOrders(); return; }
+    if(data===false){ toast(LX('ضمان طلبات خافت ثابت وما يتغيّر','Khafet order warranty is fixed')); loadOrders(); return; }
     toast(+days?LX('🛡️ ضمان '+ar(days)+' يوم للعميل','🛡️ Warranty set: '+(+days)+' days'):'أُلغي الضمان'); loadOrders(); }
   catch(e){ toast('تعذّر حفظ الضمان'); }
 }
@@ -1387,7 +1464,7 @@ async function setJobStatus(id, st){
 /* رسالة مفهومة لأكواد حرّاس القاعدة KHAFET_* (تُترجم للإنجليزي عبر T_DICT عند العرض) */
 function srvMsgP(e){
   const m=String((e&&(e.message||e.details||e.hint))||e||'');
-  const MAP={ KHAFET_CANCEL_PENDING:'فيه طلب إلغاء لهذا الطلب قيد المراجعة', KHAFET_CANCEL_NEEDS_APPROVAL:'الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب', KHAFET_UNPAID:'فيه مبلغ متبقي على العميل', KHAFET_UPDATE_REQUIRED:'حدّث التطبيق من المتجر عشان تكمل',
+  const MAP={ KHAFET_WARRANTY_FIXED:LX('ضمان طلبات خافت ثابت وما يتغيّر','Khafet order warranty is fixed'), KHAFET_CANCEL_PENDING:'فيه طلب إلغاء لهذا الطلب قيد المراجعة', KHAFET_CANCEL_NEEDS_APPROVAL:'الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب', KHAFET_UNPAID:'فيه مبلغ متبقي على العميل', KHAFET_UPDATE_REQUIRED:'حدّث التطبيق من المتجر عشان تكمل',
     KHAFET_BAD_INVOICE:'صيغة الفاتورة قديمة، حدّث التطبيق ثم أعد الحفظ', KHAFET_INVOICE_ITEM:'قطعة من المستودع بلا سعر بيع، اطلب من الإدارة تسعيرها', KHAFET_INVOICE_LIMIT:'مبلغ البنود الحرة يتجاوز الحد المسموح، تواصل مع الإدارة', KHAFET_NO_INVOICE:'أصدر الفاتورة قبل إنهاء الطلب', KHAFET_NO_CANCEL:'الطلب منتهٍ أو ملغى ولا يمكن طلب إلغائه',
     KHAFET_CANCEL_REASON:'اكتب سبب الإلغاء (3 أحرف على الأقل)', KHAFET_CANCEL_DECIDED:'تم البت في طلب الإلغاء هذا من قبل', KHAFET_NOT_YOURS:'هذا الطلب مسند لفني آخر', KHAFET_BAD_STATUS:'ما يمكن تغيير حالة الطلب بهذا الشكل', KHAFET_NOT_SIGNED_IN:'سجّل دخولك ثم أعد المحاولة',
     KHAFET_INV_ADMIN_ONLY:'تعديل بيانات الصنف وأسعاره وإضافته وحذفه من صلاحية الإدارة، والفني يعدّل الكمية فقط', KHAFET_STOCK_ITEM:'الصنف غير موجود في المستودع', KHAFET_FORBIDDEN:'ما عندك صلاحية لهذا الإجراء',
@@ -1615,6 +1692,7 @@ function closeSummary(){ const m=document.getElementById('invModal'); if(!m) ret
 
 /* ---- العرض ---- */
 function showLogin(msg, wait){
+  _fgNew=false;
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login">
@@ -1625,23 +1703,24 @@ function showLogin(msg, wait){
     <input id="lg_pass" type="password" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()" />
     <button class="btn" onclick="login()">دخول</button>
     <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني · ابقَ مسجّلًا بهذا الجهاز</label>
-    <button type="button" class="forgot-link" onclick="showForgot('')">نسيت كلمة المرور؟</button>
+    <button type="button" class="forgot-link" onclick="showForgot('',false)">نسيت كلمة المرور؟</button>
+    <button type="button" class="forgot-link" style="font-weight:800" onclick="showForgot('',true)">${LX('أول مرة؟ فعّل حسابك','First time? Activate your account')}</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب مزوّد؟ سجّل الآن 👇</div>
-      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink)" onclick="showSignup('')">➕ تسجيل مزوّد جديد</button>
-      <div style="color:var(--muted);font-size:.8rem;margin-top:12px;line-height:1.5">${LX('الفنيّون يسجّلون من بوابة <b>فنيين خافِت</b> ويأخذون كودهم، وتضيفهم أنت من <b>⚙️ الإدارة</b> بعد الدخول.','Technicians sign up in the <b>Khafet Technicians</b> portal and get their code. You add them from <b>⚙️ Management</b> after you sign in.')}</div>
+      <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink)" onclick="location.href='join.html'">➕ تسجيل مزوّد جديد</button>
     </div>
-    <a class="reg2" href="fanyeen.html">فني؟ دخول / تسجيل من بوابة فنيين خافِت</a>
   </div>`;
 }
 /* ═══════ نسيت كلمة المرور · كود على الجوال ثم كلمة مرور جديدة ═══════ */
 let _fgPhone=null;   // الجوال بصيغة E164 بعد إرسال الكود
-function showForgot(msg){
+let _fgNew=false;    // تفعيل أول مرة: ينشئ حساب الدخول للمزوّد المعتمد (2026-09-25)
+function showForgot(msg, isNew){
+  if(isNew!==undefined) _fgNew=!!isNew;
   const pre=((document.getElementById('lg_phone')||{}).value)||'';
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">🔑</div><h1>استعادة كلمة المرور</h1>
-    <p>اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد لتعيين كلمة مرور جديدة.</p>
+    <div class="ic">🔑</div><h1>${_fgNew?LX('تفعيل حساب المزوّد','Activate provider account'):'استعادة كلمة المرور'}</h1>
+    <p>${_fgNew?LX('اكتب الجوال اللي قدّمت فيه طلب الانضمام، ونرسل لك كود تختار بعده كلمة المرور.','Enter the phone you used in your join request. We will send a code, then you choose a password.'):'اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد لتعيين كلمة مرور جديدة.'}</p>
     <input id="fg_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" value="${esc(pre)}" onkeydown="if(event.key==='Enter')sendForgotCode()" />
     <button class="btn" onclick="sendForgotCode()">📲 أرسل كود التأكيد</button>
     ${msg?`<div class="msg">${msg}</div>`:''}
@@ -1649,23 +1728,24 @@ function showForgot(msg){
   </div>`;
 }
 async function sendForgotCode(){
-  const d=normPhone((document.getElementById('fg_phone')||{}).value||'');
+  const fgEl=document.getElementById('fg_phone');
+  const d=normPhone(fgEl?fgEl.value:String(_fgPhone||'').replace(/\D/g,''));
   if(d.length<12){ showForgot('❌ رقم الجوال غير صحيح.'); return; }
   if(!cloudReady){ showForgot('لا يوجد اتصال بالخادم'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ جاري الإرسال...'; }
   try{
-    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ shouldCreateUser:false } });
-    if(error){ showForgot('❌ الرقم غير مسجّل، أو تعذّر الإرسال · حاول بعد قليل.'); return; }
+    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ shouldCreateUser:_fgNew } });
+    if(error){ showForgot(_fgNew?LX('❌ تعذّر الإرسال · حاول بعد قليل.','❌ Could not send · try again shortly.'):'❌ الرقم غير مسجّل، أو تعذّر الإرسال · حاول بعد قليل.'); return; }
     _fgPhone='+'+d;
     showForgotCode('');
   }catch(e){ showForgot('تعذّر الإرسال، حاول مرة ثانية.'); }
 }
 function showForgotCode(msg){
   document.getElementById('app').innerHTML=`<div class="login">
-    <div class="ic">✉️</div><h1>تعيين كلمة مرور جديدة</h1>
+    <div class="ic">✉️</div><h1>${_fgNew?LX('اختر كلمة المرور','Choose a password'):'تعيين كلمة مرور جديدة'}</h1>
     <p>أرسلنا كوداً إلى <b style="direction:ltr;display:inline-block">${esc(_fgPhone||'')}</b></p>
     <input id="fg_code" inputmode="numeric" maxlength="8" placeholder="••••" style="text-align:center;letter-spacing:6px;font-size:1.3rem" />
-    <input id="fg_p1" type="password" placeholder="كلمة المرور الجديدة (٦ فأكثر)" autocomplete="new-password" />
+    <input id="fg_p1" type="password" placeholder="كلمة المرور الجديدة (6 فأكثر)" autocomplete="new-password" />
     <input id="fg_p2" type="password" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password" onkeydown="if(event.key==='Enter')confirmForgot()" />
     <button class="btn" onclick="confirmForgot()">✅ حفظ ودخول</button>
     ${msg?`<div class="msg">${msg}</div>`:''}
@@ -1678,7 +1758,7 @@ async function confirmForgot(){
   const code=((document.getElementById('fg_code')||{}).value||'').trim();
   const a=((document.getElementById('fg_p1')||{}).value)||'', b=((document.getElementById('fg_p2')||{}).value)||'';
   if(code.length<4){ showForgotCode('اكتب كود التأكيد المرسل لجوالك'); return; }
-  if(a.length<6){ showForgotCode('كلمة المرور ٦ خانات على الأقل'); return; }
+  if(a.length<6){ showForgotCode('كلمة المرور 6 خانات على الأقل'); return; }
   if(a!==b){ showForgotCode('كلمتا المرور غير متطابقتين'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
@@ -1688,7 +1768,6 @@ async function confirmForgot(){
     const { error:ue }=await sb.auth.updateUser({ password:a });
     if(ue){ showForgotCode('تعذّر حفظ كلمة المرور · جرّب كلمة مختلفة.'); return; }
     _fgPhone=null;
-    toast('✅ تم تغيير كلمة المرور');
     autoLoginAfterReset();
   }catch(e){ showForgotCode('تعذّر، حاول مرة ثانية.'); }
 }
@@ -1700,9 +1779,17 @@ async function autoLoginAfterReset(){
     const local05='0'+ph.slice(3);
     const { data }=await sb.from('khafet_providers').select('*').in('phone',[local05, ph, '+'+ph]);
     const p=(data||[])[0];
-    if(p && (p.status||'pending')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); initPush(); return; }
+    const okMsg=_fgNew?LX('✅ تم تفعيل حسابك','✅ Account activated'):LX('✅ تم تغيير كلمة المرور','✅ Password changed');
+    if(p && (p.status||'pending')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); toast(okMsg); loadOrders(); initPush(); return; }
     const { data:info }=await sb.rpc('my_staff_info');
-    if(info && info.role==='tech'){ await enterTechMode(info, ph); return; }
+    if(info && info.role==='tech'){ toast(okMsg); await enterTechMode(info, ph); return; }
+    // فني ينتظر موافقة مؤسسته: شاشة الانتظار بدل «قدّم طلب انضمام»
+    if(!p){ try{ const { data:st }=await sb.rpc('my_tech_state'); if(st&&st.exists){ try{ localStorage.setItem('khafet_provider_phone', local05); }catch(e3){} if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; } }catch(e3){} }
+    // مو مزوّد معتمد: نطلع من الحساب ونوضّح السبب
+    if(p || _fgNew){ try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache();
+      if(p && (p.status==='suspended'||p.status==='rejected')){ showLogin(LX('⛔ حسابك موقوف. تواصل مع الإدارة.','⛔ Your account is suspended. Contact the admin.'), false); return; }
+      if(p){ showLogin(LX('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.','⏳ Your account is under review.'), true); return; }
+      showLogin(LX('هذا الرقم ما عليه حساب مزوّد معتمد. قدّم طلب انضمام، وبعد الاعتماد فعّل حسابك.','This number has no approved provider account. Send a join request first.')); return; }
     showLogin('✅ تم تغيير كلمة المرور · سجّل الدخول الآن.');
   }catch(e){ showLogin('✅ تم تغيير كلمة المرور · سجّل الدخول الآن.'); }
 }
@@ -1718,7 +1805,8 @@ function catLabel(c){ const v=_uiEN()?TRADE_EN[c]:null; return typeof v==='strin
 /* اسم محفوظ بالعربي (خدمة أو جهة) ← مقابله الإنجليزي من T_DICT عند العرض فقط */
 function svcName(n){ if(n==null || !_uiEN()) return n; const v=T_DICT[String(n).trim()]; return typeof v==='string'?v:n; }
 let signupCtx=null;
-function showSignup(msg){
+function showSignup(msg){ location.href='join.html'; return;   // التسجيل صار في نموذج الانضمام المستقل (join.html)، 2026-09-25
+
   document.getElementById('logoutBtn').style.display='none';
   document.getElementById('acctBtn').style.display='none';
   document.getElementById('app').innerHTML=`<div class="login" style="max-width:470px">
@@ -1726,7 +1814,7 @@ function showSignup(msg){
     <p>${LX('سجّل وابدأ استقبال طلبات مدنك فوراً · بعد التسجيل يطلع لك <b>كودك</b> لضم فنيّيك.','Register and start getting jobs in your cities right away. After you register, you get <b>your code</b> to add your technicians.')}</p>
     <input id="su_name" placeholder="الاسم / اسم المؤسسة" />
     <input id="su_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
-    <input id="su_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
+    <input id="su_pass" type="password" placeholder="كلمة مرور (6 أحرف فأكثر)" autocomplete="new-password" />
     <div style="text-align:${_uiEN()?'left':'right'};margin:8px 2px 4px;font-size:.9rem;font-weight:700">مدن الخدمة (اختر واحدة أو أكثر):</div>
     <div id="su_cities" class="picks">
       ${SA_CITIES.map(c=>`<label class="pick-chip"><input type="checkbox" value="${c}"> ${cityLabel(c)}</label>`).join('')}
@@ -1752,7 +1840,7 @@ async function submitSignup(){
   const crEl=document.getElementById('su_crdoc'); const crFile=crEl&&crEl.files&&crEl.files[0];
   if(!name){ showSignup('اكتب الاسم'); return; }
   if(d.length<12){ showSignup('رقم الجوال غير صحيح'); return; }
-  if(pass.length<6){ showSignup('كلمة المرور ٦ أحرف على الأقل'); return; }
+  if(pass.length<6){ showSignup('كلمة المرور 6 أحرف على الأقل'); return; }
   if(!cities.length){ showSignup('اكتب مدن الخدمة'); return; }
   if(!svcs.length){ showSignup('اختر نوع الخدمات'); return; }
   if(!/^[0-9]{10}$/.test(cr)){ showSignup('اكتب رقم السجل التجاري (10 أرقام)'); return; }
@@ -1936,7 +2024,7 @@ function showTechReg(msg){
     <p>${LX('سجّل حسابك · ويطلع لك <b>كودك</b> تعطيه لمزوّدك ليضيفك لفريقه.','Register your account and you get <b>your code</b>. Give it to your provider so they can add you to their team.')}</p>
     <input id="tr_name" placeholder="اسمك" />
     <input id="tr_phone" inputmode="tel" placeholder="05xxxxxxxx" autocomplete="tel" />
-    <input id="tr_pass" type="password" placeholder="كلمة مرور (٦ أحرف فأكثر)" autocomplete="new-password" />
+    <input id="tr_pass" type="password" placeholder="كلمة مرور (6 أحرف فأكثر)" autocomplete="new-password" />
     <button class="btn" onclick="submitTechReg()">تسجيل ✅</button>
     ${msg?`<div class="msg ${/تعذّر|صحيح|اكتب|المرور/.test(msg)?'':'wait'}">${msg}</div>`:''}
     <a class="reg2" onclick="showLogin('')" style="cursor:pointer">لديك حساب؟ تسجيل الدخول</a>
@@ -1947,7 +2035,7 @@ async function submitTechReg(){
   const name=g('tr_name'), pass=g('tr_pass'), d=normPhone(g('tr_phone'));
   if(!name){ showTechReg('اكتب اسمك'); return; }
   if(d.length<12){ showTechReg('رقم الجوال غير صحيح'); return; }
-  if(pass.length<6){ showTechReg('كلمة المرور ٦ أحرف على الأقل'); return; }
+  if(pass.length<6){ showTechReg('كلمة المرور 6 أحرف على الأقل'); return; }
   if(!cloudReady){ showTechReg('لا يوجد اتصال، حاول بعد قليل'); return; }
   techCtx={ name, pass, e164:'+'+d, local:'0'+d.slice(3) };
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ نرسل رمز التحقق...'; }
@@ -2042,6 +2130,7 @@ function jobCard(o, mode){
       <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${o.createdAt&&!o._new?`<small style="color:var(--muted);font-weight:700;margin-inline-end:6px">${agoTxt(o.createdAt)}</small>`:''}<span class="status ${exclusive?'offer':'new'}">${exclusive?LX('⚡ لك','⚡ For you'):'متاح'}</span></span></div>
       <div class="tj-body">
         ${work}
+        ${(+o.price>0)?`<div class="tj-row"><span class="tj-k">💰 ${LX('السعر','Price')}</span><span class="tj-v"><b style="font-size:1.08rem">${pvMoney(o.price)}</b></span></div>`:''}
         <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
         <div class="tj-row"><span class="tj-k">📍 المنطقة</span><span class="tj-v">${esc([cityLabel(a.city),a.district].filter(Boolean).join(' · ')||'—')}</span></div>
         <div class="tj-row"><span class="tj-k">🔒 بيانات العميل</span><span class="tj-v">الاسم والجوال والعنوان تظهر لك بعد قبول الطلب</span></div>
@@ -2089,11 +2178,11 @@ function jobCard(o, mode){
         <a class="tmap" href="${esc(mapUrl)}" target="_blank" rel="noopener">🗺️ الخريطة</a>
         ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" data-media="${esc(a.photoUrl)}" onclick="openMedia(this.dataset.media)">🏠 صورة المنزل</button>`:''}</span></div>
       ${mode==='mine'?`<div class="tj-row"><span class="tj-k">👤 العميل</span><span class="tj-v">${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></span></div>`:''}
-      ${mode==='mine'&&o.status==='done'?`<div class="tj-row"><span class="tj-k">🛡️ الضمان</span><span class="tj-v"><select class="assign-sel" style="padding:7px 10px;min-width:120px" onchange="setWarranty('${o.dbId}',this.value)">
+      ${mode==='mine'&&o.status==='done'&&isOwnBooking(o)&&!o.userId&&!me.tech?`<div class="tj-row"><span class="tj-k">🛡️ الضمان</span><span class="tj-v"><select class="assign-sel" style="padding:7px 10px;min-width:120px" onchange="setWarranty('${o.dbId}',this.value)">
         <option value="0" ${!o.warrantyDays?'selected':''}>بدون ضمان</option>
-        <option value="7" ${o.warrantyDays==7?'selected':''}>ضمان ٧ أيام</option>
-        <option value="30" ${o.warrantyDays==30?'selected':''}>ضمان ٣٠ يوم</option>
-        <option value="90" ${o.warrantyDays==90?'selected':''}>ضمان ٩٠ يوم</option>
+        <option value="7" ${o.warrantyDays==7?'selected':''}>ضمان 7 أيام</option>
+        <option value="30" ${o.warrantyDays==30?'selected':''}>ضمان 30 يوم</option>
+        <option value="90" ${o.warrantyDays==90?'selected':''}>ضمان 90 يوم</option>
       </select></span></div>`:''}
     </div>
     <div class="tacts">${acts}</div>
@@ -2101,7 +2190,7 @@ function jobCard(o, mode){
 }
 function render(){
   if(!me){ showLogin(''); return; }
-  document.getElementById('logoutBtn').style.display='';
+  document.getElementById('logoutBtn').style.display='none';   // الخروج صار داخل «حسابي» و«الإعدادات»
   document.getElementById('acctBtn').style.display='';
   // متاح: مدن خدمته + (مفتوح للكل أو معروض عليه حصرياً) · نخفي المعروض حصرياً لغيره
   const _pid=myPid();
@@ -2135,7 +2224,7 @@ function render(){
   const statsHTML = dashKeys.map(k=>METRIC_DEFS[k]?`<div class="stat"><b>${METRICS[k]}</b><small>${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</small></div>`:'').join('');
   const listArr = tab==='available'?availF:mineF;
   const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `${(!pvCalFilter && tab==='available' && myCities().length)? emptyAvail() : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?'حدّد مدن خدمتك من الإدارة لتصلك الطلبات':'ما قبلت طلبات بعد')}</h3></div>`}`;
-  // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
+  // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + 3 تبويبات (الشغل منفصل عن الإدارة) ═
   const subLine = me.tech
     ? (me.hasProvider ? LX(`🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>`,`🧑‍🔧 Technician at <b>${esc(svcName(me.providerName)||'a provider')}</b>`) : LX('🧑‍🔧 فني جديد','🧑‍🔧 New technician'))
     : LX(`🏢 مزوّد خدمة${myCities().length?` · 📍 ${esc(myCities().join(' · '))}`:''}`,`🏢 Service provider${myCities().length?` · 📍 ${esc(myCities().map(c=>cityLabel(c)).join(' · '))}`:''}`);
@@ -2168,7 +2257,7 @@ function render(){
         <div class="mrow"><span>الصفة</span><b>🏢 مزوّد خدمة</b></div>
       </div>
       <div class="mpanel"><h3>📊 أرقام صفحتي الرئيسية</h3>
-        <div class="hint">اضغط الأرقام اللي تبيها تطلع لك فوق (أهم ٥).</div>
+        <div class="hint">اضغط الأرقام اللي تبيها تطلع لك فوق (أهم 5).</div>
         <div class="mchips">
         ${Object.keys(METRIC_DEFS).map(k=>{ const on=(me.dash_metrics||[]).includes(k); return `<button class="mchip ${on?'on':''}" onclick="toggleMetric('${k}')">${on?'✓ ':''}${METRIC_DEFS[k].ic} ${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</button>`; }).join('')}
         </div>
@@ -2188,35 +2277,37 @@ function render(){
   const todayISO=dateISO(new Date());
   const tasksLeft=tasksLeftToday();
   const BAR = me.tech
-    ? [['home','🏠','الرئيسية'],['schedule','📅','الجدول'],['tasks','📝','مهامي'], seeCust()?['customers','👥','العملاء']:(seeStock()?['stock','📦','المخزن']:null), ['more','☰','المزيد']].filter(Boolean)
-    : [['home','🏠','الرئيسية'],['schedule','📅','الجدول'],['team','🧑‍🔧','الفريق'],['customers','👥','العملاء'],['more','☰','المزيد']];
+    ? [['home','home','الرئيسية'],['schedule','calendar','الجدول'],['tasks','tasks','مهامي'], seeCust()?['customers','customers','العملاء']:(seeStock()?['stock','box','المخزن']:null), ['more','grid','المزيد']].filter(Boolean)
+    : [['home','home','الرئيسية'],['schedule','calendar','الجدول'],['tasks','tasks','المهام'],['customers','customers','العملاء'],['more','grid','المزيد']];
+  window._pvBarKeys=BAR.map(b=>b[0]);
   const barKeys=BAR.map(b=>b[0]);
   const CARDS=[];
-  if(seeStock()&&!barKeys.includes('stock')) CARDS.push(['stock','📦','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+(PINV.length===1?' item':' items'))]);
-  if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', LX(ar(myDone)+' منجز', myDone+' completed')]);
-  if(!me.tech)   CARDS.push(['numbers','💰','لوحة الأرقام','أرباحك وأرقامك']);
-  CARDS.push(['ratings','⭐','تقييماتي','رأي عملائك']);
-  if(!me.tech)   CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+(PREM.length===1?' reminder':' reminders')):LX('دخل متكرّر','Recurring income')]);
-  if(!me.tech)   CARDS.push(['notes','✏️','الملاحظات', PNOTES.length?LX(ar(PNOTES.length)+' ملاحظة', PNOTES.length+(PNOTES.length===1?' note':' notes')):LX('اكتب ما تبي تتذكّره','Write what you want to remember')]);
-  if(seeCust()&&!barKeys.includes('customers')) CARDS.push(['customers','👥','العملاء', LX(ar(PCUST.length)+' عميل', PCUST.length+(PCUST.length===1?' customer':' customers'))]);
-  CARDS.push(['route','🗺️','مسار اليوم','مواقع طلباتك']);
-  CARDS.push(['available','📥','الطلبات المتاحة', LX(ar(avail.length)+' طلب', avail.length+(avail.length===1?' job':' jobs'))]);
-  CARDS.push(['mine','🧰','طلباتي', LX(ar(mine.length)+' طلب', mine.length+(mine.length===1?' job':' jobs'))]);
-  CARDS.push(['manage','👤','حسابي','بياناتي ومدن الخدمة']);
-  CARDS.push(['settings','⚙️','الإعدادات','كلمة المرور والنقاط والتنبيهات']);
+  if(!me.tech)   CARDS.push(['team','team','الفريق', LX(ar(TECHS.length)+(TECHS.length===1?' فني':' فنيين'), TECHS.length+(TECHS.length===1?' technician':' technicians'))]);
+  if(seeStock()&&!barKeys.includes('stock')) CARDS.push(['stock','box','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+(PINV.length===1?' item':' items'))]);
+  if(seeInv())   CARDS.push(['invoices','receipt','الفواتير', LX(ar(myDone)+' منجز', myDone+' completed')]);
+  if(!me.tech)   CARDS.push(['numbers','chart','لوحة الأرقام','أرباحك وأرقامك']);
+  CARDS.push(['ratings','star','تقييماتي','رأي عملائك']);
+  if(!me.tech)   CARDS.push(['reminders','bell','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+(PREM.length===1?' reminder':' reminders')):LX('دخل متكرّر','Recurring income')]);
+  if(!me.tech)   CARDS.push(['notes','pencil','الملاحظات', PNOTES.length?LX(ar(PNOTES.length)+' ملاحظة', PNOTES.length+(PNOTES.length===1?' note':' notes')):LX('اكتب ما تبي تتذكّره','Write what you want to remember')]);
+  if(seeCust()&&!barKeys.includes('customers')) CARDS.push(['customers','customers','العملاء', LX(ar(PCUST.length)+' عميل', PCUST.length+(PCUST.length===1?' customer':' customers'))]);
+  CARDS.push(['available','inbox','الطلبات المتاحة', LX(ar(avail.length)+' طلب', avail.length+(avail.length===1?' job':' jobs'))]);
+  CARDS.push(['mine','briefcase','طلباتي', LX(ar(mine.length)+' طلب', mine.length+(mine.length===1?' job':' jobs'))]);
+  CARDS.push(['manage','user','حسابي','بياناتي ومدن الخدمة']);
+  CARDS.push(['settings','sliders','الإعدادات','كلمة المرور والنقاط والتنبيهات']);
   const cardsHTML=CARDS.map(([k,ic,t,sub])=>`<div class="hcard" onclick="setTab('${k}')">
-    <span class="hc-ic">${ic}</span><h3>${t}</h3><p>${sub}</p><span class="hc-open">فتح ›</span>
+    <span class="hc-ic">${pic(ic,28)}</span><h3>${t}</h3><p>${sub}</p>
   </div>`).join('');
-  const secTitle={available:'📥 الطلبات المتاحة',mine:'🧰 طلباتي',stock:'📦 المخزن',invoices:'🧾 الفواتير',route:'🗺️ مسار اليوم',ratings:'⭐ تقييماتي',numbers:'💰 لوحة الأرقام',team:'🧑‍🔧 الفريق',tasks:'📝 مهامي',reminders:'🔔 تذكيرات الصيانة',manage:'👤 حسابي',more:'☰ المزيد',schedule:'📅 الجدول',customers:'👥 العملاء',notes:'✏️ الملاحظات',settings:'⚙️ الإعدادات'}[tab]||'';
+  const _SEC={available:['inbox','الطلبات المتاحة'],mine:['briefcase','طلباتي'],stock:['box','المخزن'],invoices:['receipt','الفواتير'],route:['map','مسار اليوم'],ratings:['star','تقييماتي'],numbers:['chart','لوحة الأرقام'],team:['team','الفريق'],tasks:['tasks',me.tech?'مهامي':'المهام'],reminders:['bell','تذكيرات الصيانة'],manage:['user','حسابي'],more:['grid','المزيد'],schedule:['calendar','الجدول'],customers:['customers','العملاء'],notes:['pencil','الملاحظات'],settings:['sliders','الإعدادات']}[tab];
+  const secTitle=_SEC?pic(_SEC[0],20)+' <span>'+_SEC[1]+'</span>':'';
   let body;
-  if(tab==='manage') body=manage+`<button class="tbtn inv" style="width:100%;margin-top:6px" onclick="setTab('settings')">⚙️ الإعدادات</button>`;
+  if(tab==='manage') body=manage+`<button class="tbtn inv" style="width:100%;margin-top:6px" onclick="setTab('settings')">${pic('sliders',18)} الإعدادات</button><button class="tbtn kp-logout" onclick="logout()">${pic('logout',18)} ${LX('تسجيل الخروج','Sign out')}</button>`;
   else if(tab==='settings') body=settingsPanel();
   else if(tab==='stock') body=renderStock();
   else if(tab==='invoices') body=renderInvoices();
   else if(tab==='route') body=renderRoute();
   else if(tab==='ratings') body=renderRatings();
   else if(tab==='numbers') body=renderNumbers();
-  else if(tab==='team') body=me.tech?renderTasksPanel():(renderTasksPanel()+renderTeam());
+  else if(tab==='team') body=me.tech?renderTasksPanel():renderTeam();
   else if(tab==='tasks') body=renderTasksPanel();
   else if(tab==='reminders') body=renderReminders();
   else if(tab==='customers') body=renderCustomers();
@@ -2238,18 +2329,18 @@ function render(){
     const newCust=PCUST.filter(c=>String(c.created_at||'').startsWith(mon)).length;
     const ptsUsed=PLOYLOG.filter(l=>l.reason==='redeem' && String(l.created_at||'').startsWith(mon)).reduce((s,l)=>s+Math.abs(+l.delta||0),0);
     const quick = me.tech ? '' : `<div class="pa-quick">
-        <button class="main" onclick="quickBookShortcut()">➕ حجز جديد</button>
-        <button onclick="quickTask()">📝 مهمة جديدة</button>
-        <button onclick="quickCustomer()">👤 إضافة عميل</button>
-        <button onclick="openLoyAdd('','')">⭐ إضافة نقاط</button>
-        <button onclick="quickNote()">✏️ ملاحظة</button>
+        <button class="main" onclick="quickBookShortcut()">${pic('calplus',18)} حجز جديد</button>
+        <button onclick="quickTask()">${pic('tasks',18)} مهمة جديدة</button>
+        <button onclick="quickCustomer()">${pic('user',18)} إضافة عميل</button>
+        <button onclick="openLoyAdd('','')">${pic('star',18)} إضافة نقاط</button>
+        <button onclick="quickNote()">${pic('pencil',18)} ملاحظة</button>
       </div>`;
-    const todayPanel=`<div class="pa-sec"><span>📅 مواعيد اليوم${todayAll.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(todayAll.length)})</i>`:''}</span><button onclick="setTab('schedule')">الجدول ›</button></div>
+    const todayPanel=`<div class="pa-sec"><span>${pic('calendar',18)} مواعيد اليوم${todayAll.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(todayAll.length)})</i>`:''}</span><button onclick="setTab('schedule')">الجدول ›</button></div>
       ${todayAll.length? todayAll.slice(0,6).map(o=>schedRow(o)).join('') : `<div class="hint" style="text-align:center;padding:12px;background:var(--card);border-radius:14px;margin:0">ما فيه مواعيد اليوم</div>`}
       ${todayAll.length>6?`<button class="pa-link" style="display:block;margin:0 auto 6px" onclick="setTab('schedule')">${LX(`و${ar(todayAll.length-6)} مواعيد أخرى ›`,`and ${todayAll.length-6} more ›`)}</button>`:''}`;
-    const tasksPanel=`<div class="pa-sec"><span>📝 مهام اليوم</span><button onclick="setTab('${me.tech?'tasks':'team'}')">${tToday.length?LX(`منجز ${ar(tDone)} · باقي ${ar(tToday.length-tDone)} ›`,`${tDone} done · ${tToday.length-tDone} left ›`):(me.tech?LX('عرض ›','View ›'):LX('أضف مهمة ›','Add a task ›'))}</button></div>
+    const tasksPanel=`<div class="pa-sec"><span>${pic('tasks',18)} مهام اليوم</span><button onclick="setTab('tasks')">${tToday.length?LX(`منجز ${ar(tDone)} · باقي ${ar(tToday.length-tDone)} ›`,`${tDone} done · ${tToday.length-tDone} left ›`):(me.tech?LX('عرض ›','View ›'):LX('أضف مهمة ›','Add a task ›'))}</button></div>
       ${tToday.length? tToday.slice(0,4).map(t=>taskRow(t,true)).join('') : `<div class="hint" style="text-align:center;padding:12px;background:var(--card);border-radius:14px;margin:0">${me.tech?'ما فيه مهام اليوم':'ما فيه مهام اليوم · أضف مهام لفريقك من «الفريق»'}</div>`}`;
-    const kpis = me.tech ? '' : `<div class="pa-sec"><span>📊 هذا الشهر</span><button onclick="setTab('numbers')">لوحة الأرقام ›</button></div>
+    const kpis = me.tech ? '' : `<div class="pa-sec"><span>${pic('chart',18)} هذا الشهر</span><button onclick="setTab('numbers')">لوحة الأرقام ›</button></div>
       <div class="pa-kpis"><div class="pa-kpi"><b>${pvNum(doneMonth.length)}</b><small>منجز هذا الشهر</small></div><div class="pa-kpi"><b>${pvMoney(revMonth)}</b><small>إيراد الشهر</small></div><div class="pa-kpi"><b>${pvNum(newCust)}</b><small>عملاء جدد</small></div><div class="pa-kpi"><b>${pvNum(ptsUsed)}</b><small>نقاط ولاء مصروفة</small></div></div>`;
     const availHome=availF.length ? availF.slice(0,5).map(o=>jobCard(o,'available')).join('')+(availF.length>5?`<button class="pa-link" style="display:block;margin:0 auto 6px" onclick="setTab('available')">${LX(`و${ar(availF.length-5)} طلبات أخرى ›`,`and ${availF.length-5} more ›`)}</button>`:'') : availList;
     homeHTML=`
@@ -2259,25 +2350,25 @@ function render(){
         ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
       </div>
       ${showJobs?`
-        <div class="pa-banner"><span class="ic">📥</span><span>طلبات خافت توصلك هنا تلقائيًا أول ما تصير في مدنك وتخصصك</span></div>
+        <div class="pa-banner"><span class="ic">${pic('inbox',22)}</span><span>طلبات خافت توصلك هنا تلقائيًا أول ما تصير في مدنك وتخصصك</span></div>
         ${quick}
         ${todayPanel}
         ${tasksPanel}
         ${kpis}
-        <div class="pa-sec"><span>📥 الطلبات المتاحة${avail.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(avail.length)})</i>`:''}</span><button onclick="setTab('available')">الكل ›</button></div>
+        <div class="pa-sec"><span>${pic('inbox',18)} الطلبات المتاحة${avail.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(avail.length)})</i>`:''}</span><button onclick="setTab('available')">الكل ›</button></div>
         <div style="padding-bottom:90px">${availHome}</div>
       `:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}`;
   }
-  const moreTabs=['more','manage','settings','stock','invoices','numbers','ratings','reminders','notes','route','available','mine','customers'];
+  const moreTabs=['more','team','manage','settings','stock','invoices','numbers','ratings','reminders','notes','route','available','mine','customers'];
   const barHTML=`<div class="bottombar">${BAR.map(([k,ic,l])=>{
       const on = k==='home' ? inHome : (k==='more' ? (moreTabs.includes(tab)&&!barKeys.includes(tab)) : tab===k);
       const badge=(k==='team'||k==='tasks')?tasksLeft:0;
-      return `<button class="${on?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><span>${ic}</span>${l}${badge?`<i class="bb-n">${pvNum(badge)}</i>`:''}</button>`; }).join('')}</div>`;
+      return `<button class="${on?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><span>${pic(ic,24)}</span>${l}${badge?`<i class="bb-n">${pvNum(badge)}</i>`:''}</button>`; }).join('')}</div>`;
   document.getElementById('app').innerHTML=`
     ${inHome?homeHTML:`
       <div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
-        <button class="backbtn" onclick="goHome()">‹ الرئيسية</button>
-        <b style="font-size:1.12rem;font-weight:900;flex:1">${secTitle}</b>
+        ${barKeys.includes(tab)?'':`<button class="backbtn" onclick="setTab(_pvBackTo||'more')">${pic('chev',18)} ${LX('رجوع','Back')}</button>`}
+        <b class="kp-sectitle" style="font-size:1.12rem;font-weight:900;flex:1">${secTitle}</b>
       </div>
       ${isJobTab?renderPvCalendar():''}
       <div style="margin-top:12px;padding-bottom:100px">${body}</div>
@@ -2311,11 +2402,11 @@ function renderNumbers(){
   const net=revenue-stockCost-monthly;
   const myDone=mine.filter(o=>o.status==='done').length;
   const owed=commOwed(mine);
-  // 📊 دخل آخر ٧ أيام
+  // 📊 دخل آخر 7 أيام
   const days=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().slice(0,10)); }
   const dInc=days.map(dt=>mine.filter(o=>o.status==='done'&&o.date===dt).reduce((s,o)=>s+orderInvTotal(o),0));
   const maxI=Math.max(1,...dInc); const dow=_uiEN()?EN_DAYS_SHORT:['أحد','إثن','ثلا','أرب','خمي','جمع','سبت'];
-  const chartPanel=`<div class="mpanel"><h3>📊 دخل آخر ٧ أيام</h3>
+  const chartPanel=`<div class="mpanel"><h3>📊 دخل آخر 7 أيام</h3>
     <div style="display:flex;align-items:flex-end;gap:6px;height:130px;margin-top:6px">
     ${days.map((dt,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
       <div style="font-size:.58rem;color:var(--gold-deep);font-weight:800;height:14px">${dInc[i]?ar(Math.round(dInc[i])):''}</div>
@@ -2439,7 +2530,7 @@ function renderReminders(){
       <button class="x-btn" onclick="delReminder(${r.id})">حذف</button>
     </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:18px">ما فيه تذكيرات · أضف أول تذكير فوق.</div>`;
   return `<div class="mpanel"><h3>🔔 تذكيرات الصيانة الدورية</h3>
-      <div class="hint">ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد ٦ شهور) · دخل متكرّر لك.</div>
+      <div class="hint">ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد 6 شهور) · دخل متكرّر لك.</div>
       <input id="rm_name" placeholder="اسم العميل" />
       <div style="display:flex;gap:8px;margin-top:8px">
         <input id="rm_phone" inputmode="tel" placeholder="الجوال" style="flex:1" />
@@ -2686,7 +2777,7 @@ async function addTechByCode(){
       toast((data && R[data.reason]) || 'تعذّرت الإضافة'); }
   }catch(e){ toast('تعذّرت الإضافة، حاول ثانية'); }
 }
-function setTab(t){ tab=t; schedOpen=null; render(); try{window.scrollTo(0,0);}catch(e){}
+function setTab(t){ if(t!==tab && (tab==='home' || (window._pvBarKeys||[]).includes(tab))) _pvBackTo=tab; tab=t; schedOpen=null; render(); try{window.scrollTo(0,0);}catch(e){}
   if(t==='team'&&me&&!me.tech){ loadTechs().then(render); }
   if((t==='stock'||t==='invoices'||t==='numbers'||t==='reminders'||t==='customers'||t==='home')&&me){ loadBiz(t!=='home'); }
   if((t==='team'||t==='tasks')&&me) loadTasks(taskDate);
@@ -2781,8 +2872,7 @@ function renderSchedule(){
   let body='';
   if(schedMode==='day'){
     const dayJobs=jobs.filter(o=>o.date===schedDate);
-    const nav=`<div class="pa-datenav"><button onclick="schedShift(-1)">${LX('›','‹')}</button><b>${schedDate===todayISO?LX('اليوم','Today')+' · ':''}${dayLabel(schedDate)}</b><button onclick="schedShift(1)">${LX('‹','›')}</button>${schedDate!==todayISO?`<button class="today" onclick="schedSetDate('${todayISO}')">اليوم</button>`:''}</div>
-      <input type="date" class="pa-datein" value="${schedDate}" onchange="schedSetDate(this.value)" />`;
+    const nav=`<div class="pa-datenav"><button onclick="schedShift(-1)">${LX('›','‹')}</button><b>${schedDate===todayISO?LX('اليوم','Today')+' · ':''}${dayLabel(schedDate)}</b><button onclick="schedShift(1)">${LX('‹','›')}</button>${schedDate!==todayISO?`<button class="today" onclick="schedSetDate('${todayISO}')">اليوم</button>`:''}<label class="kp-calpick" title="${LX('اختر تاريخ','Pick a date')}">${pic('calendar',18)}<input type="date" value="${schedDate}" onchange="schedSetDate(this.value)"></label></div>`;
     body=nav+(dayJobs.length
       ? dayJobs.map(o=>schedRow(o)+(schedOpen===o.id?`<div id="sched-open">${jobCard(o,'mine')}</div>`:'')).join('')
       : `<div class="empty" style="padding:30px 10px"><div class="ico">📅</div><h3>ما فيه مواعيد في هذا اليوم</h3></div>`);
@@ -2813,21 +2903,22 @@ function taskRow(t,compact){
 function renderTasksPanel(){
   const todayISO=dateISO(new Date());
   const list=tasksOn(taskDate); const done=list.filter(t=>t.done).length;
-  const nav=`<div class="pa-datenav"><button onclick="taskShift(-1)">${LX('›','‹')}</button><b>${taskDate===todayISO?LX('اليوم','Today')+' · ':''}${dayLabel(taskDate)}</b><button onclick="taskShift(1)">${LX('‹','›')}</button>${taskDate!==todayISO?`<button class="today" onclick="taskSetDate('${todayISO}')">اليوم</button>`:''}</div>
-    <input type="date" class="pa-datein" id="task_date" value="${taskDate}" onchange="taskSetDate(this.value)" />`;
+  const nav=`<div class="pa-datenav"><button onclick="taskShift(-1)">${LX('›','‹')}</button><b>${taskDate===todayISO?LX('اليوم','Today')+' · ':''}${dayLabel(taskDate)}</b><button onclick="taskShift(1)">${LX('‹','›')}</button>${taskDate!==todayISO?`<button class="today" onclick="taskSetDate('${todayISO}')">اليوم</button>`:''}<label class="kp-calpick" title="${LX('اختر تاريخ','Pick a date')}">${pic('calendar',18)}<input type="date" id="task_date" value="${taskDate}" onchange="taskSetDate(this.value)"></label></div>`;
   const form=!me.tech?`<div class="pa-form">
       <input id="task_title" maxlength="200" placeholder="المهمة (مثال: تنظيف الورشة وترتيب العدة)" onkeydown="if(event.key==='Enter')taskAdd()" />
       <div class="g2">
         <select id="task_tech"><option value="">🧑‍🔧 للكل</option>${TECHS.map(t=>`<option value="${esc(t.user_id)}">${esc(t.name||'فني')}</option>`).join('')}</select>
-        <select id="task_repeat"><option value="">بدون تكرار</option><option value="daily">يوميًا لمدة ٤ أسابيع</option><option value="weekly">أسبوعيًا لمدة ٤ أسابيع</option></select>
+        <select id="task_repeat"><option value="">بدون تكرار</option><option value="daily">يوميًا لمدة 4 أسابيع</option><option value="weekly">أسبوعيًا لمدة 4 أسابيع</option></select>
       </div>
       <input id="task_note" maxlength="500" placeholder="ملاحظة (اختياري)" />
       <button class="tbtn done" style="width:100%" onclick="taskAdd()">➕ أضف المهمة</button>
     </div>`:'';
   const missing=FEAT_MISSING.tasks?`<div class="hint" style="color:#B4560F;margin-top:6px">ميزة المهام بانتظار تفعيلها في الخادم.</div>`:'';
-  return `<div class="mpanel"><h3>📝 ${me.tech?'مهامي':'مهام اليوم للفريق'}</h3>
-    <div class="hint">${me.tech?'المهام اللي حدّدها لك صاحب المؤسسة · اضغط ✓ عند إنجازها.':'اكتب مهام كل يوم لفني معيّن أو للكل (مثال: السبت: جرد المخزن) · الفني يعلّم ✓ عند الإنجاز.'}</div>
-    ${nav}${missing}${form}
+  const addBtn=!me.tech?`<button type="button" class="kp-addbtn" onclick="_taskFormOpen=!_taskFormOpen;render()">${pic(_taskFormOpen?'x':'plus',18)} ${_taskFormOpen?LX('إغلاق','Close'):LX('مهمة جديدة','New task')}</button>`:'';
+  return `<div class="mpanel"><h3>${pic('tasks',18)} ${me.tech?'مهامي':'مهام الفريق'}</h3>
+    ${me.tech?'<div class="hint">المهام اللي حدّدها لك صاحب المؤسسة · اضغط ✓ عند إنجازها.</div>':''}
+    ${nav}${missing}
+    ${addBtn}${(!me.tech&&_taskFormOpen)?form:''}
     <div class="mrow" style="margin-top:8px"><span class="hint" style="margin:0">${LX(`منجز ${ar(done)} · باقي ${ar(list.length-done)}`, `${done} done · ${list.length-done} left`)}</span><b>${LX(ar(list.length)+' مهمة', list.length+(list.length===1?' task':' tasks'))}</b></div>
     <div style="margin-top:8px">${list.length?list.map(t=>taskRow(t)).join(''):`<div class="hint" style="text-align:center;padding:14px">ما فيه مهام في هذا اليوم</div>`}</div>
   </div>`;
@@ -2887,18 +2978,19 @@ function renderCustomers(){
   if(!myPid()||!seeCust()) return `<div class="empty"><div class="ico">👥</div><h3>غير متاح</h3></div>`;
   return `
     <div class="mpanel">
-      <h3>👥 عملاء ${me.tech?'المزوّد':'الفريق'}${PCUST.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(PCUST.length)})</i>`:''}</h3>
-      <div class="hint">سجل عملائك · مشترك بينك وبين ${me.tech?'زملائك':'فنيّينك'} · اضغط العميل لعرض طلباته ونقاطه.</div>
+      <h3>${pic('customers',18)} ${me.tech?'عملاء المزوّد':'عملاء الفريق'}${PCUST.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(PCUST.length)})</i>`:''}</h3>
       <input class="city-search" id="cu_q" placeholder="🔍 ابحث بالاسم أو الجوال" value="${esc(custQ)}" oninput="custSearch(this.value)" autocomplete="off" />
-      ${!me.tech?`<div class="biz-add" style="margin-top:10px"><input id="cu_name" placeholder="اسم العميل" onkeydown="if(event.key==='Enter')custAdd()" /></div>
+      ${!me.tech?`<button type="button" class="kp-addbtn" onclick="_custFormOpen=!_custFormOpen;render()">${pic(_custFormOpen?'x':'plus',18)} ${_custFormOpen?LX('إغلاق','Close'):LX('إضافة عميل','Add customer')}</button>`:''}
+      ${(!me.tech&&_custFormOpen)?`<div class="biz-add" style="margin-top:4px"><input id="cu_name" placeholder="اسم العميل" onkeydown="if(event.key==='Enter')custAdd()" /></div>
       <div class="biz-add" style="margin-top:-4px">
         <input id="cu_phone" inputmode="tel" placeholder="الجوال" />
         <input id="cu_city" placeholder="المدينة" style="max-width:100px" />
-        <button class="tbtn done" style="padding:0 18px;flex:0 0 auto" onclick="custAdd()">➕</button>
+        <button class="tbtn done" style="padding:0 18px;flex:0 0 auto" onclick="custAdd()" aria-label="${LX('إضافة','Add')}">${pic('plus',20)}</button>
       </div>`:''}
     </div>
     <div id="cuList">${custListHtml()}</div>`;
 }
+
 function loyLogHtml(p05, limit){
   const logs=p05?PLOYLOG.filter(l=>l.phone===p05).slice(0,limit||10):[];
   if(!logs.length) return `<div class="hint" style="margin:8px 0 0">ما فيه حركة نقاط بعد.</div>`;
@@ -3105,8 +3197,8 @@ async function noteDel(id){
 }
 
 /* ═══════════ أزرار سريعة من الرئيسية ═══════════ */
-function quickTask(){ tab='team'; render(); loadTasks(taskDate); setTimeout(function(){ const i=document.getElementById('task_title'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
-function quickCustomer(){ tab='customers'; render(); setTimeout(function(){ const i=document.getElementById('cu_name'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
+function quickTask(){ tab='tasks'; _taskFormOpen=true; render(); loadTasks(taskDate); setTimeout(function(){ const i=document.getElementById('task_title'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
+function quickCustomer(){ tab='customers'; _custFormOpen=true; render(); setTimeout(function(){ const i=document.getElementById('cu_name'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
 function quickNote(){ tab='notes'; render(); loadNotes(); setTimeout(function(){ const i=document.getElementById('note_text'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
 
 /* ═══════════ المخزن عبر الوحدة المشتركة warehouse.js (نفس تجربة خافت):
@@ -3145,10 +3237,12 @@ async function pvUploadPartPhoto(itemId, file){
 }
 const PV_REASON_EN=[['صرف · فاتورة','Issued, invoice'],['صرف · طلب','Issued · job'],['صرف','Issued'],['إدخال','Stock in'],['شراء','Purchase'],['رصيد افتتاحي','Opening stock'],['تعديل الكمية','Qty adjusted'],['إضافة صنف','Item added'],['توريد','Stock in'],['فاتورة','invoice'],['طلب','job'],['عميل','customer']];
 function pvReasonTxt(r){ r=String(r||''); if(!_uiEN()) return r; PV_REASON_EN.forEach(([a,b])=>{ r=r.split(a).join(b); }); return r; }
+/* اسم الصنف في سجل الحركة: الاسم المحفوظ وقت الحركة بالعربي، وبالإنجليزي من المخزن لو الواجهة إنجليزية */
+function pvLogItemName(e){ if(_uiEN()&&e&&e.item_id!=null){ const it=PINV.find(x=>String(x.id)===String(e.item_id)); if(it&&it.name_en) return it.name_en; } return (e&&e.item_name)||''; }
 function renderPvStockLog(){
   if(!PSTOCKLOG.length) return `<div class="sl-empty">ما فيه حركة مسجّلة بعد</div>`;
   return PSTOCKLOG.map(e=>{ const dv=+e.delta||0, plus=dv>0; const d=new Date(e.created_at||Date.now()); const when=(isNaN(d)?'':(pvDate(dateISO(d))+' · '+fmtTime(d.getHours()*60+d.getMinutes())));
-    return `<div class="slog"><span class="sl-d ${plus?'in':'out'}">${plus?'+':'−'}${pvNum(Math.abs(dv))}</span><span class="sl-m"><b>${esc(e.item_name||'')}</b><span>${esc(pvReasonTxt(e.reason))} · 👤 ${esc(e.actor||'')}</span></span><span class="sl-t">${when}</span></div>`; }).join('');
+    return `<div class="slog"><span class="sl-d ${plus?'in':'out'}">${plus?'+':'−'}${pvNum(Math.abs(dv))}</span><span class="sl-m"><b>${esc(pvLogItemName(e))}</b><span>${esc(pvReasonTxt(e.reason))} · 👤 ${esc(e.actor||'')}</span></span><span class="sl-t">${when}</span></div>`; }).join('');
 }
 
 /* ============================================================
@@ -3156,6 +3250,8 @@ function renderPvStockLog(){
    ============================================================ */
 let UILANG = localStorage.getItem('khafet_uilang') || 'ar';
 const T_DICT = {
+  "خافت شركاء":"Khafet Partners",
+  "حجز جديد":"New booking","مهمة جديدة":"New task","إضافة عميل":"Add customer","إضافة نقاط":"Add points","ملاحظة":"Note","رجوع":"Back","المهام":"Tasks","إغلاق":"Close","تسجيل الخروج":"Sign out","مهام الفريق":"Team tasks","عملاء الفريق":"Team customers","عملاء المزوّد":"Provider customers","اختر تاريخ":"Pick a date",
   "فيه طلبات مفتوحة كثيرة بهذا الرقم، انتظر إنجازها":"Too many open orders for this number, wait for them to finish","وصلت للحد اليومي، حاول لاحقًا":"Daily limit reached, try later","هذا الطلب ليس من طلبات مؤسستك أو لا يناسب هذا الإجراء":"This order is not one of your business orders or does not fit this action",
   "عميل خافت يقيّم من تطبيقه، ورابط التقييم لحجوزاتك الخاصة فقط":"Khafet customers rate from their app; rating links are for your own bookings only","ما يمكن الدفع من الرصيد لهذا الطلب الآن":"Balance cannot pay this order right now","المبلغ أكبر من الحد المسموح للدفع من الرصيد":"The amount exceeds the balance payment limit","رصيد العميل لا يكفي":"Customer balance is not enough","ما فيه مبلغ متبقي على الطلب":"Nothing is due on this order",
   "اختر طلبًا قائمًا لنفس العميل عليه مبلغ متبقي":"Pick an open order for the same customer with an amount due","بطاقة الزيارات غير مفعّلة، فعّلها من الإعدادات":"The visit card is off, turn it on in Settings","ما فيه مكافأة متاحة لهذا العميل":"No reward is available for this customer","زيارة هذا الطلب مسجّلة من قبل":"This order visit is already recorded",
@@ -3164,7 +3260,7 @@ const T_DICT = {
   // العلامة والهيدر والتنقّل
   "خافِت":"Khafet","بوابة المزوّد":"Provider Portal","خافِت | بوابة المزوّد":"Khafet | Provider Portal",
   "الرئيسية":"Home","‹ الرئيسية":"‹ Home","👤 حسابي":"👤 Account","حسابي":"Account","خروج":"Sign out","🚪 تسجيل الخروج":"🚪 Sign out","دخول":"Sign in",
-  "خافت شركاء © ٢٠٢٦":"Khafet Partner © 2026","خاص بالمزوّد":"Provider only","غير متاح":"Unavailable","فتح ›":"Open ›",
+  "خافت شركاء © 2026":"Khafet Partner © 2026","خاص بالمزوّد":"Provider only","غير متاح":"Unavailable","فتح ›":"Open ›",
   // بطاقات الرئيسية / الأقسام
   "📥 الطلبات المتاحة":"📥 Available jobs","طلبات متاحة":"Available jobs","🏆 أكثر خدماتك طلباً":"🏆 Your top services",
   "💰 لوحة الأرقام":"💰 Numbers board","⭐ تقييماتي":"⭐ My ratings","🗺️ الخريطة":"🗺️ Map","🗺️ مسار اليوم والطلبات القادمة":"🗺️ Today's route & upcoming jobs",
@@ -3174,9 +3270,9 @@ const T_DICT = {
   "💰 قيمة المخزون (بالبيع)":"💰 Stock value (at sale)","📦 التكلفة (بالشراء)":"📦 Cost (at purchase)","📦 تكلفة المخزون":"📦 Stock cost","قيمة المخزون":"Stock value",
   "＋ أضف خدمة":"＋ Add service","خدمة إضافية":"Extra service","بند مخصص":"Custom item","ما فيه أصناف بعد · أضف أول صنف فوق.":"No items yet. Add the first one above.","📈 الربح المتوقّع":"📈 Expected profit",
   // لوحة الأرقام
-  "📊 دخل آخر ٧ أيام":"📊 Income (last 7 days)","📈 الإيرادات":"📈 Revenue","الإيرادات":"Revenue","💵 إجمالي دخلك":"💵 Your total income","💵 صافي تقديري":"💵 Estimated net",
+  "📊 دخل آخر 7 أيام":"📊 Income (last 7 days)","📈 الإيرادات":"📈 Revenue","الإيرادات":"Revenue","💵 إجمالي دخلك":"💵 Your total income","💵 صافي تقديري":"💵 Estimated net",
   "💼 المستحق للمنصة":"💼 Owed to platform","🧾 مصاريف شهرية":"🧾 Monthly costs","مصاريف شهرية":"Monthly costs","📊 أرقام صفحتي الرئيسية":"📊 My home numbers","رقمي المهم":"My key number",
-  "✏️ عدّل أرقامك:":"✏️ Edit your numbers:","اضغط الأرقام اللي تبيها تطلع لك فوق (أهم ٥).":"Tap the numbers you want shown at top (top 5).",
+  "✏️ عدّل أرقامك:":"✏️ Edit your numbers:","اضغط الأرقام اللي تبيها تطلع لك فوق (أهم 5).":"Tap the numbers you want shown at top (top 5).",
   "الإيرادات تُحسب تلقائياً من فواتيرك المنجزة، والباقي تحطّه أنت.":"Revenue comes from your completed invoices. You fill in the rest.",
   "الصافي":"Net","المستحق":"Owed","إجمالي المنجز":"Total completed","منجزة":"Completed","✅ صافي لك":"✅ Your net","👛 محفظتي":"👛 My wallet",
   // الخريطة / المسار
@@ -3189,7 +3285,7 @@ const T_DICT = {
   "⏱️ المدة":"⏱️ Duration","⏰ حان وقتها":"⏰ Due now","🏠 صورة المنزل":"🏠 House photo","📷 صورة/مقطع":"📷 Photo/clip","🎥 عرض":"🎥 View","👤 العميل":"👤 Customer","ما قبلت طلبات بعد.":"You haven't accepted any jobs yet.",
   "الاسم":"Name","الجوال":"Phone","الخدمة":"Service","السعر":"Price","العدد":"Qty","الإجمالي":"Total","الصفة":"Role","⚡ طلب سريع (معاينة)":"⚡ Quick job (inspection)",
   // الضمان
-  "🛡️ الضمان":"🛡️ Warranty","ضمان ٧ أيام":"Warranty 7 days","ضمان ٣٠ يوم":"Warranty 30 days","ضمان ٩٠ يوم":"Warranty 90 days","بدون ضمان":"No warranty",
+  "🛡️ الضمان":"🛡️ Warranty","ضمان 7 أيام":"Warranty 7 days","ضمان 30 يوم":"Warranty 30 days","ضمان 90 يوم":"Warranty 90 days","بدون ضمان":"No warranty",
   // الحجز
   "➕ حجز جديد لعميل":"➕ New booking for a customer","💾 احجز":"💾 Book","تعذّر الحجز":"Couldn't book","اكتب اسم العميل":"Enter the customer name","👤 بياناتي":"👤 My details",
   "— بدون توزيع —":"Not assigned","🧑‍🔧 توزيع على فني…":"🧑‍🔧 Assign to a technician…","✅ وُزّع على الفني":"✅ Assigned to technician","أُلغي التوزيع":"Assignment cancelled","تعذّر التوزيع":"Couldn't assign",
@@ -3240,7 +3336,7 @@ const T_DICT = {
   "لوحة الأرقام":"Numbers board","أرباحك وأرقامك":"Your profits & numbers","تذكيرات الصيانة":"Maintenance reminders","دخل متكرّر":"Recurring income","طلباتي":"My jobs","فتح ›":"Open ›",
   "لا طلبات في هذا اليوم":"No jobs on this day","أول ما يوصل طلب جديد في تخصصك يوصلك إشعار، ولفنيّيك المسجّلين عندك.":"As soon as a new job in your trade arrives, you and your registered technicians get a notification.","التطبيق بيتم الإعلان عنه ونشره للعملاء قريبًا.":"The app will be announced and released to customers soon.","لا توجد طلبات متاحة في مدن خدمتك حالياً":"No available jobs in your service cities right now",
   "حدّد مدن خدمتك من الإدارة لتصلك الطلبات":"Set your service cities in Management to get jobs","حدّد مدن خدمتك من «حسابي» لتصلك الطلبات":"Set your service cities in Account to get jobs","ما قبلت طلبات بعد":"You haven't accepted any jobs yet",
-  "ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد ٦ شهور) · دخل متكرّر لك.":"Remind your customers about upcoming maintenance (like AC service after 6 months). Recurring income for you.",
+  "ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد 6 شهور) · دخل متكرّر لك.":"Remind your customers about upcoming maintenance (like AC service after 6 months). Recurring income for you.",
   "اسم الصنف":"Item name","الكمية":"Qty","سعر الشراء":"Buy price","سعر البيع":"Sell price","ربح/وحدة":"Profit/unit","النسبة٪":"Margin %","قيمة البيع":"Sale value","الصنف":"Item","اكتب اسم الصنف":"Enter item name","✅ أُضيف الصنف":"✅ Item added",
   "قبول الطلبات":"Accept jobs","إضافة/تعديل مخزن":"Add/edit stock","إصدار فواتير":"Issue invoices","محطة":"stop","محطات":"stops",
   "تقييماتك بدون ملاحظات مكتوبة.":"Your ratings have no written notes.","ما وصلتك تقييمات بعد · تظهر بعد إنجاز الطلبات وتقييم العملاء.":"No ratings yet. They show after you finish jobs and customers rate you.","عميل":"Customer",
@@ -3255,13 +3351,13 @@ const T_DICT = {
   "استعادة كلمة المرور":"Reset password","اكتب رقم جوالك المسجّل، ونرسل لك كود تأكيد لتعيين كلمة مرور جديدة.":"Enter your registered mobile number and we'll send you a code to set a new password.",
   "أرسل كود التأكيد":"Send code","‹ رجوع لتسجيل الدخول":"‹ Back to sign in","جاري الإرسال...":"Sending...",
   "الرقم غير مسجّل، أو تعذّر الإرسال · حاول بعد قليل.":"Number not registered, or sending failed. Try again shortly.","تعذّر الإرسال، حاول مرة ثانية.":"Sending failed, try again.",
-  "تعيين كلمة مرور جديدة":"Set a new password","أرسلنا كوداً إلى":"We sent a code to","كلمة المرور الجديدة (٦ فأكثر)":"New password (6+ characters)","أعد كتابة كلمة المرور":"Repeat the password",
+  "تعيين كلمة مرور جديدة":"Set a new password","أرسلنا كوداً إلى":"We sent a code to","كلمة المرور الجديدة (6 فأكثر)":"New password (6+ characters)","أعد كتابة كلمة المرور":"Repeat the password",
   "حفظ ودخول":"Save and sign in","لم يصلك الكود؟ إعادة الإرسال":"No code? Resend","اكتب كود التأكيد المرسل لجوالك":"Enter the code sent to your phone",
-  "كلمة المرور ٦ خانات على الأقل":"Password must be at least 6 characters","كلمة المرور ٦ أحرف على الأقل":"Password must be at least 6 characters","كلمتا المرور غير متطابقتين":"Passwords do not match",
+  "كلمة المرور 6 خانات على الأقل":"Password must be at least 6 characters","كلمة المرور 6 أحرف على الأقل":"Password must be at least 6 characters","كلمتا المرور غير متطابقتين":"Passwords do not match",
   "الكود غير صحيح أو انتهت صلاحيته.":"Wrong or expired code.","تعذّر حفظ كلمة المرور · جرّب كلمة مختلفة.":"Couldn't save the password. Try a different one.",
   "تعذّر، حاول مرة ثانية.":"Failed, try again.","تعذّر، حاول مرة ثانية":"Failed, try again","تم تغيير كلمة المرور · سجّل الدخول الآن.":"Password changed. Sign in now.","تم تغيير كلمة المرور":"Password changed",
   // تسجيل مزوّد / فني
-  "الاسم / اسم المؤسسة":"Name or business name","كلمة مرور (٦ أحرف فأكثر)":"Password (6+ characters)","رقم السجل التجاري":"Commercial registration number",
+  "الاسم / اسم المؤسسة":"Name or business name","كلمة مرور (6 أحرف فأكثر)":"Password (6+ characters)","رقم السجل التجاري":"Commercial registration number",
   "اكتب الاسم":"Enter your name","اكتب مدن الخدمة":"Choose your service cities","اختر نوع الخدمات":"Choose your service types","لا يوجد اتصال، حاول بعد قليل":"No connection, try again shortly",
   "نرسل رمز التحقق...":"Sending the code...","تعذّر إرسال الرمز · تأكد من الرقم وحاول ثانية":"Couldn't send the code. Check the number and try again",
   "اكتب الرمز كاملاً":"Enter the full code","اكتب الكود كاملًا":"Enter the full code","نتحقق...":"Checking...","الرمز غير صحيح · حاول ثانية":"Wrong code, try again",
@@ -3276,7 +3372,7 @@ const T_DICT = {
   // الطلبات والتنقّل السفلي
   "متاح":"Available","جديد":"New","مؤكد":"Confirmed","الفاتورة":"Invoice","فني":"Technician","الطلبات":"Jobs","حجز":"Book","المزيد":"More","بياناتي والإعدادات":"My details and settings",
   "ما أضافك مزوّد بعد · أرسل كودك لمزوّدك وأول ما يضيفك تظهر لك طلباته هنا.":"No provider has added you yet. Send your code to your provider. Once they add you, their jobs show here.",
-  "اعتذار · الطلب أخذه مزوّد آخر":"Sorry, another provider already took this job","وصلت حدّ ٣ طلبات نشطة · أنجز طلباً قبل ما تقبل جديداً":"You have 3 active jobs, which is the limit. Finish one before you accept a new one",
+  "اعتذار · الطلب أخذه مزوّد آخر":"Sorry, another provider already took this job","وصلت حدّ 3 طلبات نشطة · أنجز طلباً قبل ما تقبل جديداً":"You have 3 active jobs, which is the limit. Finish one before you accept a new one",
   "حسابك موقوف أو قيد المراجعة · تواصل مع الإدارة":"Your account is suspended or under review. Contact management","رقمك غير مسجّل كمزوّد":"Your number isn't registered as a provider","هذا الحساب ليس حساب مزوّد":"This isn't a provider account",
   "تعذّر القبول":"Couldn't accept","تم قبول الطلب ✅":"Job accepted ✅","تعذّر القبول، حاول مرة ثانية":"Couldn't accept, try again","أُلغي الضمان":"Warranty removed","تعذّر حفظ الضمان":"Couldn't save the warranty",
   "وصل طلب جديد في مدن خدمتك!":"New job in your service cities!","تعذّر فتح الملف":"Couldn't open the file",
@@ -3332,7 +3428,7 @@ const T_DICT = {
   "مهام اليوم للفريق":"Team tasks for today","المهام اللي حدّدها لك صاحب المؤسسة · اضغط ✓ عند إنجازها.":"Tasks set by your employer. Tap ✓ when done.",
   "اكتب مهام كل يوم لفني معيّن أو للكل (مثال: السبت: جرد المخزن) · الفني يعلّم ✓ عند الإنجاز.":"Write each day's tasks for one technician or everyone (e.g. Saturday: stock count). Technicians tick ✓ when done.",
   "ميزة المهام بانتظار تفعيلها في الخادم.":"The tasks feature is waiting to be enabled on the server.","المهمة (مثال: تنظيف الورشة وترتيب العدة)":"Task (e.g. clean the workshop and sort the tools)","للكل":"Everyone",
-  "بدون تكرار":"No repeat","يوميًا لمدة ٤ أسابيع":"Daily for 4 weeks","أسبوعيًا لمدة ٤ أسابيع":"Weekly for 4 weeks","ملاحظة (اختياري)":"Note (optional)","➕ أضف المهمة":"➕ Add task","ما فيه مهام في هذا اليوم":"No tasks on this day",
+  "بدون تكرار":"No repeat","يوميًا لمدة 4 أسابيع":"Daily for 4 weeks","أسبوعيًا لمدة 4 أسابيع":"Weekly for 4 weeks","ملاحظة (اختياري)":"Note (optional)","➕ أضف المهمة":"➕ Add task","ما فيه مهام في هذا اليوم":"No tasks on this day",
   "اكتب عنوان المهمة":"Enter the task title","أُضيفت المهمة":"Task added","تم":"Done","رجعت المهمة غير منجزة":"Task marked as not done","حُذفت المهمة":"Task deleted","إرجاع المهمة":"Undo",
   // العملاء وبطاقة العميل
   "👥 عملاء الفريق":"👥 Team customers","👥 عملاء المزوّد":"👥 Provider customers","سجل عملائك · مشترك بينك وبين فنيّينك · اضغط العميل لعرض طلباته ونقاطه.":"Your customer list, shared with your technicians. Tap a customer to see their jobs and points.",

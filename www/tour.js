@@ -65,12 +65,12 @@ const TXT={
 // لكل خطوة: التبويب اللي يفتح + العنصر اللي يضيء (فارغ = بطاقة بالنص في الوسط)
 const STEPS=[
  {tab:null, sel:null},
- {tab:'orders', sel:'.tabbar .tb:nth-child(1)'},
+ {tab:'orders', sel:'.tabbar .tb[data-k="orders"]'},
  {tab:'orders', sel:'.tjob .tacts'},
- {tab:'inv', sel:'.tabbar .tb:nth-child(2)'},
+ {tab:'inv', sel:'.tabbar .tb[data-k="inv"]'},
  {tab:'inv', sel:'.ws-item .ws-step'},
- {tab:'invoices', sel:'.tabbar .tb:nth-child(4)'},
- {tab:'book', sel:'.tabbar .tb:nth-child(3)'},
+ {tab:'orders', sel:'.kp-invbtn'},
+ {tab:'book', sel:'.tabbar .tb[data-k="book"]'},
  {tab:null, sel:'#acctBtn'},
  {tab:null, sel:null}
 ];
