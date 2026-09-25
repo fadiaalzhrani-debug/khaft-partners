@@ -68,16 +68,16 @@ function whMain(){
 function whCard(it){
   const st=invState(it), q=+it.qty||0;
   const badge=st==='out'?`<span class="ws-badge out">⛔ ${whL('نفد','Out')}</span>`:st==='low'?`<span class="ws-badge low">⚠️ ${whL('اطلب','Reorder')}</span>`:'';
-  const thumbClick=it.image_url?`data-img="${whE(it.image_url)}" onclick="whZoom(this.dataset.img)"`:(whH().canEdit()?`onclick="whForm('${it.id}')"`:'');
-  return `<div class="ws-item st-${st}" id="ws-${it.id}">
+  const thumbClick=it.image_url?`data-img="${whE(it.image_url)}" onclick="whZoom(this.dataset.img)"`:(whH().canEdit()?`data-id="${whE(it.id)}" onclick="whForm(this.dataset.id)"`:'');
+  return `<div class="ws-item st-${st}" id="ws-${whE(it.id)}">
     <div class="ws-thumb" ${thumbClick}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
     <div class="ws-body">
       <div class="ws-name">${whE(whName(it))}</div>
       <div class="ws-sub">${badge}<span>${whL('الوحدة','Unit')}: ${whE(whUnit(it.unit))}</span>${(+it.min_qty)?`<span>· ${whL('حد الطلب','Reorder at')} ${whNx(it.min_qty)}</span>`:''}</div>
       <div class="ws-step">
-        <button class="ws-btn minus" id="wsm-${it.id}" onclick="whStep('${it.id}',-1)" ${q<=0?'disabled':''} aria-label="${whL('صرف','Issue')}">−</button>
-        <button class="ws-num" onclick="whType('${it.id}')"><span id="wsn-${it.id}">${whNx(q)}</span><small>${whE(whUnit(it.unit))}</small></button>
-        <button class="ws-btn plus" onclick="whStep('${it.id}',1)" aria-label="${whL('إدخال','Stock in')}">+</button>
+        <button class="ws-btn minus" id="wsm-${whE(it.id)}" data-id="${whE(it.id)}" onclick="whStep(this.dataset.id,-1)" ${q<=0?'disabled':''} aria-label="${whL('صرف','Issue')}">−</button>
+        <button class="ws-num" data-id="${whE(it.id)}" onclick="whType(this.dataset.id)"><span id="wsn-${whE(it.id)}">${whNx(q)}</span><small>${whE(whUnit(it.unit))}</small></button>
+        <button class="ws-btn plus" data-id="${whE(it.id)}" onclick="whStep(this.dataset.id,1)" aria-label="${whL('إدخال','Stock in')}">+</button>
       </div>
       <div class="ws-hint"><span>− ${whL('صرف','issue')}</span><span>${whL('اضغط الرقم لكتابة الكمية','tap the number to type')}</span><span>+ ${whL('إدخال','stock in')}</span></div>
     </div>
@@ -156,15 +156,15 @@ function whRow(it){
     <div class="we-thumb-wrap"><div class="we-thumb" ${it.image_url?`data-img="${whE(it.image_url)}" onclick="whZoom(this.dataset.img)"`:''}>${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
       <label class="we-cam" title="${whL('صورة','Photo')}">📷<input type="file" accept="image/*" onchange="whRowPhoto('${it.id}',this)" /></label></div>
     <div class="we-fields">
-      <input class="we-name" value="${whE(it.name)}" placeholder="${whL('اسم الصنف','Item name (Arabic)')}" onchange="whSave('${it.id}','name',this.value)" />
-      <input class="we-name we-name-en" dir="ltr" value="${whE(it.name_en||'')}" placeholder="${whL('الاسم بالإنجليزي (اختياري)','English name (optional)')}" onchange="whSave('${it.id}','name_en',this.value)" />
+      <input class="we-name" value="${whE(it.name)}" placeholder="${whL('اسم الصنف','Item name (Arabic)')}" data-id="${whE(it.id)}" onchange="whSave(this.dataset.id,'name',this.value)" />
+      <input class="we-name we-name-en" dir="ltr" value="${whE(it.name_en||'')}" placeholder="${whL('الاسم بالإنجليزي (اختياري)','English name (optional)')}" data-id="${whE(it.id)}" onchange="whSave(this.dataset.id,'name_en',this.value)" />
       <div class="we-grid">
-        <label>${whL('شراء بالجملة','Wholesale cost')}<input type="number" inputmode="decimal" step="0.01" value="${+it.buy_price||0}" onchange="whSave('${it.id}','buy_price',this.value)" /></label>
-        <label>${whL('بيع مقترح','Suggested price')}<input type="number" inputmode="decimal" step="0.01" value="${+it.sell_price||0}" onchange="whSave('${it.id}','sell_price',this.value)" /></label>
-        <label>${whL('حد الطلب','Reorder at')}<input type="number" inputmode="decimal" value="${+it.min_qty||0}" onchange="whSave('${it.id}','min_qty',this.value)" /></label>
-        <label>${whL('الفئة','Category')}<select onchange="whSave('${it.id}','category',this.value)">${INV_CATS.map(c=>`<option value="${c}" ${whCat(it)===c?'selected':''}>${whCatLbl(c)}</option>`).join('')}</select></label>
+        <label>${whL('شراء بالجملة','Wholesale cost')}<input type="number" inputmode="decimal" step="0.01" value="${+it.buy_price||0}" data-id="${whE(it.id)}" onchange="whSave(this.dataset.id,'buy_price',this.value)" /></label>
+        <label>${whL('بيع مقترح','Suggested price')}<input type="number" inputmode="decimal" step="0.01" value="${+it.sell_price||0}" data-id="${whE(it.id)}" onchange="whSave(this.dataset.id,'sell_price',this.value)" /></label>
+        <label>${whL('حد الطلب','Reorder at')}<input type="number" inputmode="decimal" value="${+it.min_qty||0}" data-id="${whE(it.id)}" onchange="whSave(this.dataset.id,'min_qty',this.value)" /></label>
+        <label>${whL('الفئة','Category')}<select data-id="${whE(it.id)}" onchange="whSave(this.dataset.id,'category',this.value)">${INV_CATS.map(c=>`<option value="${c}" ${whCat(it)===c?'selected':''}>${whCatLbl(c)}</option>`).join('')}</select></label>
       </div>
-      <div class="we-acts"><span class="we-meta">${whL('الكمية','Qty')} <b>${whNx(it.qty||0)}</b> ${whE(whUnit(it.unit))}</span><button class="wh-btn" onclick="whForm('${it.id}')">⚙️ ${whL('المزيد','More')}</button><button class="wh-btn danger" onclick="whDelete('${it.id}')">🗑 ${whL('حذف','Delete')}</button></div>
+      <div class="we-acts"><span class="we-meta">${whL('الكمية','Qty')} <b>${whNx(it.qty||0)}</b> ${whE(whUnit(it.unit))}</span><button class="wh-btn" data-id="${whE(it.id)}" onclick="whForm(this.dataset.id)">⚙️ ${whL('المزيد','More')}</button><button class="wh-btn danger" data-id="${whE(it.id)}" onclick="whDelete(this.dataset.id)">🗑 ${whL('حذف','Delete')}</button></div>
     </div>
   </div>`;
 }
@@ -202,10 +202,10 @@ function whPoList(){
   const list=whInv().filter(it=>(!q||((it.name||'')+' '+(it.name_en||'')+' '+(it.code||'')).toLowerCase().includes(q))&&(whState.poCat==='all'||whCat(it)===whState.poCat)).sort(whByCat);
   if(!list.length) return `<div class="wh-empty">${whL('لا أصناف','No items')}</div>`;
   const row=it=>{ const v=whState.PO[String(it.id)]||0, st=invState(it);
-    return `<div class="po-row ${v?'sel':''}" id="po-${it.id}">
+    return `<div class="po-row ${v?'sel':''}" id="po-${whE(it.id)}">
       <div class="we-thumb po-thumb">${it.image_url?`<img src="${whE(it.image_url)}" loading="lazy" />`:(CAT_ICO[whCat(it)]||'📦')}</div>
       <div class="po-info"><b>${whE(whName(it))}</b><small>${whL('المتوفر','Have')} ${whNx(it.qty||0)} ${whE(whUnit(it.unit))}${st==='out'?' · ⛔ '+whL('نفد','out'):st==='low'?' · ⚠️ '+whL('ناقص','low'):''}</small></div>
-      <div class="po-step"><button class="ws-btn minus" onclick="whPoStep('${it.id}',-1)">−</button><input id="poq-${it.id}" type="number" inputmode="numeric" placeholder="0" value="${v||''}" oninput="whPoSet('${it.id}',this.value)" /><button class="ws-btn plus" onclick="whPoStep('${it.id}',1)">+</button></div>
+      <div class="po-step"><button class="ws-btn minus" data-id="${whE(it.id)}" onclick="whPoStep(this.dataset.id,-1)">−</button><input id="poq-${whE(it.id)}" data-id="${whE(it.id)}" type="number" inputmode="numeric" placeholder="0" value="${v||''}" oninput="whPoSet(this.dataset.id,this.value)" /><button class="ws-btn plus" data-id="${whE(it.id)}" onclick="whPoStep(this.dataset.id,1)">+</button></div>
     </div>`; };
   if(whState.poCat!=='all') return list.map(row).join('');
   return INV_CATS.map(c=>{ const g=list.filter(it=>whCat(it)===c); if(!g.length) return ''; return `<div class="wh-group-h" style="margin-top:14px"><span>${CAT_ICO[c]} ${whCatLbl(c)}</span><small>${whNx(g.length)}</small></div>`+g.map(row).join(''); }).join('');
@@ -320,9 +320,9 @@ function whForm(id){
     <div class="wh-f">
       <div class="wf-photo"><div class="we-thumb" id="wf_img">${v.image_url?`<img src="${whE(v.image_url)}" />`:'📦'}</div>
         <div class="btns"><label class="wh-btn ok camlbl">📷 ${whL('صورة الصنف','Item photo')}<input type="file" accept="image/*" onchange="whPickPhoto(this)" /></label>
-        <button class="wh-btn" onclick="whRemovePhoto('${it?it.id:''}')">🗑 ${whL('بدون صورة','Remove')}</button></div>
+        <button class="wh-btn" data-id="${whE(it?it.id:'')}" onclick="whRemovePhoto(this.dataset.id)">🗑 ${whL('بدون صورة','Remove')}</button></div>
         <small style="color:var(--muted,#6E685B);font-weight:600;font-size:.74rem">${whL('تظهر للفني عند اختيار القطعة وللعميل في طلباتي','Shown to technicians and customers')}</small></div>
-      ${opts.length?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${whL('خيارات جاهزة، اضغط وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${opts.map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" data-url="${whE(u)}" onclick="whPickOpt('${it.id}',this)"><img src="${whE(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
+      ${opts.length?`<div class="wh-hint" style="padding:8px"><b style="display:block;margin-bottom:6px">🖼️ ${whL('خيارات جاهزة، اضغط وحدة','Ready options, tap one')}</b><div class="il-grid" style="margin:0">${opts.map(u=>`<div class="il-opt ${u===(v.image_url||'')?'sel':''}" data-url="${whE(u)}" data-id="${whE(it.id)}" onclick="whPickOpt(this.dataset.id,this)"><img src="${whE(u)}" loading="lazy" /></div>`).join('')}</div></div>`:''}
       <label class="full">${whL('اسم الصنف بالعربي','Item name (Arabic)')}<input id="wf_name" value="${whE(v.name)}" placeholder="لمبة 9 وات أصفر" /></label>
       <label class="full">${whL('الاسم بالإنجليزي (يظهر للفنيين غير العرب)','English name (shown to non-Arabic technicians)')}<input id="wf_name_en" dir="ltr" value="${whE(v.name_en||'')}" placeholder="9W bulb warm" /></label>
       <label>${whL('الفئة','Category')}<select id="wf_cat">${INV_CATS.map(c=>`<option value="${c}" ${whCat(v)===c?'selected':''}>${whCatLbl(c)}</option>`).join('')}</select></label>
@@ -335,7 +335,7 @@ function whForm(id){
       <label>${whL('الكمية المستهدفة','Target qty')}<input id="wf_target" type="number" inputmode="decimal" value="${v.target_qty||0}" /></label>
       <div class="wh-hint">${whL('لما تنزل الكمية إلى حد الطلب يطلع الصنف في طلب الشراء تلقائيًا بكمية تكمّل المستهدف.','When qty reaches the reorder level the item is pre-filled in the purchase order up to the target.')}</div>
     </div>
-    <div class="wh-actions">${it?`<button class="wh-btn danger" onclick="whDelete('${it.id}')">🗑 ${whL('حذف','Delete')}</button>`:''}<button class="wh-btn" onclick="whFormClose()">${whL('إلغاء','Cancel')}</button><button class="wh-btn ok" onclick="whFormSave('${it?it.id:''}')">💾 ${whL('حفظ','Save')}</button></div>
+    <div class="wh-actions">${it?`<button class="wh-btn danger" data-id="${whE(it.id)}" onclick="whDelete(this.dataset.id)">🗑 ${whL('حذف','Delete')}</button>`:''}<button class="wh-btn" onclick="whFormClose()">${whL('إلغاء','Cancel')}</button><button class="wh-btn ok" data-id="${whE(it?it.id:'')}" onclick="whFormSave(this.dataset.id)">💾 ${whL('حفظ','Save')}</button></div>
   </div></div>`);
   setTimeout(()=>{ const e=document.getElementById('wf_name'); if(e&&!it) e.focus(); },50);
 }

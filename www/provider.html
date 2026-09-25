@@ -7,6 +7,8 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23141414'/><text y='.9em' x='18' font-size='60'>🤝</text></svg>" />
 <meta name="theme-color" content="#141414" />
+<!-- سياسة أمان المحتوى: سكربتات الصفحة فقط، والاتصال بمشروع Supabase فقط -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; media-src 'self' blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; connect-src 'self' https://zulogtqxbuqxmdmjpzqj.supabase.co wss://zulogtqxbuqxmdmjpzqj.supabase.co; frame-src 'self' blob:">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
@@ -203,6 +205,19 @@
   .tbtn.inv{background:var(--gold-tint);border:1px solid var(--gold-soft);color:var(--gold-deep)}
   .tbtn.inv.sent{background:var(--ok-soft);color:var(--ok)}
   .tbtn.donelbl{background:var(--ok-soft);color:var(--ok)}
+  /* طلب الإلغاء: زر بعرض البطاقة، قائمة الأسباب، وشارات الحالة */
+  .tacts{flex-wrap:wrap}
+  .tacts .tbtn.reject{flex:1 1 100%;font-size:.95rem;padding:12px}
+  .rj-list{display:grid;gap:9px}
+  .rj-opt{width:100%;text-align:start;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:14px 15px;font-weight:700;font-size:1rem;cursor:pointer;font-family:inherit}
+  .rj-opt.on{background:#FBE4E1 !important;box-shadow:inset 0 0 0 2px #B42318;color:#B42318}
+  .cx-note{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-weight:700;font-size:1rem;font-family:inherit;margin-top:12px;resize:vertical}
+  /* نافذة تغيير رقم الجوال */
+  .pc-in{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-weight:700;font-size:1.05rem;font-family:inherit}
+  .pc-in:focus{outline:none;border-color:var(--gold)}
+  .pc-link{display:block;width:100%;background:none;border:0;color:var(--muted);font-weight:800;font-size:.9rem;margin-top:10px;cursor:pointer;font-family:inherit;text-decoration:underline}
+  .status.cxpend{background:#FCEBD8;color:#B4560F;border-color:transparent;white-space:normal;text-align:start;margin-inline-end:6px}
+  button.status.cxrej{background:#FBE4E1;color:#B42318;border-color:transparent;white-space:normal;text-align:start;cursor:pointer;font-family:inherit;margin-inline-end:6px}
   .empty{text-align:center;padding:50px 20px;color:var(--muted)}
   .empty .ico{font-size:3rem;margin-bottom:10px;opacity:.5}
 
@@ -222,6 +237,10 @@
   .inv-row .ir-qty button{width:38px;height:40px;font-weight:900;color:var(--gold-deep);font-size:1.35rem}
   .inv-row .ir-qty span{min-width:30px;text-align:center;font-weight:900;font-size:1.15rem}
   .inv-row .ir-price{width:92px;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:900;text-align:center;font-size:1.1rem}
+  .inv-row .ir-price-ro{min-width:64px;padding:11px 8px;border-radius:10px;background:var(--panel);color:var(--muted);font-weight:900;text-align:center;font-size:1.05rem;font-variant-numeric:tabular-nums}
+  .inv-pay{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:6px 13px}
+  .inv-pay div{display:flex;justify-content:space-between;padding:7px 0;font-weight:800;font-size:.98rem}
+  .inv-pay div+div{border-top:1px dashed var(--line)}
   .inv-row .ir-del{color:var(--danger);font-size:1.3rem;padding:6px}
   .inv-empty{color:var(--muted);text-align:center;padding:20px;font-weight:700}
     /* فاتورة الطلب عند المزوّد: عرض فقط */
@@ -328,6 +347,7 @@ html,body{touch-action:manipulation}
   #updWall h2{font-size:1.55rem;font-weight:900;margin:0}
   #updWall p{color:var(--muted);margin:10px 0 22px;line-height:1.9;font-weight:600;font-size:1rem}
   #updWall .uw-btn{display:block;width:100%;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:16px;font-weight:900;font-size:1.05rem;font-family:inherit;text-decoration:none;cursor:pointer}
+  .empty .empty-note{margin-top:10px;font-size:.9rem;font-weight:700;color:var(--muted);line-height:1.9}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
 <style id="kh-skin">
@@ -433,6 +453,99 @@ a.card:active,.card:active{transform:scale(.97)}
 .langpick .sheet,.lp-sheet{border-radius:32px}
 
 </style><!--/kh-skin-->
+<link rel="stylesheet" href="warehouse.css" />
+<script src="warehouse.js"></script>
+<style id="pv-app">
+/* ═ تطبيق المزوّد المستقل: الشريط السفلي بخمس تبويبات، لوحة اليوم، الجدول، المهام، بطاقة العميل، الملاحظات، سجل المخزن ═ */
+.pa-banner{display:flex;gap:10px;align-items:center;background:var(--gold-tint);border:1px solid var(--gold-soft);border-radius:16px;padding:11px 14px;margin-top:12px;font-weight:800;font-size:.9rem;line-height:1.6}
+.pa-banner .ic{font-size:1.3rem;flex-shrink:0}
+.pa-quick{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-top:12px;padding-bottom:3px}
+.pa-quick::-webkit-scrollbar{display:none}
+.pa-quick button{flex:0 0 auto;display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 14px;font-weight:800;font-size:.86rem;color:var(--ink);font-family:inherit;cursor:pointer;box-shadow:var(--shadow-sm,none);white-space:nowrap}
+.pa-quick button.main{background:var(--gold);border-color:var(--gold-deep)}
+.pa-sec{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 2px 8px;font-weight:900;font-size:1.05rem}
+.pa-sec button{background:none;border:0;color:var(--gold-deep);font-weight:800;font-size:.84rem;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pa-row{display:flex;align-items:center;gap:10px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;cursor:pointer;text-align:start;font-family:inherit;color:inherit}
+.pa-row .t{min-width:60px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--gold-deep);font-size:.88rem}
+.pa-row .b{flex:1;min-width:0}
+.pa-row .b b{display:block;font-weight:800;font-size:.95rem;line-height:1.35;word-break:break-word}
+.pa-row .b small{display:block;color:var(--muted);font-size:.78rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pa-row.open{border-color:var(--gold-deep);background:var(--gold-tint)}
+.pa-tag{font-size:.7rem;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--panel);color:var(--muted);white-space:nowrap;flex-shrink:0}
+.pa-tag.own{background:#DDEEFA;color:#1F6FA8}
+.pa-tag.done{background:var(--ok-soft);color:var(--ok)}
+.pa-tag.prog{background:#FCE3CF;color:#B4560F}
+.pa-seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex:1}
+.pa-seg button{flex:1;border:0;background:none;border-radius:999px;padding:8px 10px;font-weight:800;font-size:.86rem;color:var(--muted);font-family:inherit;cursor:pointer}
+.pa-seg button.on{background:var(--brown,#4E3F35);color:#FFF8EF}
+.pa-tools{display:flex;gap:8px;align-items:center;margin:10px 0}
+.pa-tools select{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);font-family:inherit;font-weight:700;font-size:.9rem;color:var(--ink)}
+.pa-datenav{display:flex;align-items:center;gap:8px;margin:8px 0 10px}
+.pa-datenav b{flex:1;text-align:center;font-weight:900;font-size:.95rem}
+.pa-datenav button{width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-weight:900;font-size:1.1rem;cursor:pointer;font-family:inherit;color:var(--ink);flex-shrink:0}
+.pa-datenav button.today{width:auto;padding:0 12px;font-size:.82rem;background:var(--gold-tint);color:var(--gold-deep)}
+.pa-datein{width:100%;padding:10px;border-radius:12px;border:1px solid var(--line);background:#FBF9F3;font-family:inherit;font-weight:700;color:var(--ink);margin-bottom:8px}
+.pa-week{display:grid;gap:8px}
+.pa-wday{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.pa-wday.today{border-color:var(--gold-deep);background:var(--gold-tint)}
+.pa-wday h4{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;font-weight:900;margin:0;cursor:pointer}
+.pa-wday h4 small{color:var(--muted);font-weight:700;font-size:.76rem}
+.pa-wday .it{font-size:.82rem;font-weight:700;color:var(--muted);padding:4px 0;border-top:1px dashed var(--line);display:flex;gap:8px;margin-top:4px;cursor:pointer}
+.pa-wday .it b{color:var(--gold-deep);min-width:54px;font-variant-numeric:tabular-nums;flex-shrink:0}
+.pa-wday .it span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pa-task{display:flex;align-items:flex-start;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.pa-task.done{opacity:.75;background:var(--ok-soft)}
+.pa-task .chk{width:32px;height:32px;border-radius:10px;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font-weight:900;color:var(--ok);flex-shrink:0;cursor:pointer;font-family:inherit;font-size:1rem;padding:0}
+.pa-task.done .chk{background:var(--ok);border-color:var(--ok);color:#fff}
+.pa-task .tx{flex:1;min-width:0}
+.pa-task .tx b{display:block;font-weight:800;font-size:.95rem;line-height:1.45;word-break:break-word}
+.pa-task.done .tx b{text-decoration:line-through}
+.pa-task .tx small{display:block;color:var(--muted);font-size:.76rem;font-weight:700;line-height:1.6}
+.pa-form{display:grid;gap:8px;margin-top:8px}
+.pa-form input,.pa-form select,.pa-form textarea,.mpanel textarea,.mpanel select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:#FBF9F3;color:var(--text);font-family:inherit;font-weight:700;font-size:.95rem}
+.mpanel textarea{resize:vertical;line-height:1.6}
+.pa-form .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pa-kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.pa-kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center}
+.pa-kpi b{display:block;font-size:1.2rem;font-weight:900;color:var(--gold-deep);line-height:1.2;white-space:nowrap}
+.pa-kpi small{color:var(--muted);font-size:.72rem;font-weight:700}
+.pa-note{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.pa-note.pin{border-color:var(--gold);background:var(--gold-tint)}
+.pa-note p{white-space:pre-wrap;word-break:break-word;font-weight:700;font-size:.95rem;line-height:1.7;margin:0}
+.pa-note .ft{display:flex;gap:8px;align-items:center;margin-top:8px;color:var(--muted);font-size:.74rem;font-weight:700}
+.pa-note .ft span{flex:1}
+.pa-note .ft button{background:var(--panel);border:0;border-radius:8px;padding:6px 10px;font-weight:800;font-size:.76rem;cursor:pointer;font-family:inherit;color:var(--ink)}
+.pa-pts{display:inline-block;background:var(--gold);color:var(--ink);border-radius:999px;padding:2px 9px;font-weight:900;font-size:.74rem;white-space:nowrap}
+.pa-cust{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px;cursor:pointer;width:100%;text-align:start;font-family:inherit;color:inherit}
+.pa-cust .av{width:40px;height:40px;border-radius:12px;background:var(--gold-tint);display:grid;place-items:center;font-weight:900;color:var(--gold-deep);flex-shrink:0}
+.pa-cust .nm{flex:1;min-width:0}
+.pa-cust .nm b{display:block;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pa-cust .nm small{color:var(--muted);font-size:.78rem;font-weight:700}
+.pa-loyrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:.86rem;font-weight:700}
+.pa-loyrow:last-child{border-bottom:0}
+.pa-loyrow .d{font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pa-loyrow .d.plus{color:var(--ok)} .pa-loyrow .d.minus{color:#B42318}
+.pa-link{background:none;border:0;color:var(--gold-deep);font-weight:800;text-decoration:underline;cursor:pointer;font-family:inherit;font-size:inherit;padding:0}
+.pa-result{background:var(--ok-soft);border:1px solid #BBF7D0;border-radius:16px;padding:16px;text-align:center;margin-top:10px}
+.pa-result b{display:block;font-size:1.6rem;font-weight:900;color:var(--ok)}
+.bottombar button{position:relative}
+.bottombar .bb-n{position:absolute;top:1px;inset-inline-end:12%;background:#e11d48;color:#fff;font-size:.66rem;font-weight:900;min-width:17px;height:17px;border-radius:999px;display:grid;place-items:center;padding:0 4px;font-style:normal;line-height:1}
+/* سجل حركة المخزن (نفس شكل تطبيق الفني) */
+.sl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:22px 2px 10px;font-weight:900;font-size:1.02rem;color:var(--gold-deep)}
+.sl-head span{color:var(--muted);font-weight:600;font-size:.76rem}
+.sl-list{display:flex;flex-direction:column;gap:7px}
+.sl-empty{color:var(--muted);text-align:center;padding:18px;font-size:.9rem;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.slog{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.sl-d{font-weight:900;font-size:.95rem;font-variant-numeric:tabular-nums;min-width:44px;text-align:center;padding:5px 6px;border-radius:8px;flex-shrink:0}
+.sl-d.in{color:var(--ok);background:var(--ok-soft)}
+.sl-d.out{color:#B42318;background:#FBE4E1}
+.sl-m{flex:1;min-width:0}
+.sl-m b{display:block;font-size:.86rem;font-weight:800}
+.sl-m span{color:var(--muted);font-size:.72rem;font-weight:600}
+.sl-t{color:var(--muted);font-size:.68rem;font-weight:600;text-align:end;flex-shrink:0;white-space:nowrap}
+body.kh-nobuy .we-grid label:first-child{display:none}
+body.kh-nobuy .wh-f label:has(#wf_buy){display:none}
+</style>
 </head>
 <body>
 <header class="top"><div class="wrap">
@@ -460,7 +573,7 @@ const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember',
 async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ await _khFreshP; }catch(e){} try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
 function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
 function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
-const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
+const KH_MIRROR=new Set(['khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth','khafet_phone_sync']);
 /* المفاتيح الحسّاسة (توكن الجلسة وأعلام الدخول) لا تُكتب في Preferences،
    لأنه مخزن غير مشفّر. مكانها الكيتشين المحمي بقفل الجهاز وحده. */
 const _khPlain=k=>!KH_SECURE.has(k);
@@ -484,7 +597,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=106;
+const RIZQ_BUILD=107;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -493,7 +606,7 @@ try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
 /* عند فتح التطبيق: لو ذاكرة المتصفح انمسحت نرجّع المفاتيح من مخزن النظام */
 async function khRestore(){ try{ await _khFreshP; }catch(e){} if(!_khPrefs&&!_khSec) return []; const back=[]; for(const k of KH_MIRROR){ try{ if(localStorage.getItem(k)!=null) continue; let v=null; try{ if(_khPrefs){ const r=await _khPrefs.get({key:k}); if(r&&r.value!=null) v=r.value; } }catch(e){} if(v==null) v=await _secGet(k); if(v!=null){ localStorage.setItem(k,v); back.push(k); } }catch(e){} } return back; }
 
-const BRAND='خافِت'; const CONTACT='0590497866'; const COMMISSION=3; const SAVE_KEY='siyanah_v1';
+const BRAND='خافِت'; const CONTACT='0590497866'; const SAVE_KEY='siyanah_v1';
 /* حساب المزوّدين محفوظ في Supabase → Authentication (ما فيه كلمة مرور بالكود).
    لتغيير كلمة المرور: Supabase → Authentication → Users → provider@khafet.app */
 const PROVIDER_EMAIL='provider@khafet.app';   // معرّف فقط · ليس سرّاً
@@ -524,10 +637,27 @@ function svc(id){ return SERVICES.find(s=>s.id===id); }
 let me=null, ORDERS=[], OPEN=[], tab='home';
 let PINV=[], PCUST=[], PREM=[];   // مخزن + عملاء + تذكيرات المزوّد
 let bookOpen=false;      // نموذج الحجز المباشر
+/* ═ تطبيق المزوّد المستقل (2026-09-24): مهام الفريق اليومية، نقاط الولاء، الملاحظات، سجل المخزن، والجدول اليومي/الأسبوعي ═
+   الجداول والدوال في supabase/fix-2026-09-24-prov-app.sql · قبل تطبيقه تبقى القوائم فارغة ويظهر تنبيه «بانتظار التفعيل» */
+let PTASKS=[], PLOY=[], PLOYLOG=[], PNOTES=[], PSTOCKLOG=[];
+const FEAT_MISSING={};                 // جدول لم يُفعَّل بعد في الخادم (PGRST205/42P01) · يُعرض تنبيه بدل الخطأ
+let taskDate=dateISO(new Date()), _taskRange=null;
+let schedMode='day', schedDate=dateISO(new Date()), schedTech='', schedOpen=null;
+let custQ='', noteQ='', custOpen=null, bookPrefill=null, pinvLoaded=false;
+let _rs=null;
+function renderSoon(){ clearTimeout(_rs); _rs=setTimeout(function(){ try{ renderSafe(); }catch(e){} },80); }   // تجميع إعادة الرسم بعد عدة تحميلات متوازية
+function pvNum(n){ return _uiEN()?String(n):ar(n); }
+function addDays(iso,n){ const d=parseISO(iso); d.setDate(d.getDate()+n); return dateISO(d); }
+function featMissing(e){ return !!e && /42P01|PGRST205|PGRST202|42883|schema cache|does not exist|Could not find/i.test(String((e.message||'')+' '+(e.code||'')+' '+(e.details||'')+' '+(e.hint||''))); }
+/* جوال العميل بصيغة موحّدة 05xxxxxxxx (مثل khafet_phone05 في الخادم) أو فارغ */
+function custPhone05(p){ let d=String(p||'').replace(/\D/g,''); if(d.startsWith('00')) d=d.slice(2); if(d.startsWith('966')) d='0'+d.slice(3); if(/^5[0-9]{8}$/.test(d)) d='0'+d; return /^05[0-9]{8}$/.test(d)?d:''; }
 function myPid(){ return me ? (me.tech ? (me.provider_id||null) : me.id) : null; }
-function seeStock(){ return !!(me && (!me.tech || (me.perms&&me.perms.stock))); }
-function seeCust(){ return !!(me && (!me.tech || (me.perms&&me.perms.customers))); }
-function seeInv(){ return !!(me && (!me.tech || (me.perms&&me.perms.invoices))); }
+/* فني المؤسسة يشوف المخزن أو العملاء أو الفواتير لو أعطاه المزوّد الصلاحية (perms) وما أخفاها عن فنيّيه (techs_see_* لو أرسلها الخادم) */
+function seeStock(){ return !!(me && (!me.tech || ((me.perms&&me.perms.stock) && me.techs_see_stock!==false))); }
+function seeCust(){ return !!(me && (!me.tech || ((me.perms&&me.perms.customers) && me.techs_see_customers!==false))); }
+function seeInv(){ return !!(me && (!me.tech || ((me.perms&&me.perms.invoices) && me.techs_see_invoices!==false))); }
+/* سعر الشراء وهامش الربح للمزوّد فقط · الفني يشوف سعر البيع بس */
+function seeBuy(){ return !!(me && !me.tech); }
 function canAccept(){ return !!(me && (!me.tech || (me.perms&&me.perms.accept))); }
 /* كتالوج أرقام الداشبورد (المزوّد يختار منها) */
 const METRIC_DEFS={
@@ -553,6 +683,11 @@ function exportInvoices(){
 }
 function exportStock(){
   const en=_uiEN();
+  if(!seeBuy()){   // الفني: بدون سعر الشراء والربح
+    downloadCSV(LX('مخزوني','stock'), en?['Item','Qty','Sell price','Sale value']:['الصنف','الكمية','سعر البيع','قيمة البيع'],
+      PINV.map(it=>{ const s=+it.sell_price||0,q=+it.qty||0; return [stockName(it),q,s,q*s]; }));
+    toast('⤓ تم تنزيل الملف'); return;
+  }
   downloadCSV(LX('مخزوني','stock'), en?['Item','Qty','Buy price','Sell price','Profit per unit','Margin %','Sale value']:['الصنف','الكمية','سعر الشراء','سعر البيع','ربح/وحدة','النسبة٪','قيمة البيع'],
     PINV.map(it=>{ const b=+it.buy_price||0,s=+it.sell_price||0,q=+it.qty||0; return [stockName(it),q,b,s,s-b, b>0?Math.round((s-b)/b*100):0, q*s]; }));
   toast('⤓ تم تنزيل الملف');
@@ -579,6 +714,11 @@ const EN_MON=['January','February','March','April','May','June','July','August',
 const EN_DAYS_SHORT=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 let pvCalMonth=(function(){ const d=new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })();
 let pvCalFilter='';
+/* مكان تمرير شريط أيام التقويم: يُحفظ عند كل تمرير (مرحلة الالتقاط لأن الشريط يُعاد بناؤه مع كل رسم)
+   حتى لا يقفز الشريط يمين ويسار مع كل إعادة رسم (loadOrders كل 30 ثانية، التحديث اللحظي، renderSafe) */
+let _pvStrip=null;
+function pvStripKey(){ return pvCalMonth.getFullYear()+'-'+pvCalMonth.getMonth()+'-'+(document.documentElement.dir||'rtl'); }
+document.addEventListener('scroll', function(e){ const el=e.target; if(el && el.id==='pvCalStrip') _pvStrip={ key:pvStripKey(), left:el.scrollLeft }; }, true);
 function myJobsList(){ return ORDERS.filter(o=>(me&&me.tech ? o.handledBy===me.uid : o.providerPhone===(me&&me.phone)) && o.status!=='cancelled'); }
 function pvJobsOn(iso){ return myJobsList().filter(o=>o.date===iso).length; }
 function pvCalPick(iso){ pvCalFilter = (pvCalFilter===iso ? '' : iso); render(); }
@@ -621,15 +761,17 @@ let sb=null, cloudReady=false;
 async function loadPrices(){
   if(!cloudReady) return;
   // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
-  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden').order('sort');
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden,extra_price').order('sort');
     if(!r.error && r.data && r.data.length){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
-        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden}); });
+        // custom: خدمة مخصّصة سعرها حر · extra: سعر الوحدة الإضافية (مثل الخادم)
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price)}); });
       return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); } }catch(e){}
 }
 async function initCloud(){
   try{ await khRestore(); }catch(e){}
+  setTimeout(function(){ try{ pvPhoneSyncRetry(); }catch(e){} }, 3000);   // إكمال نقل تغيير الجوال لو انقطع الاتصال سابقًا
   try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; registerInstall('rizq', RIZQ_BUILD); sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET_P[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{}); loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
   render();
 }
@@ -641,12 +783,20 @@ function getPushPlugin(){
   return (C.Plugins && C.Plugins.PushNotifications) || null;
 }
 let _pn=null, _pnReady=false;
+/* جولة الإصلاح 5 (البند 27): قبل الخروج يُحذف رمز إشعارات هذا الجهاز من الحساب (unregister_staff_device)، فلا تستمر إشعارات الحساب
+   السابق على الجهاز المشترك. بمهلة قصيرة حتى لا يعلق الخروج بلا نت */
+async function pvPushOff(){
+  let tk=''; try{ tk=localStorage.getItem('kh_push_tok')||''; }catch(e){}
+  if(!tk||!sb||!cloudReady) return;
+  try{ await Promise.race([ sb.rpc('unregister_staff_device', { p_token:tk }), new Promise(r=>setTimeout(r,3000)) ]); }catch(e){}
+}
 async function initPush(){
   if(!inApp() || !cloudReady) return;
   try{
     const PN=_pn||getPushPlugin(); if(!PN) return; _pn=PN;
     if(!_pnReady){
       await PN.addListener('registration', async (t)=>{
+        try{ localStorage.setItem('kh_push_tok', String(t.value||'')); }catch(e){}
         try{ await sb.rpc('register_staff_device', { p_token:t.value, p_platform:((window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'ios') }); }
         catch(e){ console.warn('حفظ جهاز المزوّد:', e); }
       });
@@ -678,9 +828,11 @@ async function openMedia(v){
   }catch(e){ console.warn('media:', e.message||e); toast('تعذّر فتح الملف'); }
 }
 function rowToOrder(r){
-  return { id:'#'+ar(r.order_no), dbId:r.id, items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''},
+  return { id:'#'+ar(r.order_no), dbId:r.id, orderNo:+r.order_no||0, items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''},
     address:r.address||{}, date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min,
     status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', handledBy:r.handled_by||'',
+    source:r.source||'', cancelReq:r.cancel_req||null, rejectReason:r.reject_reason||'',   // مصدر الطلب + حالة طلب الإلغاء (null | pending | rejected) وسببه
+    bookedFinal:+r.booked_final||0,   // أجرة الحجز المدفوعة (أساس فاتورة v2)
     rating:+r.rating||0, feedback:r.feedback||'', reviewAnon:!!r.review_anon, warrantyDays:+r.warranty_days||0,
     finalPrice:+r.final_price||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid' };
 }
@@ -690,12 +842,17 @@ async function markCardPaid(id){
   const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId||window._payBusy) return;
   const due=payDue(o); if(!(due>0)) return;
   if(!confirm(LX('تأكيد استلام ','Confirm you received ')+due+LX(' ر.س بجهاز الدفع؟',' SAR by card machine?'))) return;
+  // مرجع عملية الجهاز (رقم الإيصال أو آخر 4 أرقام من البطاقة): 4 إلى 60 حرفًا، يُسجَّل مع الدفعة للمطابقة
+  const refRaw=prompt(TR('رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة'),''); if(refRaw===null) return;
+  const ref=String(refRaw).replace(/\s+/g,' ').trim().slice(0,60);
+  if(ref && ref.length<4){ toast('اكتب رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة'); return; }
   window._payBusy=true;
   try{
-    const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId });
-    if(error||!data||!data.ok) throw (error||new Error((data&&data.error)||'fail'));
+    const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId, p_ref:ref||null });
+    if(error) throw error;
+    if(!data||!data.ok){ const R={ need_ref:'اكتب رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة', too_big:'المبلغ أكبر من حد الدفع بالجهاز، تواصل مع الإدارة', forbidden:'هذا الطلب مسند لفني آخر', cancelled:'الطلب ملغى', not_staff:'سجّل دخولك ثم أعد المحاولة' }; toast(R[(data&&data.error)||'']||'ما انحفظ، حاول مرة ثانية'); return; }
     toast(LX('✓ تم تسجيل الدفع','✓ Payment recorded')); loadOrders();
-  }catch(e){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); }
+  }catch(e){ toast(srvMsgP(e)); }
   finally{ window._payBusy=false; }
 }
 /* الطلبات المتاحة تُقرأ من مصدر آمن (بلا اسم/جوال/عنوان دقيق/صور) —
@@ -725,11 +882,13 @@ function seenAvail(){ try{ return new Set(JSON.parse(localStorage.getItem('khafe
 function markAvailSeen(ids){ try{ const s=seenAvail(); ids.forEach(i=>i&&s.add(i)); localStorage.setItem('khafet_seen_avail', JSON.stringify([...s].slice(-400))); }catch(e){} }
 async function loadOrders(){
   if(!cloudReady||!me){ render(); return; }
+  const g=_pvGen;
   try{
     const [m,o] = await Promise.all([
       sb.from('khafet_orders').select('*').order('service_date').order('start_min'),      // طلباتي (كاملة)
       sb.from('khafet_open_orders').select('*').order('service_date').order('start_min')  // المتاحة (آمنة)
     ]);
+    if(pvStale(g)) return;
     ORDERS=(m.data||[]).map(rowToOrder);
     OPEN=(o.data||[]).map(openToOrder);
     notifyFresh();
@@ -739,13 +898,117 @@ async function loadOrders(){
   }catch(e){ renderSafe(); }
 }
 /* مخزن + عملاء المزوّد · مشتركة بين المزوّد وفريقه، معزولة بالـRLS */
-async function loadBiz(){
+let _bizAllT=0;
+async function loadBiz(force){
   if(!cloudReady||!me||!myPid()){ PINV=[]; PREM=[]; return; }
+  const g=_pvGen;
   try{
-    const iv = seeStock()? await sb.from('provider_inventory').select('*').order('name') : {data:[]};
-    PINV=iv.data||[]; loadReminders(); renderSafe();
-  }catch(e){ PINV=[]; }
+    let iv = seeStock()? await sb.from(pinvTable()).select('*').order('name') : {data:[]};
+    if(pvStale(g)) return;
+    // المنظور غير موجود بعد (قبل تطبيق fix-2026-09-24-access.sql): نرجع للجدول نفسه
+    if(iv.error && me.tech && !KH_PINV_VIEW_MISSING && /42P01|PGRST205|schema cache|does not exist/i.test(String((iv.error.message||'')+' '+(iv.error.code||'')))){ KH_PINV_VIEW_MISSING=true; iv=await sb.from(pinvTable()).select('*').order('name'); }
+    if(pvStale(g)) return;
+    PINV=iv.data||[]; pinvLoaded=true; loadReminders(); renderSoon();
+  }catch(e){ if(!pvStale(g)) PINV=[]; }
+  if(force||Date.now()-_bizAllT>120000){ _bizAllT=Date.now(); loadCustomers(); loadLoyalty(); loadTasks(taskDate); loadNotes(); loadStockLog(); loadCommCfg(); }
+  pvObFlush();
 }
+/* عملاء المؤسسة (provider_customers): المالك كل شيء، وفنيّه يقرأ إن أعطاه صلاحية العملاء */
+async function loadCustomers(){
+  if(!cloudReady||!me||!myPid()||!seeCust()){ PCUST=[]; return; }
+  const g=_pvGen;
+  try{ const r=await sb.from('provider_customers').select('*').order('name'); if(pvStale(g)) return; if(r.error) throw r.error; PCUST=r.data||[]; renderSoon(); }catch(e){ PCUST=[]; }
+}
+/* أرصدة نقاط الولاء وسجلها (قراءة فقط · الكتابة عبر provider_loyalty_add وprovider_loyalty_redeem) */
+async function loadLoyalty(){
+  if(!cloudReady||!me||!myPid()||!seeCust()){ PLOY=[]; PLOYLOG=[]; return; }
+  const g=_pvGen;
+  try{
+    const a=await sb.from('provider_loyalty').select('*'); if(pvStale(g)) return; if(a.error){ FEAT_MISSING.loyalty=featMissing(a.error); throw a.error; }
+    FEAT_MISSING.loyalty=false; PLOY=a.data||[];
+    const b=await sb.from('provider_loyalty_log').select('*').order('created_at',{ascending:false}).limit(300); if(pvStale(g)) return; PLOYLOG=b.data||[];
+    renderSoon();
+  }catch(e){ PLOY=[]; PLOYLOG=[]; }
+}
+/* مهام الفريق اليومية حول تاريخ معيّن (٣٠ يومًا قبله و٦٠ بعده) · الفني يرى مهامه أو مهام الكل فقط (RLS) */
+async function loadTasks(center){
+  if(!cloudReady||!me||!myPid()){ PTASKS=[]; return; }
+  const c=center||dateISO(new Date()); const from=addDays(c,-30), to=addDays(c,60);
+  const g=_pvGen;
+  try{
+    const r=await sb.from('provider_tasks').select('*').gte('task_date',from).lte('task_date',to).order('task_date').order('created_at');
+    if(pvStale(g)) return;
+    if(r.error){ FEAT_MISSING.tasks=featMissing(r.error); throw r.error; }
+    FEAT_MISSING.tasks=false; PTASKS=r.data||[]; _taskRange={from,to}; renderSoon();
+  }catch(e){ PTASKS=[]; }
+}
+/* ملاحظات المزوّد (للمالك فقط) */
+async function loadNotes(){
+  if(!cloudReady||!me||me.tech||!myPid()){ PNOTES=[]; return; }
+  const g=_pvGen;
+  try{
+    const r=await sb.from('provider_notes').select('*').order('pinned',{ascending:false}).order('updated_at',{ascending:false}).limit(500);
+    if(pvStale(g)) return;
+    if(r.error){ FEAT_MISSING.notes=featMissing(r.error); throw r.error; }
+    FEAT_MISSING.notes=false; PNOTES=r.data||[]; renderSoon();
+  }catch(e){ PNOTES=[]; }
+}
+/* سجل حركة مخزن المؤسسة (آخر ٨٠ حركة) */
+async function loadStockLog(){
+  if(!cloudReady||!me||!myPid()||!seeStock()){ PSTOCKLOG=[]; return; }
+  const g=_pvGen;
+  try{ const r=await sb.from('provider_stock_log').select('*').order('created_at',{ascending:false}).limit(80); if(pvStale(g)) return; if(r.error) throw r.error; PSTOCKLOG=r.data||[]; const b=document.getElementById('pvStockLog'); if(b) b.innerHTML=renderPvStockLog(); }catch(e){ PSTOCKLOG=[]; }
+}
+/* صندوق صادر صغير للمخزن: حركة الكمية اللي ما وصلت للخادم بسبب انقطاع الشبكة تُحفظ بالجهاز وتُرسل عند رجوع الاتصال.
+   رفض الخادم (٤xx: صلاحية أو حارس) لا يُحفظ، بل يُعرض سببه ويُرجَع الرقم */
+const PV_OB_KEY='kh_pv_outbox';
+function pvObLoad(){ try{ return JSON.parse(localStorage.getItem(PV_OB_KEY)||'[]'); }catch(e){ return []; } }
+function pvObSave(q){ try{ localStorage.setItem(PV_OB_KEY,JSON.stringify(q.slice(-200))); }catch(e){} }
+/* معرّف الحساب من الجلسة المحفوظة بالجهاز (يعمل بدون نت) */
+function pvUid(){ try{ const j=JSON.parse(localStorage.getItem('sb-zulogtqxbuqxmdmjpzqj-auth-token')||'null'); const u=j&&(j.user||(j.currentSession&&j.currentSession.user)); return (u&&u.id)||null; }catch(e){ return null; } }
+/* كل ما يخص الحساب على الجهاز: الصادر المعلّق، كاش المخزن (فيه أسعار الشراء)، الحفظ المحلي، وعلامات العرض */
+/* الخروج الصريح: الصادر المؤجل هنا وفي صفحة الفنيين (kh_outbox) يُمسح، مع كاش المخزن في الصفحتين (جولة الإصلاح 3، البند 27) */
+function pvWipeLocal(){ ['kh_pv_outbox','kh_outbox'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); pvWipeCache(); }
+/* الخروج الضمني (تذكرني مطفي، جلسة منتهية، دخول مرفوض): كاش المخزن وأسعار الشراء والحفظ المحلي يُمسح، والصادر المعلّق يبقى
+   لصاحبه (موسوم بمعرّف حسابه ولا يُرسل باسم غيره) حتى لا تضيع تعديلاته بلا نت */
+/* جولة الإصلاح 5 (البند 27): وبيانات الحساب في الذاكرة تُصفَّر أيضًا (الخروج بلا إعادة تحميل كان يبقي عملاء الحساب السابق ومهامه
+   ونقاطه، فيراها الحساب التالي حتى يوصل رد الخادم)، ورقم الجيل _pvGen يزيد فيُهمل أي رد متأخر لطلب بدأ قبل الخروج */
+let _pvGen=0;
+function pvWipeCache(){ ['kh_pinv_cache','kh_inv_cache','khafet_cx_seen','khafet_seen_avail',SAVE_KEY].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  _pvGen++;
+  [()=>{ PINV=[]; }, ()=>{ PSTOCKLOG=[]; }, ()=>{ MY_COMM=null; }, ()=>{ ORDERS=[]; OPEN=[]; }, ()=>{ PCUST=[]; PREM=[]; },
+   ()=>{ PTASKS=[]; PLOY=[]; PLOYLOG=[]; PNOTES=[]; }, ()=>{ TECHS=[]; PENDING_TECHS=[]; }, ()=>{ _bizAllT=0; pinvLoaded=false; },
+   ()=>{ custOpen=null; bookPrefill=null; }].forEach(f=>{ try{ f(); }catch(e){} }); }
+/* رد وصل بعد خروج أو تبديل حساب (الجيل تغيّر) يُهمل */
+function pvStale(g){ return g!==_pvGen || !me; }
+function pvRejected(r){ const s=+((r&&r.status)||0); return s>=400 && s<500; }
+async function pvObRun(op){ if(op.kind==='update') return sb.from(op.table).update(op.patch).eq('id',op.id); if(op.kind==='insert') return sb.from(op.table).insert(op.row); return {error:null}; }
+async function pvSave(op){
+  // الحساب وقت بداية العملية (لا وقت فشلها): لو تبدّلت الجلسة أثناء الطلب لا يُحفظ التعديل باسم الحساب الجديد
+  const uid0=pvUid();
+  if(cloudReady&&sb){ try{ const r=await pvObRun(op); if(!r.error) return {ok:true}; if(pvRejected(r)) return {ok:false,rejected:true,error:r.error}; }catch(e){} }
+  if(!uid0 || pvUid()!==uid0) return {ok:false,dropped:true};
+  pvObSave(pvObLoad().concat([Object.assign({t:Date.now(),uid:uid0},op)])); return {ok:false,queued:true};
+}
+let _pvObBusy=false;
+async function pvObFlush(){
+  if(!cloudReady||!sb||_pvObBusy) return; const q=pvObLoad(); if(!q.length) return; _pvObBusy=true;
+  try{ const uid=pvUid(); if(!uid) return;   // بدون جلسة: تبقى لحين دخول صاحبها
+    const rest=[], done=new Set(); let mine=0;
+    for(const op of q){
+      if(pvUid()!==uid) return;   // تبدّلت الجلسة أثناء الإرسال (خروج أو حساب ثانٍ): نوقف ولا نعيد كتابة الصندوق
+      done.add(JSON.stringify(op));
+      if(!op||op.uid!==uid) continue;   // من حساب سابق على نفس الجهاز: لا تُرسل باسم الحساب الحالي
+      mine++; try{ const r=await pvObRun(op); if(r.error && !pvRejected(r)) rest.push(op); }catch(e){ rest.push(op); } }
+    if(pvUid()!==uid) return;
+    // ما أُضيف للصندوق أثناء الإرسال يبقى (لا يُكتب فوقه)
+    pvObSave(rest.concat(pvObLoad().filter(x=>!done.has(JSON.stringify(x)))));
+    if(mine && !rest.length){ toast('✅ أُرسلت التغييرات المعلّقة'); loadBiz(); } }
+  finally{ _pvObBusy=false; }
+}
+/* مصدر مخزون المؤسسة: صاحبها يقرأ الجدول، وفنيّها منظور بلا سعر الشراء (provider_inventory_tech) يعدّل الكمية فقط */
+let KH_PINV_VIEW_MISSING=false;
+function pinvTable(){ return (me&&me.tech&&!KH_PINV_VIEW_MISSING)?'provider_inventory_tech':'provider_inventory'; }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_prov').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(me) loadOrders(); }).subscribe(); }catch(e){} }
 
 /* ⛔ لا نعيد رسم الشاشة والمستخدم يكتب · التحديث التلقائي كان يمسح ما كتبه */
@@ -755,7 +1018,7 @@ function userIsTyping(){
   if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !a.disabled && a.type!=='button') return true;
   try{ if(bookOpen) return true; }catch(e){}          // نموذج الحجز مفتوح
   try{ if(_pendPass) return true; }catch(e){}         // بانتظار كود تغيير كلمة المرور
-  const fields=['np1','np2','np_otp','pv_city_search','st_name','st_qty','rm_name','rm_phone'];
+  const fields=['np1','np2','np_otp','pv_city_search','st_name','st_qty','rm_name','rm_phone','task_title','task_note','note_text','cu_name','cu_phone','cu_city','cu_q','note_q','bk_name','bk_phone','bk_city','bk_note','bk_svc_name','bk_svc_price','loy_rate','loy_val','loy_min','loy_pts','loy_phone','loy_note','loy_rpts','cu_note','add_tech_code','fin_monthly','fin_klabel','fin_kvalue'];
   return fields.some(id=>{ const el=document.getElementById(id); return el && el.value && el.value.trim(); });
 }
 function renderSafe(){
@@ -809,15 +1072,18 @@ async function login(){
   try{
     const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:pass });
     if(error){ showLogin('❌ الرقم أو كلمة المرور غير صحيحة.'); return; }
+    // جولة الإصلاح 5 (البند 27): دخول ناجح قد يكون لحساب غير صاحب الكاش (فُتح التطبيق بلا نت فبقي كاش الحساب السابق)، فيُمسح قبل أي شيء
+    pvWipeCache();
     const local05='0'+d.slice(3);
     const { data } = await sb.from('khafet_providers').select('*').in('phone',[local05, d, '+'+d]);
-    const p=(data||[])[0];
+    let p=(data||[])[0];
+    if(!p){ const moved=await pcAutoFinish(); if(moved){ const { data:d2 }=await sb.from('khafet_providers').select('*').eq('phone',moved); p=(d2||[])[0]; } }   // تغيير جوال لم يُنقل بعد (انقطع الاتصال بعد التحقق)
     if(!p){
       // مو مزوّد؟ نشوف هل هو فني تحت مزوّد
       try{ const { data:info }=await sb.rpc('my_staff_info'); if(info && info.role==='tech'){ await enterTechMode(info, d); return; } }catch(e2){}
       try{ const { data:st }=await sb.rpc('my_tech_state'); if(st&&st.exists){ try{ localStorage.setItem('khafet_provider_phone', local05); }catch(e3){} if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; } }catch(e2){}
-      try{ await sb.auth.signOut(); }catch(e2){} showLogin('❌ الرقم غير مسجّل · سجّل كمزوّد أو كفني بكودك.'); return; }
-    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
+      try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin('❌ الرقم غير مسجّل · سجّل كمزوّد أو كفني بكودك.'); return; }
+    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.', true); return; }
     me=p; localStorage.setItem('khafet_provider_phone',p.phone);
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){}
     loadOrders(); initPush();
@@ -826,28 +1092,44 @@ async function login(){
 async function autoLogin(){
   // «تذكرني» غير مفعّل؟ ننهي الجلسة القديمة ونعرض الدخول من جديد
   if(localStorage.getItem('khafet_remember')==='0'){
+    await pvPushOff();
     try{ await sb.auth.signOut(); }catch(e){}
     try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){}
+    pvWipeCache();   // خروج ضمني: كاش المخزن (فيه أسعار الشراء) والحفظ المحلي لا يبقى للحساب التالي
     render(); return;
   }
   const saved=localStorage.getItem('khafet_provider_phone');
   if(!saved){ initialScreen(); return; }
   // لازم تكون فيه جلسة Supabase صالحة · مو بس رقم محفوظ بالمتصفح
+  // جولة الإصلاح 4 (البند 27): عطل الاتصال لا يُعامل كـ«مو مزوّد»، فلا يُمسح الكاش ولا الرقم المحفوظ بلا نت
   try{
-    const { data:{ session } } = await sb.auth.getSession();
-    if(!session){ localStorage.removeItem('khafet_provider_phone'); render(); return; }
-    const { data } = await sb.from('khafet_providers').select('*').eq('phone',saved); const p=(data||[])[0];
+    const { data:{ session }, error:sessErr } = await sb.auth.getSession();
+    if(!session){ if(sessErr && pvNetErr(sessErr)){ pvOffline(); return; } localStorage.removeItem('khafet_provider_phone'); pvWipeCache(); render(); return; }
+    const r1 = await sb.from('khafet_providers').select('*').eq('phone',saved);
+    if(r1.error && pvNetErr(r1.error)){ pvOffline(); return; }
+    const data=r1.data; let p=(data||[])[0];
+    if(!p){ const moved=await pcAutoFinish(); if(moved){ const { data:d2 }=await sb.from('khafet_providers').select('*').eq('phone',moved); p=(d2||[])[0]; if(p){ try{ localStorage.setItem('khafet_provider_phone',p.phone); }catch(e){} } } }   // تغيير جوال لم يُنقل بعد
     if(p && (p.status||'')==='approved'){ me=p; loadOrders(); initPush(); return; }
     // مو مزوّد؟ جرّب فني
-    const { data:info }=await sb.rpc('my_staff_info');
+    const r2=await sb.rpc('my_staff_info');
+    if(r2.error && pvNetErr(r2.error)){ pvOffline(); return; }
+    const info=r2.data;
     if(info && info.role==='tech'){ await enterTechMode(info, normPhone(saved)); return; }
-    const { data:st }=await sb.rpc('my_tech_state');
+    const r3=await sb.rpc('my_tech_state');
+    if(r3.error && pvNetErr(r3.error)){ pvOffline(); return; }
+    const st=r3.data;
     if(st&&st.exists){ if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; }
-  }catch(e){}
+  }catch(e){ if(pvNetErr(e)){ pvOffline(); return; } }
   // ما نفعت الجلسة المحفوظة · امسح العلامة واعرض شاشة الدخول (وإلا تعلق شاشة التحقق)
   try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){}
+  pvWipeCache();
   render();
 }
+/* خطأ اتصال (بلا نت أو مهلة) لا رفض من الخادم */
+function pvNetErr(e){ return /fetch|network|load failed|timed? ?out|offline|ECONN/i.test(String((e&&(e.message||e.name))||e||'')); }
+/* بلا نت وقت فتح الصفحة: الجلسة والكاش والرقم المحفوظ تبقى، ونعيد المحاولة أول ما يرجع الاتصال */
+function pvOffline(){ try{ toast(LX('تأكد من الإنترنت، نعيد المحاولة أول ما يرجع الاتصال','Check your connection, we will retry when you are back online')); }catch(e){} render();
+  try{ window.addEventListener('online', ()=>{ try{ autoLogin(); }catch(e){} }, { once:true }); }catch(e){} }
 /* دخول الفني: يعرض طلبات مدن مزوّده، ويقبلها كنفسه */
 async function enterTechMode(info, d){
   let uid=null;
@@ -856,11 +1138,12 @@ async function enterTechMode(info, d){
        code:info.code||'', hasProvider:!!info.provider_code,
        cities:info.cities||[], providerName:info.provider_name||'', providerPhone:info.provider_phone||'',
        provider_id:info.provider_id||null,
-       perms:info.perms||{accept:true,stock:false,customers:false,invoices:false} };
+       perms:info.perms||{accept:true,stock:false,customers:false,invoices:false},
+       techs_see_stock:info.techs_see_stock, techs_see_customers:info.techs_see_customers, techs_see_invoices:info.techs_see_invoices };   // خيارات المزوّد لو أرسلها الخادم
   localStorage.setItem('khafet_provider_phone', me.phone);
   loadOrders(); initPush();
 }
-async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} me=null; localStorage.removeItem('khafet_provider_phone'); render(); }
+async function logout(){ await pvPushOff(); try{ if(sb) await sb.auth.signOut(); }catch(e){} me=null; localStorage.removeItem('khafet_provider_phone'); pvWipeLocal(); render(); }
 /* 🏠 الرئيسية = الصفحة الرئيسية لحسابه (لوحته)، مو اختيار البوابات */
 function goHome(){ if(me){ tab='home'; pvCalFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html#stay'; } }
 /* ═══════════ إعدادات الحساب (مثل أي تطبيق) ═══════════ */
@@ -905,8 +1188,137 @@ async function deleteAccount(){
   if(!confirm(LX('متأكد؟ هذا الإجراء لا يمكن التراجع عنه من التطبيق.','Are you sure? You cannot undo this from the app.'))) return;
   let ok=false; try{ const { data }=await sb.rpc('deactivate_my_account'); ok=!!data; }catch(e){}
   if(!ok){ toast('تعذّر حذف الحساب · تواصل مع الدعم'); return; }
+  await pvPushOff();
   try{ if(sb) await sb.auth.signOut(); }catch(e){}
-  me=null; localStorage.removeItem('khafet_provider_phone'); toast('تم حذف الحساب'); render();
+  me=null; localStorage.removeItem('khafet_provider_phone'); pvWipeLocal(); toast('تم حذف الحساب'); render();
+}
+/* ═ تغيير رقم الجوال ═ خطوتان في نافذة: الرقم الجديد → رمز التحقق.
+   1) rpc khafet_phone_change_start: تحقق خفيف في الخادم (صالح، غير مستخدم، غير محظور) ويحفظ الرقم القديم للحساب.
+   2) Supabase Auth يرسل الرمز للرقم الجديد (updateUser ثم verifyOtp نوع phone_change، عبر دالة sms-hook: أرقام سعودية، 3 بالساعة و6 باليوم).
+   3) rpc khafet_after_phone_change: تنقل صف المزوّد وطلبات مؤسسته (أو صف الفني) للرقم الجديد في سياق النظام، ثم نعيد تحميل بياناتي.
+   لو انقطع الاتصال بين 2 و3 تبقى علامة khafet_phone_sync ويُكمَل النقل عند الفتح القادم (pvPhoneSyncRetry). */
+let _pc=null;   // {e164, local} أثناء انتظار الرمز
+function openPhoneChange(){
+  const m=document.getElementById('invModal'); if(!m) return;
+  _pc=null;
+  const hint=(me&&me.tech)?'نرسل رمز تأكيد للرقم الجديد، وبعد التأكيد يصير هو رقم دخولك.':'نرسل رمز تأكيد للرقم الجديد، وبعد التأكيد يصير هو رقم دخولك ورقم تواصل العملاء معك.';
+  m.innerHTML=`<div class="inv-card">
+    <div class="inv-head"><b>📱 تغيير رقم الجوال</b><button type="button" onclick="closePhoneChange()">✕</button></div>
+    <div style="color:var(--muted);font-size:.92rem;line-height:1.7;margin:0 0 12px">الرقم الحالي: <b style="direction:ltr;display:inline-block">${esc((me&&me.phone)||'')}</b></div>
+    <div id="pc_step1">
+      <input id="pc_phone" class="pc-in" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="رقم الجوال الجديد (05xxxxxxxx)" style="direction:ltr;text-align:center;letter-spacing:1px" onkeydown="if(event.key==='Enter')phoneChangeSend()" />
+      <div style="color:var(--muted);font-size:.88rem;line-height:1.7;margin:8px 0 0">${hint}</div>
+      <button type="button" class="tbtn done" id="pc_send" style="width:100%;margin-top:12px" onclick="phoneChangeSend()">أرسل رمز التأكيد</button>
+    </div>
+    <div id="pc_step2" style="display:none">
+      <div style="color:var(--muted);font-size:.92rem;line-height:1.7;margin:0 0 8px">📲 أرسلنا رمز تأكيد إلى <b id="pc_to" style="direction:ltr;display:inline-block"></b></div>
+      <input id="pc_code" class="pc-in" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="رمز التأكيد" style="text-align:center;letter-spacing:5px" onkeydown="if(event.key==='Enter')phoneChangeVerify()" />
+      <button type="button" class="tbtn done" id="pc_verify" style="width:100%;margin-top:12px" onclick="phoneChangeVerify()">تأكيد الرقم الجديد</button>
+      <button type="button" class="pc-link" id="pc_resend" onclick="phoneChangeResend()">لم يصلك الرمز؟ إعادة الإرسال</button>
+    </div>
+  </div>`;
+  if(_uiEN()) _translateEl(m);   // النافذة خارج #app فلا يراقبها المترجم التلقائي
+  m.classList.add('show');
+  setTimeout(function(){ const i=document.getElementById('pc_phone'); if(i) i.focus(); }, 50);
+}
+function closePhoneChange(){ const m=document.getElementById('invModal'); if(m){ m.classList.remove('show'); m.innerHTML=''; } _pc=null; }
+/* جوال سعودي فقط: يرجع 9665xxxxxxxx أو null */
+function pcNorm(v){ const d=normPhone(v); return /^9665[0-9]{8}$/.test(d) ? d : null; }
+/* رسالة مفهومة لردود rpc تغيير الجوال وأخطاء Supabase Auth (تُترجم عبر T_DICT عند العرض) */
+function pcMsg(e){
+  const R={ bad_phone:'رقم الجوال غير صحيح', same_phone:'هذا هو رقمك الحالي', phone_taken:'هذا الرقم مستخدم في حساب آخر', blocked:'ما يمكن استخدام هذا الرقم',
+    not_staff:'سجّل دخولك ثم أعد المحاولة', not_signed_in:'سجّل دخولك ثم أعد المحاولة', demo:'حساب المراجعة ما يغيّر رقمه', too_many:'محاولات كثيرة، حاول بعد ساعة',
+    no_phone:'الحساب بلا جوال موثّق', no_request:'ابدأ من جديد بكتابة الرقم', expired:'ابدأ من جديد بكتابة الرقم', not_verified:'ما اكتمل التحقق من الرقم الجديد' };
+  if(typeof e==='string' && R[e]) return R[e];
+  const m=[e&&e.message, e&&e.msg, e&&e.error_description, e&&e.code, e&&e.error_code].filter(x=>typeof x==='string').join(' ');
+  const st=+((e&&e.status)||0);
+  if(st===429 || /rate limit|too many|over_sms_send_rate_limit/i.test(m)) return 'تجاوزت حد الإرسال، حاول بعد شوي';
+  if(st===422 || /already.*(registered|exists)|phone_exists/i.test(m)) return 'هذا الرقم مستخدم في حساب آخر';
+  if(/otp|token|expired|invalid/i.test(m)) return 'الرمز غير صحيح أو انتهى';
+  if(/fetch|network|Failed to fetch/i.test(m)) return 'لا يوجد اتصال بالخادم';
+  if(/session/i.test(m)) return 'سجّل دخولك ثم أعد المحاولة';
+  const am=String((e&&(e.message||e.msg))||'');
+  if(/[؀-ۿ]/.test(am)) return am.slice(0,120);   // رسالة عربية من دالة sms-hook (مثل الأرقام غير السعودية أو حدود الإرسال)
+  return 'تعذّر، حاول مرة ثانية';
+}
+async function phoneChangeSend(){
+  const raw=((document.getElementById('pc_phone')||{}).value)||'';
+  const d=pcNorm(raw); if(!d){ toast('رقم الجوال غير صحيح'); return; }
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  if(window._pcBusy) return; window._pcBusy=true;
+  const btn=document.getElementById('pc_send'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    const r=await sb.rpc('khafet_phone_change_start',{ p_new:'+'+d });
+    if(r.error) throw r.error;
+    if(!r.data || r.data.ok!==true) throw ((r.data&&r.data.reason)||'fail');
+    const e164=String(r.data.phone||('+'+d));
+    const { error }=await sb.auth.updateUser({ phone:e164 });
+    if(error) throw error;
+    _pc={ e164:e164, local:'0'+e164.replace(/\D/g,'').slice(3) };
+    const s1=document.getElementById('pc_step1'), s2=document.getElementById('pc_step2'), to=document.getElementById('pc_to');
+    if(s1) s1.style.display='none'; if(s2) s2.style.display='block'; if(to) to.textContent=_pc.local;
+    toast('📲 أرسلنا رمز تأكيد للرقم الجديد');
+    setTimeout(function(){ const i=document.getElementById('pc_code'); if(i) i.focus(); }, 50);
+  }catch(e){ toast(pcMsg(e)); }
+  finally{ window._pcBusy=false; if(btn){ btn.disabled=false; btn.textContent=TR('أرسل رمز التأكيد'); } }
+}
+async function phoneChangeResend(){
+  if(!_pc||!sb) return;
+  const b=document.getElementById('pc_resend'); if(b) b.disabled=true;
+  try{ const { error }=await sb.auth.resend({ type:'phone_change', phone:_pc.e164 }); if(error) throw error; toast('📲 أُعيد إرسال الرمز'); }
+  catch(e){ toast(pcMsg(e)); }
+  finally{ if(b) setTimeout(function(){ b.disabled=false; }, 20000); }
+}
+async function phoneChangeVerify(){
+  if(!_pc){ toast('ابدأ من جديد بكتابة الرقم'); return; }
+  const code=(((document.getElementById('pc_code')||{}).value)||'').replace(/\D/g,'');
+  if(code.length<4){ toast('اكتب رمز التأكيد'); return; }
+  if(window._pcBusy) return; window._pcBusy=true;
+  const btn=document.getElementById('pc_verify'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    const { error }=await sb.auth.verifyOtp({ phone:_pc.e164, token:code, type:'phone_change' });
+    if(error) throw error;
+    // الرقم تغيّر في Auth؛ ننقل بياناتنا في القاعدة للرقم الجديد (ولو فشل الاتصال نكمل عند الفتح القادم)
+    try{ localStorage.setItem('khafet_phone_sync','1'); }catch(e){}
+    const local=_pc.local; closePhoneChange();
+    const ok=await pvPhoneSync(local);
+    toast(ok?'✅ تم تغيير رقمك':'تعذّر تحديث بياناتك بالرقم الجديد، أعد فتح التطبيق');
+  }catch(e){ toast(pcMsg(e)); if(btn){ btn.disabled=false; btn.textContent=TR('تأكيد الرقم الجديد'); } }
+  finally{ window._pcBusy=false; }
+}
+/* نقل صفوف الحساب للرقم الجديد (rpc في سياق النظام) ثم إعادة تحميل بياناتي */
+async function pvPhoneSync(local){
+  let r=null; try{ r=await sb.rpc('khafet_after_phone_change'); }catch(e){ r={ error:e }; }
+  const d=r&&!r.error&&r.data;
+  if(d && (d.ok===true || d.reason==='no_request' || d.reason==='not_verified')){
+    try{ localStorage.removeItem('khafet_phone_sync'); }catch(e){}
+    if(d.ok===true) await pvReloadMe(String(d.phone||local||''));
+    return d.ok===true;
+  }
+  return false;
+}
+async function pvReloadMe(local){
+  try{
+    if(me&&me.tech){ const { data:info }=await sb.rpc('my_staff_info'); if(info&&info.role==='tech'){ await enterTechMode(info, normPhone(local)); render(); return; } }
+    else{ const { data }=await sb.from('khafet_providers').select('*').eq('phone',local); const p=(data||[])[0]; if(p&&(p.status||'')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); render(); return; } }
+  }catch(e){}
+  if(me){ me.phone=local; try{ localStorage.setItem('khafet_provider_phone',local); }catch(e){} loadOrders(); }
+  render();
+}
+/* احتياط في مسار الدخول: ملف المزوّد غير موجود بجوال الحساب؟ ربما نجح تحقق تغيير الجوال وانقطع الاتصال قبل النقل
+   (أو مُسحت علامة الجهاز)، فنكمل النقل ونرجع الرقم الجديد لإعادة البحث؛ الدالة idempotent فلا خطر من تكرارها */
+async function pcAutoFinish(){
+  // ok مع already: النقل تم سابقًا (من جهاز آخر مثلًا) والرقم المحفوظ هنا قديم، فنرجع الرقم الجديد للبحث به أيضًا
+  try{ const r=await sb.rpc('khafet_after_phone_change'); if(r&&!r.error&&r.data&&r.data.ok===true){ try{ localStorage.removeItem('khafet_phone_sync'); }catch(e){} return String(r.data.phone||''); } }catch(e){}
+  return '';
+}
+/* عند فتح التطبيق: لو نجح التحقق سابقًا وانقطع الاتصال قبل نقل البيانات، نكمل النقل */
+async function pvPhoneSyncRetry(){
+  try{ if(localStorage.getItem('khafet_phone_sync')!=='1') return; }catch(e){ return; }
+  if(!cloudReady||!sb) return;
+  let local='';
+  try{ const { data:{ session } }=await sb.auth.getSession(); if(!session) return; local='0'+String((session.user&&session.user.phone)||'').replace(/\D/g,'').slice(3); }catch(e){ return; }
+  if(await pvPhoneSync(local)) toast('✅ تم تحديث بياناتك بالرقم الجديد');
 }
 function settingsPanel(){
   const waCtx='966'+String(CONTACT||'').replace(/^0/,'');
@@ -922,6 +1334,8 @@ function settingsPanel(){
         </div>
         <button class="tbtn done" id="np_btn" style="width:100%;margin-top:10px" onclick="passStep()">💾 تحديث كلمة المرور</button>
       </div>
+      <div class="set-row" id="set_phone_row" onclick="openPhoneChange()"><div class="sr-l"><span class="sr-ic">📱</span> تغيير رقم الجوال</div><span class="sr-ar">›</span></div>
+${loyaltySettings()}
       <div class="set-row"><div class="sr-l"><span class="sr-ic">🔔</span> تنبيه صوتي للطلبات</div>
         <button class="sw ${soundOn()?'on':''}" onclick="toggleSound()"></button></div>
       <a class="set-row" href="https://wa.me/${waCtx}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">💬</span> تواصل مع الدعم</div><span class="sr-ar">›</span></a>
@@ -944,7 +1358,13 @@ async function acceptOrder(id){
                 limit:'وصلت حدّ ٣ طلبات نشطة · أنجز طلباً قبل ما تقبل جديداً',
                 not_approved:'حسابك موقوف أو قيد المراجعة · تواصل مع الإدارة',
                 no_profile:'رقمك غير مسجّل كمزوّد',
-                not_provider:'هذا الحساب ليس حساب مزوّد' };
+                not_provider:'هذا الحساب ليس حساب مزوّد',
+                not_your_trade:'الطلب خارج تخصص مؤسستك',
+                demo:'حساب المراجعة يقبل الطلبات التجريبية فقط',
+                no_provider:'ما أضافك مزوّد بعد',
+                no_permission:'مزوّدك ما أعطاك صلاحية قبول الطلبات',
+                not_your_turn:'الطلب معروض على مزوّد آخر أولًا، حاول بعد قليل',
+                not_staff:'سجّل دخولك ثم أعد المحاولة' };
       toast((data && R[data.reason]) || 'تعذّر القبول');
       loadOrders(); return;
     }
@@ -961,57 +1381,188 @@ async function setJobStatus(id, st){
   if(st==='done' && payDue(o)>0){ toast(LX('فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.','The customer still owes money. Ask them to pay in the app or record a card machine payment.')); return; }
   let r=null;
   try{ r=await sb.from('khafet_orders').update({status:st}).eq('id',o.dbId); }catch(e){}
-  if(r && r.error){ toast(/KHAFET_UNPAID/.test(r.error.message||'')?LX('فيه مبلغ متبقي على العميل','The customer still owes money'):LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); loadOrders(); return; }
+  if(r && r.error){ toast(srvMsgP(r.error)); loadOrders(); return; }
   o.status=st; toast('✓'); loadOrders();
+}
+/* رسالة مفهومة لأكواد حرّاس القاعدة KHAFET_* (تُترجم للإنجليزي عبر T_DICT عند العرض) */
+function srvMsgP(e){
+  const m=String((e&&(e.message||e.details||e.hint))||e||'');
+  const MAP={ KHAFET_CANCEL_PENDING:'فيه طلب إلغاء لهذا الطلب قيد المراجعة', KHAFET_CANCEL_NEEDS_APPROVAL:'الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب', KHAFET_UNPAID:'فيه مبلغ متبقي على العميل', KHAFET_UPDATE_REQUIRED:'حدّث التطبيق من المتجر عشان تكمل',
+    KHAFET_BAD_INVOICE:'صيغة الفاتورة قديمة، حدّث التطبيق ثم أعد الحفظ', KHAFET_INVOICE_ITEM:'قطعة من المستودع بلا سعر بيع، اطلب من الإدارة تسعيرها', KHAFET_INVOICE_LIMIT:'مبلغ البنود الحرة يتجاوز الحد المسموح، تواصل مع الإدارة', KHAFET_NO_INVOICE:'أصدر الفاتورة قبل إنهاء الطلب', KHAFET_NO_CANCEL:'الطلب منتهٍ أو ملغى ولا يمكن طلب إلغائه',
+    KHAFET_CANCEL_REASON:'اكتب سبب الإلغاء (3 أحرف على الأقل)', KHAFET_CANCEL_DECIDED:'تم البت في طلب الإلغاء هذا من قبل', KHAFET_NOT_YOURS:'هذا الطلب مسند لفني آخر', KHAFET_BAD_STATUS:'ما يمكن تغيير حالة الطلب بهذا الشكل', KHAFET_NOT_SIGNED_IN:'سجّل دخولك ثم أعد المحاولة',
+    KHAFET_INV_ADMIN_ONLY:'تعديل بيانات الصنف وأسعاره وإضافته وحذفه من صلاحية الإدارة، والفني يعدّل الكمية فقط', KHAFET_STOCK_ITEM:'الصنف غير موجود في المستودع', KHAFET_FORBIDDEN:'ما عندك صلاحية لهذا الإجراء',
+    KHAFET_PROV_LOCKED:'تغيير التخصصات أو السجل التجاري بعد الاعتماد يتم عبر الإدارة',
+    KHAFET_TASK_OWNER_ONLY:'تعديل المهام من صلاحية صاحب المؤسسة، الفني يعلّم الإنجاز فقط', KHAFET_TASK_NOT_MY_TECH:'هذا الفني ليس من فريق مؤسستك', KHAFET_TASK_TITLE:'اكتب عنوان المهمة (حتى 200 حرف)', KHAFET_TASK_DATE:'تاريخ المهمة غير صالح', KHAFET_TASK_REPEAT:'نوع التكرار غير معروف',
+    KHAFET_LOYALTY_OFF:'نظام النقاط غير مفعّل، فعّله من الإعدادات', KHAFET_LOYALTY_PHONE:'رقم جوال العميل غير صالح (05xxxxxxxx)', KHAFET_LOYALTY_POINTS:'عدد النقاط غير صالح', KHAFET_LOYALTY_MIN:'الحد الأدنى للاستبدال {detail} نقطة', KHAFET_LOYALTY_BALANCE:'رصيد النقاط لا يكفي (الرصيد {detail})',
+    KHAFET_LOYALTY_ORDER:'الطلب غير موجود أو ليس من طلبات مؤسستك أو لم يكتمل', KHAFET_LOYALTY_DUP:'نقاط هذا الطلب مضافة من قبل', KHAFET_LOYALTY_REASON:'سبب الإضافة غير معروف',
+    KHAFET_NOTE_TEXT:'اكتب نص الملاحظة (حتى 2000 حرف)', KHAFET_NOTE_LIMIT:'وصلت للحد الأقصى من الملاحظات (500)',
+    KHAFET_TOO_MANY_OPEN:'فيه طلبات مفتوحة كثيرة بهذا الرقم، انتظر إنجازها', KHAFET_TOO_MANY:'وصلت للحد اليومي، حاول لاحقًا', KHAFET_ORDER_NOT_MINE:'هذا الطلب ليس من طلبات مؤسستك أو لا يناسب هذا الإجراء',
+    KHAFET_PHONE_CHANGE_DENIED:'ابدأ من جديد بكتابة الرقم', KHAFET_RATE_APP_ORDER:'عميل خافت يقيّم من تطبيقه، ورابط التقييم لحجوزاتك الخاصة فقط',
+    KHAFET_WALLET_ORDER:'ما يمكن الدفع من الرصيد لهذا الطلب الآن', KHAFET_WALLET_AMOUNT:'المبلغ أكبر من الحد المسموح للدفع من الرصيد', KHAFET_WALLET_BALANCE:'رصيد العميل لا يكفي', KHAFET_WALLET_NO_DUE:'ما فيه مبلغ متبقي على الطلب',
+    KHAFET_VISITS_ORDER:'اختر طلبًا قائمًا لنفس العميل عليه مبلغ متبقي', KHAFET_VISITS_OFF:'بطاقة الزيارات غير مفعّلة، فعّلها من الإعدادات', KHAFET_VISITS_NO_REWARD:'ما فيه مكافأة متاحة لهذا العميل', KHAFET_VISITS_DUP:'زيارة هذا الطلب مسجّلة من قبل',
+    KHAFET_PKG_NOT_FOUND:'الباقة غير موجودة لهذا العميل', KHAFET_PKG_EXPIRED:'الباقة منتهية', KHAFET_PKG_STATE:'الباقة مستهلكة أو موقوفة', KHAFET_PKG_DUP:'استُهلكت زيارة على هذا الطلب من قبل' };
+  // {detail} = رقم يرسله الخادم مع الكود (الحد الأدنى أو الرصيد) · يُترجم النص كاملًا ثم يُعوَّض الرقم
+  for(const k in MAP){ if(m.indexOf(k)>=0){ const txt=MAP[k]; if(txt.indexOf('{detail}')<0) return txt; const d=String((e&&e.details)||'').replace(/[^0-9]/g,'')||'0'; return _uiEN()?(T_DICT[txt]||txt).replace('{detail}',d):txt.replace('{detail}',ar(d)); } }
+  if(/fetch|network|Failed to fetch/i.test(m)) return 'لا يوجد اتصال بالخادم';
+  if(featMissing(e)) return 'هذه الميزة بانتظار تفعيلها في الخادم';
+  return 'ما انحفظ، حاول مرة ثانية';
+}
+/* ═ طلب الإلغاء ═ المزوّد أو فنيّه ما يلغي الطلب بنفسه: يرسل طلب إلغاء بالسبب (rpc khafet_request_cancel) والإدارة تقبل أو ترفض.
+   الحالة تبقى كما هي محليًا، وتظهر شارة «بانتظار موافقة الإدارة» من عمود cancel_req بعد إعادة التحميل. */
+const CX_REASONS=['المشكلة تحتاج قطع غيار غير متوفرة حالياً','المشكلة خارج تخصّصي','الموقع خارج نطاق تغطيتي','الوقت المحجوز غير كافٍ لحجم العمل','ظرف طارئ منعني من الحضور'];
+let cxSel=null;
+/* شارة «الإدارة رفضت الإلغاء» تختفي بعد أول ضغطة أو فتح لطلب إلغاء جديد (محفوظ بالجهاز، لأن cancel_req لا يعدّله الطاقم) */
+function cxSeen(){ try{ return new Set(JSON.parse(localStorage.getItem('khafet_cx_seen')||'[]')); }catch(e){ return new Set(); } }
+function cxDismiss(dbId){ if(!dbId) return; try{ const s=cxSeen(); s.add(dbId); localStorage.setItem('khafet_cx_seen',JSON.stringify([...s].slice(-200))); }catch(e){} render(); }
+function cxBadgeP(o){
+  if(!o||!o.dbId||o.status==='done'||o.status==='cancelled') return '';
+  if(o.cancelReq==='pending') return `<span class="status cxpend">بانتظار موافقة الإدارة على الإلغاء</span>`;
+  if(o.cancelReq==='rejected' && !cxSeen().has(o.dbId)) return `<button type="button" class="status cxrej" data-id="${esc(o.dbId)}" onclick="cxDismiss(this.dataset.id)">الإدارة رفضت الإلغاء</button>`;
+  return '';
+}
+function openCancelReq(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  const m=document.getElementById('invModal'); if(!m) return;
+  if(o.cancelReq==='pending'){ toast('فيه طلب إلغاء لهذا الطلب قيد المراجعة'); return; }
+  if(o.cancelReq==='rejected' && o.dbId) cxDismiss(o.dbId);
+  cxSel=null;
+  const opts=CX_REASONS.map((r,i)=>`<button type="button" class="rj-opt" data-i="${i}" onclick="pickCancelReason(this)">${esc(r)}</button>`).join('');
+  m.innerHTML=`<div class="inv-card">
+    <div class="inv-head"><b>طلب إلغاء الطلب <small style="color:var(--muted);font-weight:800">${esc(o.id)}</small></b><button type="button" onclick="closeCancelReq()">✕</button></div>
+    <p style="color:var(--muted);margin:2px 0 14px;font-size:.95rem">اختر السبب · الإدارة تقرّر قبول الإلغاء أو رفضه</p>
+    <div class="rj-list" id="cxList">${opts}</div>
+    <textarea id="cxNote" class="cx-note" rows="2" maxlength="300" placeholder="تفاصيل إضافية (اختياري)"></textarea>
+    <button type="button" class="tbtn reject" id="cxSend" style="width:100%;margin-top:12px;font-size:1.05rem;padding:15px" data-id="${esc(o.id)}" onclick="sendCancelReq(this.dataset.id)">أرسل طلب الإلغاء</button>
+  </div>`;
+  if(_uiEN()) _translateEl(m);   // النافذة خارج #app فلا يراقبها المترجم التلقائي
+  m.classList.add('show');
+}
+function pickCancelReason(btn){
+  const i=+((btn&&btn.dataset&&btn.dataset.i)||-1); if(!(i>=0)) return;
+  cxSel = (cxSel===i) ? null : i;
+  document.querySelectorAll('#cxList .rj-opt').forEach(b=>b.classList.toggle('on', +b.dataset.i===cxSel));
+}
+function closeCancelReq(){ const m=document.getElementById('invModal'); if(m){ m.classList.remove('show'); m.innerHTML=''; } cxSel=null; }
+async function sendCancelReq(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  if(window._cxBusy) return;
+  const base=(cxSel!=null && CX_REASONS[cxSel]) ? CX_REASONS[cxSel] : '';
+  const note=String(((document.getElementById('cxNote')||{}).value)||'').trim().slice(0,300);
+  const reason=[base, note].filter(Boolean).join(' · ').slice(0,500);
+  if(reason.trim().length<3){ toast('اختر سببًا أو اكتب السبب'); return; }
+  if(!cloudReady || !sb || !o.dbId){ toast('لا يوجد اتصال بالخادم'); return; }
+  const btn=document.getElementById('cxSend'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  window._cxBusy=true;
+  try{
+    const r=await sb.rpc('khafet_request_cancel',{ p_order:o.dbId, p_reason:reason });
+    if(r.error) throw r.error;
+    o.cancelReq='pending'; o.rejectReason=reason;   // الحالة status ما تتغيّر محليًا · القرار للإدارة
+    closeCancelReq(); toast('وصل طلب الإلغاء للإدارة، بانتظار الموافقة'); render(); loadOrders();
+  }catch(e){
+    toast(srvMsgP(e));
+    if(btn){ btn.disabled=false; btn.textContent=TR('أرسل طلب الإلغاء'); }
+    if(/KHAFET_CANCEL_PENDING/.test(String((e&&e.message)||''))){ o.cancelReq='pending'; closeCancelReq(); render(); }
+  }
+  finally{ window._cxBusy=false; }
 }
 
 /* ---- الفاتورة (نفس منطق بوابة الفنيين) ---- */
 let invEditing=null, invItems=[];
+/* الفاتورة بصيغة v2 (نفس مخطط تطبيق الفني، الخادم يرفض الصيغة القديمة من الطاقم): بنود الحجز مقفولة (booked) وأجرتها داخل booked_final،
+   والإضافات يسعّرها الخادم من الكتالوج (khafet_pay_calc)، والبند الحر (custom) بسعر الطاقم. المعروض تقدير والمعتمد من الخادم بعد الحفظ. */
 function openInvoice(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; invEditing=id;
-  invItems=(o.invoice&&o.invoice.items)?o.invoice.items.map(it=>({id:it.id||'custom',name:it.name,qty:+it.qty||1,price:+it.price||0})):[]; renderInvoice(); }
+  if(o.invoice && Array.isArray(o.invoice.items)) invItems=o.invoice.items.filter(it=>it&&it.id!=='swap').map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name||'',qty:+it.qty||1,price:+it.price||0,booked:!!it.booked}));
+  else if(o.dbId && !o.quick) invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick').map(it=>{ if(String(it.id).startsWith('part:')||it.stockId) return {id:'stock',stockId:it.stockId||String(it.id).slice(5),name:it.name||'',qty:+it.qty||1,price:+it.price||0,booked:true}; const s=svc(it.id); return {id:it.id,name:it.name||(s&&s.name)||'',qty:+it.qty||1,price:s?(+s.price||0):(+it.price||0),booked:true}; });
+  else invItems=[];
+  renderInvoice(); }
 function closeInvoice(){ invEditing=null; const m=document.getElementById('invModal'); m.classList.remove('show'); m.innerHTML=''; }
 function captureInvPrices(){ document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; }); }
 function addInvItem(id){ if(!id) return; captureInvPrices(); const s=svc(id); if(s) invItems.push({id:s.id,name:s.name,qty:1,price:s.price}); renderInvoice(); }
 function addCustomItem(){ captureInvPrices(); const nm=prompt(LX('اسم الخدمة:','Service name:')); if(!nm) return; const pr=+prompt(LX('السعر:','Price:'))||0; invItems.push({id:'custom',name:nm,qty:1,price:pr}); renderInvoice(); }
-function invQty(i,d){ captureInvPrices(); if(invItems[i]) invItems[i].qty=Math.max(1,(invItems[i].qty||1)+d); renderInvoice(); }
-function invRemove(i){ captureInvPrices(); invItems.splice(i,1); renderInvoice(); }
+function invQty(i,d){ captureInvPrices(); if(invItems[i]&&!invItems[i].booked) invItems[i].qty=Math.max(1,(invItems[i].qty||1)+d); renderInvoice(); }
+function invRemove(i){ captureInvPrices(); if(invItems[i]&&invItems[i].booked) return; invItems.splice(i,1); renderInvoice(); }
 function invTotal(){ return invItems.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
+/* بند حر (سعره بيد الطاقم) أم خدمة من الكتالوج يسعّرها الخادم */
+function invLineFree(it){ if(!it||it.booked) return false; if(it.id==='custom'||it.id==='part') return true; const s=svc(it.id); return !s || !!s.custom; }
+function invLineAmt(it){ const q=Math.max(1,+it.qty||1); if(invLineFree(it)) return Math.round(q*Math.max(0,+it.price||0)*100)/100; const s=svc(it.id); const p=s?(+s.price||0):(+it.price||0); const ex=(s&&s.extra!=null)?+s.extra:p; return Math.round((p+(q-1)*ex)*100)/100; }
+function invExtras(){ return Math.round(invItems.filter(it=>!it.booked).reduce((a,it)=>a+invLineAmt(it),0)*100)/100; }
+function invBooked(){ const o=ORDERS.find(x=>x.id===invEditing); return (o&&o.dbId)?(+o.bookedFinal||0):0; }
+function invGrand(){ return Math.max(0, Math.round((invBooked()+invExtras())*100)/100); }
 async function saveInvoice(){
+  if(window._invSaving) return;
   captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
-  const invoice={ items:invItems.map(it=>({name:it.name,qty:+it.qty||1,price:+it.price||0})), total:invTotal(), createdAt:Date.now() };
-  o.invoice=invoice;
+  invItems.forEach(it=>{ if(!(+it.price>=0)) it.price=0; if(!(+it.qty>=1)) it.qty=1; });
+  if(!invItems.length){ toast('أضف بندًا واحدًا على الأقل'); return; }
+  const invoice={ v:2, items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:0,img:'',booked:!!it.booked})), subtotal:invTotal(), discountPct:0, total:invGrand(), dropped:[], adj:0, refund:0, createdAt:Date.now() };
+  window._invSaving=true;
   let r=null;
   try{ r=await sb.from('khafet_orders').update({invoice:invoice}).eq('id',o.dbId); }catch(e){}
-  if(!r || r.error){ toast(LX('ما انحفظت الفاتورة، حاول مرة ثانية','Invoice not saved, try again')); return; }
-  toast('أُرسلت الفاتورة ✓'); closeInvoice(); loadOrders();
+  window._invSaving=false;
+  if(!r || r.error){ toast(r&&r.error?srvMsgP(r.error):LX('ما انحفظت الفاتورة، حاول مرة ثانية','Invoice not saved, try again')); return; }   // الخادم رفض: المحرر يبقى مفتوحًا للتصحيح
+  o.invoice=invoice;
+  toast('أُرسلت الفاتورة ✓'); closeInvoice(); loadOrders();   // المبلغ المعتمد من الخادم
 }
-function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; printInvoiceDoc({...o,invoice:{items:invItems,total:invTotal()}}); }
+function invSig(items){ return JSON.stringify((items||[]).filter(it=>it&&it.id!=='swap').map(it=>[String(it.id||'custom'),String(it.stockId||''),+it.qty||1,Math.round((+it.price||0)*100)/100,!!it.booked,String(it.name||'')])); }
+function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
+  // طلب على الخادم: تُطبع النسخة المحفوظة بمبلغها المعتمد، والتعديلات غير المحفوظة تُحفظ أولًا
+  if(o.dbId){ if(!(o.invoice&&Array.isArray(o.invoice.items)&&invSig(o.invoice.items)===invSig(invItems))){ toast(LX('احفظ الفاتورة أولًا، ثم اطبعها','Save the invoice first, then print it')); return; } printInvoiceDoc(o); return; }
+  printInvoiceDoc({...o,invoice:{v:2,items:invItems,total:invGrand()}}); }
+/* جولة الإصلاح 3 (بند 28): أرقام فاتورة الطلب على الخادم: الإجمالي من final_price، وأسعار الأسطر تُعرض فقط لو كتبها الخادم (srv=1)
+   ومعادلته صحيحة (المجموع − خصم المؤسسة + التسوية = الإجمالي)، أو (فاتورة بلا علامة الخادم) لو طابق مجموعها الإجمالي */
+function pvInvNums(o){
+  const inv=(o&&o.invoice)||{items:[]}; const r2=v=>Math.round((+v||0)*100)/100;
+  const srv=!!(o&&o.dbId&&o._srv!==false);
+  const sub=r2((inv.items||[]).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0));
+  const tot=srv?Math.max(0,+o.finalPrice||0):(inv.total!=null?(+inv.total||0):sub);
+  let orgDisc=0, adj=0, lines=true;
+  if(srv){
+    if(+inv.srv===1){ orgDisc=Math.max(0,r2(inv.orgDisc)); adj=r2(inv.adj); lines=Math.abs(sub-(+inv.subtotal||0))<=0.5 && Math.abs(r2(sub-orgDisc+adj)-tot)<=0.5; }
+    else lines=Math.abs(sub-tot)<=0.5;
+    if(!lines){ orgDisc=0; adj=0; }
+  }
+  return {sub,tot,orgDisc,adj,lines};
+}
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
   const en=_uiEN(), num=en?(x=>String(x)):ar, cur=en?' SAR':' ر.س', brand=en?'Khafet':BRAND, oid=en?_west(o.id):o.id;
-  const rows=(inv.items||[]).map(it=>`<tr><td>${esc(svcName(it.name))}</td><td>${num(it.qty||1)}</td><td>${num(+it.price||0)}${cur}</td><td>${num((+it.price||0)*(+it.qty||1))}${cur}</td></tr>`).join('');
+  const N=pvInvNums(o); const r2=v=>Math.round((+v||0)*100)/100;
+  const rows=(inv.items||[]).map(it=>`<tr><td>${esc(svcName(it.name))}</td><td>${num(+it.qty||1)}</td>${N.lines?`<td>${num(+it.price||0)}${cur}</td><td>${num(r2((+it.price||0)*(+it.qty||1)))}${cur}</td>`:''}</tr>`).join('');
+  const subRows=(N.lines&&(N.orgDisc>0||Math.abs(N.adj)>=0.01))
+    ? '<div class="sb"><span>'+LX('المجموع','Subtotal')+'</span><span>'+num(N.sub)+cur+'</span></div>'
+      +(N.orgDisc>0?'<div class="sb"><span>'+LX('خصم المؤسسة','Business discount')+'</span><span>− '+num(N.orgDisc)+cur+'</span></div>':'')
+      +(N.adj<=-0.01?'<div class="sb"><span>'+LX('خصومات وتسويات','Discounts and adjustments')+'</span><span>− '+num(r2(-N.adj))+cur+'</span></div>':'')
+      +(N.adj>=0.01?'<div class="sb"><span>'+LX('فرق القطع والتسويات','Parts difference and adjustments')+'</span><span>+ '+num(N.adj)+cur+'</span></div>':'')
+    : '';
   const d=new Date(); const ds=num(d.getDate())+'/'+num(d.getMonth()+1)+'/'+num(d.getFullYear());
   const html='<!doctype html><html dir="'+(en?'ltr':'rtl')+'" lang="'+(en?'en':'ar')+'"><head><meta charset="utf-8"><title>'+LX('فاتورة ','Invoice ')+oid+'</title>'
-   +'<style>body{font-family:Cairo,Arial,sans-serif;padding:24px;color:#141414;max-width:520px;margin:0 auto}.h{display:flex;justify-content:space-between;border-bottom:3px solid #F5C518;padding-bottom:12px}.h .b{font-size:1.5rem;font-weight:900}.h .b span{background:#F5C518;padding:2px 10px;border-radius:8px}.meta{color:#555;font-size:.9rem;margin:12px 0}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:'+(en?'left':'right')+';padding:9px 6px;border-bottom:1px solid #eee}th{background:#FBF3D0}.tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.2rem;margin-top:14px;border-top:2px solid #141414;padding-top:10px}.ft{margin-top:22px;text-align:center;color:#888;font-size:.85rem}@media print{.noprint{display:none}}</style></head><body>'
+   +'<style>body{font-family:Cairo,Arial,sans-serif;padding:24px;color:#141414;max-width:520px;margin:0 auto}.h{display:flex;justify-content:space-between;border-bottom:3px solid #F5C518;padding-bottom:12px}.h .b{font-size:1.5rem;font-weight:900}.h .b span{background:#F5C518;padding:2px 10px;border-radius:8px}.meta{color:#555;font-size:.9rem;margin:12px 0}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:'+(en?'left':'right')+';padding:9px 6px;border-bottom:1px solid #eee}th{background:#FBF3D0}.sb{display:flex;justify-content:space-between;color:#444;font-weight:700;margin-top:8px}.tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.2rem;margin-top:14px;border-top:2px solid #141414;padding-top:10px}.ft{margin-top:22px;text-align:center;color:#888;font-size:.85rem}@media print{.noprint{display:none}}</style></head><body>'
    +'<div class="h"><div class="b">🔧 <span>'+brand+'</span></div><div style="text-align:'+(en?'right':'left')+'"><b>'+LX('فاتورة','Invoice')+'</b><br>'+oid+'</div></div>'
    +'<div class="meta"><div>'+LX('العميل: ','Customer: ')+esc(o.customer.name)+' · '+esc(o.customer.phone)+'</div><div>'+LX('المزوّد: ','Provider: ')+esc(me?me.name:'')+'</div><div>'+LX('التاريخ: ','Date: ')+ds+'</div></div>'
-   +'<table><thead><tr><th>'+LX('الخدمة','Service')+'</th><th>'+LX('العدد','Qty')+'</th><th>'+LX('السعر','Price')+'</th><th>'+LX('الإجمالي','Total')+'</th></tr></thead><tbody>'+rows+'</tbody></table>'
-   +'<div class="tot"><span>'+LX('الإجمالي','Total')+'</span><span>'+num(inv.total||0)+cur+'</span></div>'
+   +'<table><thead><tr><th>'+LX('الخدمة','Service')+'</th><th>'+LX('العدد','Qty')+'</th>'+(N.lines?'<th>'+LX('السعر','Price')+'</th><th>'+LX('الإجمالي','Total')+'</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table>'
+   +subRows
+   +'<div class="tot"><span>'+LX('الإجمالي','Total')+'</span><span>'+num(N.tot)+cur+'</span></div>'
    +'<div class="ft">'+LX('شكراً لتعاملك مع ','Thank you for choosing ')+brand+' · '+CONTACT+'</div>'
    +'<div class="noprint" style="text-align:center;margin-top:18px"><button onclick="print()" style="padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer">'+LX('🖨️ طباعة','🖨️ Print')+'</button></div></body></html>';
   const w=window.open('','_blank'); if(!w){ toast('اسمح بالنوافذ المنبثقة'); return; } w.document.write(html); w.document.close();
 }
 function renderInvoice(){
   const m=document.getElementById('invModal'); if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
-  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${s.id}">${s.ico} ${LX(`${s.name} · ${ar(s.price)}`, `${svcName(s.name)} · ${s.price} SAR`)}</option>`).join('');
-  const rows=invItems.length?invItems.map((it,i)=>`<div class="inv-row"><span class="ir-name">${esc(it.name)}</span>
+  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${esc(s.id)}">${esc(s.ico)} ${LX(`${esc(s.name)} · ${ar(+s.price||0)}`, `${esc(svcName(s.name))} · ${+s.price||0} SAR`)}</option>`).join('');
+  const rows=invItems.length?invItems.map((it,i)=>{
+    if(it.booked) return `<div class="inv-row"><span class="ir-name">${esc(it.name)} <span style="font-size:.8rem;font-weight:800;color:var(--ok)">🔒 محجوز</span></span><span style="min-width:60px;text-align:center;font-weight:900">×${ar(it.qty)}</span></div>`;
+    // السعر يُكتب للبند الحر فقط · خدمات الكتالوج يسعّرها الخادم
+    const free=invLineFree(it); const amt=invLineAmt(it); const unit=Math.round(amt/Math.max(1,+it.qty||1)*100)/100;
+    return `<div class="inv-row"><span class="ir-name">${esc(it.name)}</span>
     <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
-    <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />
-    <button class="ir-del" onclick="invRemove(${i})">🗑️</button></div>`).join('') : `<div class="inv-empty">＋ أضف خدمة</div>`;
+    ${free?`<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`:`<span class="ir-price-ro" title="السعر من الخادم">${ar(unit)}</span>`}
+    <button class="ir-del" onclick="invRemove(${i})">🗑️</button></div>`; }).join('') : `<div class="inv-empty">＋ أضف خدمة</div>`;
+  const bk=invBooked();
   m.innerHTML=`<div class="inv-card"><div class="inv-head"><b>🧾 ${LX('فاتورة','Invoice')} ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
     <div class="inv-add"><select${_uiEN()?' style="min-width:0"':''} onchange="addInvItem(this.value);this.value=''"><option value="">＋ أضف خدمة</option>${opts}</select><button class="cust" onclick="addCustomItem()">بند مخصص</button></div>
     <div class="inv-items">${rows}</div>
-    <div class="inv-total"><span>الإجمالي</span><b>${ar(invTotal())} ر.س</b></div>
+    ${bk?`<div class="inv-pay"><div><span>أجرة الحجز</span><span>${ar(bk)} ر.س</span></div><div><span>الإضافات</span><span>${ar(invExtras())} ر.س</span></div></div>`:''}
+    <div class="inv-total"><span>الإجمالي</span><b>${ar(invGrand())} ر.س</b></div>
+    <div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:4px">المبالغ تقديرية بأسعار الخادم، والمبلغ المعتمد يظهر على الطلب بعد الحفظ</div>
     <div class="inv-acts"><button class="tbtn done" onclick="saveInvoice()">حفظ وإرسال للعميل</button><button class="tbtn inv" onclick="printInv()">🖨️ طباعة</button></div></div>`;
   if(_uiEN()) _translateEl(m);   // النافذة خارج #app فلا يراقبها المترجم التلقائي
   m.classList.add('show');
@@ -1025,7 +1576,9 @@ function openSummary(id){
   const inv=o.invoice||null;
   const items=(inv&&inv.items&&inv.items.length) ? inv.items : (o.items||[]);
   const money=v=>LX(ar(v)+' ر.س', v+' SAR');
-  const tot=inv&&inv.total!=null ? +inv.total : items.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0);
+  const tot=o.dbId ? Math.max(0,+o.finalPrice||0) : (inv&&inv.total!=null ? (+inv.total||0) : items.reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0));   // المعتمد من الخادم للطلبات السحابية
+  // فاتورة على الخادم: أسعار الأسطر والخصم والتسوية من أرقامه فقط لو معادلته صحيحة (جولة الإصلاح 3، بند 28)
+  const N=inv&&inv.items&&inv.items.length ? pvInvNums(o) : {lines:true,orgDisc:0,adj:0,sub:0};
   const stLbl=({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status||'';
   const when=[o.date?dayLabel(o.date):'', o.startMin!=null?fmtTime(o.startMin):(o.time||'')].filter(Boolean).join(' · ');
   const isPart=it=>/^part:/.test(String(it.id||'')) || !!it.part || !!it.stockId || it.id==='stock';
@@ -1035,8 +1588,12 @@ function openSummary(id){
     ? sorted.map(it=>{ const q=+it.qty||1, k=isFee(it)?'fee':(isPart(it)?'part':'svc');
         return `<div class="sm-i ${k}"><span class="sm-ic">${k==='fee'?'🚚':(k==='part'?'🔩':'🔧')}</span>
           <span class="sm-n">${esc(svcName(it.name))}${q>1?'<i>×'+ar(q)+'</i>':''}</span>
-          <b>${money((+it.price||0)*q)}</b></div>`; }).join('')
+          ${N.lines?`<b>${money(Math.round((+it.price||0)*q*100)/100)}</b>`:''}</div>`; }).join('')
     : `<div class="inv-empty">${LX('ما فيه بنود بعد','Nothing yet')}</div>`;
+  const adjRows=(N.lines&&(N.orgDisc>0||Math.abs(N.adj)>=0.01))
+    ? (N.orgDisc>0?`<div class="sm-tot" style="font-size:.9rem;border-top:0"><span>${LX('خصم المؤسسة','Business discount')}</span><b>− ${money(N.orgDisc)}</b></div>`:'')
+      +(Math.abs(N.adj)>=0.01?`<div class="sm-tot" style="font-size:.9rem;border-top:0"><span>${N.adj<0?LX('خصومات وتسويات','Discounts and adjustments'):LX('فرق القطع والتسويات','Parts difference and adjustments')}</span><b>${N.adj<0?'− ':'+ '}${money(Math.round(Math.abs(N.adj)*100)/100)}</b></div>`:'')
+    : '';
   m.innerHTML=`<div class="inv-card sm">
     <div class="sm-head"><div><b>🧾 ${LX('فاتورة الطلب','Order invoice')}</b><small>${esc(o.id)}</small></div>
       <span class="sm-st ${esc(o.status||'')}">${esc(stLbl)}</span>
@@ -1048,6 +1605,7 @@ function openSummary(id){
       ${sumRow('🕐', LX('الموعد','Time'), esc(when))}
     </div>
     <div class="sm-list">${rows}</div>
+    ${adjRows}
     <div class="sm-tot"><span>${LX('الإجمالي','Total')}</span><b>${money(tot)}</b></div>
   </div>`;
   if(_uiEN()) _translateEl(m);
@@ -1126,6 +1684,7 @@ async function confirmForgot(){
   try{
     const { error:ve }=await sb.auth.verifyOtp({ phone:_fgPhone, token:code, type:'sms' });
     if(ve){ showForgotCode('❌ الكود غير صحيح أو انتهت صلاحيته.'); return; }
+    pvWipeCache();   // جولة الإصلاح 5 (البند 27): جلسة جديدة قد تكون لحساب غير صاحب الكاش
     const { error:ue }=await sb.auth.updateUser({ password:a });
     if(ue){ showForgotCode('تعذّر حفظ كلمة المرور · جرّب كلمة مختلفة.'); return; }
     _fgPhone=null;
@@ -1153,9 +1712,9 @@ const SA_CITIES=['الرياض','جدة','مكة','المدينة','الدمام
 /* 🌐 أسماء المدن وأنواع الخدمات بالإنجليزي للعرض فقط؛ القيم المحفوظة والمطابقة تبقى عربية (الطلبات تخزّن اسم المدينة بالعربي).
    المدن هنا وليست في T_DICT لأن كلمة «المدينة» تُستخدم أيضاً كعنوان حقل (City). */
 const CITY_EN={'الرياض':'Riyadh','جدة':'Jeddah','مكة':'Makkah','مكة المكرمة':'Makkah','المدينة':'Madinah','المدينة المنورة':'Madinah','الدمام':'Dammam','الخبر':'Khobar','الظهران':'Dhahran','الأحساء':'Al Ahsa','القطيف':'Qatif','الجبيل':'Jubail','بريدة':'Buraidah','عنيزة':'Unaizah','حائل':'Hail','تبوك':'Tabuk','أبها':'Abha','خميس مشيط':'Khamis Mushait','نجران':'Najran','جازان':'Jazan','ينبع':'Yanbu','الطائف':'Taif','عرعر':'Arar','سكاكا':'Sakaka','الباحة':'Al Baha','حفر الباطن':'Hafar Al Batin','الخرج':'Al Kharj'};
-const CAT_EN={'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','أبواب ونوافذ':'Doors & windows','أبواب':'Doors','دهان':'Painting','أجهزة منزلية':'Home appliances','تنظيف':'Cleaning','مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum & decor','ألمنيوم':'Aluminum','زجاج ومرايا':'Glass & mirrors','حدادة':'Metal work','سيراميك وبلاط':'Ceramics & tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras','مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Swimming pools','أعمال عامة':'General work'};
+const TRADE_EN={'سباكة':'Plumbing','كهرباء':'Electrical','تكييف':'AC','نجارة':'Carpentry','أبواب ونوافذ':'Doors & windows','أبواب':'Doors','دهان':'Painting','أجهزة منزلية':'Home appliances','تنظيف':'Cleaning','مكافحة حشرات':'Pest control','عزل مائي':'Waterproofing','جبس وديكور':'Gypsum & decor','ألمنيوم':'Aluminum','زجاج ومرايا':'Glass & mirrors','حدادة':'Metal work','سيراميك وبلاط':'Ceramics & tiles','تمديد غاز':'Gas lines','ستائر':'Curtains','كاميرات مراقبة':'Security cameras','مصاعد':'Elevators','خزانات مياه':'Water tanks','تنسيق حدائق':'Landscaping','مسابح':'Swimming pools','أعمال عامة':'General work'};
 function cityLabel(c){ if(c==null || !_uiEN()) return c; const v=CITY_EN[String(c).trim()]; return typeof v==='string'?v:c; }
-function catLabel(c){ const v=_uiEN()?CAT_EN[c]:null; return typeof v==='string'?v:c; }
+function catLabel(c){ const v=_uiEN()?TRADE_EN[c]:null; return typeof v==='string'?v:c; }
 /* اسم محفوظ بالعربي (خدمة أو جهة) ← مقابله الإنجليزي من T_DICT عند العرض فقط */
 function svcName(n){ if(n==null || !_uiEN()) return n; const v=T_DICT[String(n).trim()]; return typeof v==='string'?v:n; }
 let signupCtx=null;
@@ -1283,7 +1842,7 @@ async function pickOrg(no){
   const o=ORGS.find(x=>+x.org_no===+no); if(!o) return;
   if(!confirm(LX('إرسال طلب الانضمام إلى '+orgLabel(o)+'؟','Send a join request to '+svcName(o.name)+' '+String(o.org_no).padStart(3,'0')+'?'))) return;
   try{ const { data }=await sb.rpc('join_org_by_no',{ p_no:+no });
-    if(!data||!data.ok){ showJoinCode('تعذّر إرسال الطلب، حاول مرة ثانية'); return; }
+    if(!data||!data.ok){ showJoinCode(data&&data.reason==='too_many'?'محاولات كثيرة، حاول بعد ساعة':data&&data.reason==='blocked'?'ما يمكن إرسال طلب الانضمام، تواصل مع الإدارة':'تعذّر إرسال الطلب، حاول مرة ثانية'); return; }
     showJoinWait(data.org_name);
   }catch(e){ showJoinCode('تعذّر الاتصال، حاول مرة ثانية'); }
 }
@@ -1302,11 +1861,11 @@ async function submitJoinCode(){
   const code=((document.getElementById('jc')||{}).value||'').trim(); if(code.length<4){ showJoinCode('اكتب الكود كاملًا'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
   try{ const { data }=await sb.rpc('join_org',{ p_code:code });
-    if(!data||!data.ok){ showJoinCode(data&&data.reason==='bad_code'?'❌ الكود غير صحيح، تأكد منه من صاحب العمل':'تعذّر، حاول مرة ثانية'); return; }
+    if(!data||!data.ok){ showJoinCode(data&&data.reason==='bad_code'?'❌ الكود غير صحيح، تأكد منه من صاحب العمل':data&&data.reason==='too_many'?'محاولات كثيرة، حاول بعد ساعة':data&&data.reason==='blocked'?'ما يمكن إرسال طلب الانضمام، تواصل مع الإدارة':'تعذّر، حاول مرة ثانية'); return; }
     showJoinWait(data.org_name);
   }catch(e){ showJoinCode('تعذّر الاتصال، حاول مرة ثانية'); }
 }
-async function doLogout(){ try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){} me=null; location.reload(); }
+async function doLogout(){ await pvPushOff(); try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){} pvWipeLocal(); me=null; location.reload(); }
 let KHSET_P={};
 /* ═ إجبار التحديث: إذا النسخة أقدم من rizq_min_build في الإعدادات يظهر حاجز يوجّه للمتجر (أو لتحديث الصفحة على الويب) ═ */
 function checkRizqBuild(){
@@ -1460,7 +2019,7 @@ async function saveMyCities(){
     const { error }=await sb.from('khafet_providers').update({ cities:arr }).eq('id', me.id);
     if(error) throw error;
     me.cities=arr; citiesOpen=false; toast('✅ حُفظت مدن الخدمة'); loadOrders();
-  }catch(e){ toast('⚠️ تعذّر الحفظ'); }
+  }catch(e){ toast(/KHAFET_/.test(String((e&&e.message)||''))?srvMsgP(e):'⚠️ تعذّر الحفظ'); }
 }
 function jobCard(o, mode){
   const a=o.address||{};
@@ -1514,9 +2073,13 @@ function jobCard(o, mode){
         ${TECHS.map(t=>`<option value="${t.user_id}" ${o.handledBy===t.user_id?'selected':''}>${esc(t.name||'فني')}</option>`).join('')}
       </select>`;
     }
+    // طلب إلغاء (قبل الإنجاز، وما دام ما فيه طلب إلغاء قيد المراجعة) · الإدارة تقرّر، والحالة ما تتغيّر من هنا
+    if(o.status!=='done' && o.status!=='cancelled' && o.cancelReq!=='pending'){
+      acts+=`<button class="tbtn reject" data-id="${esc(o.id)}" onclick="openCancelReq(this.dataset.id)">طلب إلغاء</button>`;
+    }
   }
   return `<div class="tjob">
-    <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${mode!=='available'&&payDue(o)>0?`<span class="status dueb">💳 ${payDue(o)}</span>`:(mode!=='available'&&o.paidAmount>0?`<span class="status paidb">💳 ${LX('مدفوع','Paid')}</span>`:'')}</span><span class="status ${esc(o.status)}">${esc(({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status)}</span></div>
+    <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${mode!=='available'&&payDue(o)>0?`<span class="status dueb">💳 ${payDue(o)}</span>`:(mode!=='available'&&o.paidAmount>0?`<span class="status paidb">💳 ${LX('مدفوع','Paid')}</span>`:'')}${mode==='mine'?cxBadgeP(o):''}</span><span class="status ${esc(o.status)}">${esc(({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status)}</span></div>
     <div class="tj-body">
       ${work}
       ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ المشكلة</span><span class="tj-v">${esc(o.note)}</span></div>`:''}
@@ -1552,16 +2115,16 @@ function render(){
     .sort((a,b)=>{ const r=s=>s==='done'?1:0; if(r(a.status)!==r(b.status)) return r(a.status)-r(b.status); return (a.date+String(a.startMin).padStart(4,'0')).localeCompare(b.date+String(b.startMin).padStart(4,'0')); });
   const myDone=mine.filter(o=>o.status==='done').length;
   const active=mine.filter(o=>o.status==='confirmed'||o.status==='progress').length;
-  const owed=myDone*COMMISSION;
+  const owed=commOwed(mine);
   // فلترة بيوم التقويم المختار (طلباته هو فقط)
   const availF = pvCalFilter ? avail.filter(o=>o.date===pvCalFilter) : avail;
   const mineF  = pvCalFilter ? mine.filter(o=>o.date===pvCalFilter)  : mine;
   // قائمة الطلبات المتاحة (تظهر تحت المربّعات بالرئيسية)
-  const availList = availF.length ? availF.map(o=>jobCard(o,'available')).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من «حسابي» لتصلك الطلبات'}</h3></div>`;
+  const availList = availF.length ? availF.map(o=>jobCard(o,'available')).join('') : `${myCities().length? emptyAvail() : `<div class="empty"><div class="ico">🧰</div><h3>حدّد مدن خدمتك من «حسابي» لتصلك الطلبات</h3></div>`}`;
   // ═ أرقام الداشبورد (المزوّد يختار اللي يهمّه) ═
   const _rev=mine.filter(o=>o.status==='done').reduce((s,o)=>s+orderInvTotal(o),0);
   const _stockVal=PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
-  const _stockCost=PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0);
+  const _stockCost=seeBuy()?PINV.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0):0;
   const _monthly=+((me&&me.monthly_cost)||0);
   const _net=_rev-_stockCost-_monthly;
   const METRICS={ available:ar(avail.length), active:ar(active), done:ar(myDone),
@@ -1571,7 +2134,7 @@ function render(){
   const dashKeys = me.tech ? ['available','active','done'] : ((me.dash_metrics&&me.dash_metrics.length)?me.dash_metrics:['available','active','done']);
   const statsHTML = dashKeys.map(k=>METRIC_DEFS[k]?`<div class="stat"><b>${METRICS[k]}</b><small>${(k==='kpi'&&me.kpi_label)?esc(me.kpi_label):METRIC_DEFS[k].label}</small></div>`:'').join('');
   const listArr = tab==='available'?availF:mineF;
-  const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?(myCities().length?'لا توجد طلبات متاحة في مدن خدمتك حالياً':'حدّد مدن خدمتك من الإدارة لتصلك الطلبات'):'ما قبلت طلبات بعد')}</h3></div>`;
+  const list = listArr.length ? listArr.map(o=>jobCard(o, tab)).join('') : `${(!pvCalFilter && tab==='available' && myCities().length)? emptyAvail() : `<div class="empty"><div class="ico">🧰</div><h3>${pvCalFilter?'لا طلبات في هذا اليوم':(tab==='available'?'حدّد مدن خدمتك من الإدارة لتصلك الطلبات':'ما قبلت طلبات بعد')}</h3></div>`}`;
   // ═ واجهة نظيفة: هيرو مختصر + إحصاءات + ٣ تبويبات (الشغل منفصل عن الإدارة) ═
   const subLine = me.tech
     ? (me.hasProvider ? LX(`🧑‍🔧 فني لدى <b>${esc(me.providerName||'مزوّد')}</b>`,`🧑‍🔧 Technician at <b>${esc(svcName(me.providerName)||'a provider')}</b>`) : LX('🧑‍🔧 فني جديد','🧑‍🔧 New technician'))
@@ -1620,53 +2183,98 @@ function render(){
       </div>`;
   }
 
-  manage += settingsPanel();   // ⚙️ إعدادات موحّدة (تغيير باسورد/تنبيهات/دعم/حذف/خروج)
-
-  // ═ واجهة المربّعات (زي لوحة الإدارة): الرئيسية = بطاقات الأقسام ═
+  // ═ التنقل الجديد (تطبيق مستقل): شريط سفلي بخمس تبويبات، والأقسام الأخرى تحت «المزيد» ═
   const isJobTab=(tab==='available'||tab==='mine');
+  const todayISO=dateISO(new Date());
+  const tasksLeft=tasksLeftToday();
+  const BAR = me.tech
+    ? [['home','🏠','الرئيسية'],['schedule','📅','الجدول'],['tasks','📝','مهامي'], seeCust()?['customers','👥','العملاء']:(seeStock()?['stock','📦','المخزن']:null), ['more','☰','المزيد']].filter(Boolean)
+    : [['home','🏠','الرئيسية'],['schedule','📅','الجدول'],['team','🧑‍🔧','الفريق'],['customers','👥','العملاء'],['more','☰','المزيد']];
+  const barKeys=BAR.map(b=>b[0]);
   const CARDS=[];
-  if(seeStock()) CARDS.push(['stock','📦','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+(PINV.length===1?' item':' items')), 0]);
-  if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', LX(ar(myDone)+' منجز', myDone+' completed'), 0]);
-  CARDS.push(['route','🗺️','مسار اليوم','مواقع طلباتك', 0]);
-  CARDS.push(['ratings','⭐','تقييماتي','رأي عملائك', 0]);
-  if(!me.tech){  CARDS.push(['numbers','💰','لوحة الأرقام','أرباحك وأرقامك', 0]);
-                 CARDS.push(['team','🧑‍🔧','فريقي', LX(ar(TECHS.length)+' فني', TECHS.length+(TECHS.length===1?' technician':' technicians')), 0]);
-                 CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+(PREM.length===1?' reminder':' reminders')):LX('دخل متكرّر','Recurring income'), 0]); }
-  const cardsHTML=CARDS.map(([k,ic,t,sub,badge])=>`<div class="hcard" onclick="setTab('${k}')">
-    ${badge>0?`<span class="hc-badge">${ar(badge)}</span>`:''}
+  if(seeStock()&&!barKeys.includes('stock')) CARDS.push(['stock','📦','المخزن', LX(ar(PINV.length)+' صنف', PINV.length+(PINV.length===1?' item':' items'))]);
+  if(seeInv())   CARDS.push(['invoices','🧾','الفواتير', LX(ar(myDone)+' منجز', myDone+' completed')]);
+  if(!me.tech)   CARDS.push(['numbers','💰','لوحة الأرقام','أرباحك وأرقامك']);
+  CARDS.push(['ratings','⭐','تقييماتي','رأي عملائك']);
+  if(!me.tech)   CARDS.push(['reminders','🔔','تذكيرات الصيانة', PREM.length?LX(ar(PREM.length)+' تذكير', PREM.length+(PREM.length===1?' reminder':' reminders')):LX('دخل متكرّر','Recurring income')]);
+  if(!me.tech)   CARDS.push(['notes','✏️','الملاحظات', PNOTES.length?LX(ar(PNOTES.length)+' ملاحظة', PNOTES.length+(PNOTES.length===1?' note':' notes')):LX('اكتب ما تبي تتذكّره','Write what you want to remember')]);
+  if(seeCust()&&!barKeys.includes('customers')) CARDS.push(['customers','👥','العملاء', LX(ar(PCUST.length)+' عميل', PCUST.length+(PCUST.length===1?' customer':' customers'))]);
+  CARDS.push(['route','🗺️','مسار اليوم','مواقع طلباتك']);
+  CARDS.push(['available','📥','الطلبات المتاحة', LX(ar(avail.length)+' طلب', avail.length+(avail.length===1?' job':' jobs'))]);
+  CARDS.push(['mine','🧰','طلباتي', LX(ar(mine.length)+' طلب', mine.length+(mine.length===1?' job':' jobs'))]);
+  CARDS.push(['manage','👤','حسابي','بياناتي ومدن الخدمة']);
+  CARDS.push(['settings','⚙️','الإعدادات','كلمة المرور والنقاط والتنبيهات']);
+  const cardsHTML=CARDS.map(([k,ic,t,sub])=>`<div class="hcard" onclick="setTab('${k}')">
     <span class="hc-ic">${ic}</span><h3>${t}</h3><p>${sub}</p><span class="hc-open">فتح ›</span>
   </div>`).join('');
-  const secTitle={available:'📥 الطلبات المتاحة',mine:'🧰 طلباتي',stock:'📦 المخزن',invoices:'🧾 الفواتير',route:'🗺️ مسار اليوم',ratings:'⭐ تقييماتي',numbers:'💰 لوحة الأرقام',team:'🧑‍🔧 فريقي',reminders:'🔔 تذكيرات الصيانة',manage:'👤 حسابي',more:'☰ المزيد'}[tab]||'';
+  const secTitle={available:'📥 الطلبات المتاحة',mine:'🧰 طلباتي',stock:'📦 المخزن',invoices:'🧾 الفواتير',route:'🗺️ مسار اليوم',ratings:'⭐ تقييماتي',numbers:'💰 لوحة الأرقام',team:'🧑‍🔧 الفريق',tasks:'📝 مهامي',reminders:'🔔 تذكيرات الصيانة',manage:'👤 حسابي',more:'☰ المزيد',schedule:'📅 الجدول',customers:'👥 العملاء',notes:'✏️ الملاحظات',settings:'⚙️ الإعدادات'}[tab]||'';
   let body;
-  if(tab==='manage') body=manage;
+  if(tab==='manage') body=manage+`<button class="tbtn inv" style="width:100%;margin-top:6px" onclick="setTab('settings')">⚙️ الإعدادات</button>`;
+  else if(tab==='settings') body=settingsPanel();
   else if(tab==='stock') body=renderStock();
   else if(tab==='invoices') body=renderInvoices();
   else if(tab==='route') body=renderRoute();
   else if(tab==='ratings') body=renderRatings();
   else if(tab==='numbers') body=renderNumbers();
-  else if(tab==='team') body=renderTeam();
+  else if(tab==='team') body=me.tech?renderTasksPanel():(renderTasksPanel()+renderTeam());
+  else if(tab==='tasks') body=renderTasksPanel();
   else if(tab==='reminders') body=renderReminders();
+  else if(tab==='customers') body=renderCustomers();
+  else if(tab==='notes') body=renderNotes();
+  else if(tab==='schedule') body=renderSchedule();
   else if(tab==='mine') body=(!me.tech?bookPanel():'')+list;
-  else if(tab==='more') body=`<div class="hgrid">${cardsHTML}<div class="hcard" onclick="setTab('manage')"><span class="hc-ic">👤</span><h3>حسابي</h3><p>بياناتي والإعدادات</p><span class="hc-open">فتح ›</span></div></div>`;
+  else if(tab==='more') body=`<div class="hgrid">${cardsHTML}</div>`;
   else body=list;
 
+  // ═ الرئيسية = لوحة اليوم: ترحيب + السطر الثابت + أزرار سريعة + مواعيد اليوم + مهام اليوم + أرقام الشهر + الطلبات المتاحة ═
   const inHome=(tab==='home');
-  document.getElementById('app').innerHTML=`
-    ${inHome?`
+  let homeHTML='';
+  if(inHome){
+    const todayAll=mine.filter(o=>o.date===todayISO).sort(byTime);
+    const tToday=tasksOn(todayISO); const tDone=tToday.filter(t=>t.done).length;
+    const mon=todayISO.slice(0,7);
+    const doneMonth=mine.filter(o=>o.status==='done' && String(o.date||'').startsWith(mon));
+    const revMonth=doneMonth.reduce((s,o)=>s+(orderInvTotal(o)||(+o.finalPrice||0)),0);
+    const newCust=PCUST.filter(c=>String(c.created_at||'').startsWith(mon)).length;
+    const ptsUsed=PLOYLOG.filter(l=>l.reason==='redeem' && String(l.created_at||'').startsWith(mon)).reduce((s,l)=>s+Math.abs(+l.delta||0),0);
+    const quick = me.tech ? '' : `<div class="pa-quick">
+        <button class="main" onclick="quickBookShortcut()">➕ حجز جديد</button>
+        <button onclick="quickTask()">📝 مهمة جديدة</button>
+        <button onclick="quickCustomer()">👤 إضافة عميل</button>
+        <button onclick="openLoyAdd('','')">⭐ إضافة نقاط</button>
+        <button onclick="quickNote()">✏️ ملاحظة</button>
+      </div>`;
+    const todayPanel=`<div class="pa-sec"><span>📅 مواعيد اليوم${todayAll.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(todayAll.length)})</i>`:''}</span><button onclick="setTab('schedule')">الجدول ›</button></div>
+      ${todayAll.length? todayAll.slice(0,6).map(o=>schedRow(o)).join('') : `<div class="hint" style="text-align:center;padding:12px;background:var(--card);border-radius:14px;margin:0">ما فيه مواعيد اليوم</div>`}
+      ${todayAll.length>6?`<button class="pa-link" style="display:block;margin:0 auto 6px" onclick="setTab('schedule')">${LX(`و${ar(todayAll.length-6)} مواعيد أخرى ›`,`and ${todayAll.length-6} more ›`)}</button>`:''}`;
+    const tasksPanel=`<div class="pa-sec"><span>📝 مهام اليوم</span><button onclick="setTab('${me.tech?'tasks':'team'}')">${tToday.length?LX(`منجز ${ar(tDone)} · باقي ${ar(tToday.length-tDone)} ›`,`${tDone} done · ${tToday.length-tDone} left ›`):(me.tech?LX('عرض ›','View ›'):LX('أضف مهمة ›','Add a task ›'))}</button></div>
+      ${tToday.length? tToday.slice(0,4).map(t=>taskRow(t,true)).join('') : `<div class="hint" style="text-align:center;padding:12px;background:var(--card);border-radius:14px;margin:0">${me.tech?'ما فيه مهام اليوم':'ما فيه مهام اليوم · أضف مهام لفريقك من «الفريق»'}</div>`}`;
+    const kpis = me.tech ? '' : `<div class="pa-sec"><span>📊 هذا الشهر</span><button onclick="setTab('numbers')">لوحة الأرقام ›</button></div>
+      <div class="pa-kpis"><div class="pa-kpi"><b>${pvNum(doneMonth.length)}</b><small>منجز هذا الشهر</small></div><div class="pa-kpi"><b>${pvMoney(revMonth)}</b><small>إيراد الشهر</small></div><div class="pa-kpi"><b>${pvNum(newCust)}</b><small>عملاء جدد</small></div><div class="pa-kpi"><b>${pvNum(ptsUsed)}</b><small>نقاط ولاء مصروفة</small></div></div>`;
+    const availHome=availF.length ? availF.slice(0,5).map(o=>jobCard(o,'available')).join('')+(availF.length>5?`<button class="pa-link" style="display:block;margin:0 auto 6px" onclick="setTab('available')">${LX(`و${ar(availF.length-5)} طلبات أخرى ›`,`and ${availF.length-5} more ›`)}</button>`:'') : availList;
+    homeHTML=`
       <div class="hero">
         <h1>${LX('أهلاً','Hi')} ${esc(me.name)} 👋</h1>
         <div class="sub">${subLine}</div>
         ${showJobs?`<div class="stats">${statsHTML}</div>`:''}
       </div>
       ${showJobs?`
-        <div style="margin-top:14px;font-weight:900;font-size:1.12rem">📥 الطلبات المتاحة</div>
-        ${renderPvCalendar()}
-        <div>${availList}</div>
-        <div style="margin-top:24px;font-weight:900;font-size:1.12rem">🧰 ${LX('طلباتي','My jobs')} ${mineF.length?`(${_uiEN()?mineF.length:ar(mineF.length)})`:''}</div>
-        ${!me.tech?bookPanel():''}
-        <div style="padding-bottom:90px">${mineF.length?mineF.map(o=>jobCard(o,'mine')).join(''):'<div class="hint" style="text-align:center;padding:16px">ما قبلت طلبات بعد.</div>'}</div>
-      `:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}
-    `:`
+        <div class="pa-banner"><span class="ic">📥</span><span>طلبات خافت توصلك هنا تلقائيًا أول ما تصير في مدنك وتخصصك</span></div>
+        ${quick}
+        ${todayPanel}
+        ${tasksPanel}
+        ${kpis}
+        <div class="pa-sec"><span>📥 الطلبات المتاحة${avail.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(avail.length)})</i>`:''}</span><button onclick="setTab('available')">الكل ›</button></div>
+        <div style="padding-bottom:90px">${availHome}</div>
+      `:`<div style="margin-top:18px;padding-bottom:30px">${manage}</div>`}`;
+  }
+  const moreTabs=['more','manage','settings','stock','invoices','numbers','ratings','reminders','notes','route','available','mine','customers'];
+  const barHTML=`<div class="bottombar">${BAR.map(([k,ic,l])=>{
+      const on = k==='home' ? inHome : (k==='more' ? (moreTabs.includes(tab)&&!barKeys.includes(tab)) : tab===k);
+      const badge=(k==='team'||k==='tasks')?tasksLeft:0;
+      return `<button class="${on?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><span>${ic}</span>${l}${badge?`<i class="bb-n">${pvNum(badge)}</i>`:''}</button>`; }).join('')}</div>`;
+  document.getElementById('app').innerHTML=`
+    ${inHome?homeHTML:`
       <div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
         <button class="backbtn" onclick="goHome()">‹ الرئيسية</button>
         <b style="font-size:1.12rem;font-weight:900;flex:1">${secTitle}</b>
@@ -1674,23 +2282,22 @@ function render(){
       ${isJobTab?renderPvCalendar():''}
       <div style="margin-top:12px;padding-bottom:100px">${body}</div>
     `}
-    <div class="bottombar">
-      <button class="${inHome?'on':''}" onclick="goHome()"><span>📥</span>الطلبات</button>
-      ${seeStock()?`<button class="${tab==='stock'?'on':''}" onclick="setTab('stock')"><span>📦</span>المخزن</button>`:''}
-      ${!me.tech?`<button class="bb-book" onclick="quickBookShortcut()"><span>➕</span>حجز</button>`:''}
-      ${seeInv()?`<button class="${tab==='invoices'?'on':''}" onclick="setTab('invoices')"><span>🧾</span>الفواتير</button>`:''}
-      <button class="${(tab==='more'||tab==='manage')?'on':''}" onclick="setTab('more')"><span>☰</span>المزيد</button>
-    </div>`;
+    ${barHTML}`;
   /* بعد ما شاف القائمة، الجديد الحالي يُعتبر مقروءاً بالعرض الجاي */
   if(tab==='home'||tab==='available'){
     const ids=avail.map(o=>o.dbId);
     setTimeout(function(){ markAvailSeen(ids); }, 1500);
   }
-  /* شريط التقويم يفتح على اليوم الحالي مباشرة (مو بداية الشهر) */
+  /* شريط التقويم: يتمركز على اليوم المختار أو اليوم الحالي مرة واحدة فقط (أول عرض أو تغيير الشهر أو الاتجاه)،
+     وبعدها يرجع لمكان تمرير المستخدم المحفوظ في _pvStrip فلا يهتز مع كل إعادة رسم (قيم scrollLeft السالبة في RTL تُحفظ كما هي) */
   setTimeout(function(){
     try{
-      const t=document.querySelector('#pvCalStrip .cal-day.sel')||document.querySelector('#pvCalStrip .cal-day.today');
+      const strip=document.getElementById('pvCalStrip'); if(!strip) return;
+      const key=pvStripKey();
+      if(_pvStrip && _pvStrip.key===key){ strip.scrollLeft=_pvStrip.left; return; }
+      const t=strip.querySelector('.cal-day.sel')||strip.querySelector('.cal-day.today');
       if(t&&t.scrollIntoView) t.scrollIntoView({inline:'center',block:'nearest'});
+      _pvStrip={ key:key, left:strip.scrollLeft };
     }catch(e){}
   }, 60);
 }
@@ -1703,7 +2310,7 @@ function renderNumbers(){
   const monthly=+((me&&me.monthly_cost)||0);
   const net=revenue-stockCost-monthly;
   const myDone=mine.filter(o=>o.status==='done').length;
-  const owed=myDone*COMMISSION;
+  const owed=commOwed(mine);
   // 📊 دخل آخر ٧ أيام
   const days=[]; for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(d.toISOString().slice(0,10)); }
   const dInc=days.map(dt=>mine.filter(o=>o.status==='done'&&o.date===dt).reduce((s,o)=>s+orderInvTotal(o),0));
@@ -1724,7 +2331,7 @@ function renderNumbers(){
   // 👛 محفظتي
   const walletPanel=`<div class="mpanel"><h3>👛 محفظتي</h3>
     <div class="mrow"><span class="hint" style="margin:0">💵 إجمالي دخلك</span><b>${pvMoney(revenue)}</b></div>
-    <div class="mrow"><span class="hint" style="margin:0">🏢 ${LX('عمولة المنصة','Platform commission')} (${_uiEN()?myDone:ar(myDone)}×${_uiEN()?COMMISSION:ar(COMMISSION)})</span><b style="color:#c0392b">− ${pvMoney(owed)}</b></div>
+    <div class="mrow"><span class="hint" style="margin:0">🏢 ${LX('عمولة المنصة','Platform commission')} (${LX(ar(COMM_CFG.pct)+'٪ من أجرة اليد', COMM_CFG.pct+'% of labor')})</span><b style="color:#c0392b">− ${pvMoney(owed)}</b></div>
     <div class="mrow" style="border-bottom:0"><span class="hint" style="margin:0"><b>✅ صافي لك</b></span><b style="color:var(--ok);font-size:1.25rem">${pvMoney(revenue-owed)}</b></div>
   </div>`;
   return `<div class="mpanel"><h3>💰 لوحة الأرقام</h3>
@@ -1751,9 +2358,9 @@ function renderNumbers(){
 /* ═══════════ فريقي (مربّع بالرئيسية) ═══════════ */
 function renderTeam(){
   return `${renderJoinPanel()}<div class="mpanel"><h3>🧑‍🔧 ${LX('فريقي','My team')} ${TECHS.length?`(${_uiEN()?TECHS.length:ar(TECHS.length)})`:''}</h3>
-    <div class="hint">${LX('فنيّك يسجّل من بوابة الفنيين ويأخذ كوده · أدخل <b>كوده أو رقم جواله</b> هنا فينضم لفريقك.','Your technician signs up in the technicians portal and gets a code. Enter <b>their code or phone</b> here to add them to your team.')}</div>
+    <div class="hint">${LX('فنيّك يسجّل من بوابة الفنيين ويأخذ كوده · أدخل <b>كوده</b> هنا فينضم لفريقك.','Your technician signs up in the technicians portal and gets a code. Enter <b>their code</b> here to add them to your team.')}</div>
     <div style="display:flex;gap:8px">
-      <input id="add_tech_code" placeholder="كود الفني أو جواله" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-align:center" />
+      <input id="add_tech_code" placeholder="كود الفني" onkeydown="if(event.key==='Enter')addTechByCode()" style="flex:1;text-align:center" />
       <button class="tbtn done" style="padding:0 18px" onclick="addTechByCode()">➕ أضف</button>
     </div>
     <div style="margin-top:10px">
@@ -1793,6 +2400,8 @@ function renderRatings(){
 function geoPt(a){ const la=Number(a&&a.lat), ln=Number(a&&a.lng);
   if(isFinite(la)&&isFinite(ln)&&la&&ln&&Math.abs(la)<=90&&Math.abs(ln)<=180) return encodeURIComponent(la.toFixed(6)+','+ln.toFixed(6));
   return encodeURIComponent([a&&a.city,a&&a.district,a&&a.street].filter(Boolean).join(' ')); }
+/* حالة «لا طلبات متاحة»: طمأنة إن الإشعار بيوصل، وإن التطبيق بينشر قريبًا */
+function emptyAvail(){ return `<div class="empty"><div class="ico">🧰</div><h3>لا توجد طلبات متاحة في مدن خدمتك حالياً</h3><p class="empty-note">أول ما يوصل طلب جديد في تخصصك يوصلك إشعار، ولفنيّيك المسجّلين عندك.<br>التطبيق بيتم الإعلان عنه ونشره للعملاء قريبًا.</p></div>`; }
 function renderRoute(){
   const today=new Date().toISOString().slice(0,10);
   const jobs=myJobsList().filter(o=>o.status!=='done'&&o.status!=='cancelled'&&(o.date||'')>=today)
@@ -1815,7 +2424,8 @@ function renderRoute(){
 /* ═══════════ تذكيرات الصيانة الدورية (مربّع بالرئيسية) ═══════════ */
 async function loadReminders(){
   if(!cloudReady||!me||me.tech||!myPid()){ PREM=[]; return; }
-  try{ const { data }=await sb.from('provider_reminders').select('*').order('due_date'); PREM=data||[]; }catch(e){ PREM=[]; }
+  const g=_pvGen;
+  try{ const { data }=await sb.from('provider_reminders').select('*').order('due_date'); if(pvStale(g)) return; PREM=data||[]; }catch(e){ PREM=[]; }
 }
 function renderReminders(){
   if(me.tech) return `<div class="empty"><div class="ico">🔔</div><h3>خاص بالمزوّد</h3></div>`;
@@ -1861,45 +2471,17 @@ const UNIT_EN={'حبة':'pc','متر':'m','باكيت':'pack','علبة':'box','
 function stockName(it){ return (_uiEN() && it && it.name_en) ? it.name_en : it.name; }
 function unitLabel(u){ const v=_uiEN()?UNIT_EN[u]:null; return typeof v==='string'?v:u; }
 function renderStock(){
-  if(!myPid()) return `<div class="empty"><div class="ico">📦</div><h3>غير متاح</h3></div>`;
-  const items=PINV.slice().sort((a,b)=>_uiEN()? String(stockName(a)).localeCompare(String(stockName(b)),'en') : String(a.name).localeCompare(b.name,'ar'));
-  const sellVal=items.reduce((s,it)=>s+(+it.qty||0)*(+it.sell_price||0),0);
-  const buyVal =items.reduce((s,it)=>s+(+it.qty||0)*(+it.buy_price||0),0);
-  const profit=sellVal-buyVal, margin=buyVal>0?Math.round(profit/buyVal*100):0;
-  const rows=items.length? items.map(it=>{
-    const buy=+it.buy_price||0, sell=+it.sell_price||0, pu=sell-buy, mg=buy>0?Math.round(pu/buy*100):0;
-    const info=[ buy?LX('شراء ','Buy ')+pvMoney(buy):'', sell?LX('بيع ','Sell ')+pvMoney(sell):'' ].filter(Boolean).join(' · ');
-    return `<div class="irow">
-      <div class="in-nm"><b>${esc(stockName(it))}</b>
-        <small>${info||esc(unitLabel(it.unit||'حبة'))}${(buy&&sell)?` · <span style="color:${pu>=0?'var(--ok)':'#c0392b'};font-weight:800">${LX('ربح','Profit')} ${pvMoney(pu)} (${_uiEN()?mg+'%':ar(mg)+'٪'})</span>`:''}</small></div>
-      <div class="qty">
-        <button class="qbtn" onclick="stockAdj(${it.id},-1)">−</button>
-        <span class="qn ${stockLow(it)?'low':''}">${ar(+it.qty||0)}</span>
-        <button class="qbtn" onclick="stockAdj(${it.id},1)">＋</button>
-      </div>
-      <button class="x-btn" data-name="${esc(String(stockName(it)))}" onclick="stockDel(${it.id},this.dataset.name)">حذف</button>
-    </div>`; }).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه أصناف بعد · أضف أول صنف فوق.</div>`;
-  return `
-    <div class="mpanel">
-      <h3>📦 ${LX(me.tech?'مخزن المزوّد':'مخزن الفريق', me.tech?"Provider's stock":'Team stock')} ${items.length?`(${_uiEN()?items.length:ar(items.length)})`:''}</h3>
+  if(!myPid()||!seeStock()) return `<div class="empty"><div class="ico">📦</div><h3>غير متاح</h3></div>`;
+  // الفني (بلا تعديل) يقدر يطلع طلب شراء PDF · المالك يجد زر التعديل والطلب داخل whMain
+  const po=(!seeBuy()&&PINV.length)?`<div class="wh-top3"><button class="wh-big po" onclick="whOpenPO()">🛒 ${LX('طلب شراء','Purchase order')}<small>${LX('اختر الأصناف واطلع PDF','Pick items, get a PDF')}</small></button></div>`:'';
+  return `<div class="mpanel">
+      <h3>📦 ${LX(me.tech?'مخزن المزوّد':'مخزن الفريق', me.tech?"Provider's stock":'Team stock')} ${PINV.length?`(${pvNum(PINV.length)})`:''}</h3>
       <div class="hint">${LX('أصناف مشتركة بينك وبين '+(me.tech?'زملائك':'فنيّينك')+' · الكل يشوف نفس الكميات.','Items shared between you and your '+(me.tech?'colleagues':'technicians')+'. Everyone sees the same quantities.')}</div>
-      <div class="biz-add">
-        <input id="st_name" placeholder="اسم الصنف" onkeydown="if(event.key==='Enter')stockAdd()" />
-        <input id="st_qty" type="number" inputmode="numeric" placeholder="كمية" style="max-width:80px" />
-      </div>
-      <div class="biz-add" style="margin-top:-4px">
-        <input id="st_buy" type="number" inputmode="numeric" placeholder="سعر الشراء" />
-        <input id="st_price" type="number" inputmode="numeric" placeholder="سعر البيع" />
-        <button class="tbtn done" style="padding:0 18px;flex:0 0 auto" onclick="stockAdd()">➕</button>
-      </div>
+      ${po}${whMain()}
     </div>
-    <div class="mpanel">
-      <div class="mrow" style="padding-top:0"><span class="hint" style="margin:0">💰 قيمة المخزون (بالبيع)</span><b style="color:var(--gold-deep)">${pvMoney(sellVal)}</b></div>
-      <div class="mrow"><span class="hint" style="margin:0">📦 التكلفة (بالشراء)</span><b>${pvMoney(buyVal)}</b></div>
-      <div class="mrow" style="border-bottom:1px solid var(--line)"><span class="hint" style="margin:0">📈 الربح المتوقّع</span><b style="color:${profit>=0?'var(--ok)':'#c0392b'}">${pvMoney(profit)} · ${ar(margin)}٪</b></div>
-      ${rows}
-      ${items.length?`<button class="tbtn" style="width:100%;margin-top:12px;background:var(--gold-tint);color:var(--gold-deep);font-size:.95rem;padding:11px" onclick="exportStock()">⤓ تصدير Excel</button>`:''}
-    </div>`;
+    <div class="sl-head">📋 سجل الحركة<span>كل زيادة ونقص باسم صاحبه</span></div>
+    <div class="sl-list" id="pvStockLog">${renderPvStockLog()}</div>
+    ${PINV.length?`<button class="tbtn" style="width:100%;margin-top:12px;background:var(--gold-tint);color:var(--gold-deep);font-size:.95rem;padding:11px" onclick="exportStock()">⤓ تصدير Excel</button>`:''}`;
 }
 async function stockAdd(){
   const n=((document.getElementById('st_name')||{}).value||'').trim();
@@ -1909,65 +2491,73 @@ async function stockAdd(){
   if(!n){ toast('اكتب اسم الصنف'); return; }
   const pid=myPid(); if(!pid) return;
   try{
-    const { error }=await sb.from('provider_inventory').insert({ provider_id:pid, name:n, qty:q, buy_price:buy, sell_price:p });
-    if(error) throw error;
-    await sb.from('provider_stock_log').insert({ provider_id:pid, item_name:n, delta:q, reason:'إضافة صنف', actor:me.name });
+    const row={ provider_id:pid, name:n, qty:q, sell_price:p }; if(seeBuy()) row.buy_price=buy;   // الفني ما يرسل سعر الشراء
+    const r=await sb.from('provider_inventory').insert(row).select().single();
+    if(r.error) throw r.error;
+    if(q>0){ const l=await sb.from('provider_stock_log').insert({ provider_id:pid, item_id:r.data?r.data.id:null, item_name:n, delta:q, reason:'إضافة صنف', actor:me.name }); if(l.error) console.warn('stock log', l.error.message); }
     toast('✅ أُضيف الصنف'); await loadBiz();
-  }catch(e){ toast('تعذّرت الإضافة'); }
+  }catch(e){ toast(srvMsgP(e)); }
 }
 async function stockAdj(id,delta){
   const it=PINV.find(x=>x.id===id); if(!it) return;
   const nq=Math.max(0,(+it.qty||0)+delta);
   try{
-    await sb.from('provider_inventory').update({ qty:nq }).eq('id',id);
-    await sb.from('provider_stock_log').insert({ provider_id:it.provider_id, item_id:id, item_name:it.name, delta, reason:delta<0?'صرف':'توريد', actor:me.name });
+    const r=await sb.from(pinvTable()).update({ qty:nq }).eq('id',id);   // الفني عبر المنظور (الكمية فقط)
+    if(r.error) throw r.error;
+    const l=await sb.from('provider_stock_log').insert({ provider_id:it.provider_id, item_id:id, item_name:it.name, delta, reason:delta<0?'صرف':'توريد', actor:me.name });
+    if(l.error) console.warn('stock log', l.error.message);
     it.qty=nq; render();
-  }catch(e){ toast('تعذّر التعديل'); }
+  }catch(e){ toast(srvMsgP(e)); }
 }
 async function stockDel(id,name){
   if(!confirm(LX('حذف الصنف '+(name||'')+'؟','Delete item '+(name||'')+'?'))) return;
-  try{ await sb.from('provider_inventory').delete().eq('id',id); await loadBiz(); toast('حُذف'); }catch(e){ toast('تعذّر الحذف'); }
+  try{ const r=await sb.from('provider_inventory').delete().eq('id',id); if(r.error) throw r.error; await loadBiz(); toast('حُذف'); }catch(e){ toast(srvMsgP(e)); }
 }
 
 /* ═══════════ العملاء (مشترك) ═══════════ */
-function renderCustomers(){
-  if(!myPid()) return `<div class="empty"><div class="ico">👥</div><h3>غير متاح</h3></div>`;
-  const rows=PCUST.length? PCUST.map(c=>`
-    <div class="irow">
-      <div class="in-nm"><b>${esc(c.name)}</b><small>${esc(c.phone||'')}${c.city?' · '+esc(c.city):''}</small></div>
-      ${c.phone?`<a class="pill" href="tel:${esc(c.phone)}">📞</a>`:''}
-      <button class="x-btn" data-name="${esc(String(c.name))}" onclick="custDel(${c.id},this.dataset.name)">حذف</button>
-    </div>`).join('') : `<div class="hint" style="text-align:center;padding:20px">ما فيه عملاء بعد · أضف أول عميل فوق.</div>`;
-  return `
-    <div class="mpanel">
-      <h3>👥 عملاء ${me.tech?'المزوّد':'الفريق'} ${PCUST.length?`(${ar(PCUST.length)})`:''}</h3>
-      <div class="hint">سجل عملائك · مشترك بينك وبين ${me.tech?'زملائك':'فنيّينك'}.</div>
-      <div class="biz-add"><input id="cu_name" placeholder="اسم العميل" onkeydown="if(event.key==='Enter')custAdd()" /></div>
-      <div class="biz-add" style="margin-top:-4px">
-        <input id="cu_phone" inputmode="tel" placeholder="الجوال" />
-        <input id="cu_city" placeholder="المدينة" style="max-width:100px" />
-        <button class="tbtn done" style="padding:0 18px;flex:0 0 auto" onclick="custAdd()">➕</button>
-      </div>
-    </div>
-    <div class="mpanel">${rows}</div>`;
-}
 async function custAdd(){
   const n=((document.getElementById('cu_name')||{}).value||'').trim();
   const p=((document.getElementById('cu_phone')||{}).value||'').trim();
   const c=((document.getElementById('cu_city')||{}).value||'').trim();
   if(!n){ toast('اكتب اسم العميل'); return; }
   const pid=myPid(); if(!pid) return;
-  try{ const { error }=await sb.from('provider_customers').insert({ provider_id:pid, name:n, phone:p, city:c }); if(error) throw error; toast('✅ أُضيف العميل'); await loadBiz(); }
-  catch(e){ toast('تعذّرت الإضافة'); }
+  try{ const { error }=await sb.from('provider_customers').insert({ provider_id:pid, name:n, phone:p, city:c }); if(error) throw error; toast('✅ أُضيف العميل'); ['cu_name','cu_phone','cu_city'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; }); await loadCustomers(); render(); }
+  catch(e){ toast(srvMsgP(e)); }
 }
 async function custDel(id,name){
   if(!confirm(LX('حذف العميل '+(name||'')+'؟','Delete customer '+(name||'')+'?'))) return;
-  try{ await sb.from('provider_customers').delete().eq('id',id); await loadBiz(); toast('حُذف'); }catch(e){ toast('تعذّر الحذف'); }
+  try{ const r=await sb.from('provider_customers').delete().eq('id',id); if(r.error) throw r.error; closeCustomer(); await loadCustomers(); render(); toast('حُذف'); }catch(e){ toast(srvMsgP(e)); }
 }
 
 /* ═══════════ الفواتير (طلبات المزوّد المنجزة) ═══════════ */
-function orderInvTotal(o){ const inv=o&&o.invoice; if(inv&&inv.items) return inv.items.reduce((s,it)=>s+(+it.price||0)*(+it.qty||1),0); return (inv&&inv.total)||0; }
-function pvDate(iso){ if(!iso) return ''; const p=String(iso).split('-'); if(p.length<3) return String(iso); if(_uiEN()) return (+p[2])+' '+(EN_MON[(+p[1]||1)-1]||''); return ar(+p[2])+' '+(AR_MON[(+p[1]||1)-1]||''); }
+/* بند 19: عمولة المنصة بنفس قواعد الخادم (khafet_admin_commission): نسبة من أجرة اليد بلا قطع ولا رسوم، والطلب الكبير بنسبة وسقف.
+   النسب من الإعدادات لو كانت مقروءة لهذا الحساب، وإلا المعتمدة حاليًا */
+const COMM_DEF={ pct:5, firstJobs:10, firstPct:5, bigMin:1000, bigPct:5, bigCap:150 };
+let COMM_CFG=Object.assign({},COMM_DEF);
+async function loadCommCfg(){ if(!cloudReady||!sb) return; try{ const M={commission_provider_pct:'pct',commission_first_jobs:'firstJobs',commission_first_pct:'firstPct',commission_big_min:'bigMin',commission_big_pct:'bigPct',commission_big_cap:'bigCap'};
+  const r=await sb.from('khafet_settings').select('key,value').in('key',Object.keys(M)); if(r.error||!Array.isArray(r.data)) return;
+  r.data.forEach(x=>{ const k=M[x&&x.key], v=parseFloat(x&&x.value); if(k && isFinite(v) && v>=0) COMM_CFG[k]=v; }); }catch(e){} loadMyComm(); }
+/* جولة الإصلاح 1 (بند 19): عمولة المنصة المستحقة من الخادم نفسه (khafet_my_commission، نفس حساب لوحة الإدارة) لصاحب المؤسسة،
+   والحساب المحلي أدناه احتياط فقط (بلا الخادم أو لفني المؤسسة) ولا يحسب حجوزات المؤسسة الخاصة */
+let MY_COMM=null;
+async function loadMyComm(){ if(!cloudReady||!sb||!me||me.tech) return; try{ const { data, error }=await sb.rpc('khafet_my_commission'); if(!error && data && data.ok){ const v=Math.round((+data.total||0)*100)/100; if(v!==MY_COMM){ MY_COMM=v; if(me) render(); } } }catch(e){} }
+function orderLabor(o){
+  const isPart=it=>!!(it&&(String(it.id||'').startsWith('part:')||it.stockId||it.id==='stock'||it.part));
+  const isFee=it=>!!(it&&(it.id==='fee'||it.id==='smallfee'));
+  let v=0;
+  if(!o.quick) (o.items||[]).forEach(it=>{ if(!it||!it.id||it.id==='quick'||isPart(it)||isFee(it)) return; const s=svc(it.id); if(s&&!s.custom) v+=invLineAmt(it); });
+  const inv=o.invoice; if(inv&&Array.isArray(inv.items)) inv.items.forEach(it=>{ if(!it||it.booked||it.id==='swap'||isPart(it)||isFee(it)) return; v+=invLineAmt(it); });
+  return Math.round(v*100)/100;
+}
+function commOwed(list){
+  if(me && !me.tech && MY_COMM!=null) return MY_COMM;
+  const C=COMM_CFG; const done=(list||[]).filter(o=>o.status==='done' && o.source!=='staff').slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||((+a.orderNo||0)-(+b.orderNo||0)));
+  let t=0; done.forEach((o,i)=>{ const lab=orderLabor(o); if(lab<=0) return; const p0=Math.min(C.pct, i<C.firstJobs?C.firstPct:C.pct);
+    t+= lab>=C.bigMin ? Math.round(Math.min(lab*C.bigPct/100, C.bigCap)*100)/100 : Math.round(lab*p0)/100; });
+  return Math.round(t*100)/100;
+}
+function orderInvTotal(o){ if(o&&o.dbId) return Math.max(0,+o.finalPrice||0); const inv=o&&o.invoice; if(inv&&String(inv.v)==='2'&&+inv.total>0) return +inv.total; if(inv&&inv.items) return inv.items.reduce((s,it)=>s+(+it.price||0)*(+it.qty||1),0); return (inv&&inv.total)||0; }
+function pvDate(iso){ if(!iso) return ''; const p=String(iso).split('-'); if(p.length<3) return esc(String(iso)); if(_uiEN()) return (+p[2])+' '+(EN_MON[(+p[1]||1)-1]||''); return ar(+p[2])+' '+(AR_MON[(+p[1]||1)-1]||''); }
 function renderInvoices(){
   const done=myJobsList().filter(o=>o.status==='done').sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   const total=done.reduce((s,o)=>s+orderInvTotal(o),0);
@@ -1990,17 +2580,22 @@ function printOrderInv(id){ const o=ORDERS.find(x=>x.id===id); if(o) printInvoic
 /* ═══════════ الحجز المباشر + التوزيع على فني ═══════════ */
 function toggleBook(){ bookOpen=!bookOpen; render(); }
 /* زر «حجز» بالشريط السفلي: يفتح نموذج الحجز مباشرة */
-function quickBookShortcut(){ tab='mine'; bookOpen=true; pvCalFilter=''; render(); try{window.scrollTo(0,0);}catch(e){} }
+function quickBookShortcut(){ tab='schedule'; schedMode='day'; bookOpen=true; pvCalFilter=''; render(); try{window.scrollTo(0,0);}catch(e){} }
 function bookPanel(){
   if(!bookOpen) return `<button class="tbtn done" style="width:100%;margin-bottom:14px" onclick="toggleBook()">➕ حجز جديد لعميل</button>`;
-  const today=new Date().toISOString().slice(0,10);
+  const today=new Date().toISOString().slice(0,10); const pf=bookPrefill||{};
+  // اختيار عميل من سجل عملائه (يعبّي الجوال والمدينة تلقائيًا) أو كتابة اسم جديد
+  const custOpts=PCUST.map(c=>`<option value="${esc(c.name||'')}">${esc(c.phone||'')}${c.city?' · '+esc(c.city):''}</option>`).join('');
+  const svcOpts=SERVICES.filter(s=>!s.inactive && !s.hidden && !s.custom).map(s=>`<option value="${esc(s.id)}">${esc(s.ico||'')} ${esc(svcName(s.name))} · ${_uiEN()?(+s.price||0)+' SAR':ar(+s.price||0)+' ر.س'}</option>`).join('');
   return `<div class="mpanel">
     <h3>➕ حجز جديد لعميل</h3>
     <div class="hint">${LX(`أضف طلباً مباشرة · يظهر في «طلباتي»${TECHS.length?' وتقدر توزّعه على فني':''}.`, `Add a job directly. It shows in My jobs${TECHS.length?' and you can assign it to a technician':''}.`)}</div>
-    <input id="bk_name" placeholder="اسم العميل" />
-    <input id="bk_phone" inputmode="tel" placeholder="جوال العميل" style="margin-top:8px" />
-    <input id="bk_city" placeholder="المدينة" style="margin-top:8px" />
-    <input id="bk_note" placeholder="الخدمة / المشكلة" style="margin-top:8px" />
+    <input id="bk_name" list="bk_custs" placeholder="اسم العميل (اختر من عملائك أو اكتب اسمًا جديدًا)" value="${esc(pf.name||'')}" oninput="bkPickCustomer(this.value)" autocomplete="off" /><datalist id="bk_custs">${custOpts}</datalist>
+    <input id="bk_phone" inputmode="tel" placeholder="جوال العميل" value="${esc(pf.phone||'')}" style="margin-top:8px" />
+    <input id="bk_city" placeholder="المدينة" value="${esc(pf.city||'')}" style="margin-top:8px" />
+    <select id="bk_svc" class="assign-sel" style="width:100%;margin-top:8px;min-width:0" onchange="bkSvcChange(this.value)"><option value="">🔧 خدمة من الكتالوج (اختياري)</option>${svcOpts}<option value="custom">📝 خدمة أخرى بسعر</option></select>
+    <div id="bk_custom" style="display:none;gap:8px;margin-top:8px"><input id="bk_svc_name" placeholder="اسم الخدمة" style="flex:1;min-width:0" /><input id="bk_svc_price" type="number" inputmode="numeric" placeholder="السعر" style="max-width:110px" /></div>
+    <input id="bk_note" placeholder="ملاحظة / المشكلة" style="margin-top:8px" />
     <div style="display:flex;gap:8px;margin-top:8px">
       <input id="bk_date" type="date" value="${today}" style="flex:1" />
       <input id="bk_time" type="time" value="10:00" style="flex:1" />
@@ -2015,17 +2610,32 @@ function bookPanel(){
     </div>
   </div>`;
 }
+function bkPickCustomer(v){ const c=PCUST.find(x=>String(x.name||'')===String(v||'')); if(!c) return; const p=document.getElementById('bk_phone'), ct=document.getElementById('bk_city'); if(p&&!p.value.trim()) p.value=c.phone||''; if(ct&&!ct.value.trim()) ct.value=c.city||''; }
+function bkSvcChange(v){ const d=document.getElementById('bk_custom'); if(d) d.style.display=(v==='custom'?'flex':'none'); }
 async function submitBooking(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
-  const name=g('bk_name'), phone=g('bk_phone'), city=g('bk_city'), note=g('bk_note');
+  const name=g('bk_name'), phone=g('bk_phone'), city=g('bk_city');
   const date=g('bk_date')||new Date().toISOString().slice(0,10), time=g('bk_time'), tech=g('bk_tech');
   if(!name){ toast('اكتب اسم العميل'); return; }
+  // الخدمة تُكتب في ملاحظة الطلب (الحجز الخاص طلب سريع في الخادم، والبنود تُسعَّر في الفاتورة)
+  const sid=g('bk_svc'); let svcTxt='';
+  if(sid==='custom'){ const nm=g('bk_svc_name'), pr=+g('bk_svc_price')||0; if(nm) svcTxt=nm+(pr?' · '+pr+' ر.س':''); }
+  else if(sid){ const s=svc(sid); if(s) svcTxt=s.name+(s.price?' · '+s.price+' ر.س':''); }
+  const note=[svcTxt, g('bk_note')].filter(Boolean).join(' · ').slice(0,2000);
   let start=600; if(time&&time.indexOf(':')>0){ const p=time.split(':'); start=(+p[0])*60+(+p[1]); }
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
   try{
-    const { data }=await sb.rpc('provider_book_order',{ p_customer:name, p_phone:phone, p_city:city, p_items:[], p_date:date, p_start:start, p_duration:60, p_note:note, p_tech:tech||null });
-    if(data&&data.ok){ toast(LX('✅ تم الحجز #'+ar(data.order_no),'✅ Booked #'+data.order_no)); bookOpen=false; loadOrders(); }
-    else toast('تعذّر الحجز');
-  }catch(e){ toast('تعذّر الحجز'); }
+    const { data, error }=await sb.rpc('provider_book_order',{ p_customer:name, p_phone:phone, p_city:city, p_items:[], p_date:date, p_start:start, p_duration:60, p_note:note, p_tech:tech||null });
+    if(error) throw error;
+    if(data&&data.ok){
+      toast(LX('✅ تم الحجز #'+ar(data.order_no),'✅ Booked #'+data.order_no)); bookOpen=false; bookPrefill=null;
+      // عميل جديد بجوال غير مسجّل في سجل عملائه؟ يُضاف تلقائيًا (المالك فقط)
+      const p05=custPhone05(phone);
+      if(!me.tech && p05 && !PCUST.some(c=>custPhone05(c.phone)===p05)){ try{ await sb.from('provider_customers').insert({ provider_id:myPid(), name, phone, city }); loadCustomers(); }catch(e){} }
+      loadOrders();
+    }
+    else { const R={ not_my_tech:'الفني مو من فريقك', bad_date:'التاريخ خارج المدى المسموح', bad_phone:'رقم جوال العميل غير صحيح', too_many:'وصلت للحد اليومي للحجوزات، حاول لاحقًا', not_approved:'حسابك موقوف أو قيد المراجعة · تواصل مع الإدارة', not_provider:'هذا الحساب ليس حساب مزوّد' }; toast((data&&R[data.reason])||'تعذّر الحجز'); }
+  }catch(e){ toast(/KHAFET_/.test(String((e&&e.message)||''))?srvMsgP(e):'تعذّر الحجز'); }
 }
 async function assignOrder(dbId,techUid){
   try{
@@ -2043,7 +2653,7 @@ async function skipOffer(id){
 
 /* ---- فريق المزوّد (فنيّوه) ---- */
 let techsOpen=false, TECHS=[], PENDING_TECHS=[];
-async function loadTechs(){ if(!me||!cloudReady) return; try{ const { data }=await sb.rpc('my_techs'); TECHS=data||[]; }catch(e){ TECHS=[]; } try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
+async function loadTechs(){ if(!me||!cloudReady) return; const g=_pvGen; try{ const { data }=await sb.rpc('my_techs'); if(pvStale(g)) return; TECHS=data||[]; }catch(e){ TECHS=[]; } try{ const pt=await sb.rpc('pending_techs'); if(pvStale(g)) return; PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } }
 function renderJoinPanel(){
   const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||'فني')}</b><small>📱 ${esc(t.phone||'')} · ${LX('كوده','Code')} ${esc(t.code||'')}</small></div>
       <button class="tbtn done" style="padding:8px 14px" onclick="approveTechP('${t.user_id}',true)">✔️ اعتماد</button><button class="x-btn" onclick="approveTechP('${t.user_id}',false)">رفض</button></div>`).join('') : '';
@@ -2068,14 +2678,21 @@ function copyMyCode(){ const c=(me&&me.code)||''; try{ navigator.clipboard.write
 async function removeTech(uid,name){ if(!confirm(LX('إزالة الفني '+(name||'')+' من فريقك؟','Remove technician '+(name||'')+' from your team?'))) return; try{ await sb.rpc('remove_my_tech',{ p_uid:uid }); }catch(e){} await loadTechs(); toast('تمت الإزالة'); render(); }
 async function addTechByCode(){
   const el=document.getElementById('add_tech_code'); const code=((el&&el.value)||'').trim();
-  if(code.length<4){ toast('اكتب كود الفني أو جواله'); return; }
+  if(code.length<4){ toast('اكتب كود الفني'); return; }
   try{
     const { data }=await sb.rpc('add_tech_by_code',{ p_code:code });
     if(data && data.ok){ toast(LX('✅ أُضيف الفني: '+(data.name||''),'✅ Technician added: '+(data.name||''))); if(el) el.value=''; await loadTechs(); render(); }
-    else toast(data && data.reason==='bad_code' ? '❌ الكود أو الجوال غير صحيح · تأكّد أنه سجّل كفني' : 'تعذّرت الإضافة');
+    else { const R={ bad_code:'❌ الكود غير صحيح · تأكّد أنه سجّل كفني', too_many:'محاولات كثيرة، حاول بعد ساعة', blocked:'هذا الفني موقوف أو مرفوض من الإدارة', not_available:'الفني غير متاح للإضافة', docs_required:'لازم تُعتمد وثائق الفني أولًا' };
+      toast((data && R[data.reason]) || 'تعذّرت الإضافة'); }
   }catch(e){ toast('تعذّرت الإضافة، حاول ثانية'); }
 }
-function setTab(t){ tab=t; render(); if(t==='team'&&me&&!me.tech){ loadTechs().then(render); } if((t==='stock'||t==='invoices'||t==='numbers'||t==='reminders')&&me){ loadBiz(); } }
+function setTab(t){ tab=t; schedOpen=null; render(); try{window.scrollTo(0,0);}catch(e){}
+  if(t==='team'&&me&&!me.tech){ loadTechs().then(render); }
+  if((t==='stock'||t==='invoices'||t==='numbers'||t==='reminders'||t==='customers'||t==='home')&&me){ loadBiz(t!=='home'); }
+  if((t==='team'||t==='tasks')&&me) loadTasks(taskDate);
+  if(t==='notes'&&me) loadNotes();
+  if(t==='stock'&&me) loadStockLog();
+}
 /* المزوّد يتحكّم وش يظهر لفنيّيه */
 async function toggleVis(which){
   if(!me||me.tech) return;
@@ -2124,11 +2741,426 @@ async function saveFinance(){
 }
 function toast(m){ const el=document.getElementById('toast'); el.textContent=(typeof TR==='function'?TR(m):m); el.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>el.classList.remove('show'),2200); }
 
+
+/* ═══════════ الجدول: عرض يومي وأسبوعي لكل مواعيد المؤسسة (طلبات خافت + حجوزات المزوّد الخاصة) مع تصفية بالفني ═══════════ */
+function techName(uid){ const t=TECHS.find(x=>x.user_id===uid); return t?(t.name||LX('فني','Technician')):''; }
+function stLabel(st){ return ({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل',cancelled:'ملغى'})[st]||st||''; }
+function byTime(a,b){ return ((a.date||'')+String(a.startMin||0).padStart(4,'0')).localeCompare((b.date||'')+String(b.startMin||0).padStart(4,'0')); }
+function schedJobs(){ let list=myJobsList(); if(schedTech==='none') list=list.filter(o=>!o.handledBy); else if(schedTech) list=list.filter(o=>o.handledBy===schedTech); return list.slice().sort(byTime); }
+function schedSetMode(m){ schedMode=(m==='week'?'week':'day'); schedOpen=null; render(); }
+function schedSetTech(v){ schedTech=v||''; schedOpen=null; render(); }
+function schedShift(n){ schedDate=addDays(schedDate, schedMode==='week'?7*n:n); schedOpen=null; render(); }
+function schedSetDate(v){ if(!/^\d{4}-\d{2}-\d{2}$/.test(v||'')) return; schedDate=v; schedOpen=null; render(); }
+function schedGoDay(iso){ schedMode='day'; schedDate=iso; schedOpen=null; render(); try{window.scrollTo(0,0);}catch(e){} }
+function weekStart(iso){ const d=parseISO(iso); d.setDate(d.getDate()-d.getDay()); return dateISO(d); }
+/* الطلب في سطر مضغوط: الوقت · العميل · الخدمة · الفني · الحالة · «حجز خاص» لحجوزات المؤسسة */
+function jobWhat(o){ const items=(o.items||[]).filter(i=>i&&i.id!=='quick'&&i.id!=='fee'&&i.id!=='smallfee'); const first=items[0]; if(first) return svcName(first.name)+(items.length>1?' +'+pvNum(items.length-1):''); if(o.note) return String(o.note).slice(0,60); return o.quick?LX('طلب سريع (معاينة)','Quick job (inspection)'):''; }
+function isOwnBooking(o){ return o.source==='staff'||o.source==='provider_page'; }
+function schedRow(o){
+  const tn=(!me.tech&&o.handledBy)?techName(o.handledBy):'';
+  const cls=o.status==='done'?'done':(o.status==='progress'?'prog':'');
+  return `<button type="button" class="pa-row ${schedOpen===o.id?'open':''}" data-id="${esc(o.id)}" onclick="schedTap(this.dataset.id)">
+    <span class="t">${fmtTime(o.startMin||0)}</span>
+    <span class="b"><b>${esc(o.customer.name||LX('عميل','Customer'))}</b><small>${esc(jobWhat(o))}${tn?' · 🧑‍🔧 '+esc(tn):''}</small></span>
+    ${isOwnBooking(o)?`<span class="pa-tag own">حجز خاص</span>`:''}<span class="pa-tag ${cls}">${esc(stLabel(o.status))}</span>
+  </button>`;
+}
+function schedTap(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  if(tab!=='schedule'){ tab='schedule'; schedMode='day'; schedDate=o.date; }
+  schedOpen=(schedOpen===id?null:id); if(o.status==='done') doneOpen[o.id]=true;
+  render();
+  if(schedOpen) setTimeout(function(){ const el=document.getElementById('sched-open'); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'}); },80);
+}
+function renderSchedule(){
+  const todayISO=dateISO(new Date());
+  const jobs=schedJobs();
+  const seg=`<div class="pa-seg"><button class="${schedMode==='day'?'on':''}" onclick="schedSetMode('day')">يومي</button><button class="${schedMode==='week'?'on':''}" onclick="schedSetMode('week')">أسبوعي</button></div>`;
+  const techSel=(!me.tech&&TECHS.length)?`<select onchange="schedSetTech(this.value)"><option value="">🧑‍🔧 كل الفنيين</option><option value="none" ${schedTech==='none'?'selected':''}>بدون فني</option>${TECHS.map(t=>`<option value="${esc(t.user_id)}" ${schedTech===t.user_id?'selected':''}>${esc(t.name||'فني')}</option>`).join('')}</select>`:'';
+  const book=!me.tech?bookPanel():'';
+  let body='';
+  if(schedMode==='day'){
+    const dayJobs=jobs.filter(o=>o.date===schedDate);
+    const nav=`<div class="pa-datenav"><button onclick="schedShift(-1)">${LX('›','‹')}</button><b>${schedDate===todayISO?LX('اليوم','Today')+' · ':''}${dayLabel(schedDate)}</b><button onclick="schedShift(1)">${LX('‹','›')}</button>${schedDate!==todayISO?`<button class="today" onclick="schedSetDate('${todayISO}')">اليوم</button>`:''}</div>
+      <input type="date" class="pa-datein" value="${schedDate}" onchange="schedSetDate(this.value)" />`;
+    body=nav+(dayJobs.length
+      ? dayJobs.map(o=>schedRow(o)+(schedOpen===o.id?`<div id="sched-open">${jobCard(o,'mine')}</div>`:'')).join('')
+      : `<div class="empty" style="padding:30px 10px"><div class="ico">📅</div><h3>ما فيه مواعيد في هذا اليوم</h3></div>`);
+  } else {
+    const start=weekStart(schedDate); const days=[]; for(let i=0;i<7;i++) days.push(addDays(start,i));
+    const nav=`<div class="pa-datenav"><button onclick="schedShift(-1)">${LX('›','‹')}</button><b>${LX('أسبوع','Week of')} ${dayLabel(start)}</b><button onclick="schedShift(1)">${LX('‹','›')}</button>${days.indexOf(todayISO)<0?`<button class="today" onclick="schedSetDate('${todayISO}')">اليوم</button>`:''}</div>`;
+    body=nav+`<div class="pa-week">${days.map(d=>{ const list=jobs.filter(o=>o.date===d);
+      return `<div class="pa-wday ${d===todayISO?'today':''}"><h4 onclick="schedGoDay('${d}')"><span>${dayLabel(d)}</span><small>${list.length?LX(ar(list.length)+' موعد', list.length+(list.length===1?' appointment':' appointments')):LX('فاضي','Free')}</small></h4>
+        ${list.map(o=>`<div class="it" data-id="${esc(o.id)}" onclick="schedTap(this.dataset.id)"><b>${fmtTime(o.startMin||0)}</b><span>${esc(o.customer.name||LX('عميل','Customer'))}${(!me.tech&&o.handledBy)?' · '+esc(techName(o.handledBy)):''}${o.status==='done'?' ✓':''}</span></div>`).join('')}</div>`; }).join('')}</div>`;
+  }
+  return `<div class="pa-tools">${seg}${techSel}</div>${book}${body}`;
+}
+
+/* ═══════════ مهام الفريق اليومية (provider_tasks): المالك يضيف لفني أو للكل مع تكرار اختياري، والفني يعلّم الإنجاز ═══════════ */
+function taskMine(t){ return !me.tech || !t.tech_user || t.tech_user===me.uid; }
+function tasksOn(iso){ return PTASKS.filter(t=>t.task_date===iso && taskMine(t)); }
+function tasksLeftToday(){ return tasksOn(dateISO(new Date())).filter(t=>!t.done).length; }
+function timeOf(ts){ const d=new Date(ts); if(isNaN(d)) return ''; return fmtTime(d.getHours()*60+d.getMinutes()); }
+function taskRow(t,compact){
+  const who=t.tech_user?(techName(t.tech_user)||LX('فني','Technician')):LX('للكل','Everyone');
+  const dn=(t.done&&t.done_at)?(LX('تم','Done')+' · '+timeOf(t.done_at)+((!me.tech&&t.done_by&&techName(t.done_by))?' · '+esc(techName(t.done_by)):'')):'';
+  return `<div class="pa-task ${t.done?'done':''}" id="task-${esc(t.id)}">
+    <button type="button" class="chk" data-id="${esc(t.id)}" onclick="taskToggle(this.dataset.id)" aria-label="${t.done?LX('إرجاع المهمة','Undo'):LX('تم','Done')}">${t.done?'✓':''}</button>
+    <div class="tx"><b>${esc(t.title)}</b><small>🧑‍🔧 ${esc(who)}${t.note?' · '+esc(t.note):''}${dn?' · '+dn:''}</small></div>
+    ${(!me.tech&&!compact)?`<button class="x-btn" data-id="${esc(t.id)}" onclick="taskDel(this.dataset.id)">حذف</button>`:''}
+  </div>`;
+}
+function renderTasksPanel(){
+  const todayISO=dateISO(new Date());
+  const list=tasksOn(taskDate); const done=list.filter(t=>t.done).length;
+  const nav=`<div class="pa-datenav"><button onclick="taskShift(-1)">${LX('›','‹')}</button><b>${taskDate===todayISO?LX('اليوم','Today')+' · ':''}${dayLabel(taskDate)}</b><button onclick="taskShift(1)">${LX('‹','›')}</button>${taskDate!==todayISO?`<button class="today" onclick="taskSetDate('${todayISO}')">اليوم</button>`:''}</div>
+    <input type="date" class="pa-datein" id="task_date" value="${taskDate}" onchange="taskSetDate(this.value)" />`;
+  const form=!me.tech?`<div class="pa-form">
+      <input id="task_title" maxlength="200" placeholder="المهمة (مثال: تنظيف الورشة وترتيب العدة)" onkeydown="if(event.key==='Enter')taskAdd()" />
+      <div class="g2">
+        <select id="task_tech"><option value="">🧑‍🔧 للكل</option>${TECHS.map(t=>`<option value="${esc(t.user_id)}">${esc(t.name||'فني')}</option>`).join('')}</select>
+        <select id="task_repeat"><option value="">بدون تكرار</option><option value="daily">يوميًا لمدة ٤ أسابيع</option><option value="weekly">أسبوعيًا لمدة ٤ أسابيع</option></select>
+      </div>
+      <input id="task_note" maxlength="500" placeholder="ملاحظة (اختياري)" />
+      <button class="tbtn done" style="width:100%" onclick="taskAdd()">➕ أضف المهمة</button>
+    </div>`:'';
+  const missing=FEAT_MISSING.tasks?`<div class="hint" style="color:#B4560F;margin-top:6px">ميزة المهام بانتظار تفعيلها في الخادم.</div>`:'';
+  return `<div class="mpanel"><h3>📝 ${me.tech?'مهامي':'مهام اليوم للفريق'}</h3>
+    <div class="hint">${me.tech?'المهام اللي حدّدها لك صاحب المؤسسة · اضغط ✓ عند إنجازها.':'اكتب مهام كل يوم لفني معيّن أو للكل (مثال: السبت: جرد المخزن) · الفني يعلّم ✓ عند الإنجاز.'}</div>
+    ${nav}${missing}${form}
+    <div class="mrow" style="margin-top:8px"><span class="hint" style="margin:0">${LX(`منجز ${ar(done)} · باقي ${ar(list.length-done)}`, `${done} done · ${list.length-done} left`)}</span><b>${LX(ar(list.length)+' مهمة', list.length+(list.length===1?' task':' tasks'))}</b></div>
+    <div style="margin-top:8px">${list.length?list.map(t=>taskRow(t)).join(''):`<div class="hint" style="text-align:center;padding:14px">ما فيه مهام في هذا اليوم</div>`}</div>
+  </div>`;
+}
+function taskShift(n){ taskSetDate(addDays(taskDate,n)); }
+function taskSetDate(v){ if(!/^\d{4}-\d{2}-\d{2}$/.test(v||'')) return; taskDate=v; render(); if(_taskRange && (v<_taskRange.from||v>_taskRange.to)) loadTasks(v); }
+async function taskAdd(){
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const title=g('task_title'); if(!title){ toast('اكتب عنوان المهمة'); return; }
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  const tech=g('task_tech')||null, rep=g('task_repeat')||null, note=g('task_note')||null;
+  if(window._taskBusy) return; window._taskBusy=true;
+  try{
+    const r=await sb.rpc('provider_task_add',{ p_title:title, p_date:taskDate, p_tech:tech, p_note:note, p_repeat:rep });
+    if(r.error) throw r.error;
+    const n=+((r.data&&r.data.count)||1);
+    toast(n>1?LX(`✅ أُضيفت ${ar(n)} مهمة`,`✅ ${n} tasks added`):'✅ أُضيفت المهمة');
+    ['task_title','task_note'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    await loadTasks(taskDate); render();
+  }catch(e){ toast(srvMsgP(e)); }
+  finally{ window._taskBusy=false; }
+}
+async function taskToggle(id){
+  const t=PTASKS.find(x=>String(x.id)===String(id)); if(!t) return;
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  const nv=!t.done;
+  try{
+    const r=await sb.from('provider_tasks').update({ done:nv }).eq('id',t.id).select().maybeSingle();
+    if(r.error) throw r.error;
+    Object.assign(t, (r.data&&typeof r.data==='object')?r.data:{ done:nv, done_at:nv?new Date().toISOString():null, done_by:nv?((me&&me.uid)||null):null });
+    render(); toast(nv?'✅ تم':'رجعت المهمة غير منجزة');
+  }catch(e){ toast(srvMsgP(e)); }
+}
+async function taskDel(id){
+  const t=PTASKS.find(x=>String(x.id)===String(id)); if(!t||me.tech) return;
+  if(!confirm(LX('حذف المهمة «'+t.title+'»؟','Delete task "'+t.title+'"?'))) return;
+  try{ const r=await sb.from('provider_tasks').delete().eq('id',t.id); if(r.error) throw r.error; PTASKS=PTASKS.filter(x=>x.id!==t.id); render(); toast('حُذفت المهمة'); }catch(e){ toast(srvMsgP(e)); }
+}
+
+/* ═══════════ العملاء (provider_customers) + بطاقة العميل + نقاط الولاء ═══════════ */
+function loyOf(phone){ const p=custPhone05(phone); if(!p) return null; return PLOY.find(x=>x.phone===p)||null; }
+function loyEnabled(){ return !!(me && !me.tech && me.loyalty_enabled); }
+function loyReason(r){ return ({order:'نقاط طلب منجز',manual:'إضافة يدوية',redeem:'استبدال بخصم',adjust:'تصحيح رصيد'})[r]||r||''; }
+function custOrders(c){ const p=custPhone05(c&&c.phone); if(!p) return []; return myJobsList().filter(o=>custPhone05(o.customer&&o.customer.phone)===p).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||((+b.startMin||0)-(+a.startMin||0))); }
+function custListHtml(){
+  const q=custQ.trim().toLowerCase();
+  const list=PCUST.filter(c=>!q||String(c.name||'').toLowerCase().includes(q)||String(c.phone||'').includes(q)||String(c.city||'').toLowerCase().includes(q));
+  if(!list.length) return `<div class="hint" style="text-align:center;padding:20px">${PCUST.length?'ما فيه نتائج':'ما فيه عملاء بعد · أضف أول عميل فوق.'}</div>`;
+  return list.map(c=>{ const L=loyOf(c.phone); return `<button type="button" class="pa-cust" data-id="${esc(c.id)}" onclick="openCustomer(this.dataset.id)">
+      <span class="av">${esc(String(c.name||'؟').trim().slice(0,1))}</span>
+      <span class="nm"><b>${esc(c.name)}</b><small>${esc(c.phone||'')}${c.city?' · '+esc(cityLabel(c.city)):''}</small></span>
+      ${(L&&+L.points>0)?`<span class="pa-pts">⭐ ${pvNum(L.points)}</span>`:''}<span class="tm-arrow">${LX('‹','›')}</span>
+    </button>`; }).join('');
+}
+function custSearch(v){ custQ=v||''; const b=document.getElementById('cuList'); if(b) b.innerHTML=custListHtml(); }
+function renderCustomers(){
+  if(!myPid()||!seeCust()) return `<div class="empty"><div class="ico">👥</div><h3>غير متاح</h3></div>`;
+  return `
+    <div class="mpanel">
+      <h3>👥 عملاء ${me.tech?'المزوّد':'الفريق'}${PCUST.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(PCUST.length)})</i>`:''}</h3>
+      <div class="hint">سجل عملائك · مشترك بينك وبين ${me.tech?'زملائك':'فنيّينك'} · اضغط العميل لعرض طلباته ونقاطه.</div>
+      <input class="city-search" id="cu_q" placeholder="🔍 ابحث بالاسم أو الجوال" value="${esc(custQ)}" oninput="custSearch(this.value)" autocomplete="off" />
+      ${!me.tech?`<div class="biz-add" style="margin-top:10px"><input id="cu_name" placeholder="اسم العميل" onkeydown="if(event.key==='Enter')custAdd()" /></div>
+      <div class="biz-add" style="margin-top:-4px">
+        <input id="cu_phone" inputmode="tel" placeholder="الجوال" />
+        <input id="cu_city" placeholder="المدينة" style="max-width:100px" />
+        <button class="tbtn done" style="padding:0 18px;flex:0 0 auto" onclick="custAdd()">➕</button>
+      </div>`:''}
+    </div>
+    <div id="cuList">${custListHtml()}</div>`;
+}
+function loyLogHtml(p05, limit){
+  const logs=p05?PLOYLOG.filter(l=>l.phone===p05).slice(0,limit||10):[];
+  if(!logs.length) return `<div class="hint" style="margin:8px 0 0">ما فيه حركة نقاط بعد.</div>`;
+  return `<div style="margin-top:10px">${logs.map(l=>`<div class="pa-loyrow"><span><span>${esc(loyReason(l.reason))}</span>${l.note?' · '+esc(l.note):''}<br><small style="color:var(--muted)">${pvDate(String(l.created_at||'').slice(0,10))}</small></span><span class="d ${(+l.delta||0)>=0?'plus':'minus'}">${(+l.delta||0)>=0?'+':'−'}${pvNum(Math.abs(+l.delta||0))}</span></div>`).join('')}</div>`;
+}
+function openCustomer(id){
+  const c=PCUST.find(x=>String(x.id)===String(id)); if(!c) return; custOpen=c.id;
+  const m=document.getElementById('invModal'); if(!m) return;
+  const ords=custOrders(c); const done=ords.filter(o=>o.status==='done'); const spent=done.reduce((s,o)=>s+(orderInvTotal(o)||(+o.finalPrice||0)),0);
+  const p05=custPhone05(c.phone); const L=loyOf(c.phone); const pts=L?(+L.points||0):0; const hasLog=!!(p05&&PLOYLOG.some(l=>l.phone===p05));
+  let loy='';
+  if(me.tech){
+    if(pts>0||hasLog||done.length) loy=`<div class="mpanel"><h3>⭐ نقاط الولاء</h3><div class="mrow"><span>الرصيد</span><b>${LX(ar(pts)+' نقطة', pts+' points')}</b></div>
+      ${done.length?`<div class="hint" style="margin:8px 0 6px">أضف نقاط طلب منجز (الخادم يحسبها من قيمة الطلب):</div><div style="display:flex;gap:8px"><select id="loy_order" class="assign-sel" style="min-width:0">${done.map(o=>`<option value="${esc(o.dbId)}">${esc(o.id)} · ${pvDate(o.date)}</option>`).join('')}</select><button class="tbtn done" style="flex:0 0 auto;padding:0 16px" data-phone="${esc(c.phone||'')}" onclick="loyAddOrder(this.dataset.phone)">➕</button></div>`:''}
+      ${loyLogHtml(p05)}</div>`;
+  } else if(loyEnabled()){
+    loy=`<div class="mpanel"><h3>⭐ نقاط الولاء</h3>
+      <div class="mrow"><span>الرصيد</span><b style="color:var(--gold-deep);font-size:1.1rem">${LX(ar(pts)+' نقطة', pts+' points')} ≈ ${pvMoney(pts*(+me.loyalty_pt_value||0))}</b></div>
+      <div style="display:flex;gap:8px;margin-top:10px"><button class="tbtn done" style="flex:1;padding:12px" data-phone="${esc(c.phone||'')}" data-name="${esc(c.name||'')}" onclick="openLoyAdd(this.dataset.phone,this.dataset.name)">➕ إضافة نقاط</button><button class="tbtn inv" style="flex:1;padding:12px" data-phone="${esc(c.phone||'')}" onclick="openLoyRedeem(this.dataset.phone)">⭐ استبدال بخصم</button></div>
+      ${loyLogHtml(p05)}</div>`;
+  } else {
+    loy=`<div class="mpanel"><h3>⭐ نقاط الولاء</h3><div class="hint" style="margin:0">نظام النقاط غير مفعّل · فعّله من <button type="button" class="pa-link" onclick="closeCustomer();setTab('settings')">الإعدادات</button> ليكسب عملاؤك نقاطًا مع كل طلب منجز.</div></div>`;
+  }
+  m.innerHTML=`<div class="inv-card">
+    <div class="inv-head"><b>👤 ${esc(c.name)}</b><button type="button" onclick="closeCustomer()">✕</button></div>
+    <div class="hint" style="margin:0 0 10px">${c.phone?`<a href="tel:${esc(c.phone)}" style="color:var(--gold-deep);font-weight:800">📞 ${esc(c.phone)}</a>`:''}${c.city?' · 📍 '+esc(cityLabel(c.city)):''}</div>
+    <div class="pa-kpis" style="grid-template-columns:1fr 1fr 1fr;margin-top:0"><div class="pa-kpi"><b>${pvNum(ords.length)}</b><small>طلباته</small></div><div class="pa-kpi"><b>${pvMoney(spent)}</b><small>إجمالي صرفه</small></div><div class="pa-kpi"><b>${pvNum(pts)}</b><small>نقاطه</small></div></div>
+    ${!me.tech?`<div class="mpanel" style="margin-top:12px"><h3>📝 ملاحظة</h3><textarea id="cu_note" rows="2" maxlength="1000" placeholder="ملاحظة عن العميل (العنوان التفصيلي، تفضيلاته...)">${esc(c.notes||'')}</textarea><button class="tbtn inv" style="width:100%;margin-top:8px;padding:11px" data-id="${esc(c.id)}" onclick="custSaveNote(this.dataset.id)">💾 حفظ الملاحظة</button></div>`
+      :(c.notes?`<div class="mpanel" style="margin-top:12px"><h3>📝 ملاحظة</h3><div style="font-weight:700">${esc(c.notes)}</div></div>`:'')}
+    ${loy}
+    <div class="mpanel"><h3>🧾 طلباته${ords.length?` <i style="font-style:normal;color:var(--muted)">(${pvNum(ords.length)})</i>`:''}</h3>
+      ${ords.length?ords.slice(0,8).map(o=>`<div class="mrow"><span>${esc(o.id)} · ${pvDate(o.date)} · <span>${esc(stLabel(o.status))}</span></span><b>${pvMoney(orderInvTotal(o)||(+o.finalPrice||0))}</b></div>`).join(''):`<div class="hint" style="margin:0">ما فيه طلبات مسجّلة بهذا الجوال بعد.</div>`}
+    </div>
+    ${!me.tech?`<div style="display:flex;gap:8px"><button class="tbtn done" style="flex:1;padding:12px" data-id="${esc(c.id)}" onclick="bookForCustomer(this.dataset.id)">➕ حجز لهذا العميل</button><button class="x-btn" style="padding:12px 16px" data-id="${esc(c.id)}" data-name="${esc(c.name||'')}" onclick="custDel(this.dataset.id,this.dataset.name)">حذف</button></div>`:''}
+  </div>`;
+  if(_uiEN()) _translateEl(m);   // النافذة خارج #app فلا يراقبها المترجم التلقائي
+  m.classList.add('show');
+}
+function closeCustomer(){ custOpen=null; const m=document.getElementById('invModal'); if(m){ m.classList.remove('show'); m.innerHTML=''; } }
+async function custSaveNote(id){
+  const c=PCUST.find(x=>String(x.id)===String(id)); if(!c||me.tech) return;
+  const v=String(((document.getElementById('cu_note')||{}).value)||'').trim().slice(0,1000);
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  try{ const r=await sb.from('provider_customers').update({ notes:v||null }).eq('id',c.id); if(r.error) throw r.error; c.notes=v; toast('💾 حُفظت الملاحظة'); }catch(e){ toast(srvMsgP(e)); }
+}
+function bookForCustomer(id){ const c=PCUST.find(x=>String(x.id)===String(id)); if(!c) return; closeCustomer(); bookPrefill={ name:c.name||'', phone:c.phone||'', city:c.city||'' }; tab='schedule'; schedMode='day'; bookOpen=true; render(); try{window.scrollTo(0,0);}catch(e){} }
+/* إضافة نقاط يدويًا (المالك): manual للهدايا، adjust للتصحيح بأي إشارة · نقاط الطلبات تنضاف تلقائيًا في الخادم */
+function loyBack(){ if(custOpen) openCustomer(custOpen); else closeCustomer(); }
+function openLoyAdd(phone,name){
+  const m=document.getElementById('invModal'); if(!m||!me||me.tech) return;
+  if(!loyEnabled()){ toast('نظام النقاط غير مفعّل، فعّله من الإعدادات'); return; }
+  m.innerHTML=`<div class="inv-card"><div class="inv-head"><b>⭐ إضافة نقاط</b><button type="button" onclick="loyBack()">✕</button></div>
+    <div class="pa-form">
+      <input id="loy_phone" inputmode="tel" placeholder="جوال العميل (05xxxxxxxx)" value="${esc(phone||'')}" ${phone?'readonly':''} style="direction:ltr;text-align:center" />
+      ${phone?'':'<input id="loy_name" maxlength="80" placeholder="اسم العميل (اختياري)" />'}
+      <div class="g2"><input id="loy_pts" type="number" inputmode="numeric" placeholder="عدد النقاط" /><select id="loy_reason"><option value="manual">هدية / إضافة يدوية</option><option value="adjust">تصحيح رصيد</option></select></div>
+      <input id="loy_note" maxlength="300" placeholder="السبب (اختياري)" />
+      <div class="hint" style="margin:0">نقاط الطلبات المنجزة تنضاف تلقائيًا · «تصحيح رصيد» يقبل رقمًا سالبًا للخصم.</div>
+      <button class="tbtn done" style="width:100%" id="loy_go" onclick="loyAddSubmit()">➕ أضف النقاط</button>
+    </div></div>`;
+  if(_uiEN()) _translateEl(m);
+  m.classList.add('show');
+  setTimeout(function(){ const i=document.getElementById(phone?'loy_pts':'loy_phone'); if(i) i.focus(); },50);
+}
+async function loyAddSubmit(){
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const phone=custPhone05(g('loy_phone')); if(!phone){ toast('رقم جوال العميل غير صالح (05xxxxxxxx)'); return; }
+  const pts=parseInt(g('loy_pts'),10); const reason=g('loy_reason')||'manual';
+  if(!pts || (reason==='manual'&&pts<0) || Math.abs(pts)>100000){ toast('عدد النقاط غير صالح'); return; }
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  if(window._loyBusy) return; window._loyBusy=true;
+  const btn=document.getElementById('loy_go'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    const r=await sb.rpc('provider_loyalty_add',{ p_phone:phone, p_delta:pts, p_reason:reason, p_order:null, p_name:g('loy_name')||null, p_note:g('loy_note')||null });
+    if(r.error) throw r.error;
+    const d=r.data||{}; toast(LX(`✅ الرصيد الآن ${ar(+d.points||0)} نقطة`,`✅ Balance now ${+d.points||0} points`));
+    await loadLoyalty(); loyBack(); render();
+  }catch(e){ toast(srvMsgP(e)); if(btn){ btn.disabled=false; btn.textContent=TR('➕ أضف النقاط'); } }
+  finally{ window._loyBusy=false; }
+}
+/* الفني بصلاحية العملاء: يضيف نقاط طلب منجز فقط (الخادم يحسب العدد ويمنع التكرار) */
+async function loyAddOrder(phone){
+  const sel=document.getElementById('loy_order'); const oid=sel&&sel.value; if(!oid) return;
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  try{ const r=await sb.rpc('provider_loyalty_add',{ p_phone:custPhone05(phone)||null, p_delta:null, p_reason:'order', p_order:oid, p_name:null, p_note:null }); if(r.error) throw r.error;
+    const d=r.data||{}; toast(LX(`✅ أُضيفت ${ar(+d.delta||0)} نقطة`,`✅ ${+d.delta||0} points added`)); await loadLoyalty(); if(custOpen) openCustomer(custOpen); }
+  catch(e){ toast(srvMsgP(e)); }
+}
+/* استبدال نقاط بخصم (المالك): الخادم يتحقق من الحد الأدنى والرصيد ويرجع قيمة الخصم لكتابتها بند خصم حر في الفاتورة */
+function openLoyRedeem(phone){
+  const m=document.getElementById('invModal'); if(!m||!me||me.tech) return;
+  const p05=custPhone05(phone); const L=loyOf(p05); const pts=L?(+L.points||0):0; const min=+me.loyalty_min_redeem||0, val=+me.loyalty_pt_value||0;
+  const ords=loyRedeemOrders(p05);
+  m.innerHTML=`<div class="inv-card"><div class="inv-head"><b>⭐ استبدال نقاط بخصم</b><button type="button" onclick="loyBack()">✕</button></div>
+    <div class="mrow"><span>الرصيد</span><b>${LX(ar(pts)+' نقطة', pts+' points')}</b></div>
+    <div class="mrow"><span>قيمة النقطة</span><b>${pvMoney(val)}</b></div>
+    <div class="mrow"><span>أقل عدد للاستبدال</span><b>${LX(ar(min)+' نقطة', min+' points')}</b></div>
+    <div class="pa-form" style="margin-top:10px">
+      <input id="loy_rphone" type="hidden" value="${esc(p05)}" />
+      ${ords.length?`<select id="loy_rorder" class="assign-sel" style="width:100%;min-width:0">${ords.map(o=>`<option value="${esc(o.dbId)}">${esc(o.id)} · ${pvDate(o.date)}</option>`).join('')}</select>`:`<div class="hint" style="margin:0">${LX('الاستبدال يكون على طلب قائم لهذا العميل، احجز له طلبًا أولًا','Points are redeemed on an open job for this customer. Book a job first')}</div>`}
+      <input id="loy_rpts" type="number" inputmode="numeric" placeholder="عدد النقاط للاستبدال" value="${pts>=min&&min>0?min:(pts||'')}" oninput="loyRedeemPreview()" />
+      <div class="hint" style="margin:0" id="loy_prev">${LX('الخصم: ','Discount: ')}${pvMoney(((pts>=min&&min>0)?min:pts)*val)}</div>
+      <button class="tbtn done" style="width:100%" id="loy_rgo" onclick="loyRedeemSubmit()" ${ords.length?'':'disabled'}>⭐ استبدل النقاط</button>
+    </div>
+    <div id="loy_result"></div></div>`;
+  if(_uiEN()) _translateEl(m);
+  m.classList.add('show');
+}
+/* طلبات العميل القائمة عند المؤسسة (غير ملغاة، وغير منجزة أو باقي عليها مبلغ) */
+function loyRedeemOrders(p05){ return p05 ? myJobsList().filter(o=>o.dbId && o.status!=='cancelled' && (o.status!=='done' || (+o.amountDue||0)>0) && custPhone05(o.customer&&o.customer.phone)===p05) : []; }
+function loyRedeemPreview(){ const n=parseInt(((document.getElementById('loy_rpts')||{}).value)||'0',10)||0; const p=document.getElementById('loy_prev'); if(p) p.textContent=LX('الخصم: ','Discount: ')+pvMoney(n*(+me.loyalty_pt_value||0)); }
+async function loyRedeemSubmit(){
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const phone=custPhone05(g('loy_rphone')); if(!phone){ toast('رقم جوال العميل غير صالح (05xxxxxxxx)'); return; }
+  const pts=parseInt(g('loy_rpts'),10); if(!(pts>0)){ toast('عدد النقاط غير صالح'); return; }
+  const oid=g('loy_rorder'); if(!oid){ toast(LX('الاستبدال يكون على طلب قائم لهذا العميل، احجز له طلبًا أولًا','Points are redeemed on an open job for this customer. Book a job first')); return; }
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  if(window._loyBusy) return; window._loyBusy=true;
+  const btn=document.getElementById('loy_rgo'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    const r=await sb.rpc('provider_loyalty_redeem',{ p_phone:phone, p_points:pts, p_order:oid, p_note:null });
+    if(r.error) throw r.error;
+    const d=r.data||{}; const disc=+d.discount||0;
+    const box=document.getElementById('loy_result');
+    const ro=ORDERS.find(x=>x.dbId===oid);
+    if(box) box.innerHTML=`<div class="pa-result"><div>${LX('خصم للعميل','Customer discount')}</div><b>${pvMoney(disc)}</b><div class="hint" style="margin:6px 0 0">${LX('على الطلب '+esc(ro?ro.id:'')+' · الرصيد الباقي '+ar(+d.points||0)+' نقطة', 'On job '+esc(ro?_west(ro.id):'')+'. Remaining balance '+(+d.points||0)+' points')}</div></div>`;
+    if(btn) btn.style.display='none';
+    toast(LX(`✅ خصم ${ar(disc)} ر.س`,`✅ Discount ${disc} SAR`)); await loadLoyalty(); loadOrders(); render();
+  }catch(e){ toast(srvMsgP(e)); if(btn){ btn.disabled=false; btn.textContent=TR('⭐ استبدل النقاط'); } }
+  finally{ window._loyBusy=false; }
+}
+/* إعدادات الولاء داخل ⚙️ الإعدادات (المالك فقط): تفعيل + ثلاث قيم بشرح بسيط، تُحفظ بـ update على khafet_providers */
+function loyaltySettings(){
+  if(!me||me.tech) return '';
+  const rate=(me.loyalty_pts_per_riyal!=null)?me.loyalty_pts_per_riyal:0.1, val=(me.loyalty_pt_value!=null)?me.loyalty_pt_value:0.5, min=(me.loyalty_min_redeem!=null)?me.loyalty_min_redeem:50;
+  return `
+      <div class="set-row" id="set_loy_row" onclick="toggleSet('loy')"><div class="sr-l"><span class="sr-ic">⭐</span> نقاط الولاء للعملاء</div><span class="sr-ar">›</span></div>
+      <div id="set_loy" class="set-body" style="display:none">
+        <div class="sw-row" style="padding-top:2px"><div class="sw-tx"><b>تفعيل نقاط الولاء</b><small>العميل يكسب نقاطًا مع كل طلب منجز ويستبدلها بخصم</small></div><button type="button" class="sw ${me.loyalty_enabled?'on':''}" id="loy_sw" onclick="this.classList.toggle('on')"></button></div>
+        <div class="hint" style="margin:10px 0 4px">نقطة لكل ريال من قيمة الطلب</div>
+        <input id="loy_rate" type="number" inputmode="decimal" step="0.01" min="0" max="10" value="${esc(rate)}" />
+        <div class="hint" style="margin:4px 0 0">مثال: 0.1 يعني كل 10 ريال = نقطة</div>
+        <div class="hint" style="margin:10px 0 4px">قيمة النقطة بالريال عند الاستبدال</div>
+        <input id="loy_val" type="number" inputmode="decimal" step="0.01" min="0" value="${esc(val)}" />
+        <div class="hint" style="margin:4px 0 0">مثال: 0.5 يعني 100 نقطة = 50 ريال خصم</div>
+        <div class="hint" style="margin:10px 0 4px">أقل عدد نقاط للاستبدال</div>
+        <input id="loy_min" type="number" inputmode="numeric" min="0" value="${esc(min)}" />
+        <button class="tbtn done" style="width:100%;margin-top:10px" onclick="saveLoyalty()">💾 حفظ إعدادات النقاط</button>
+      </div>`;
+}
+async function saveLoyalty(){
+  if(!me||me.tech) return;
+  const g=id=>((document.getElementById(id)||{}).value||'').trim();
+  const sw=document.getElementById('loy_sw'); const en=!!(sw&&sw.classList.contains('on'));
+  const patch={ loyalty_enabled:en, loyalty_pts_per_riyal:Math.max(0,Math.min(10,+g('loy_rate')||0)), loyalty_pt_value:Math.max(0,+g('loy_val')||0), loyalty_min_redeem:Math.max(0,parseInt(g('loy_min'),10)||0) };
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  try{ const r=await sb.from('khafet_providers').update(patch).eq('id',me.id); if(r.error) throw r.error; Object.assign(me,patch); toast('💾 حُفظت إعدادات النقاط'); render(); }
+  catch(e){ toast(srvMsgP(e)); }
+}
+
+/* ═══════════ الملاحظات (provider_notes · المالك فقط): إضافة، تثبيت، حذف، بحث ═══════════ */
+function noteItem(n){
+  return `<div class="pa-note ${n.pinned?'pin':''}" id="note-${esc(n.id)}"><p>${esc(n.text)}</p>
+    <div class="ft"><span>${n.pinned?'📍 ':''}${pvDate(String(n.updated_at||n.created_at||'').slice(0,10))}</span>
+      <button type="button" data-id="${esc(n.id)}" onclick="noteTogglePin(this.dataset.id)">${n.pinned?'إلغاء التثبيت':'📍 تثبيت'}</button>
+      <button type="button" data-id="${esc(n.id)}" onclick="noteDel(this.dataset.id)">🗑️ حذف</button></div></div>`;
+}
+function notesListHtml(){
+  const q=noteQ.trim().toLowerCase();
+  const list=PNOTES.filter(n=>!q||String(n.text||'').toLowerCase().includes(q)).sort((a,b)=>((b.pinned?1:0)-(a.pinned?1:0))||String(b.updated_at||'').localeCompare(String(a.updated_at||'')));
+  if(!list.length) return `<div class="hint" style="text-align:center;padding:20px">${PNOTES.length?'ما فيه نتائج':'ما فيه ملاحظات بعد · اكتب أول ملاحظة فوق.'}</div>`;
+  return list.map(noteItem).join('');
+}
+function noteSearch(v){ noteQ=v||''; const b=document.getElementById('noteList'); if(b) b.innerHTML=notesListHtml(); }
+function renderNotes(){
+  if(me.tech) return `<div class="empty"><div class="ico">✏️</div><h3>خاص بالمزوّد</h3></div>`;
+  return `<div class="mpanel"><h3>✏️ ملاحظاتي</h3>
+      <div class="hint">اكتب أي شيء تبي تتذكّره: أسعار موردين، أفكار، تنبيهات · ثبّت المهم ليظهر أولًا.</div>
+      <textarea id="note_text" rows="3" maxlength="2000" placeholder="اكتب ملاحظة..."></textarea>
+      <button class="tbtn done" style="width:100%;margin-top:8px" onclick="noteAdd()">➕ أضف الملاحظة</button>
+      ${FEAT_MISSING.notes?'<div class="hint" style="color:#B4560F;margin:8px 0 0">ميزة الملاحظات بانتظار تفعيلها في الخادم.</div>':''}
+    </div>
+    <input class="city-search" id="note_q" placeholder="🔍 ابحث في ملاحظاتك" value="${esc(noteQ)}" oninput="noteSearch(this.value)" autocomplete="off" />
+    <div id="noteList" style="margin-top:10px">${notesListHtml()}</div>`;
+}
+async function noteAdd(){
+  const el=document.getElementById('note_text'); const text=String((el&&el.value)||'').trim().slice(0,2000);
+  if(!text){ toast('اكتب نص الملاحظة'); return; }
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  try{ const r=await sb.from('provider_notes').insert({ provider_id:myPid(), text }).select().single(); if(r.error) throw r.error; PNOTES.unshift(r.data||{ id:'tmp'+Date.now(), text, pinned:false, created_at:new Date().toISOString(), updated_at:new Date().toISOString() }); if(el) el.value=''; render(); toast('✅ أُضيفت الملاحظة'); }
+  catch(e){ toast(srvMsgP(e)); }
+}
+async function noteTogglePin(id){
+  const n=PNOTES.find(x=>String(x.id)===String(id)); if(!n) return;
+  if(!cloudReady||!sb){ toast('لا يوجد اتصال بالخادم'); return; }
+  try{ const r=await sb.from('provider_notes').update({ pinned:!n.pinned }).eq('id',n.id); if(r.error) throw r.error; n.pinned=!n.pinned; n.updated_at=new Date().toISOString(); render(); toast(n.pinned?'📍 ثُبّتت الملاحظة':'أُلغي التثبيت'); }
+  catch(e){ toast(srvMsgP(e)); }
+}
+async function noteDel(id){
+  const n=PNOTES.find(x=>String(x.id)===String(id)); if(!n) return;
+  if(!confirm(LX('حذف الملاحظة؟','Delete this note?'))) return;
+  try{ const r=await sb.from('provider_notes').delete().eq('id',n.id); if(r.error) throw r.error; PNOTES=PNOTES.filter(x=>x.id!==n.id); render(); toast('حُذفت الملاحظة'); }
+  catch(e){ toast(srvMsgP(e)); }
+}
+
+/* ═══════════ أزرار سريعة من الرئيسية ═══════════ */
+function quickTask(){ tab='team'; render(); loadTasks(taskDate); setTimeout(function(){ const i=document.getElementById('task_title'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
+function quickCustomer(){ tab='customers'; render(); setTimeout(function(){ const i=document.getElementById('cu_name'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
+function quickNote(){ tab='notes'; render(); loadNotes(); setTimeout(function(){ const i=document.getElementById('note_text'); if(i){ i.scrollIntoView({block:'center'}); i.focus(); } },60); }
+
+/* ═══════════ المخزن عبر الوحدة المشتركة warehouse.js (نفس تجربة خافت):
+   المالك يقرأ ويعدّل provider_inventory كاملًا، وفنيّه الكمية فقط عبر المنظور provider_inventory_tech (بلا سعر الشراء)،
+   والصور في الدلو khafet-parts تحت pinv/<provider_id>/<item_id>.jpg، وسجل الحركة provider_stock_log ═══════════ */
+function pvWhSb(){
+  if(seeBuy()) return sb;
+  const strip=p=>{ if(!p||typeof p!=='object') return p; if(Array.isArray(p)) return p.map(strip); const q=Object.assign({},p); delete q.buy_price; return q; };
+  return { from:t=>{ const b=sb.from(t); return { update:p=>b.update(strip(p)), insert:p=>b.insert(strip(p)), upsert:p=>b.upsert(strip(p)), delete:()=>b.delete(), select:(...a)=>b.select(...a) }; }, rpc:(...a)=>sb.rpc(...a), storage:sb?sb.storage:null };
+}
+const WH_HOST={
+  L:(a,e)=>LX(a,e), num:n=>_uiEN()?String(n):ar(n), esc, toast,
+  inv:()=>PINV, setInv:v=>{ PINV=v; }, log:()=>PSTOCKLOG, sb:()=>pvWhSb(), cloud:()=>cloudReady,
+  get table(){ return pinvTable(); }, logTable:'provider_stock_log', extra:()=>({ provider_id:myPid() }),
+  loaded:()=>pinvLoaded,
+  saveQty:async it=>{ WH_HOST.cacheSave(); if(!it.id) return true; const r=await pvSave({ kind:'update', table:pinvTable(), id:it.id, patch:{ qty:it.qty } }); if(r.rejected){ toast(srvMsgP(r.error)); return false; } return !!r.ok; },
+  logStock:async(it,d,reason)=>{ const r=await pvSave({ kind:'insert', table:'provider_stock_log', row:{ provider_id:myPid(), item_id:it.id||null, item_name:it.name||'', delta:d, reason, actor:(me&&me.name)||'' } }); if(r.ok) loadStockLog(); return !!r.ok; },
+  afterChange:()=>render(), refreshLog:()=>{ const b=document.getElementById('pvStockLog'); if(b) b.innerHTML=renderPvStockLog(); },
+  upload:(id,f)=>pvUploadPartPhoto(id,f), clearImage:async id=>{ if(cloudReady&&sb){ try{ await sb.from('provider_inventory').update({ image_url:null }).eq('id',id); }catch(e){} } },
+  canEdit:()=>seeBuy(), needReason:()=>!!(me&&me.tech),
+  get org(){ if(!me) return { name:'', city:'', phone:'' }; return me.tech ? { name:me.providerName||'', city:myCities()[0]||'', phone:me.providerPhone||'' } : { name:me.name||'', city:myCities()[0]||'', phone:me.phone||'' }; },
+  imgOpts:()=>[], pickImg:()=>{}, linker:null,
+  // جولة الإصلاح 5 (البند 27): كاش مخزن المؤسسة لا يُكتب على الجهاز (فيه سعر الشراء، وما فيه كود يقرؤه)
+  cacheSave:()=>{ try{ localStorage.removeItem('kh_pinv_cache'); }catch(e){} }
+};
+async function pvUploadPartPhoto(itemId, file){
+  const pid=myPid(); if(!pid||!sb||!cloudReady) throw new Error('offline');
+  const blob=await whCompress(file,800,0.82);
+  const path='pinv/'+pid+'/'+itemId+'.jpg';
+  const { error }=await sb.storage.from('khafet-parts').upload(path, blob, { upsert:true, contentType:'image/jpeg' });
+  if(error) throw error;
+  const { data }=sb.storage.from('khafet-parts').getPublicUrl(path);
+  const url=data.publicUrl+'?v='+Date.now();
+  const r=await sb.from('provider_inventory').update({ image_url:url }).eq('id',itemId); if(r.error) throw r.error;
+  return url;
+}
+const PV_REASON_EN=[['صرف · فاتورة','Issued, invoice'],['صرف · طلب','Issued · job'],['صرف','Issued'],['إدخال','Stock in'],['شراء','Purchase'],['رصيد افتتاحي','Opening stock'],['تعديل الكمية','Qty adjusted'],['إضافة صنف','Item added'],['توريد','Stock in'],['فاتورة','invoice'],['طلب','job'],['عميل','customer']];
+function pvReasonTxt(r){ r=String(r||''); if(!_uiEN()) return r; PV_REASON_EN.forEach(([a,b])=>{ r=r.split(a).join(b); }); return r; }
+function renderPvStockLog(){
+  if(!PSTOCKLOG.length) return `<div class="sl-empty">ما فيه حركة مسجّلة بعد</div>`;
+  return PSTOCKLOG.map(e=>{ const dv=+e.delta||0, plus=dv>0; const d=new Date(e.created_at||Date.now()); const when=(isNaN(d)?'':(pvDate(dateISO(d))+' · '+fmtTime(d.getHours()*60+d.getMinutes())));
+    return `<div class="slog"><span class="sl-d ${plus?'in':'out'}">${plus?'+':'−'}${pvNum(Math.abs(dv))}</span><span class="sl-m"><b>${esc(e.item_name||'')}</b><span>${esc(pvReasonTxt(e.reason))} · 👤 ${esc(e.actor||'')}</span></span><span class="sl-t">${when}</span></div>`; }).join('');
+}
+
 /* ============================================================
    🌐 ترجمة الواجهة عربي/إنجليزي · طبقة تلقائية (نفس محرّك تطبيق العميل)
    ============================================================ */
 let UILANG = localStorage.getItem('khafet_uilang') || 'ar';
 const T_DICT = {
+  "فيه طلبات مفتوحة كثيرة بهذا الرقم، انتظر إنجازها":"Too many open orders for this number, wait for them to finish","وصلت للحد اليومي، حاول لاحقًا":"Daily limit reached, try later","هذا الطلب ليس من طلبات مؤسستك أو لا يناسب هذا الإجراء":"This order is not one of your business orders or does not fit this action",
+  "عميل خافت يقيّم من تطبيقه، ورابط التقييم لحجوزاتك الخاصة فقط":"Khafet customers rate from their app; rating links are for your own bookings only","ما يمكن الدفع من الرصيد لهذا الطلب الآن":"Balance cannot pay this order right now","المبلغ أكبر من الحد المسموح للدفع من الرصيد":"The amount exceeds the balance payment limit","رصيد العميل لا يكفي":"Customer balance is not enough","ما فيه مبلغ متبقي على الطلب":"Nothing is due on this order",
+  "اختر طلبًا قائمًا لنفس العميل عليه مبلغ متبقي":"Pick an open order for the same customer with an amount due","بطاقة الزيارات غير مفعّلة، فعّلها من الإعدادات":"The visit card is off, turn it on in Settings","ما فيه مكافأة متاحة لهذا العميل":"No reward is available for this customer","زيارة هذا الطلب مسجّلة من قبل":"This order visit is already recorded",
+  "الباقة غير موجودة لهذا العميل":"Package not found for this customer","الباقة منتهية":"The package has expired","الباقة مستهلكة أو موقوفة":"The package is used up or inactive","استُهلكت زيارة على هذا الطلب من قبل":"A visit was already used on this order",
+  "رقم جوال العميل غير صحيح":"Invalid customer phone number","وصلت للحد اليومي للحجوزات، حاول لاحقًا":"Daily booking limit reached, try later","ما يمكن إرسال طلب الانضمام، تواصل مع الإدارة":"The join request cannot be sent, contact management",
   // العلامة والهيدر والتنقّل
   "خافِت":"Khafet","بوابة المزوّد":"Provider Portal","خافِت | بوابة المزوّد":"Khafet | Provider Portal",
   "الرئيسية":"Home","‹ الرئيسية":"‹ Home","👤 حسابي":"👤 Account","حسابي":"Account","خروج":"Sign out","🚪 تسجيل الخروج":"🚪 Sign out","دخول":"Sign in",
@@ -2165,10 +3197,10 @@ const T_DICT = {
   "فاتورة":"Invoice","حفظ وإرسال للعميل":"Save & send to customer","ما فيه فواتير بعد · تظهر بعد إنجاز الطلبات وإصدار فواتيرها.":"No invoices yet. They show after you finish jobs and issue invoices.",
   "🖨️ طباعة":"🖨️ Print","⤓ تصدير Excel":"⤓ Export Excel","التاريخ":"Date",
   // فريقي
-  "🧑‍🔧 فني":"🧑‍🔧 Technician","➕ أضف":"➕ Add","➕ أضف تذكير":"➕ Add reminder","اكتب كود الفني أو جواله":"Enter technician code or phone","✅ أُضيف الفني:":"✅ Technician added:",
+  "🧑‍🔧 فني":"🧑‍🔧 Technician","➕ أضف":"➕ Add","➕ أضف تذكير":"➕ Add reminder","اكتب كود الفني":"Enter the technician code","✅ أُضيف الفني:":"✅ Technician added:",
   "إزالة الفني":"Remove technician","إزالة":"Remove","تمت الإزالة":"Removed","الفني مو من فريقك":"Technician isn't in your team","ما أضفت فنيّين بعد.":"You haven't added technicians yet.",
   "صلاحياته:":"Permissions:","💾 حُدّثت الصلاحيات":"💾 Permissions updated","📍 مدينته:":"📍 Their city:","كوده أو رقم جواله":"Their code or phone","من فريقك؟":"From your team?",
-  "✅ أنت في فريق":"✅ You're in the team of","❌ الكود أو الجوال غير صحيح · تأكّد أنه سجّل كفني":"❌ Wrong code or phone. Make sure they signed up as a technician","تعذّرت الإضافة":"Couldn't add","تعذّرت الإضافة، حاول ثانية":"Couldn't add, try again","الصفة":"Role",
+  "✅ أنت في فريق":"✅ You're in the team of","❌ الكود غير صحيح · تأكّد أنه سجّل كفني":"❌ Wrong code. Make sure they signed up as a technician","تعذّرت الإضافة":"Couldn't add","تعذّرت الإضافة، حاول ثانية":"Couldn't add, try again","الصفة":"Role",
   // المدن
   "📍 مدن الخدمة":"📍 Service cities","📍 كل مدنك":"📍 All your cities","كل مدنك":"All your cities","مدنك المختارة:":"Your selected cities:",
   "ابحث عن مدينتك وأضفها · أي طلب من مدنك المختارة يوصلك.":"Search for your city and add it. You get every job from the cities you pick.","ابحث وأضف مدينة فوق 👆":"Search and add a city above 👆",
@@ -2206,7 +3238,7 @@ const T_DICT = {
   // عناوين البطاقات والحالات الفارغة
   "المخزن":"Stock","الفواتير":"Invoices","مسار اليوم":"Today's route","مواقع طلباتك":"Where your jobs are","تقييماتي":"My ratings","رأي عملائك":"What your customers say",
   "لوحة الأرقام":"Numbers board","أرباحك وأرقامك":"Your profits & numbers","تذكيرات الصيانة":"Maintenance reminders","دخل متكرّر":"Recurring income","طلباتي":"My jobs","فتح ›":"Open ›",
-  "لا طلبات في هذا اليوم":"No jobs on this day","لا توجد طلبات متاحة في مدن خدمتك حالياً":"No available jobs in your service cities right now",
+  "لا طلبات في هذا اليوم":"No jobs on this day","أول ما يوصل طلب جديد في تخصصك يوصلك إشعار، ولفنيّيك المسجّلين عندك.":"As soon as a new job in your trade arrives, you and your registered technicians get a notification.","التطبيق بيتم الإعلان عنه ونشره للعملاء قريبًا.":"The app will be announced and released to customers soon.","لا توجد طلبات متاحة في مدن خدمتك حالياً":"No available jobs in your service cities right now",
   "حدّد مدن خدمتك من الإدارة لتصلك الطلبات":"Set your service cities in Management to get jobs","حدّد مدن خدمتك من «حسابي» لتصلك الطلبات":"Set your service cities in Account to get jobs","ما قبلت طلبات بعد":"You haven't accepted any jobs yet",
   "ذكّر عملاءك بالصيانة القادمة (مثال: صيانة المكيف بعد ٦ شهور) · دخل متكرّر لك.":"Remind your customers about upcoming maintenance (like AC service after 6 months). Recurring income for you.",
   "اسم الصنف":"Item name","الكمية":"Qty","سعر الشراء":"Buy price","سعر البيع":"Sell price","ربح/وحدة":"Profit/unit","النسبة٪":"Margin %","قيمة البيع":"Sale value","الصنف":"Item","اكتب اسم الصنف":"Enter item name","✅ أُضيف الصنف":"✅ Item added",
@@ -2253,14 +3285,82 @@ const T_DICT = {
   "كلمة المرور الجديدة":"New password","أعد كتابتها":"Type it again","كود التأكيد":"Confirmation code","تأكيد وتغيير كلمة المرور":"Confirm and change password",
   "أرسلنا كود تأكيد على جوالك":"We sent a code to your phone","تعذّر إرسال الكود، حاول بعد قليل":"Couldn't send the code, try again shortly","اكتب كود التأكيد":"Enter the confirmation code",
   "الجديدة لازم تكون مختلفة عن القديمة":"The new password must be different from the old one","الكود غير صحيح أو انتهى":"Wrong or expired code","تعذّر حذف الحساب · تواصل مع الدعم":"Couldn't delete the account. Contact support",
+  // تغيير رقم الجوال
+  "تغيير رقم الجوال":"Change mobile number","الرقم الحالي:":"Current number:","رقم الجوال الجديد (05xxxxxxxx)":"New mobile number (05xxxxxxxx)",
+  "نرسل رمز تأكيد للرقم الجديد، وبعد التأكيد يصير هو رقم دخولك.":"We send a confirmation code to the new number. After confirming, it becomes your sign-in number.",
+  "نرسل رمز تأكيد للرقم الجديد، وبعد التأكيد يصير هو رقم دخولك ورقم تواصل العملاء معك.":"We send a confirmation code to the new number. After confirming, it becomes your sign-in number and the number customers use to reach you.",
+  "أرسل رمز التأكيد":"Send confirmation code","أرسلنا رمز تأكيد إلى":"We sent a confirmation code to","رمز التأكيد":"Confirmation code","تأكيد الرقم الجديد":"Confirm new number","لم يصلك الرمز؟ إعادة الإرسال":"No code? Resend",
+  "أرسلنا رمز تأكيد للرقم الجديد":"We sent a code to the new number","أُعيد إرسال الرمز":"Code sent again","اكتب رمز التأكيد":"Enter the confirmation code","ابدأ من جديد بكتابة الرقم":"Start again by entering the number",
+  "تم تغيير رقمك":"Your number was changed","تم تحديث بياناتك بالرقم الجديد":"Your data was updated with the new number","تعذّر تحديث بياناتك بالرقم الجديد، أعد فتح التطبيق":"Could not update your data with the new number, reopen the app",
+  "هذا هو رقمك الحالي":"This is already your current number","هذا الرقم مستخدم في حساب آخر":"This number is used by another account","ما يمكن استخدام هذا الرقم":"This number cannot be used",
+  "حساب المراجعة ما يغيّر رقمه":"The review account cannot change its number","محاولات كثيرة، حاول بعد ساعة":"Too many attempts, try again in an hour","تجاوزت حد الإرسال، حاول بعد شوي":"Sending limit reached, try again shortly",
+  "الرمز غير صحيح أو انتهى":"Wrong or expired code","الحساب بلا جوال موثّق":"This account has no verified mobile number","ما اكتمل التحقق من الرقم الجديد":"The new number was not verified yet",
   // الأرقام، الفريق، المخزن، التذكيرات، الحجز، المدن
   "المصاريف الشهرية (ر.س)":"Monthly costs (SAR)","رقمي المهم (اسمه)":"My key number (its name)","قيمته":"Value",
-  "كود انضمام فريقك":"Your team join code","نسخ":"Copy","كود جديد عشوائي":"New random code","كود الفني أو جواله":"Technician code or phone","اعتماد":"Approve","رفض":"Reject","تم الرفض":"Rejected","تعذّر":"Something went wrong",
+  "كود انضمام فريقك":"Your team join code","نسخ":"Copy","كود جديد عشوائي":"New random code","كود الفني":"Technician code","اعتماد":"Approve","رفض":"Reject","تم الرفض":"Rejected","تعذّر":"Something went wrong",
   "أعطِ هذا الكود لعمالك. الفني يسجّل في خافت شركاء، يكتب الكود، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم.":"Give this code to your workers. The technician signs up in Khafet Partner, enters the code, and shows up here for you to approve. Change it any time and the old one stops working.",
   "كمية":"Qty","تعذّر التعديل":"Couldn't update","حُذف":"Deleted","تعذّر الحذف":"Couldn't delete",
   "اسم العميل":"Customer name","الخدمة (صيانة مكيف، تسليك...)":"Service (AC service, drain cleaning...)","أُضيف التذكير":"Reminder added","أُضيف العميل":"Customer added",
   "جوال العميل":"Customer phone","المدينة":"City","الخدمة / المشكلة":"Service or problem",
   "🔍 ابحث وأضف مدينة…":"🔍 Search and add a city…","حُفظت مدن الخدمة":"Service cities saved",
+  // طلب الإلغاء (الإدارة تقرّر) ورسائل حرّاس القاعدة
+  "طلب إلغاء":"Request cancellation","طلب إلغاء الطلب":"Cancellation request","اختر السبب · الإدارة تقرّر قبول الإلغاء أو رفضه":"Pick a reason. Management decides whether to cancel","تفاصيل إضافية (اختياري)":"More details (optional)","أرسل طلب الإلغاء":"Send cancellation request",
+  "وصل طلب الإلغاء للإدارة، بانتظار الموافقة":"Cancellation request sent to management, awaiting approval","بانتظار موافقة الإدارة على الإلغاء":"Awaiting management approval to cancel","الإدارة رفضت الإلغاء":"Management declined the cancellation","اختر سببًا أو اكتب السبب":"Pick or write a reason",
+  "فيه طلب إلغاء لهذا الطلب قيد المراجعة":"A cancellation request for this job is already under review","الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب":"Cancelling needs management approval, send a cancellation request with the reason","حدّث التطبيق من المتجر عشان تكمل":"Update the app from the store to continue","فيه مبلغ متبقي على العميل":"The customer still owes money","ما انحفظ، حاول مرة ثانية":"Not saved, try again",
+  "المشكلة تحتاج قطع غيار غير متوفرة حالياً":"The job needs spare parts not available now","المشكلة خارج تخصّصي":"The problem is outside my specialty","الموقع خارج نطاق تغطيتي":"The location is outside my coverage area","الوقت المحجوز غير كافٍ لحجم العمل":"The booked time is not enough for the job","ظرف طارئ منعني من الحضور":"An emergency prevented me from attending",
+  // الفاتورة v2 ورسائل رفضها
+  "محجوز":"Booked","أجرة الحجز":"Booking fee","الإضافات":"Extras","السعر من الخادم":"Server price","أضف بندًا واحدًا على الأقل":"Add at least one item",
+  "المبالغ تقديرية بأسعار الخادم، والمبلغ المعتمد يظهر على الطلب بعد الحفظ":"Amounts are estimates at server prices; the final amount shows on the job after saving",
+  "صيغة الفاتورة قديمة، حدّث التطبيق ثم أعد الحفظ":"Old invoice format, update the app and save again","قطعة من المستودع بلا سعر بيع، اطلب من الإدارة تسعيرها":"A stock part has no sell price, ask management to price it",
+  "مبلغ البنود الحرة يتجاوز الحد المسموح، تواصل مع الإدارة":"Free items exceed the allowed limit, contact management","أصدر الفاتورة قبل إنهاء الطلب":"Issue the invoice before finishing the job","الطلب منتهٍ أو ملغى ولا يمكن طلب إلغائه":"The job is already finished or cancelled and cannot be cancelled","هذا الطلب مسند لفني آخر":"This job is assigned to another technician","سجّل دخولك ثم أعد المحاولة":"Sign in and try again",
+  "اكتب سبب الإلغاء (3 أحرف على الأقل)":"Write the cancellation reason (at least 3 characters)","تم البت في طلب الإلغاء هذا من قبل":"This cancellation request was already decided","ما يمكن تغيير حالة الطلب بهذا الشكل":"The job status cannot be changed this way",
+  "رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة":"Card machine receipt number or last 4 digits of the card","اكتب رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة":"Enter the card machine receipt number or the last 4 digits of the card","المبلغ أكبر من حد الدفع بالجهاز، تواصل مع الإدارة":"The amount is above the card machine limit, contact management","الطلب ملغى":"The job is cancelled",
+  "الطلب خارج تخصص مؤسستك":"This job is outside your business's specialties","حساب المراجعة يقبل الطلبات التجريبية فقط":"The review account can only accept demo jobs","ما أضافك مزوّد بعد":"No provider has added you yet","مزوّدك ما أعطاك صلاحية قبول الطلبات":"Your provider has not allowed you to accept jobs","الطلب معروض على مزوّد آخر أولًا، حاول بعد قليل":"This job is offered to another provider first, try again shortly",
+  "تعديل بيانات الصنف وأسعاره وإضافته وحذفه من صلاحية الإدارة، والفني يعدّل الكمية فقط":"Item details, prices, adding and deleting are for management only; technicians change quantities only","الصنف غير موجود في المستودع":"This item is not in the warehouse","ما عندك صلاحية لهذا الإجراء":"You are not allowed to do this",
+  "تغيير التخصصات أو السجل التجاري بعد الاعتماد يتم عبر الإدارة":"Changing specialties or the commercial registration after approval is done through management",
+  "هذا الفني موقوف أو مرفوض من الإدارة":"This technician is suspended or rejected by management","الفني غير متاح للإضافة":"This technician is not available to add","لازم تُعتمد وثائق الفني أولًا":"The technician's documents must be approved first",
+  // تطبيق المزوّد المستقل: التنقل والرئيسية
+  "الجدول":"Schedule","الفريق":"Team","العملاء":"Customers","مهامي":"My tasks","الملاحظات":"Notes","الإعدادات":"Settings","بياناتي ومدن الخدمة":"My details and service cities","كلمة المرور والنقاط والتنبيهات":"Password, points and alerts",
+  "طلبات خافت توصلك هنا تلقائيًا أول ما تصير في مدنك وتخصصك":"Khafet jobs arrive here automatically as soon as they appear in your cities and trade",
+  "➕ حجز جديد":"➕ New booking","📝 مهمة جديدة":"📝 New task","👤 إضافة عميل":"👤 Add customer","⭐ إضافة نقاط":"⭐ Add points","✏️ ملاحظة":"✏️ Note",
+  "مواعيد اليوم":"Today's appointments","الجدول ›":"Schedule ›","ما فيه مواعيد اليوم":"No appointments today","مهام اليوم":"Today's tasks","عرض ›":"View ›","أضف مهمة ›":"Add a task ›",
+  "ما فيه مهام اليوم":"No tasks today","ما فيه مهام اليوم · أضف مهام لفريقك من «الفريق»":"No tasks today. Add tasks for your team from Team","هذا الشهر":"This month","لوحة الأرقام ›":"Numbers board ›",
+  "منجز هذا الشهر":"Completed this month","إيراد الشهر":"Month revenue","عملاء جدد":"New customers","نقاط ولاء مصروفة":"Loyalty points redeemed","الكل ›":"All ›","الطلبات المتاحة":"Available jobs",
+  // الجدول
+  "يومي":"Day","أسبوعي":"Week","كل الفنيين":"All technicians","بدون فني":"Unassigned","اليوم":"Today","ما فيه مواعيد في هذا اليوم":"No appointments on this day","حجز خاص":"Own booking","ملغى":"Cancelled",
+  // المهام
+  "مهام اليوم للفريق":"Team tasks for today","المهام اللي حدّدها لك صاحب المؤسسة · اضغط ✓ عند إنجازها.":"Tasks set by your employer. Tap ✓ when done.",
+  "اكتب مهام كل يوم لفني معيّن أو للكل (مثال: السبت: جرد المخزن) · الفني يعلّم ✓ عند الإنجاز.":"Write each day's tasks for one technician or everyone (e.g. Saturday: stock count). Technicians tick ✓ when done.",
+  "ميزة المهام بانتظار تفعيلها في الخادم.":"The tasks feature is waiting to be enabled on the server.","المهمة (مثال: تنظيف الورشة وترتيب العدة)":"Task (e.g. clean the workshop and sort the tools)","للكل":"Everyone",
+  "بدون تكرار":"No repeat","يوميًا لمدة ٤ أسابيع":"Daily for 4 weeks","أسبوعيًا لمدة ٤ أسابيع":"Weekly for 4 weeks","ملاحظة (اختياري)":"Note (optional)","➕ أضف المهمة":"➕ Add task","ما فيه مهام في هذا اليوم":"No tasks on this day",
+  "اكتب عنوان المهمة":"Enter the task title","أُضيفت المهمة":"Task added","تم":"Done","رجعت المهمة غير منجزة":"Task marked as not done","حُذفت المهمة":"Task deleted","إرجاع المهمة":"Undo",
+  // العملاء وبطاقة العميل
+  "👥 عملاء الفريق":"👥 Team customers","👥 عملاء المزوّد":"👥 Provider customers","سجل عملائك · مشترك بينك وبين فنيّينك · اضغط العميل لعرض طلباته ونقاطه.":"Your customer list, shared with your technicians. Tap a customer to see their jobs and points.",
+  "سجل عملائك · مشترك بينك وبين زملائك · اضغط العميل لعرض طلباته ونقاطه.":"Your customer list, shared with your colleagues. Tap a customer to see their jobs and points.","🔍 ابحث بالاسم أو الجوال":"🔍 Search by name or phone",
+  "طلباته":"Jobs","إجمالي صرفه":"Total spent","نقاطه":"Points","📝 ملاحظة":"📝 Note","ملاحظة عن العميل (العنوان التفصيلي، تفضيلاته...)":"Note about the customer (full address, preferences...)","💾 حفظ الملاحظة":"💾 Save note","💾 حُفظت الملاحظة":"💾 Note saved",
+  "⭐ نقاط الولاء":"⭐ Loyalty points","أضف نقاط طلب منجز (الخادم يحسبها من قيمة الطلب):":"Add points for a completed job (the server computes them from the job value):","➕ إضافة نقاط":"➕ Add points","⭐ استبدال بخصم":"⭐ Redeem for a discount","ما فيه حركة نقاط بعد.":"No points activity yet.",
+  "نظام النقاط غير مفعّل · فعّله من":"Points are off. Enable them in","ليكسب عملاؤك نقاطًا مع كل طلب منجز.":"so your customers earn points with every completed job.","🧾 طلباته":"🧾 Jobs","ما فيه طلبات مسجّلة بهذا الجوال بعد.":"No jobs recorded for this phone yet.","➕ حجز لهذا العميل":"➕ Book for this customer",
+  "نقاط طلب منجز":"Completed job points","إضافة يدوية":"Manual addition","استبدال بخصم":"Redeemed for a discount","تصحيح رصيد":"Balance adjustment",
+  "جوال العميل (05xxxxxxxx)":"Customer phone (05xxxxxxxx)","اسم العميل (اختياري)":"Customer name (optional)","عدد النقاط":"Points","هدية / إضافة يدوية":"Gift / manual addition","السبب (اختياري)":"Reason (optional)",
+  "نقاط الطلبات المنجزة تنضاف تلقائيًا · «تصحيح رصيد» يقبل رقمًا سالبًا للخصم.":"Completed job points are added automatically. Balance adjustment accepts a negative number to deduct.","➕ أضف النقاط":"➕ Add points",
+  "رقم جوال العميل غير صالح (05xxxxxxxx)":"Invalid customer phone (05xxxxxxxx)","عدد النقاط غير صالح":"Invalid number of points","نظام النقاط غير مفعّل، فعّله من الإعدادات":"Points are not enabled, enable them in Settings",
+  "⭐ استبدال نقاط بخصم":"⭐ Redeem points for a discount","قيمة النقطة":"Point value","أقل عدد للاستبدال":"Minimum to redeem","عدد النقاط للاستبدال":"Points to redeem","⭐ استبدل النقاط":"⭐ Redeem points","اكتبه في فاتورة الطلب كبند خصم حر":"Write it on the job invoice as a free discount line","الرصيد الباقي":"Remaining balance",
+  // إعدادات الولاء
+  "نقاط الولاء للعملاء":"Customer loyalty points","تفعيل نقاط الولاء":"Enable loyalty points","العميل يكسب نقاطًا مع كل طلب منجز ويستبدلها بخصم":"Customers earn points with every completed job and redeem them for a discount",
+  "نقطة لكل ريال من قيمة الطلب":"Points per riyal of the job value","مثال: 0.1 يعني كل 10 ريال = نقطة":"Example: 0.1 means every 10 SAR = 1 point","قيمة النقطة بالريال عند الاستبدال":"Point value in SAR when redeemed","مثال: 0.5 يعني 100 نقطة = 50 ريال خصم":"Example: 0.5 means 100 points = 50 SAR discount",
+  "أقل عدد نقاط للاستبدال":"Minimum points to redeem","💾 حفظ إعدادات النقاط":"💾 Save points settings","💾 حُفظت إعدادات النقاط":"💾 Points settings saved",
+  // الملاحظات
+  "✏️ ملاحظاتي":"✏️ My notes","اكتب أي شيء تبي تتذكّره: أسعار موردين، أفكار، تنبيهات · ثبّت المهم ليظهر أولًا.":"Write anything you want to remember: supplier prices, ideas, reminders. Pin the important ones to show first.",
+  "اكتب ملاحظة...":"Write a note...","➕ أضف الملاحظة":"➕ Add note","ميزة الملاحظات بانتظار تفعيلها في الخادم.":"The notes feature is waiting to be enabled on the server.","🔍 ابحث في ملاحظاتك":"🔍 Search your notes",
+  "ما فيه ملاحظات بعد · اكتب أول ملاحظة فوق.":"No notes yet. Write the first one above.","إلغاء التثبيت":"Unpin","📍 تثبيت":"📍 Pin","🗑️ حذف":"🗑️ Delete","اكتب نص الملاحظة":"Write the note text","أُضيفت الملاحظة":"Note added","ثُبّتت الملاحظة":"Note pinned","أُلغي التثبيت":"Unpinned","حُذفت الملاحظة":"Note deleted",
+  // المخزن (الوحدة المشتركة) والحجز
+  "📋 سجل الحركة":"📋 Movement log","كل زيادة ونقص باسم صاحبه":"Every change, logged by name","ما فيه حركة مسجّلة بعد":"No movements yet","أُرسلت التغييرات المعلّقة":"Pending changes sent","🛒 طلب شراء":"🛒 Purchase order","اختر الأصناف واطلع PDF":"Pick items, get a PDF",
+  "اسم العميل (اختر من عملائك أو اكتب اسمًا جديدًا)":"Customer name (pick from your customers or type a new one)","🔧 خدمة من الكتالوج (اختياري)":"🔧 Service from the catalog (optional)","📝 خدمة أخرى بسعر":"📝 Other service with a price","اسم الخدمة":"Service name","ملاحظة / المشكلة":"Note / problem",
+  // رسائل أكواد الخادم الجديدة
+  "تعديل المهام من صلاحية صاحب المؤسسة، الفني يعلّم الإنجاز فقط":"Only the business owner edits tasks; technicians only mark them done","هذا الفني ليس من فريق مؤسستك":"This technician is not in your team","اكتب عنوان المهمة (حتى 200 حرف)":"Enter the task title (up to 200 characters)","تاريخ المهمة غير صالح":"Invalid task date","نوع التكرار غير معروف":"Unknown repeat type",
+  "الطلب غير موجود أو ليس من طلبات مؤسستك أو لم يكتمل":"The job does not exist, is not one of your business jobs, or is not completed","نقاط هذا الطلب مضافة من قبل":"Points for this job were already added","سبب الإضافة غير معروف":"Unknown reason","الحد الأدنى للاستبدال {detail} نقطة":"Minimum to redeem is {detail} points","رصيد النقاط لا يكفي (الرصيد {detail})":"Not enough points (balance {detail})",
+  "اكتب نص الملاحظة (حتى 2000 حرف)":"Write the note text (up to 2000 characters)","وصلت للحد الأقصى من الملاحظات (500)":"You reached the maximum number of notes (500)","هذه الميزة بانتظار تفعيلها في الخادم":"This feature is waiting to be enabled on the server",
+  "التاريخ خارج المدى المسموح":"Date outside the allowed range","الفني مو من فريقك":"Technician isn't in your team",
   // الوحدات
   "ر.س":"SAR","إلغاء":"Cancel","يوم":"day","دقيقة":"min"
 };

@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<!-- سياسة أمان المحتوى: نموذج عام، السكربتات من الملف نفسه فقط والاتصال بخادم Supabase فقط -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://zulogtqxbuqxmdmjpzqj.supabase.co; frame-src 'none'" />
 <meta name="robots" content="noindex" />
 <meta name="theme-color" content="#F5C518" />
 <title>انضم إلى خافت</title>
@@ -372,17 +374,18 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px 
     <input class="hp" id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
 
     <div class="pane on" id="p1">
-      <div class="fld"><span class="lb" data-i="typeQ">أنت؟</span>
+      <div class="fld" hidden><span class="lb" data-i="typeQ">أنت؟</span>
         <div class="seg">
           <button type="button" class="opt on" id="optTech"><i>🧰</i><b data-i="tTech">فني مستقل</b><small data-i="tTechS">أشتغل بنفسي</small></button>
           <button type="button" class="opt" id="optCo"><i>🏢</i><b data-i="tCo">مؤسسة أو شركة</b><small data-i="tCoS">عندي فريق</small></button>
         </div>
       </div>
       <div class="fld" id="fName"><label for="name" data-i="name">الاسم</label><input id="name" autocomplete="name" data-ip="namePh" placeholder="اسمك الثنائي"><div class="err" data-i="eName">اكتب اسمك</div></div>
-      <div class="two" id="coFields" hidden>
+      <div class="two" id="coFields">
         <div class="fld" id="fCompany"><label for="company" data-i="company">اسم المؤسسة</label><input id="company" autocomplete="organization"><div class="err" data-i="eCompany">اكتب اسم المؤسسة</div></div>
         <div class="fld"><label for="team" data-i="team">عدد الفنيين</label><select id="team"><option value="1">1</option><option value="2-3">2 · 3</option><option value="4-6">4 · 6</option><option value="7-10">7 · 10</option><option value="10+" data-i="team10">أكثر من 10</option></select></div>
       </div>
+      <div class="fld" id="fCr"><label for="cr" data-i="cr">رقم السجل التجاري</label><input id="cr" inputmode="numeric" maxlength="10" autocomplete="off" data-ip="crPh" placeholder="10 أرقام"><div class="err" data-i="eCr">اكتب رقم السجل التجاري (10 أرقام)</div><small style="display:block;margin-top:6px;color:#8b7f72;font-size:.82rem;line-height:1.6" data-i="crHint">التسجيل للمؤسسات المسجّلة فقط، وتُطلب صورة السجل التجاري عند إنشاء الحساب.</small></div>
       <div class="fld" id="fPhone"><label for="phone" data-i="phone">رقم الجوال</label><input id="phone" type="tel" inputmode="tel" dir="ltr" autocomplete="tel" placeholder="05xxxxxxxx"><span class="hint" data-i="phoneH">نتواصل معك عليه بواتساب أو اتصال.</span><div class="err" data-i="ePhone">رقم الجوال لازم يكون سعودي 05xxxxxxxx</div></div>
       <div class="fld" id="fCities"><span class="lb" data-i="cities">المدن اللي تخدمها <span class="hint" data-i="citiesH">اختر كل اللي يناسبك</span></span><div class="chips" id="cityChips"></div><input id="cityOther" style="margin-top:8px" data-ip="cityOtherPh" placeholder="مدينة أخرى (اختياري)"><div class="err" data-i="eCity">اختر مدينة واحدة على الأقل</div></div>
     </div>
@@ -462,7 +465,7 @@ fTag:['طلب الانضمام','Join request'], fH:['سجّل خدماتك','Re
 st1:['عنك','About you'], st2:['خدماتك وأسعارك','Services and prices'], st3:['الضمان وأرسل','Warranty and send'],
 typeQ:['أنت؟','You are'], tTech:['فني مستقل','Independent technician'], tTechS:['أشتغل بنفسي','I work on my own'], tCo:['مؤسسة أو شركة','Company'], tCoS:['عندي فريق','I have a team'],
 name:['الاسم','Name'], namePh:['اسمك الثنائي','Your full name'], eName:['اكتب اسمك','Enter your name'],
-company:['اسم المؤسسة','Company name'], eCompany:['اكتب اسم المؤسسة','Enter the company name'], team:['عدد الفنيين','Number of technicians'], team10:['أكثر من 10','More than 10'],
+cr:['رقم السجل التجاري','Commercial registration number'], crPh:['10 أرقام','10 digits'], eCr:['اكتب رقم السجل التجاري (10 أرقام)','Enter the 10-digit CR number'], crHint:['التسجيل للمؤسسات المسجّلة فقط، وتُطلب صورة السجل التجاري عند إنشاء الحساب.','Registered companies only. The CR document is requested when the account is created.'], sCr:['السجل التجاري','CR number'], company:['اسم المؤسسة','Company name'], eCompany:['اكتب اسم المؤسسة','Enter the company name'], team:['عدد الفنيين','Number of technicians'], team10:['أكثر من 10','More than 10'],
 phone:['رقم الجوال','Mobile number'], phoneH:['نتواصل معك عليه بواتساب أو اتصال.','We contact you on it by WhatsApp or call.'], ePhone:['رقم الجوال لازم يكون سعودي 05xxxxxxxx','Enter a Saudi mobile number 05xxxxxxxx'],
 cities:['المدن اللي تخدمها','Cities you serve'], citiesH:['اختر كل اللي يناسبك','Pick all that apply'], cityOtherPh:['مدينة أخرى (اختياري)','Another city (optional)'], eCity:['اختر مدينة واحدة على الأقل','Pick at least one city'],
 catsQ:['تخصصاتك','Your specialties'], catsH:['اختر تخصص أو أكثر، وبعدها حدد خدماتك وأسعارك','Pick one or more, then set your services and prices'], eCat:['اختر تخصصًا واحدًا على الأقل','Pick at least one specialty'], catsLoad:['جاري تحميل التخصصات…','Loading specialties…'],
@@ -543,7 +546,7 @@ function loadCats(){
     catsReady=true; renderChips(); renderSvc();
   });
 }
-var S={type:'tech',cities:{},cats:{},warranty:'',step:1,ref:null};
+var S={type:'co',cities:{},cats:{},warranty:'',step:1,ref:null};
 var $=function(id){return document.getElementById(id);};
 function t(k){var v=T[k];if(!v)return k;if(L==='ar')return v[0];var x=TX[k];if(x&&LIDX[L]!=null&&x[LIDX[L]])return x[LIDX[L]];return v[1];}
 function nm(o){if(L==='ar')return o.ar;if(LIDX[L]!=null){var k=o.k||o.id,src=TXC[k]||TXW[k]||TXK[k];if(src&&src[LIDX[L]])return src[LIDX[L]];}return o.en;}
@@ -619,6 +622,7 @@ function renderChips(){
 function setType(tp){S.type=tp;$('optTech').classList.toggle('on',tp==='tech');$('optCo').classList.toggle('on',tp==='co');$('coFields').hidden=tp!=='co';}
 $('optTech').onclick=function(){setType('tech');};
 $('optCo').onclick=function(){setType('co');};
+setType('co');   /* مؤسسات فقط: ما عاد فيه فني مستقل */
 
 /* ── الخدمات ── */
 function renderSvc(){
@@ -627,19 +631,19 @@ function renderSvc(){
     var st=S.cats[c.id]; if(!st)return; if(st===true){st=S.cats[c.id]={rows:[],name:''};}
     var blk=document.createElement('div');blk.className='svcblk';
     var have={};st.rows.forEach(function(r){have[r.name]=1;});
-    var h='<h4><span>'+c.ic+'</span>'+esc(nm(c))+'<small>'+st.rows.length+' '+t('nSvc')+'</small></h4>';
+    var h='<h4><span>'+esc(c.ic)+'</span>'+esc(nm(c))+'<small>'+st.rows.length+' '+t('nSvc')+'</small></h4>';
     if(c.id==='other')h+='<div class="oth"><input class="othName" data-cat="other" placeholder="'+esc(t('othCatPh'))+'" value="'+esc(st.name||'')+'"></div>';
     h+='<p class="hint" style="margin:0 0 8px">'+esc(t('sugH'))+'</p><div class="sug">';
     c.s.forEach(function(s,i){var label=L==='ar'?s[0]:s[1];
-      h+='<button type="button" data-cat="'+c.id+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+(s[2]?' <b>'+s[2]+'</b>':'')+'</button>';});
+      h+='<button type="button" data-cat="'+esc(c.id)+'" data-sug="'+i+'" '+(have[s[0]]?'disabled':'')+'>+ '+esc(label)+(s[2]?' <b>'+esc(s[2])+'</b>':'')+'</button>';});
     h+='</div><div class="rows">';
     st.rows.forEach(function(r,i){
-      h+='<div class="row"><input data-cat="'+c.id+'" data-i2="'+i+'" data-f="name" placeholder="'+esc(t('svcPh'))+'" value="'+esc(r.name)+'">'
-        +'<input data-cat="'+c.id+'" data-i2="'+i+'" data-f="price" type="number" min="0" inputmode="numeric" dir="ltr" placeholder="'+esc(t('pricePh'))+'" value="'+esc(r.price)+'" '+(r.unit==='inspect'?'disabled':'')+'>'
-        +'<select data-cat="'+c.id+'" data-i2="'+i+'" data-f="unit">'+UNITS.map(function(u){return '<option value="'+u[0]+'" '+(r.unit===u[0]?'selected':'')+'>'+esc(t(u[1]))+'</option>';}).join('')+'</select>'
-        +'<button type="button" class="x" data-cat="'+c.id+'" data-del="'+i+'" aria-label="حذف">×</button></div>';
+      h+='<div class="row"><input data-cat="'+esc(c.id)+'" data-i2="'+i+'" data-f="name" placeholder="'+esc(t('svcPh'))+'" value="'+esc(r.name)+'">'
+        +'<input data-cat="'+esc(c.id)+'" data-i2="'+i+'" data-f="price" type="number" min="0" inputmode="numeric" dir="ltr" placeholder="'+esc(t('pricePh'))+'" value="'+esc(r.price)+'" '+(r.unit==='inspect'?'disabled':'')+'>'
+        +'<select data-cat="'+esc(c.id)+'" data-i2="'+i+'" data-f="unit">'+UNITS.map(function(u){return '<option value="'+u[0]+'" '+(r.unit===u[0]?'selected':'')+'>'+esc(t(u[1]))+'</option>';}).join('')+'</select>'
+        +'<button type="button" class="x" data-cat="'+esc(c.id)+'" data-del="'+i+'" aria-label="حذف">×</button></div>';
     });
-    h+='</div><button type="button" class="addrow" data-cat="'+c.id+'" data-add="1">'+esc(t('addSvc'))+'</button>';
+    h+='</div><button type="button" class="addrow" data-cat="'+esc(c.id)+'" data-add="1">'+esc(t('addSvc'))+'</button>';
     blk.innerHTML=h; box.appendChild(blk);
   });
 }
@@ -668,7 +672,8 @@ function validate(step){
   var ok=true;
   if(step===1){
     if(bad('fName',$('name').value.trim().length<2))ok=false;
-    if(bad('fCompany',S.type==='co'&&$('company').value.trim().length<2))ok=false;
+    if(bad('fCompany',$('company').value.trim().length<2))ok=false;
+    if(bad('fCr',!/^[0-9]{10}$/.test($('cr').value.trim())))ok=false;
     if(bad('fPhone',!validPhone($('phone').value)))ok=false;
     if(bad('fCities',!Object.keys(S.cities).length&&!$('cityOther').value.trim()))ok=false;
   }
@@ -710,8 +715,8 @@ function payload(){
   var notes=$('notes').value.trim();
   return {
     name:$('name').value.trim(), phone:normPhone($('phone').value), website:$('hp').value, lang:L,
-    type:S.type==='co'?'مؤسسة':'فني مستقل',
-    company:S.type==='co'?$('company').value.trim():'', team:S.type==='co'?$('team').value:'',
+    type:'مؤسسة', cr_number:$('cr').value.trim(),
+    company:$('company').value.trim(), team:$('team').value,
     cities:cities, categories:catsPayload(),
     warranty:warText(), notes:notes, message:notes
   };
@@ -721,13 +726,13 @@ function payload(){
 function renderSum(){
   var p=payload(); var rows=[];
   function add(k,v){if(v)rows.push('<dt>'+t(k)+'</dt><dd>'+esc(v)+'</dd>');}
-  add('sType',S.type==='co'?t('tCo'):t('tTech')); add('sName',p.name); if(S.type==='co'){add('sCompany',p.company);add('sTeam',p.team);}
+  add('sType',t('tCo')); add('sName',p.name); add('sCompany',p.company); add('sTeam',p.team); add('sCr',p.cr_number);
   add('sPhone',p.phone); add('sCities',selNamesL(CITIES,S.cities).concat($('cityOther').value.trim()?[$('cityOther').value.trim()]:[]).join(L==='ar'?'، ':', '));
   add('sWar',warLabel()); add('sNotes',p.notes);
   var h='<dl>'+rows.join('')+'</dl>';
   p.categories.forEach(function(c){
     var cd=CATS.find(function(x){return x.id===c.id;}); var title=c.id==='other'&&c.name!==cd.ar?c.name:nm(cd);
-    h+='<div class="sv"><b>'+cd.ic+' '+esc(title)+'</b>';
+    h+='<div class="sv"><b>'+esc(cd.ic)+' '+esc(title)+'</b>';
     if(!c.services.length)h+='<div><span class="hint">'+t('noSvcs')+'</span></div>';
     c.services.forEach(function(s){var row=S.cats[c.id].rows.find(function(r){return r.name.trim()===s.name;});var pr=s.inspect?t('uInspect'):(s.price==null?t('noPrice'):s.price+' '+t('sar')+' '+unitLabel(row?row.unit:'job'));h+='<div><span>'+esc(L==='en'&&s.name_en?s.name_en:s.name)+'</span><span>'+esc(pr)+'</span></div>';});
     h+='</div>';

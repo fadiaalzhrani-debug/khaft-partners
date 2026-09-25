@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<!-- سياسة أمان المحتوى: السكربتات من الملف نفسه فقط (المضمّنة مسموحة لأن الأزرار onclick)، والاتصال بخادم Supabase فقط، ولا إطارات ولا كائنات خارجية -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; media-src 'self' blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; connect-src 'self' https://zulogtqxbuqxmdmjpzqj.supabase.co wss://zulogtqxbuqxmdmjpzqj.supabase.co; frame-src 'self' blob:; worker-src 'self' blob:" />
 <title>خافِت | لوحة المؤسسة</title>
 <meta name="robots" content="noindex" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23141414'/><text y='.9em' x='20' font-size='58'>🏢</text></svg>" />
@@ -99,6 +101,24 @@
 .prov-card{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;background:#fcfbf6}
   .prov-card .pc-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
   .prov-card b{font-size:1.02rem}
+  /* 🛠️ الحجب الصامت: التخصصات اللي توصل المزوّد فعليًا (المزوّد ما يشوفه) */
+  .pl-box{margin-top:10px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+  .pl-box.has-hidden{border-color:#f0b4b4;background:#fff7f7}
+  .pl-h{font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pl-cnt{background:var(--danger-soft);color:#991B1B;border-radius:999px;padding:2px 9px;font-size:.74rem;font-weight:800}
+  .pl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .pl-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--ink)}
+  .pl-chip small{font-weight:700;color:var(--muted)}
+  .pl-chip.on{border-color:#bfe3c8;background:var(--ok-soft)}
+  .pl-chip.on small{color:#166534}
+  .pl-chip.off{border-color:#f0b4b4;background:var(--danger-soft);color:#991B1B}
+  .pl-chip.off b{text-decoration:line-through}
+  .pl-chip.off small{color:#991B1B}
+  .pl-note{margin:8px 0 0;font-size:.78rem;color:var(--muted);line-height:1.6}
+  .pl-row{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+  .pl-in{flex:1;min-width:160px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+  .pl-row .sbtn[disabled]{opacity:.45;cursor:default}
+  .pl-badge{background:var(--danger-soft);color:#991B1B}
   .status{font-size:.76rem;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
   .st-new{background:var(--gold-soft);color:#7a5f00} .st-confirmed{background:#E0F2FE;color:#075985}
   .st-progress{background:#FEF0C7;color:#92600A} .st-done{background:var(--ok-soft);color:#166534} .st-cancelled{background:var(--danger-soft);color:#991B1B}
@@ -660,7 +680,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=134, KH_RIZQ_BUILD=106;
+const KH_APP_BUILD=138, KH_RIZQ_BUILD=107;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -677,6 +697,8 @@ const ADMIN_EMAIL='admin@khafet.app';   // معرّف فقط · ليس سرّا�
 let loggedIn=(()=>{ try{ return localStorage.getItem('khafet_admin_ok')==='1' && localStorage.getItem('khafet_remember')!=='0'; }catch(e){ return false; } })();   // دخول فوري لو الحساب محفوظ، والتحقق يصير بالخلفية                     // تُحدَّد من جلسة Supabase
 
 let ORDERS=[], PROVIDERS=[], SUBS=[], INV=[], LOG=[], STAFF=[], adminFilter='all', adminSection='';
+/* الحجب الصامت لتخصصات المزوّد: LIMITS من khafet_provider_limits (المدير فقط) provider_id → {hidden:[..], note}، وlimitDraft تعديلات غير محفوظة */
+let LIMITS={}, limitDraft={};
 const KH_FROM_TECH=/^#(store|po)$/.test(location.hash);   // جاء من تطبيق الفني إلى المستودع مباشرة
 if(KH_FROM_TECH) adminSection='store';
 try{ const c=JSON.parse(localStorage.getItem('kh_inv_cache')||'null'); if(Array.isArray(c)&&c.length) INV=c; }catch(e){}   // الأصناف تظهر فورًا من آخر نسخة محفوظة
@@ -691,11 +713,11 @@ function ilGo(d){ ilPage=Math.max(0,ilPage+d); renderImgLinker(); const o=docume
 function ilCard(it){
   const opts=IMGOPTS[it.id]||[]; const cur=it.image_url||'';
   const known=opts.some(u=>u===cur);
-  const grid=(cur&&!known?`<div class="il-opt sel" data-url="${esc(cur)}" onclick="pickImg('${it.id}',this.dataset.url)"><img src="${esc(cur)}" loading="lazy" /></div>`:'')+opts.map(u=>`<div class="il-opt ${u===cur?'sel':''}" data-url="${esc(u)}" onclick="pickImg('${it.id}',this.dataset.url)"><img src="${esc(u)}" loading="lazy" /></div>`).join('');
-  return `<div class="il-item" id="il-${it.id}">
+  const grid=(cur&&!known?`<div class="il-opt sel" data-id="${esc(it.id)}" data-url="${esc(cur)}" onclick="pickImg(this.dataset.id,this.dataset.url)"><img src="${esc(cur)}" loading="lazy" /></div>`:'')+opts.map(u=>`<div class="il-opt ${u===cur?'sel':''}" data-id="${esc(it.id)}" data-url="${esc(u)}" onclick="pickImg(this.dataset.id,this.dataset.url)"><img src="${esc(u)}" loading="lazy" /></div>`).join('');
+  return `<div class="il-item" id="il-${esc(it.id)}">
     <div class="il-head"><div class="wh-thumb">${cur?`<img src="${esc(cur)}" />`:(CAT_ICO[it.category]||'📦')}</div><div style="flex:1;min-width:0"><b>${esc(_enUI()?whName(it):it.name)}</b><small>${esc(it.code||'')} · ${cur?LX('لها صورة، اضغطي أخرى لتغييرها','Has image, tap another to change'):LX('بدون صورة، اختاري وحدة','No image yet, pick one')}</small></div></div>
     ${grid?`<div class="il-grid">${grid}</div>`:`<div class="il-empty">${LX('ما فيه خيارات جاهزة لهذا الصنف، صوّريه من الجوال','No ready options, take a photo')}</div>`}
-    <div class="il-acts"><label class="sbtn ok">📷 ${LX('صورة من الجوال','Phone photo')}<input type="file" accept="image/*" onchange="ilPhoto('${it.id}',this)" /></label><button class="sbtn" onclick="pickImg('${it.id}','')">🚫 ${LX('بدون صورة','No image')}</button></div>
+    <div class="il-acts"><label class="sbtn ok">📷 ${LX('صورة من الجوال','Phone photo')}<input type="file" accept="image/*" data-id="${esc(it.id)}" onchange="ilPhoto(this.dataset.id,this)" /></label><button class="sbtn" data-id="${esc(it.id)}" onclick="pickImg(this.dataset.id,'')">🚫 ${LX('بدون صورة','No image')}</button></div>
   </div>`;
 }
 function renderImgLinker(){
@@ -717,7 +739,7 @@ async function ilPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) re
 async function loadJoin(){ try{ const jc=await sb.rpc('get_join_code'); JOIN_CODE=jc.data||''; }catch(e){} try{ const pt=await sb.rpc('pending_techs'); PENDING_TECHS=pt.data||[]; }catch(e){ PENDING_TECHS=[]; } try{ const sd=await sb.rpc('admin_staff_docs'); STAFF_DOCS=sd.data||[]; }catch(e){ STAFF_DOCS=[]; } }
 function renderJoinPanelA(){
   const pend=PENDING_TECHS.length? PENDING_TECHS.map(t=>`<div class="jpend"><span style="font-size:1.4rem">🧑‍🔧</span><div class="t"><b>${esc(t.name||LX('فني','Technician'))}</b><small>📱 ${esc(t.phone||'')} · ${new Date(t.created_at).toLocaleDateString(uiLocale())}</small></div>
-      <button class="sbtn ok" onclick="approveTechA('${t.user_id}',true)">✔️ اعتماد</button><button class="sbtn danger" onclick="approveTechA('${t.user_id}',false)">رفض</button></div>`).join('') : '';
+      <button class="sbtn ok" data-uid="${esc(t.user_id)}" onclick="approveTechA(this.dataset.uid,true)">✔️ اعتماد</button><button class="sbtn danger" data-uid="${esc(t.user_id)}" onclick="approveTechA(this.dataset.uid,false)">رفض</button></div>`).join('') : '';
   return `<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:14px">
     <b style="display:block;margin-bottom:6px">🔑 ${LX('كود انضمام فنيّي خافت','Khafet team join code')}</b>
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">${LX('أعطي هذا الكود لعمالك فقط. الفني يسجّل في خافت شركاء ويكتبه، ويظهر لك هنا لتعتمديه. غيّريه متى شئتِ ويبطل القديم فورًا.','Give this code to your own workers only. They enter it in Khafet Partner and appear here for approval.')}</p>
@@ -740,8 +762,8 @@ function renderStaffDocsA(){
       </div>
       ${x.review_status!=='none'?`<div style="display:flex;gap:6px;flex-wrap:wrap">
         ${x.cert_path?`<button class="sbtn" data-path="${esc(x.cert_path)}" onclick="openDocA(this.dataset.path)">📎 ${LX('الشهادة','Certificate')}</button>`:`<span style="color:#b91c1c;font-weight:800;font-size:.82rem">${LX('بدون شهادة','No certificate')}</span>`}
-        ${x.review_status!=='approved'?`<button class="sbtn ok" onclick="reviewDocsA('${x.user_id}',true)">✔️ ${LX('اعتماد الوثائق','Approve')}</button>`:''}
-        ${x.review_status!=='rejected'?`<button class="sbtn danger" onclick="reviewDocsA('${x.user_id}',false)">${LX('رفض','Reject')}</button>`:''}
+        ${x.review_status!=='approved'?`<button class="sbtn ok" data-uid="${esc(x.user_id)}" onclick="reviewDocsA(this.dataset.uid,true)">✔️ ${LX('اعتماد الوثائق','Approve')}</button>`:''}
+        ${x.review_status!=='rejected'?`<button class="sbtn danger" data-uid="${esc(x.user_id)}" onclick="reviewDocsA(this.dataset.uid,false)">${LX('رفض','Reject')}</button>`:''}
       </div>`:''}
     </div>`).join('');
   return `<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px"><b style="display:block;margin-bottom:4px">📄 ${LX('وثائق الفنيين','Technician documents')}${nPend?' ('+ar(nPend)+' '+LX('بانتظارك','pending')+')':''}</b>
@@ -895,17 +917,17 @@ function renderCatalogEditor(){
   const html=cats.map((c,ci)=>{
     const svcs=CATALOG.svcs.filter(s=>s.cat_id===c.id).sort(bySort);
     const rows=svcs.map((s,si)=>`<div class="cg-svc ${s.active?'':'off'}">
-        <button class="cg-main" onclick="editService('${esc(s.id)}')"><span class="cg-ic">${esc(s.icon||'🔧')}</span><span class="cg-t"><b>${esc(s.name)}</b><small>${s.custom?LX('السعر بعد المعاينة','Price after inspection'):money(+s.price||0)} · ${fmtDur(+s.duration||0)}${s.active?'':' · '+LX('مخفية','Hidden')}</small></span></button>
-        <span class="cg-ord"><button onclick="moveCatalog('svc','${esc(s.id)}',-1)" ${si===0?'disabled':''}>▲</button><button onclick="moveCatalog('svc','${esc(s.id)}',1)" ${si===svcs.length-1?'disabled':''}>▼</button></span>
+        <button class="cg-main" data-id="${esc(s.id)}" onclick="editService(this.dataset.id)"><span class="cg-ic">${esc(s.icon||'🔧')}</span><span class="cg-t"><b>${esc(s.name)}</b><small>${s.custom?LX('السعر بعد المعاينة','Price after inspection'):money(+s.price||0)} · ${fmtDur(+s.duration||0)}${s.active?'':' · '+LX('مخفية','Hidden')}</small></span></button>
+        <span class="cg-ord"><button data-id="${esc(s.id)}" onclick="moveCatalog('svc',this.dataset.id,-1)" ${si===0?'disabled':''}>▲</button><button data-id="${esc(s.id)}" onclick="moveCatalog('svc',this.dataset.id,1)" ${si===svcs.length-1?'disabled':''}>▼</button></span>
       </div>`).join('');
     return `<div class="cg-cat ${c.active?'':'off'}">
       <div class="cg-head">
-        <button class="cg-main" onclick="editCategory('${esc(c.id)}')"><span class="cg-ic big">${esc(c.icon||'🛠️')}</span><span class="cg-t"><b>${esc(c.name)}${(c.active&&!activeTechsFor(c.id).length)?`<span class="cg-warn">${LX('بدون فني نشط','No active technician')}</span>`:''}</b><small>${c.featured?LX('⭐ في الواجهة تحت صيانة','⭐ On home under Maintenance'):LX('ضمن باقي خدمات المنزل','In other home services')}${c.active?'':' · '+LX('مخفي عن العملاء','Hidden from customers')} · ${LX(ar(svcs.length)+' خدمة',svcs.length+' services')} · ${LX(ar(activeTechsFor(c.id).length)+' فني',activeTechsFor(c.id).length+' techs')}</small></span></button>
-        <button class="cg-eye ${c.soon?'soon':(c.active?'':'off')}" onclick="toggleCatActive('${esc(c.id)}',${c.active?'false':'true'})">${c.soon?'⏳ '+LX('قريبًا','Soon'):(c.active?'👁️ '+LX('ظاهر','Visible'):'🚫 '+LX('مخفي','Hidden'))}</button>
-        <span class="cg-ord"><button onclick="moveCatalog('cat','${esc(c.id)}',-1)" ${ci===0?'disabled':''}>▲</button><button onclick="moveCatalog('cat','${esc(c.id)}',1)" ${ci===cats.length-1?'disabled':''}>▼</button></span>
+        <button class="cg-main" data-id="${esc(c.id)}" onclick="editCategory(this.dataset.id)"><span class="cg-ic big">${esc(c.icon||'🛠️')}</span><span class="cg-t"><b>${esc(c.name)}${(c.active&&!activeTechsFor(c.id).length)?`<span class="cg-warn">${LX('بدون فني نشط','No active technician')}</span>`:''}</b><small>${c.featured?LX('⭐ في الواجهة تحت صيانة','⭐ On home under Maintenance'):LX('ضمن باقي خدمات المنزل','In other home services')}${c.active?'':' · '+LX('مخفي عن العملاء','Hidden from customers')} · ${LX(ar(svcs.length)+' خدمة',svcs.length+' services')} · ${LX(ar(activeTechsFor(c.id).length)+' فني',activeTechsFor(c.id).length+' techs')}</small></span></button>
+        <button class="cg-eye ${c.soon?'soon':(c.active?'':'off')}" data-id="${esc(c.id)}" onclick="toggleCatActive(this.dataset.id,${c.active?'false':'true'})">${c.soon?'⏳ '+LX('قريبًا','Soon'):(c.active?'👁️ '+LX('ظاهر','Visible'):'🚫 '+LX('مخفي','Hidden'))}</button>
+        <span class="cg-ord"><button data-id="${esc(c.id)}" onclick="moveCatalog('cat',this.dataset.id,-1)" ${ci===0?'disabled':''}>▲</button><button data-id="${esc(c.id)}" onclick="moveCatalog('cat',this.dataset.id,1)" ${ci===cats.length-1?'disabled':''}>▼</button></span>
       </div>
       <div class="cg-list">${rows||`<div class="cg-empty">${LX('ما فيه خدمات بعد','No services yet')}</div>`}</div>
-      <button class="sbtn" style="width:100%;margin-top:8px" onclick="editService('','${esc(c.id)}')">➕ ${LX('خدمة جديدة','New service')}</button>
+      <button class="sbtn" style="width:100%;margin-top:8px" data-cat="${esc(c.id)}" onclick="editService('',this.dataset.cat)">➕ ${LX('خدمة جديدة','New service')}</button>
     </div>`;
   }).join('');
   return `<button class="sbtn ok" style="width:100%;padding:13px;margin-bottom:12px" onclick="editCategory('')">➕ ${LX('قسم جديد','New section')}</button>${html}`;
@@ -931,7 +953,7 @@ function editCategory(id){
     <label class="cg-sw"><input type="checkbox" id="cg_featured" ${c.featured?'checked':''}> ${LX('يظهر في الواجهة تحت «صيانة»','Show on home under Maintenance')}</label>
     <label class="cg-sw"><input type="checkbox" id="cg_active" ${c.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
     <label class="cg-sw"><input type="checkbox" id="cg_soon" ${c.soon?'checked':''}> ${LX('قريبًا (يظهر بعلامة قريبًا وما يفتح للعميل)','Coming soon (shown with a Soon tag, not bookable)')}</label>
-    <div class="cg-acts"><button class="sbtn ok" onclick="saveCategory('${esc(c.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+    <div class="cg-acts"><button class="sbtn ok" data-id="${esc(c.id)}" onclick="saveCategory(this.dataset.id)">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
 }
 async function saveCategory(id){
   const name=cgVal('cg_name'); if(!name){ toast(LX('اكتب اسم القسم','Enter the section name')); return; }
@@ -961,7 +983,7 @@ function editService(id, catId){
       <div id="sp_box"></div>
       <button type="button" class="sp-mini" onclick="spAddGroup()">➕ ${LX('مجموعة قطع','Parts group')}</button>
     </div>
-    <div class="cg-acts"><button class="sbtn ok" onclick="saveService('${esc(s.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+    <div class="cg-acts"><button class="sbtn ok" data-id="${esc(s.id)}" onclick="saveService(this.dataset.id)">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
   spLoad(s.id); spRender();
 }
 /* ═══ 🔩 القطع المرتبطة بالخدمة: مجموعات، وكل مجموعة فيها خيارات من المستودع ═══ */
@@ -980,7 +1002,7 @@ function spSet(gi,oi,f,v){ if(oi==null){ cgParts[gi][f]= f==='qty' ? Math.max(1,
 function spRender(){
   const box=document.getElementById('sp_box'); if(!box) return;
   const items=[...INV].sort((a,b)=>String(a.name).localeCompare(String(b.name),'ar'));
-  const opt=(sel)=>`<option value="">${LX('اختر قطعة من المستودع','Pick a stock item')}</option>`+items.map(it=>`<option value="${it.id}" ${it.id===sel?'selected':''}>${esc(it.name)} · ${ar(+it.sell_price||0)}</option>`).join('');
+  const opt=(sel)=>`<option value="">${LX('اختر قطعة من المستودع','Pick a stock item')}</option>`+items.map(it=>`<option value="${esc(it.id)}" ${it.id===sel?'selected':''}>${esc(it.name)} · ${ar(+it.sell_price||0)}</option>`).join('');
   box.innerHTML=cgParts.length?cgParts.map((g,gi)=>`<div class="sp-g">
       <div class="sp-gh"><input value="${esc(g.name)}" placeholder="${LX('اسم المجموعة، مثل: اللمبة','Group name, e.g. Bulb')}" oninput="spSet(${gi},null,'name',this.value)"><input type="number" min="1" value="${g.qty}" title="${LX('الكمية لكل خدمة','Qty per service')}" oninput="spSet(${gi},null,'qty',this.value)"><button type="button" class="sp-x" onclick="spDelGroup(${gi})" aria-label="حذف">×</button></div>
       <div class="sp-lbl"><span>${LX('القطعة','Item')}</span><span>${LX('اسم الخيار','Option label')}</span><span>${LX('افتراضي','Default')}</span><span></span></div>
@@ -1072,14 +1094,15 @@ async function initCloud(){
   try{
     if(window.supabase && SUPABASE_URL){
       sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true;
-      const { data:{ session } }=await sb.auth.getSession();
+      const { data:{ session }, error:sessErr }=await sb.auth.getSession();
       if(session){
-        if(localStorage.getItem('khafet_remember')==='0'){ try{ await sb.auth.signOut(); }catch(e){} loggedIn=false; render(); return; }   // اختار عدم البقاء مسجّلاً
+        if(localStorage.getItem('khafet_remember')==='0'){ try{ await sb.auth.signOut(); }catch(e){} admWipeCache(); loggedIn=false; render(); return; }   // اختار عدم البقاء مسجّلاً
         const ok=await isAdminUser();
         // ندخل لو الفحص نجح، أو لو تعذّر الاتصال والحساب سبق التحقق منه (ما نطلع المستخدم بسبب انقطاع الشبكة)
         if(ok===true || (ok==='err' && localStorage.getItem('khafet_admin_ok')==='1')){ if(ok===true) localStorage.setItem('khafet_admin_ok','1'); loggedIn=true; loadAll(); subscribe(); return; }
-        if(ok===false){ try{ await sb.auth.signOut(); }catch(e){} localStorage.removeItem('khafet_admin_ok'); }   // جلسة بلا صلاحية أدمن
-      } else if(loggedIn){ try{ localStorage.removeItem('khafet_admin_ok'); }catch(e){} }   // ما فيه جلسة محفوظة: نرجع لشاشة الدخول
+        if(ok===false){ try{ await sb.auth.signOut(); }catch(e){} localStorage.removeItem('khafet_admin_ok'); admWipeCache(); }   // جلسة بلا صلاحية أدمن
+      } else if(sessErr && admNetErr(sessErr)){ if(loggedIn){ try{ localStorage.removeItem('khafet_admin_ok'); }catch(e){} } }   // تعذّر تحديث الجلسة بلا نت: الكاش يبقى
+      else { try{ localStorage.removeItem('khafet_admin_ok'); }catch(e){} admWipeCache(); }   // ما فيه جلسة محفوظة (أو أُلغيت): نرجع لشاشة الدخول بلا كاش المخزن (البند 27)
       loggedIn=false; render(); return;
     }
   }catch(e){}
@@ -1090,13 +1113,20 @@ function rowToOrder(r){ return { id:'#'+arDigits(r.order_no), num:r.order_no, db
   date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, price:Number(r.price)||0, finalPrice:Number(r.final_price)||0,
   free:!!r.free, status:r.status||'new', rating:r.rating||0, reminded:!!r.reminded, quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', feedback:r.feedback||'', rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, reviewAnon:!!r.review_anon, reviewHidden:!!r.review_hidden, discountPct:+r.discount_pct||0, promoCode:r.promo_code||'',
   arrived:!!r.arrived, delayMin:+r.delay_min||0,
-  payRequired:!!r.pay_required, released:r.released!==false, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'' }; }
+  payRequired:!!r.pay_required, released:r.released!==false, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'',
+  cancelReq:r.cancel_req||'', cancelledBy:r.cancelled_by||'', handledBy:r.handled_by||'' }; }
 /* حالة الدفع للمدير */
 function payCell(o){
-  const METH={online:LX('إلكتروني','online'),tamara:LX('تمارا','Tamara'),device:LX('جهاز الفني','card machine')}[o.payMethod]||'';
+  const METH={online:LX('إلكتروني','online'),tamara:LX('تمارا','Tamara'),device:LX('جهاز الفني','card machine'),wallet:LX('رصيد عند المؤسسة','balance held by the business')}[o.payMethod]||'';
   if(o.status==='cancelled'){
     if(o.payStatus==='refunded') return `<span class="paychip ok">${LX('✓ رجع المبلغ','✓ Refunded')}</span>`;
-    if(o.payStatus==='refund_pending'||o.payStatus==='refund_failed') return `<span class="paychip ${o.payStatus==='refund_failed'?'bad':'wait'}">${o.payStatus==='refund_failed'?LX('فشل الاسترجاع','Refund failed'):LX('جاري الاسترجاع','Refund pending')} · ${money(o.paidAmount)}</span><button class="paylink" onclick="retryRefund('${o.id}')">${LX('إعادة المحاولة','Retry')}</button>`;
+    if(o.payStatus==='refund_pending'||o.payStatus==='refund_failed'){
+      // إلغاء من فني أو مزوّد: الاسترجاع معلّق لحين موافقة المدير، وزر «اعتماد الاسترجاع» هو نفس مسار إعادة المحاولة بجلسة المدير
+      const hold=refundHold(o), failed=o.payStatus==='refund_failed'&&!hold;
+      // دفعات الجهاز على الطلب الملغي: ترجع للعميل يدويًا (نقدًا أو بالجهاز)، فزر لتعليم كل دفعة مسترجعة بعد إرجاعها فعلًا
+      const dev=(DEV_PAYS[o.dbId]||[]).map(p=>`<button class="paylink" data-pay="${esc(p.id)}" data-amt="${esc(String(p.amount))}" data-w="${p.wallet?'1':''}" onclick="markDeviceRefunded(this.dataset.pay,this.dataset.amt,this.dataset.w)">${p.wallet?LX('إقفال دفعة الرصيد يدويًا','Close balance payment manually'):LX('تعليم دفعة الجهاز مسترجعة','Mark card payment refunded')} · ${money(+p.amount||0)}</button>`).join('');
+      return `<span class="paychip ${failed?'bad':'wait'}">${hold?LX('بانتظار مراجعة المدير','Awaiting admin review'):(failed?LX('فشل الاسترجاع','Refund failed'):LX('جاري الاسترجاع','Refund pending'))} · ${money(o.paidAmount)}</span><button class="paylink" onclick="retryRefund('${o.id}')">${hold?LX('اعتماد الاسترجاع','Approve refund'):LX('إعادة المحاولة','Retry')}</button>${dev}`;
+    }
     return `<span class="paychip">—</span>`;
   }
   if(o.payRequired && !o.released) return `<span class="paychip wait">${LX('بانتظار دفع العميل','Awaiting customer payment')}</span>`;
@@ -1107,8 +1137,57 @@ function payCell(o){
 async function adminDevicePay(id){
   const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId) return;
   if(!confirm(LX('تسجيل استلام '+money(o.amountDue)+' بجهاز الدفع؟','Record '+money(o.amountDue)+' received by card machine?'))) return;
-  try{ const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId }); if(error||!data||!data.ok) throw (error||new Error('fail')); toast(LX('✓ تم تسجيل الدفع','✓ Payment recorded')); loadAll(); }
-  catch(e){ toast(LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); }
+  // رقم إيصال الجهاز يظهر في مطابقة دفعات الجهاز (اختياري للمدير)
+  const r=prompt(LX('رقم إيصال الجهاز (اختياري، يظهر في المطابقة):','Card machine receipt number (optional, shown in the reconciliation):'),''); if(r===null) return;
+  const ref=String(r).trim();
+  try{ const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId, p_ref:ref||null }); if(error) throw error;
+    if(!data||!data.ok){ toast(data&&data.error==='need_ref'?LX('اكتب رقم إيصال الجهاز','Enter the receipt number'):LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); return; }
+    toast(LX('✓ تم تسجيل الدفع','✓ Payment recorded')); DEVPAY=null; devpayTried=false; loadAll(); }
+  catch(e){ toast(srvMsgA(e)); }
+}
+/* ═══════ 🧾 مطابقة دفعات الجهاز: صفوف khafet_admin_log (action=device_pay) لليوم: الوقت، الطلب، المبلغ، المرجع، ومن سجّلها ═══════ */
+let DEVPAY=null, devpayBusy=false, devpayTried=false;
+async function loadDevPay(){
+  if(!cloudReady||devpayBusy) return; devpayBusy=true; devpayTried=true;
+  try{ const d=new Date(); d.setHours(0,0,0,0);
+    const r=await sb.from('khafet_admin_log').select('id,at,actor,action,target,detail').in('action',['device_pay','wallet_apply']).gte('at',d.toISOString()).order('at',{ascending:false}).limit(300);
+    if(r.error) throw r.error; DEVPAY=(r.data||[]).filter(x=>x&&typeof x==='object'&&x.detail&&typeof x.detail==='object'); }
+  catch(e){ DEVPAY=null; }
+  finally{ devpayBusy=false; }
+}
+function devPayActor(x){
+  const d=(x.detail&&typeof x.detail==='object')?x.detail:{};
+  const st=(STAFF||[]).find(s=>s.user_id===x.actor); if(st&&st.name) return st.name;
+  return d.role==='admin'?LX('الإدارة','Admin'):(d.role==='provider'?LX('المزوّد','Provider'):LX('الفني','Technician'));
+}
+function renderDevPay(){
+  // أول فتح للوحة يحمّل السجل مرة وحدة؛ لو فشل يظهر التعذّر مع زر إعادة المحاولة (بدون إعادة تلقائية مع كل رسم)
+  if(!DEVPAY&&!devpayBusy&&!devpayTried&&cloudReady){ setTimeout(()=>loadDevPay().then(render),0); }
+  if(!DEVPAY&&(devpayBusy||(!devpayTried&&cloudReady))) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
+  if(!DEVPAY) return `<p style="color:var(--danger);font-weight:700">${LX('تعذّر جلب السجل.','Could not load the log.')}</p><button class="sbtn" onclick="loadDevPay().then(render)">🔄 ${LX('إعادة المحاولة','Retry')}</button>`;
+  const num=v=>{ const x=parseFloat(v); return isFinite(x)?x:0; };
+  const isW=x=>x&&x.action==='wallet_apply';
+  const total=DEVPAY.filter(x=>!isW(x)).reduce((a,x)=>a+num(((x.detail&&typeof x.detail==='object')?x.detail:{}).amount),0);
+  const wTotal=DEVPAY.filter(isW).reduce((a,x)=>a+num(((x.detail&&typeof x.detail==='object')?x.detail:{}).amount),0);
+  const rows=DEVPAY.map(x=>{ const d=(x.detail&&typeof x.detail==='object')?x.detail:{}; const t=new Date(x.at);
+    return `<tr><td>${isNaN(t)?'':fmtTime(t.getHours()*60+t.getMinutes())}</td><td>#${ar(esc(d.order_no==null?'':d.order_no))}</td><td class="n">${money(num(d.amount))}</td><td dir="ltr">${isW(x)?LX('رصيد عند المؤسسة','Business balance'):(d.ref?esc(d.ref):LX('بدون مرجع','No reference'))}</td><td>${esc(devPayActor(x))}</td></tr>`; }).join('');
+  return `<p class="sp-hint" style="margin-bottom:8px">${LX('دفعات جهاز الشبكة المسجّلة اليوم، للمطابقة مع كشف الجهاز آخر اليوم. ودفعات «رصيد عند المؤسسة» ما وصل منها مال لخافت وما تدخل في إجمالي الجهاز.','Card machine payments recorded today, to reconcile with the machine statement. "Business balance" payments bring no money to Khafet and are not in the machine total.')}</p>
+    ${DEVPAY.length?`<div class="biz-tw"><table class="biz-t" style="min-width:420px"><thead><tr><th>${LX('الوقت','Time')}</th><th>${LX('الطلب','Order')}</th><th class="n">${LX('المبلغ','Amount')}</th><th>${LX('المرجع','Reference')}</th><th>${LX('سجّلها','By')}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="rline" style="border-bottom:0"><div class="rl-t"><b>${LX('إجمالي الجهاز اليوم','Card machine total today')}</b> <small>${ordersN(DEVPAY.filter(x=>!isW(x)).length)}</small></div><span style="font-weight:900">${money(total)}</span></div>${wTotal>0?`<div class="rline" style="border-bottom:0"><div class="rl-t"><b>${LX('من رصيد عند المؤسسات','From business balances')}</b> <small>${ordersN(DEVPAY.filter(isW).length)}</small></div><span style="font-weight:900">${money(wTotal)}</span></div>`:''}`:`<p style="color:var(--muted)">${LX('ما فيه دفعات جهاز اليوم.','No card machine payments today.')}</p>`}
+    <button class="sbtn" onclick="loadDevPay().then(render)">🔄 ${LX('تحديث','Refresh')}</button>`;
+}
+/* دفعة جهاز على طلب ملغي رجّعها الفني أو المؤسسة للعميل: تُعلَّم مسترجعة (khafet_admin_mark_refunded) فلا يبقى الطلب «جاري الاسترجاع» */
+async function markDeviceRefunded(payId, amt, isWallet){
+  if(!payId) return;
+  // دفعة رصيد عند المؤسسة ما عُرف لمن ترجع (جوال صاحبها انمسح): تُقفل بعد مراجعتها مع المؤسسة، بلا حركة على أي محفظة
+  if(isWallet){ if(!confirm(LX('دفعة رصيد عند المؤسسة بمبلغ '+money(+amt||0)+' ما عُرف لمن ترجع (غالبًا العميل حذف حسابه). راجعها مع المؤسسة، ثم اضغط موافق لإقفالها.','A business balance payment of '+money(+amt||0)+' has no known owner to return to (the customer probably deleted the account). Review it with the business, then press OK to close it.'))) return; }
+  else if(!confirm(LX('تأكد أن مبلغ '+money(+amt||0)+' رجع للعميل فعلًا، ثم اضغط موافق لتعليم الدفعة مسترجعة.','Make sure '+money(+amt||0)+' was really returned to the customer, then press OK to mark it refunded.'))) return;
+  const note=prompt(LX('ملاحظة (اختياري، مثل: رجع نقدًا مع الفني):','Note (optional, e.g. returned in cash by the technician):'),''); if(note===null) return;
+  try{ const { data, error }=await sb.rpc('khafet_admin_mark_refunded',{ p_payment:payId, p_note:String(note).trim()||null }); if(error) throw error;
+    if(data&&data.ok){ toast(LX('✓ تم تعليم الدفعة مسترجعة','✓ Payment marked refunded')); loadAll(); return; }
+    const R={ not_device:LX('هذه ليست دفعة جهاز','This is not a card payment'), not_cancelled:LX('الطلب غير ملغي','The order is not cancelled'), not_paid:LX('الدفعة غير مدفوعة','The payment is not paid'), not_found:LX('الدفعة غير موجودة','Payment not found') };
+    toast((data&&R[data.reason])||LX('ما انحفظ، حاول مرة ثانية','Not saved, try again')); }
+  catch(e){ toast(srvMsgA(e)); }
 }
 async function retryRefund(id){
   const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId) return;
@@ -1119,6 +1198,11 @@ async function retryRefund(id){
   catch(e){ toast(LX('تعذّر الاتصال','Connection failed')); }
 }
 let JOINREQ=[], joinReqLoaded=false, joinFilter='new';
+/* أخطاء الاسترجاع لكل طلب (من khafet_payments.refund_error): needs_admin_review يعني الإلغاء من فني أو مزوّد والاسترجاع بانتظار المدير */
+let REFUND_ERR={};
+/* دفعات الجهاز المدفوعة على الطلبات الملغية (لزر «تعليم دفعة الجهاز مسترجعة») */
+let DEV_PAYS={};
+function refundHold(o){ return /^needs_admin_review/.test(String((o&&REFUND_ERR[o.dbId])||'')); }
 async function loadAll(){
   if(!cloudReady||!loggedIn){ render(); return; }
   loadSmsBalance(); loadBiz();
@@ -1127,10 +1211,14 @@ async function loadAll(){
   await Promise.all([
     Q(sb.from('khafet_orders').select('*').order('created_at',{ascending:false}), o=>{ ORDERS=(o.data||[]).map(rowToOrder); }),
     Q(sb.from('khafet_providers').select('*').order('created_at',{ascending:false}), p=>{ PROVIDERS=p.data||[]; }),
+    Q(sb.from('khafet_provider_limits').select('provider_id,hidden_services,note'), l=>{ LIMITS={}; (l.data||[]).forEach(r=>{ if(r&&r.provider_id) LIMITS[String(r.provider_id)]={hidden:(Array.isArray(r.hidden_services)?r.hidden_services:[]).map(String), note:String(r.note||'')}; }); }),
+    Q(sb.from('khafet_payments').select('ref_id,refund_error').eq('kind','order').eq('status','paid').not('refund_error','is',null).limit(500), pe=>{ REFUND_ERR={}; (pe.data||[]).forEach(r=>{ if(r&&r.ref_id) REFUND_ERR[r.ref_id]=String(r.refund_error||''); }); }),
+    // جولة الإصلاح 5 (ملاحظة البند 10): ومعها دفعات الرصيد عند المؤسسة اللي ما عُرف لمن ترجع (عميل حذف حسابه)، تقفلها الإدارة يدويًا
+    Q(sb.from('khafet_payments').select('id,ref_id,amount,method').eq('kind','order').eq('status','paid').or('method.eq.device,and(method.eq.wallet,refund_error.eq.wallet_refund_unknown)').order('created_at',{ascending:false}).limit(500), dp=>{ DEV_PAYS={}; (dp.data||[]).forEach(r=>{ if(r&&r.ref_id&&r.id) (DEV_PAYS[r.ref_id]=DEV_PAYS[r.ref_id]||[]).push({id:String(r.id),amount:+r.amount||0,wallet:r.method==='wallet'}); }); }),
     Q(sb.from('khafet_prices').select('*'), pr=>{ PRICES={}; (pr.data||[]).forEach(r=>{ PRICES[r.sid]=Number(r.price); }); }),
     Promise.resolve().then(()=>loadCatalog()).catch(()=>{}),
     Q(sb.from('khafet_subscriptions').select('*').order('created_at',{ascending:false}), x=>{ SUBS=x.data||[]; }),
-    Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ invLoaded=true; if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
+    Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ invLoaded=true; if(!iv.error && loggedIn){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
     Q(sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000), lg=>{ LOG=lg.data||[]; }),
     Q(sb.from('khafet_staff').select('*'), st=>{ STAFF=st.data||[]; }),
     Q(sb.from('khafet_articles').select('*').order('sort'), a=>{ ARTICLES=a.data||[]; }),
@@ -1139,6 +1227,9 @@ async function loadAll(){
     Q(sb.rpc('khafet_admin_audience'), a=>{ if(a&&!a.error&&a.data) AUDIENCE=a.data; }),
     Promise.resolve().then(()=>loadJoin()).catch(()=>{}),
     Promise.resolve().then(()=>loadJoinReqs()).catch(()=>{}),
+    Promise.resolve().then(()=>loadCancelReqs()).catch(()=>{}),
+    Promise.resolve().then(()=>adminSection==='team'?loadCommission(true):null).catch(()=>{}),
+    Promise.resolve().then(()=>(adminSection==='orders'&&isPanelOpen('devpay'))?loadDevPay():null).catch(()=>{}),
     Promise.resolve().then(()=>loadImgOpts()).catch(()=>{}),
   ]);
   render();
@@ -1248,7 +1339,8 @@ function dashDefs(){
     ['rating','⭐',LX('متوسط التقييم','Average rating'), avg? avg.toFixed(1):'—', ar(rated.length)+' '+LX('تقييم','ratings'), 'orders', ''],
     ['techs','🧑‍🔧',LX('فنيون نشطون','Active technicians'), ar((STAFF||[]).filter(s=>s.role==='tech'&&s.active!==false).length), '', 'team', ''],
     ['provs','🤝',LX('مزوّدون للمراجعة','Providers to review'), ar((PROVIDERS||[]).filter(p=>(p.status||'pending')==='pending').length), '', 'team', ''],
-    ['joins','📨',LX('طلبات انضمام','Join requests'), ar((JOINREQ||[]).filter(x=>x.status==='new').length), '', 'joins', '']
+    ['joins','📨',LX('طلبات انضمام','Join requests'), ar((JOINREQ||[]).filter(x=>x.status==='new').length), '', 'joins', ''],
+    ['cancels','❌',LX('طلبات إلغاء بانتظارك','Cancellation requests waiting'), ar(crPending()), '', 'cancels', crPending()?'warn':'']
   ];
 }
 function dashKeys(){
@@ -1324,10 +1416,10 @@ function renderTechs(){
     const off=t.active===false;
     return `<div class="rline" style="flex-wrap:wrap">
       <div class="rl-t"><b>${esc(t.name||'—')}</b><small>${off?LX('⛔ موقوف','⛔ Suspended'):LX('✅ فعّال','✅ Active')} · 📱 ${esc(t.phone||'—')}</small></div>
-      <button class="sbtn ${off?'ok':'danger'}" onclick="toggleTechActive('${t.user_id}',${off})">${off?'تفعيل':'إيقاف'}</button>
-      <button class="sbtn" onclick="resetTechPass('${t.user_id}')">🔑</button>
+      <button class="sbtn ${off?'ok':'danger'}" data-uid="${esc(t.user_id)}" onclick="toggleTechActive(this.dataset.uid,${off})">${off?'تفعيل':'إيقاف'}</button>
+      <button class="sbtn" data-uid="${esc(t.user_id)}" onclick="resetTechPass(this.dataset.uid)">🔑</button>
       <div style="flex-basis:100%">
-        <div class="trds">${tradeList().map(([k,ar])=>`<button class="trd ${techTrades(t).includes(k)?'on':''}" onclick="toggleTrade('${t.user_id}','${k}')">${LX(ar[0],ar[1])}</button>`).join('')}</div>
+        <div class="trds">${tradeList().map(([k,ar])=>`<button class="trd ${techTrades(t).includes(k)?'on':''}" data-uid="${esc(t.user_id)}" data-k="${esc(k)}" onclick="toggleTrade(this.dataset.uid,this.dataset.k)">${LX(ar[0],ar[1])}</button>`).join('')}</div>
       </div>
     </div>`; }).join('') : `<p style="color:var(--muted)">لا يوجد فنيّون بعد · أضف أول فني تحت.</p>`;
   return `${renderJoinPanelA()}
@@ -1339,7 +1431,7 @@ function renderTechs(){
       <p style="color:var(--muted);font-size:.85rem;margin-bottom:10px">الفني يدخل برقم جواله وكلمة المرور · بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.</p>
       <div class="field"><input id="nt_name" placeholder="الاسم (مثال: أحمد علي)" /></div>
       <div class="field"><input id="nt_phone" placeholder="رقم جواله (05xxxxxxxx)" inputmode="tel" /></div>
-      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٦ خانات فأكثر)" /></div>
+      <div class="field"><input id="nt_pass" placeholder="كلمة المرور (٨ خانات فأكثر)" /></div>
       <button class="sbtn ok" style="width:100%;margin-top:6px" onclick="addTech()">إنشاء حساب الفني</button>
     </div>`;
 }
@@ -1367,7 +1459,7 @@ function renderCapacity(){
   const wait=JOINREQ.filter(x=>x.status==='waitlist');
   const cards=[...CATALOG.cats].sort(bySort).map(c=>{
     const techs=activeTechsFor(c.id).length, orders=by[c.id]||0, per=techs?Math.round(orders/techs):null;
-    const waiting=wait.filter(x=>(x.categories||[]).includes(c.name)).length;
+    const waiting=wait.filter(x=>Array.isArray(x.categories)&&x.categories.includes(c.name)).length;
     let cls='none', msg=LX('ما فيه فني نشط','No active technician'), val='—';
     const LO=stNum('cap_low',10), HI=stNum('cap_high',20);
     if(techs){ val=ar(per); if(per>HI){ cls='hot'; msg=LX('وقت تفعيل فني جديد','Time to activate a new technician'); } else if(per>=LO){ cls='mid'; msg=LX('مناسب، راقب الأسبوع الجاي','Fine, watch next week'); } else { cls='ok'; msg=LX('هادي، لا تضيف أحد','Quiet, do not add anyone'); } }
@@ -1409,7 +1501,8 @@ const ST_GROUPS=[
     ['commission_first_pct','النسبة المخفضة للطلبات الأولى (%)','Intro rate (%)','num'],
     ['commission_big_min','الطلب الكبير يبدأ من (ريال أجرة يد)','Big job starts at (SAR labour)','num'],
     ['commission_big_pct','نسبة الطلب الكبير (%)','Big job rate (%)','num'],
-    ['commission_big_cap','الحد الأقصى للعمولة في الطلب الكبير (ريال)','Big job commission cap (SAR)','num'] ] },
+    ['commission_big_cap','الحد الأقصى للعمولة في الطلب الكبير (ريال)','Big job commission cap (SAR)','num'],
+    ['commission_own_orders','عمولة على حجوزات المؤسسة الخاصة (عملاؤها اللي ما مرّوا على خافت)','Commission on a business\'s own bookings (its customers who did not come through Khafet)','bool'] ] },
   { id:'policy', t:['🛡️ الإلغاء والضمان','🛡️ Cancellation & warranty'], d:['الإلغاء وتغيير الموعد مجاني قبل الموعد بهذي الساعات، وبعدها عبر التواصل فقط.','Free cancel or reschedule until this many hours before the visit, then only by contacting you.'], f:[
     ['cancel_free_hours','ساعات الإلغاء المجاني قبل الموعد','Free cancellation hours before the visit','num'],
     ['app_warranty_days','ضمان الشغل لطلبات التطبيق (أيام)','Work warranty for app orders (days)','num'],
@@ -1429,7 +1522,11 @@ const ST_GROUPS=[
     ['media_retention_days','حذف مقاطع العملاء وصور المنازل بعد كم يوم من موعد الطلب المغلق','Delete customer videos and house photos N days after the closed order date','num'],
     ['complaint_sla_days','مدة الرد على الشكوى (أيام عمل) كما تظهر للعميل','Complaint reply time (working days) shown to customers','num'],
     ['delivery_fee','رسوم توصيل الأغراض (ريال · 0 يلغيها)','Parts delivery fee (SAR · 0 removes it)','num'],
-    ['close_requires_payment','إقفال الطلب يتطلب دفع المتبقي','Closing an order requires payment of the balance','bool'] ] },
+    ['close_requires_payment','إقفال الطلب يتطلب دفع المتبقي','Closing an order requires payment of the balance','bool'],
+    ['device_pay_ref_required','طلب رقم إيصال الجهاز عند تسجيل الدفع بالجهاز','Require the card machine receipt number when recording a device payment','bool'],
+    ['close_requires_invoice','إقفال الطلب السريع يحتاج فاتورة','Closing a quick order requires an invoice','bool'],
+    ['invoice_free_item_max','أقصى سعر لبند حر في فاتورة الفني (ريال)','Maximum price of a free-text line in the technician invoice (SAR)','num'],
+    ['invoice_free_total_max','أقصى مجموع للبنود الحرة في الفاتورة (ريال)','Maximum total of free-text lines in the invoice (SAR)','num'] ] },
   { id:'coverage', t:['📍 التغطية','📍 Coverage'], d:['المدن اللي تخدمها. أي عميل خارجها يشوف الرسالة تحت ولا يقدر يحجز.','Cities you serve. Customers outside them see the message and cannot book.'], f:[
     ['coverage_cities','المدن (افصل بينها بفاصلة)','Cities (comma separated)','list'],
     ['coverage_msg','رسالة خارج التغطية','Out of coverage message','text'] ] },
@@ -1440,7 +1537,8 @@ const ST_GROUPS=[
     ['long_window_enabled','الطلب الطويل يحجز فترتين متتاليتين ويظهر للعميل الوقت كاملًا','Long orders book two windows in a row','bool'],
     ['long_window_from_min','يُعتبر الطلب طويلًا إذا زادت مدته عن (دقائق)','An order counts as long above (minutes)','num'],
     ['max_jobs_per_day','أقصى عدد طلبات باليوم لكل فريق','Max jobs per day per team','num'],
-    ['off_days','أيام الإجازة (0 الأحد … 5 الجمعة، 6 السبت، افصل بفاصلة)','Off days (0 Sunday … 5 Friday, 6 Saturday, comma separated)','list'] ] },
+    ['off_days','أيام الإجازة (0 الأحد … 5 الجمعة، 6 السبت، افصل بفاصلة)','Off days (0 Sunday … 5 Friday, 6 Saturday, comma separated)','list'],
+    ['slot_groups','تجميع الأقسام في السعة (JSON: القسم ثم مجموعته، مثال {"plumb":"core","elec":"core","ac":"ac"})','Capacity grouping of sections (JSON: section then its group, e.g. {"plumb":"core","elec":"core","ac":"ac"})','text'] ] },
   { id:'plans', t:['🛡️ الباقات السنوية','🛡️ Annual plans'], d:['إظهار الباقات للعملاء، وأسعار «ريّح بالك» وتاريخ إقفال العرض. المشتركون الحاليون يشوفون اشتراكهم دائمًا.','Show plans to customers, Rayyeh Balak prices and offer closing date. Existing subscribers always see their plan.'], f:[
     ['plans_enabled','الباقات السنوية ظاهرة للعملاء','Annual plans visible to customers','bool'],
     ['plan_apt_price','سعر باقة الشقة (ريال)','Apartment plan price (SAR)','num'],
@@ -1488,7 +1586,7 @@ const ST_GROUPS=[
     ['launch_pct','خصم الإطلاق على أجرة اليد (٪)، صفر يوقفه','Launch labour discount (%), 0 disables','num'],
     ['launch_until','خصم الإطلاق ينتهي بتاريخ','Launch discount ends on','date'],
     ['lead_min','أقل مدة قبل الموعد لقبول الحجز (دقائق)','Minimum lead time before a slot (minutes)','num'] ] },
-  { id:'update', t:['⬆️ إجبار التحديث','⬆️ Force update'], d:['لو حطيت رقمًا أكبر من نسخة العميل، ما يقدر يستخدم التطبيق إلا بعد ما يحدّثه من المتجر. حطّي رقم النسخة اللي نزلت فعلًا في كل متجر، ولا تسبقين المتجر وإلا وقفت العملاء.','If the number is higher than the build on the customer device, the app is blocked until they update from the store.'], rows:[
+  { id:'update', t:['⬆️ إجبار التحديث','⬆️ Force update'], d:['لو حطيت رقمًا أكبر من نسخة العميل، ما يقدر يستخدم التطبيق إلا بعد ما يحدّثه من المتجر. حطّي رقم النسخة اللي نزلت فعلًا في كل متجر، ولا تسبقين المتجر وإلا وقفت العملاء.','If the number is higher than the build on the customer device, the app is blocked until they update from the store.'], f:[
     ['app_min_build_ios','أقل نسخة مقبولة على الآيفون (0 = بدون إجبار)','Minimum build on iPhone (0 = off)','num'],
     ['app_min_build_android','أقل نسخة مقبولة على الأندرويد (0 = بدون إجبار)','Minimum build on Android (0 = off)','num'],
     ['app_min_build','أقل نسخة للنسخ القديمة جدًا وللويب (احتياطي)','Fallback minimum build (very old versions and web)','num'],
@@ -1524,25 +1622,31 @@ function waStatsBox(){
 }
 function renderSettings(){
   if(!settingsLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
-  return ST_GROUPS.map(g=>`<div class="panel st-g" id="stg_${g.id}">
+  // كل مجموعة تُرسم لحالها داخل try: لو خربت مجموعة وحدة ما تطيح شاشة الإعدادات كلها
+  return ST_GROUPS.map(g=>{ try{
+    const fields=Array.isArray(g.f)?g.f:(Array.isArray(g.rows)?g.rows:[]);
+    return `<div class="panel st-g" id="stg_${g.id}">
     <h3>${LX(g.t[0],g.t[1])}</h3><p class="st-d">${LX(g.d[0],g.d[1])}</p>
-    ${g.f.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
+    ${fields.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
       if(ty==='note') return `<p class="st-d" style="margin:2px 0 12px;line-height:1.7">${LX(ar,en)}</p>`;
       if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
-      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello','shade_kinds'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
+      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello','shade_kinds','slot_groups'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
       if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
       return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" type="${ty==='num'?'number':(ty==='date'?'date':'text')}" ${ty==='num'?'inputmode="decimal" step="any"':''} value="${esc(v)}"></label>`; }).join('')}
     ${g.id==='wabot'?waStatsBox():''}
     <button class="sbtn ok" style="width:100%;margin-top:8px" onclick="saveSettingsGroup('${g.id}')">💾 ${LX('حفظ','Save')}</button>
-  </div>`).join('');
+  </div>`;
+  }catch(e){ return `<div class="panel st-g" id="stg_${g.id}"><h3>${LX(g.t[0],g.t[1])}</h3><p class="st-d" style="color:var(--danger)">${LX('تعذّر عرض هذه المجموعة، حدّث الصفحة','Could not display this group, refresh the page')}</p></div>`; } }).join('');
 }
 async function saveSettingsGroup(gid){
   const g=ST_GROUPS.find(x=>x.id===gid); if(!g) return;
   const rows=[];
-  for(const [k,,,ty] of g.f){ const el=document.getElementById('st_'+k); if(!el) continue; let v;
+  for(const [k,,,ty] of (Array.isArray(g.f)?g.f:(g.rows||[]))){ const el=document.getElementById('st_'+k); if(!el) continue; let v;
     if(ty==='bool') v=el.checked?'1':'0';
     else if(ty==='list'){ const parts=el.value.split(/[،,]/).map(s=>s.trim()).filter(Boolean); v=JSON.stringify(k==='off_days'?parts.map(Number).filter(n=>n>=0&&n<=6):parts); }
     else v=el.value.trim();
+    // تجميع الأقسام لازم يكون JSON كائنًا صالحًا (الخادم يقرأه في حساب السعة)
+    if(k==='slot_groups'&&v){ try{ const j=JSON.parse(v); if(!j||typeof j!=='object'||Array.isArray(j)) throw new Error('shape'); v=JSON.stringify(j); }catch(e){ toast('⚠️ '+LX('صيغة تجميع الأقسام غير صحيحة، اكتبها JSON مثل {"plumb":"core"}','Invalid section grouping, write JSON like {"plumb":"core"}')); return; } }
     rows.push({ key:k, value:v, updated_at:new Date().toISOString() }); }
   const r=await sb.from('khafet_settings').upsert(rows,{ onConflict:'key' }).select('key');
   if(r.error||!r.data||r.data.length!==rows.length){ toast('⚠️ '+LX('ما انحفظ، جرّب مرة ثانية','Not saved, try again')); return; }
@@ -1552,15 +1656,47 @@ async function saveSettingsGroup(gid){
     const sf=parseFloat(SETTINGS.small_order_fee); if(isFinite(sf)&&sf>=0){ try{ await sb.from('khafet_services').update({price:sf}).eq('id','smallfee'); }catch(e){} } }
   toast(LX('✅ انحفظت الإعدادات','✅ Settings saved')); render();
 }
-/* العمولة لطلب واحد حسب الإعدادات: نسبة من أجرة اليد فقط، مع نسبة مخفضة لأول الطلبات وسقف للطلب الكبير */
-function orderLabor(o){ return (o.items||[]).filter(it=>it&&it.id!=='fee'&&it.id!=='smallfee'&&!it.part&&it.id!=='stock'&&!it.stockId&&!String(it.id||'').startsWith('part:')).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
-function commissionFor(o, idxForProvider, isCompany){
-  const labor=orderLabor(o); if(!labor) return 0;
-  let pct=isCompany?stNum('commission_provider_pct',12):stNum('commission_tech_pct',15);
-  if(idxForProvider!=null && idxForProvider<stNum('commission_first_jobs',10)) pct=Math.min(pct, stNum('commission_first_pct',10));
-  let c=labor*pct/100;
-  if(labor>=stNum('commission_big_min',1000)){ c=Math.min(labor*stNum('commission_big_pct',10)/100, stNum('commission_big_cap',150)); }
-  return Math.round(c*100)/100;
+/* ═══════ 💰 مستحقات المنصة: تُحسب في الخادم (دالة khafet_admin_commission_summary للمدير فقط) من فواتير الطلبات المنجزة،
+   واللوحة تعرض الناتج كما هو. ما فيه أي حساب من أسعار المتصفح. ═══════ */
+let COMM=null, commErr='', commBusy=false;
+function commNorm(d){
+  const rows=Array.isArray(d)?d:(d&&Array.isArray(d.rows)?d.rows:[]);
+  const num=v=>{ const x=parseFloat(v); return isFinite(x)?x:0; };
+  const out=rows.filter(r=>r&&typeof r==='object').map(r=>({
+    phone:String(r.provider_phone!=null?r.provider_phone:(r.phone||'')), name:String(r.provider_name!=null?r.provider_name:(r.name||'')),
+    orders:Math.round(num(r.orders!=null?r.orders:(r.n!=null?r.n:r.orders_done))), labor:num(r.labor), due:num(r.due!=null?r.due:(r.commission!=null?r.commission:r.sum)) }));
+  const total=(d&&!Array.isArray(d)&&d.total!=null)?num(d.total):out.reduce((a,r)=>a+r.due,0);
+  return { rows:out, total:Math.round(total*100)/100 };
+}
+let COMM_DETAIL=null, commDetailOpen=false, commDetailBusy=false;
+async function loadCommissionDetail(){
+  if(!cloudReady||commDetailBusy) return;
+  commDetailBusy=true;
+  try{ const r=await sb.rpc('khafet_admin_commission'); if(r.error) throw r.error;
+    const num=v=>{ const x=parseFloat(v); return isFinite(x)?x:0; };
+    COMM_DETAIL=(Array.isArray(r.data)?r.data:[]).filter(x=>x&&typeof x==='object').map(x=>({ orderNo:String(x.order_no==null?'':x.order_no), date:String(x.service_date||''), phone:String(x.provider_phone||''), name:String(x.provider_name||''),
+      idx:Math.round(num(x.idx)), labor:num(x.labor), pct:num(x.pct), commission:num(x.commission), big:!!x.big, company:!!x.is_company }));
+  }catch(e){ COMM_DETAIL=null; }
+  finally{ commDetailBusy=false; }
+}
+function toggleCommDetail(){ commDetailOpen=!commDetailOpen; if(commDetailOpen&&!COMM_DETAIL){ render(); loadCommissionDetail().then(render); return; } render(); }
+function commDetailHtml(){
+  if(!commDetailOpen) return '';
+  if(commDetailBusy&&!COMM_DETAIL) return `<p style="color:var(--muted);margin-top:8px">${LX('جاري تحميل التفصيل من الخادم…','Loading the breakdown from the server…')}</p>`;
+  if(!COMM_DETAIL) return `<p style="color:var(--danger);font-weight:700;margin-top:8px">${LX('تعذّر جلب تفصيل الطلبات من الخادم.','Could not load the order breakdown from the server.')}</p><button class="sbtn" onclick="loadCommissionDetail().then(render)">🔄 ${LX('إعادة المحاولة','Retry')}</button>`;
+  if(!COMM_DETAIL.length) return `<p style="color:var(--muted);margin-top:8px">${LX('ما فيه طلبات منجزة عبر مزوّدين بعد.','No completed provider orders yet.')}</p>`;
+  const byP={}; COMM_DETAIL.forEach(x=>{ (byP[x.phone]=byP[x.phone]||[]).push(x); });
+  return Object.keys(byP).map(ph=>{ const rows=byP[ph].slice().sort((a,b)=>a.date.localeCompare(b.date)||a.idx-b.idx);
+    const tr=rows.map(x=>`<tr><td>#${ar(esc(x.orderNo))}</td><td>${esc(x.date)}</td><td class="n">${money(x.labor)}</td><td class="n">${ar(x.pct)}٪${x.big?' · '+LX('طلب كبير','big job'):''}</td><td class="n">${money(x.commission)}</td></tr>`).join('');
+    return `<div class="biz-sec" style="margin-top:12px"><h4>${esc(rows[0].name||provName(ph))} <small style="color:var(--muted);font-weight:700">${esc(ph)}</small></h4>
+      <div class="biz-tw"><table class="biz-t" style="min-width:420px"><thead><tr><th>${LX('الطلب','Order')}</th><th>${LX('التاريخ','Date')}</th><th class="n">${LX('أجرة اليد','Labour')}</th><th class="n">${LX('النسبة','Rate')}</th><th class="n">${LX('العمولة','Commission')}</th></tr></thead><tbody>${tr}</tbody></table></div></div>`; }).join('');
+}
+async function loadCommission(force){
+  if(!cloudReady||commBusy||(COMM&&!force)) return;
+  commBusy=true; commErr='';
+  try{ const r=await sb.rpc('khafet_admin_commission_summary'); if(r.error) throw r.error; COMM=commNorm(r.data); if(commDetailOpen) COMM_DETAIL=null; }
+  catch(e){ COMM=null; commErr=String((e&&e.message)||e||''); }
+  finally{ commBusy=false; }
 }
 function techTrades(t){ return Array.isArray(t&&t.trades)?t.trades:[]; }
 async function toggleTrade(uid, key){
@@ -1575,10 +1711,14 @@ async function addTech(){
   const g=id=>((document.getElementById(id)||{}).value||'').trim();
   const name=g('nt_name'), phone=g('nt_phone'), password=g('nt_pass');
   if(!name||!phone){ toast('عبّي الاسم ورقم الجوال'); return; }
-  if(password.length<6){ toast('كلمة المرور ٦ خانات فأكثر'); return; }
+  if(password.length<8){ toast('كلمة المرور ٨ خانات فأكثر'); return; }
   toast('⏳ جارٍ إنشاء الحساب...');
   const d=await callStaffAdmin({ action:'create', name, phone, password, role:'tech' });
-  if(d&&d.ok){ toast(LX('✅ تم · الفني يدخل برقم '+d.phone,'✅ Done, the technician signs in with '+d.phone)); await loadStaff(); }
+  if(d&&d.ok){
+    // الرقم مسجّل أصلًا كعميل: الحساب انربط كفني بدون كلمة مرور جديدة، ويضبطها من «نسيت كلمة المرور» في تطبيق الطاقم
+    if(d.password_set===false) alert(String(d.message||LX('الحساب موجود كعميل، الفني يضبط كلمة مروره من «نسيت كلمة المرور» في تطبيق خافت شركاء','This number already has a customer account. The technician sets the password from “Forgot password” in the Khafet Partner app')));
+    else toast(LX('✅ تم · الفني يدخل برقم '+d.phone,'✅ Done, the technician signs in with '+d.phone));
+    await loadStaff(); }
   else toast('⚠️ '+((d&&d.error)||'تعذّر الإنشاء'));
 }
 async function toggleTechActive(uid, makeActive){
@@ -1587,8 +1727,8 @@ async function toggleTechActive(uid, makeActive){
   else toast('⚠️ '+((d&&d.error)||'تعذّر'));
 }
 async function resetTechPass(uid){
-  const p=prompt(LX('كلمة المرور الجديدة (٦ خانات على الأقل):','New password (at least 6 characters):')); if(p==null) return;
-  if(p.trim().length<6){ toast('٦ خانات على الأقل'); return; }
+  const p=prompt(LX('كلمة المرور الجديدة (٨ خانات على الأقل):','New password (at least 8 characters):')); if(p==null) return;
+  if(p.trim().length<8){ toast('٨ خانات على الأقل'); return; }
   const d=await callStaffAdmin({ action:'set_password', user_id:uid, password:p.trim() });
   toast(d&&d.ok?'✅ تغيّرت كلمة المرور':'⚠️ '+((d&&d.error)||'تعذّر'));
 }
@@ -1633,8 +1773,8 @@ function renderSuggestions(){
         <div style="white-space:pre-wrap;margin:6px 0;font-size:.93rem;line-height:1.7">${esc(s.body||'')}</div>
         <small>${d}${s.phone?' · <a href="tel:'+esc(s.phone)+'">📞 '+esc(s.phone)+'</a>':''}</small>
       </div>
-      <button class="sbtn ${s.handled?'':'ok'}" onclick="sugHandled('${s.id}',${!s.handled})">${s.handled?'↩︎':'✓'}</button>
-      <button class="sbtn danger" onclick="sugDelete('${s.id}')">🗑️</button>
+      <button class="sbtn ${s.handled?'':'ok'}" data-id="${esc(s.id)}" onclick="sugHandled(this.dataset.id,${!s.handled})">${s.handled?'↩︎':'✓'}</button>
+      <button class="sbtn danger" data-id="${esc(s.id)}" onclick="sugDelete(this.dataset.id)">🗑️</button>
     </div>`;
   }).join('');
 }
@@ -1696,9 +1836,9 @@ function renderSolutionsAdmin(){
     <div class="rline">
       ${s.image_url?`<img class="sol-thumb" src="${esc(s.image_url)}" alt="" loading="lazy">`:`<span class="sol-thumb ph">${esc(s.icon||'🔧')}</span>`}
       <div class="rl-t"><b>${esc(s.icon||'🔧')} ${esc(s.title)}</b><small>${s.active===false?LX('⚪ مخفي','⚪ Hidden'):LX('🟢 ظاهر','🟢 Visible')} · ${+s.price>0?money(s.price):LX('بعد المعاينة','after inspection')}${s.service_id?'':' · '+LX('⚠️ بلا خدمة مرتبطة','⚠️ no linked service')}</small></div>
-      <button class="sbtn" onclick="editSolution('${esc(s.id)}')">✏️</button>
-      <button class="sbtn ${s.active===false?'ok':''}" onclick="solToggle('${esc(s.id)}',${s.active===false})">${s.active===false?LX('أظهر','Show'):LX('إخفاء','Hide')}</button>
-      <button class="sbtn danger" onclick="solDelete('${esc(s.id)}')">🗑️</button>
+      <button class="sbtn" data-id="${esc(s.id)}" onclick="editSolution(this.dataset.id)">✏️</button>
+      <button class="sbtn ${s.active===false?'ok':''}" data-id="${esc(s.id)}" onclick="solToggle(this.dataset.id,${s.active===false})">${s.active===false?LX('أظهر','Show'):LX('إخفاء','Hide')}</button>
+      <button class="sbtn danger" data-id="${esc(s.id)}" onclick="solDelete(this.dataset.id)">🗑️</button>
     </div>`).join('')).join('') : `<p style="color:var(--muted)">${solsLoaded?LX('ما فيه حلول بعد.','No solutions yet.'):LX('جارٍ التحميل…','Loading…')}</p>`;
   return `<p class="sp-hint" style="margin-bottom:10px">${LX('كل حل يظهر للعميل كصفحة: المشكلة، ليش تصير، الحل، وش يشمل، والسعر. زر «اطلب الحل» يحجز الخدمة المرتبطة به. العنوان ووصف الصفحة من ⚙️ الإعدادات.','Each solution is a customer page: problem, cause, fix, what is included, price. The order button books the linked service.')}</p>
     ${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="editSolution('')">➕ ${LX('حل جديد','New solution')}</button>`;
@@ -1757,7 +1897,7 @@ function editSolution(id){
     </div>
     <label>🔢 ${LX('اسم الوحدة لو العميل يقدر يطلب أكثر من وحدة (مثال: شفاط). فاضي = وحدة واحدة فقط','Unit name if customers can order several (e.g. fan). Empty = single')}<input id="so_unit" value="${esc(s.unit_label||'')}" placeholder="${LX('مثال: شفاط','e.g. fan')}"></label>
     <label class="cg-sw"><input type="checkbox" id="so_active" ${s.active!==false?'checked':''}> ${LX('ظاهر للعملاء','Visible to customers')}</label>
-    <div class="cg-acts"><button class="sbtn ok" onclick="saveSolution('${esc(s.id)}')">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
+    <div class="cg-acts"><button class="sbtn ok" data-id="${esc(s.id)}" onclick="saveSolution(this.dataset.id)">💾 ${LX('حفظ','Save')}</button><button class="sbtn" onclick="closeCg()">${LX('إلغاء','Cancel')}</button></div>`);
 }
 function solSlug(t){ return 'sol_'+String(t||'').toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)+'-'+Date.now().toString(36).slice(-4); }
 async function saveSolution(id){
@@ -1813,9 +1953,9 @@ function renderArticles(){
   const rows=ARTICLES.length? ARTICLES.map(a=>`
     <div class="rline">
       <div class="rl-t"><b>${esc(a.emoji||'')} ${esc(a.title)}</b><small>${a.published===false?LX('⚪ مسودّة','⚪ Draft'):LX('🟢 منشور','🟢 Published')} · ${esc(trData(a.category||''))}</small></div>
-      <button class="sbtn" onclick="artEdit('${a.id}')">✏️</button>
-      <button class="sbtn ${a.published===false?'ok':''}" onclick="artTogglePub('${a.id}',${a.published===false})">${a.published===false?'انشر':'إخفاء'}</button>
-      <button class="sbtn danger" onclick="artDelete('${a.id}')">🗑️</button>
+      <button class="sbtn" data-id="${esc(a.id)}" onclick="artEdit(this.dataset.id)">✏️</button>
+      <button class="sbtn ${a.published===false?'ok':''}" data-id="${esc(a.id)}" onclick="artTogglePub(this.dataset.id,${a.published===false})">${a.published===false?'انشر':'إخفاء'}</button>
+      <button class="sbtn danger" data-id="${esc(a.id)}" onclick="artDelete(this.dataset.id)">🗑️</button>
     </div>`).join('') : `<p style="color:var(--muted)">لا توجد مقالات بعد.</p>`;
   return `${rows}<button class="sbtn ok" style="width:100%;margin-top:12px" onclick="artNew()">➕ مقال جديد</button>`;
 }
@@ -1860,7 +2000,7 @@ const WH_HOST={
   canEdit:()=>true, needReason:()=>false,
   org:{ name:'مؤسسة خافت للسباكة والكهرباء', city:'الخبر', phone:'0590497866' },
   imgOpts:id=>IMGOPTS[id]||[], pickImg:(id,u)=>pickImg(id,u), linker:()=>openImgLinker(),
-  cacheSave:()=>{ try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} }
+  cacheSave:()=>{ if(!loggedIn) return; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} }
 };
 let invLoaded=false;
 function renderInventory(){ return whMain(); }
@@ -1894,7 +2034,7 @@ function renderSubs(){
   if(!SUBS.length) return `<p style="color:var(--muted)">لا توجد طلبات اشتراك.</p>`;
   return SUBS.map(s=>`<div class="rline"><span style="font-size:1.3rem">🛡️</span>
     <div class="rl-t"><b>${esc(s.name||'')}</b> ${LX('—','·')} ${esc(s.plan||'')} (${money(+s.price||0)})<small>📞 ${esc(s.phone||'')} · ${(s.status==='active')?LX('✅ مفعّل','✅ Active'):LX('🕐 جديد','🕐 New')}</small></div>
-    ${s.status==='active'?'':`<button class="sbtn ok" onclick="subMark('${s.id}','active')">تفعيل</button>`}</div>`).join('');
+    ${s.status==='active'?'':`<button class="sbtn ok" data-id="${esc(s.id)}" onclick="subMark(this.dataset.id,'active')">تفعيل</button>`}</div>`).join('');
 }
 function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_admin').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(loggedIn) loadAll(); }).subscribe(); }catch(e){} }
 async function patch(dbId,p){ if(!cloudReady||!dbId) return; try{ const r=await sb.from('khafet_orders').update(p).eq('id',dbId); if(r&&r.error){ toast(LX('ما انحفظ التعديل','Change not saved')); loadAll(); } }catch(e){} }
@@ -1904,7 +2044,7 @@ function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return;
 function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
 function toggleReviewAnon(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewAnon=!o.reviewAnon; patch(o.dbId,{review_anon:o.reviewAnon}); toast(o.reviewAnon?'👤 أُخفي اسم العميل':'👤 يظهر اسم العميل'); render(); }
 function toggleReviewHidden(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reviewHidden=!o.reviewHidden; patch(o.dbId,{review_hidden:o.reviewHidden}); toast(o.reviewHidden?'🙈 أُخفي التقييم من الرئيسية':'👁️ يظهر التقييم في الرئيسية'); render(); }
-async function approveProvider(phone,status){ const p0=PROVIDERS.find(x=>x.phone===phone); if(status==='approved' && p0 && !/^[0-9]{10}$/.test(String(p0.cr_number||''))){ toast(LX('🧾 لازم رقم سجل تجاري صحيح قبل الاعتماد','🧾 A valid CR number is required before approval')); return; } if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
+async function approveProvider(phone,status){ const p0=PROVIDERS.find(x=>x.phone===phone); if(status==='approved' && p0 && (!/^[0-9]{10}$/.test(String(p0.cr_number||'')) || !p0.cr_doc_path)){ toast(LX('🧾 لازم رقم السجل التجاري (10 أرقام) وصورته قبل الاعتماد','🧾 The CR number (10 digits) and its document are required before approval')); return; } if(cloudReady){ try{ await sb.from('khafet_providers').update({status}).eq('phone',phone); }catch(e){} } const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=status; toast(status==='approved'?'✅ تم اعتماد المزوّد':'تم التحديث'); render(); }
 
 /* ---- الدخول ---- */
 /* الدخول بالجوال + رمز SMS (بدون كلمة مرور) */
@@ -1953,6 +2093,7 @@ async function verifyAdminOtp(){
   try{
     const { error }=await sb.auth.verifyOtp({ phone:otpPhone, token:code, type:'sms' });
     if(error) throw error;
+    admWipeCache();   // جولة الإصلاح 5 (البند 27): دخول ناجح قد يكون لحساب غير صاحب الكاش، فكاش المخزن (فيه أسعار الشراء) يُمسح أولًا
     const ok=await isAdminUser();
     if(ok==='err') throw new Error('net');
     if(ok!==true){ await sb.auth.signOut(); throw new Error('no-admin'); }
@@ -1960,35 +2101,39 @@ async function verifyAdminOtp(){
     otpSent=false; loggedIn=true; loadAll(); subscribe();
   }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : (e&&e.message==='net') ? 'تعذّر الاتصال بالخادم، حاولي مرة ثانية' : 'الرمز غير صحيح'); }
 }
-async function logout(){ if(!confirm(LX('تسجيل الخروج؟ بتحتاجين رمز جديد بالرسائل عند الدخول القادم.','Sign out? You will need a new SMS code next time.'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_inv_cache'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); render(); }
+async function logout(){ if(!confirm(LX('تسجيل الخروج؟ بتحتاج رمز جديد بالرسائل عند الدخول القادم.','Sign out? You will need a new SMS code next time.'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_outbox','kh_pv_outbox'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); admWipeCache(); render(); }
+/* جولة الإصلاح 4 (البند 27): كاش المخزن في البوابتين (فيه أسعار الشراء) لا يبقى على الجهاز بعد الخروج الصريح أو الضمني */
+/* جولة الإصلاح 5: ومعه الحفظ المحلي وعلامات العرض لبوابتي الفنيين والمزوّد (siyanah_v1 وkhafet_*_seen) كما تمسحها البوابتان عند خروجهما */
+function admWipeCache(){ ['kh_inv_cache','kh_pinv_cache','siyanah_v1','khafet_cx_seen','khafet_seen_avail','khafet_tech_seen'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ INV=[]; }catch(e){} }
+/* خطأ اتصال (بلا نت أو مهلة) لا رفض من الخادم: لا يُعامل كخروج */
+function admNetErr(e){ return /fetch|network|load failed|timed? ?out|offline|ECONN/i.test(String((e&&(e.message||e.name))||e||'')); }
 
 /* ---- العرض ---- */
 function setAdminFilter(f){ adminFilter=f; render(); }
 function provName(phone){ const p=PROVIDERS.find(x=>x.phone===phone); return p?p.name:phone; }
-/* مستحقات المنصة من المزودين: نسبة من أجرة اليد حسب الإعدادات (أول الطلبات بنسبة مخفضة، وسقف للطلب الكبير) */
-function commissionByProvider(){
-  const done=ORDERS.filter(o=>o.status==='done' && o.providerPhone).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||(+a.num||0)-(+b.num||0));
-  const byP={};
-  done.forEach(o=>{ const ph=o.providerPhone; const p=byP[ph]||(byP[ph]={n:0,labor:0,sum:0}); const prov=PROVIDERS.find(x=>x.phone===ph); const isCo=!prov||!/فني/.test(String(prov.type||'')); p.sum+=commissionFor(o,p.n,isCo); p.n++; p.labor+=orderLabor(o); });
-  return byP;
-}
+/* مستحقات المنصة من المزودين: الأرقام من الخادم (khafet_admin_commission_summary)، والنِّسب المعروضة من الإعدادات للعلم فقط */
 function renderCommission(){
-  const byP=commissionByProvider(); const phones=Object.keys(byP);
-  if(!phones.length) return `<p style="color:var(--muted)">${LX('لا توجد طلبات منجزة عبر مزوّدين بعد.','No completed provider orders yet.')}</p>`;
-  const total=phones.reduce((a,ph)=>a+byP[ph].sum,0);
-  const rows=phones.map(ph=>`<div class="rline"><div class="rl-t"><b>${esc(provName(ph))}</b><small>${ordersN(byP[ph].n)} · ${LX('أجرة يد','labour')} ${money(byP[ph].labor)} · ${esc(ph)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(byP[ph].sum)}</span></div>`).join('');
-  return `<p style="color:var(--muted);font-size:.82rem;font-weight:700;margin-bottom:8px">${LX('النسبة: فني '+ar(stNum('commission_tech_pct',15))+'٪ · مؤسسة '+ar(stNum('commission_provider_pct',12))+'٪ · أول '+ar(stNum('commission_first_jobs',10))+' طلبات '+ar(stNum('commission_first_pct',10))+'٪ · تتغيّر من الإعدادات','Rates: technician '+stNum('commission_tech_pct',15)+'% · company '+stNum('commission_provider_pct',12)+'% · first '+stNum('commission_first_jobs',10)+' jobs '+stNum('commission_first_pct',10)+'% · change in Settings')}</p>`
-    +rows+`<div class="rline" style="border-top:2px solid var(--line)"><div class="rl-t"><b>${LX('الإجمالي المستحق','Total due')}</b></div><span style="font-weight:900;font-size:1.15rem">${money(total)}</span></div>`;
+  const rates=`<p style="color:var(--muted);font-size:.82rem;font-weight:700;margin-bottom:8px">${LX('النسبة: فني '+ar(stNum('commission_tech_pct',15))+'٪ · مؤسسة '+ar(stNum('commission_provider_pct',12))+'٪ · أول '+ar(stNum('commission_first_jobs',10))+' طلبات '+ar(stNum('commission_first_pct',10))+'٪ · تتغيّر من الإعدادات','Rates: technician '+stNum('commission_tech_pct',15)+'% · company '+stNum('commission_provider_pct',12)+'% · first '+stNum('commission_first_jobs',10)+' jobs '+stNum('commission_first_pct',10)+'% · change in Settings')}</p>`;
+  const refresh=`<button class="sbtn" style="margin-top:8px" onclick="loadCommission(true).then(render)">🔄 ${LX('تحديث من الخادم','Refresh from server')}</button>`;
+  if(commBusy&&!COMM) return rates+`<p style="color:var(--muted)">${LX('جاري الحساب في الخادم…','Calculating on the server…')}</p>`;
+  if(!COMM) return rates+`<p style="color:var(--danger);font-weight:700">${LX('تعذّر جلب المستحقات من الخادم.','Could not load the dues from the server.')}</p>`+refresh;
+  if(!COMM.rows.length) return rates+`<p style="color:var(--muted)">${LX('لا توجد طلبات منجزة عبر مزوّدين بعد.','No completed provider orders yet.')}</p>`+refresh;
+  const rows=COMM.rows.map(r=>`<div class="rline"><div class="rl-t"><b>${esc(r.name||provName(r.phone))}</b><small>${ordersN(r.orders)} · ${LX('أجرة يد','labour')} ${money(r.labor)} · ${esc(r.phone)}</small></div><span style="font-weight:900;color:var(--gold-deep)">${money(r.due)}</span></div>`).join('');
+  return rates+`<p class="sp-hint" style="margin-bottom:6px">${LX('محسوبة في الخادم من فواتير الطلبات المنجزة: أجرة اليد فقط بدون القطع والرسوم.','Calculated on the server from completed order invoices: labour only, no parts or fees.')}</p>`
+    +rows+`<div class="rline" style="border-top:2px solid var(--line)"><div class="rl-t"><b>${LX('الإجمالي المستحق','Total due')}</b></div><span style="font-weight:900;font-size:1.15rem">${money(COMM.total)}</span></div>`+refresh
+    +`<button class="sbtn" style="margin-top:8px;margin-inline-start:6px" onclick="toggleCommDetail()">${commDetailOpen?LX('إخفاء تفصيل الطلبات','Hide order breakdown'):LX('تفصيل الطلبات','Order breakdown')}</button>`+commDetailHtml();
 }
 /* ═ إدارة المزوّدين بالاستثناء: بحث + فلاتر + اعتماد جماعي + إيقاف/تفعيل ═ */
 let provQ='', provCity='all', provSt='all';
 function provCityList(p){ return (Array.isArray(p.cities)&&p.cities.length?p.cities:[p.city]).filter(Boolean).map(s=>String(s).trim()); }
 function provAllCities(){ const s=new Set(); PROVIDERS.forEach(p=>provCityList(p).forEach(c=>s.add(c))); return [...s].sort(); }
 async function bulkApprove(){
-  const pend=PROVIDERS.filter(p=>(p.status||'pending')==='pending');
-  if(!pend.length){ toast('لا يوجد معلّقون'); return; }
-  if(!confirm(LX('اعتماد كل المعلّقين ('+pend.length+')؟','Approve all pending ('+pend.length+')?'))) return;
-  try{ await sb.from('khafet_providers').update({status:'approved'}).eq('status','pending');
+  const pendAll=PROVIDERS.filter(p=>(p.status||'pending')==='pending');
+  const pend=pendAll.filter(p=>/^[0-9]{10}$/.test(String(p.cr_number||''))&&p.cr_doc_path);   /* الاعتماد فقط لمن أرفق السجل التجاري وصورته */
+  if(!pendAll.length){ toast('لا يوجد معلّقون'); return; }
+  if(!pend.length){ toast(LX('ما فيه معلّق مكتمل السجل التجاري','No pending provider has a complete CR')); return; }
+  if(!confirm(LX('اعتماد المعلّقين مكتملي السجل التجاري ('+pend.length+' من '+pendAll.length+')؟','Approve pending providers with a complete CR ('+pend.length+' of '+pendAll.length+')?'))) return;
+  try{ await sb.from('khafet_providers').update({status:'approved'}).eq('status','pending').in('phone', pend.map(p=>p.phone));
     pend.forEach(p=>p.status='approved'); toast(LX('✅ اعتُمد الجميع ('+pend.length+')','✅ All approved ('+pend.length+')'));
   }catch(e){ toast('⚠️ تعذّر الاعتماد الجماعي'); }
   render();
@@ -2005,7 +2150,8 @@ let provOpen = {};   // أي بطاقة مفتوحة على فريقها
 function toggleProvTeam(code){ provOpen[code]=!provOpen[code]; render(); }
 function provTeam(p){
   const code=String(p.code||'').toUpperCase(); if(!code) return [];
-  return (STAFF||[]).filter(x=>String(x.provider_code||'').toUpperCase()===code);
+  // الفريق المعتمد برمز المؤسسة، وطلبات الانضمام المعلّقة لها بمعرّفها (requested_org، جولة الإصلاح 3)
+  return (STAFF||[]).filter(x=>String(x.provider_code||'').toUpperCase()===code || (x.requested_org && String(x.requested_org)===String(p.id)));
 }
 function provStats(p){
   const ph9=v=>String(v||'').replace(/\D/g,'').slice(-9);
@@ -2037,7 +2183,7 @@ function renderProviders(){
     if(st==='pending') acts=`<button class="sbtn ok" data-phone="${esc(p.phone)}" onclick="approveProvider(this.dataset.phone,'approved')">✔️ اعتماد</button><button class="sbtn danger" data-phone="${esc(p.phone)}" onclick="approveProvider(this.dataset.phone,'rejected')">رفض</button>`;
     else if(st==='approved') acts=`<button class="sbtn danger" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'suspended')">⏸️ إيقاف</button>`;
     else acts=`<button class="sbtn ok" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'approved')">▶️ تفعيل</button>`;
-    return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st)}</span>
+    return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${esc(_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st))}</span>${provLimitBadge(p)}
       <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div>
       <div style="margin-top:3px;font-size:.88rem">🧾 ${LX('السجل التجاري','CR')}: ${/^[0-9]{10}$/.test(String(p.cr_number||''))?'<b dir="ltr">'+esc(p.cr_number)+'</b>':'<b style="color:#b91c1c">'+LX('غير مرفق','missing')+'</b>'} ${p.cr_doc_path?`<button class="sbtn" style="padding:4px 10px" data-path="${esc(p.cr_doc_path)}" onclick="openDocA(this.dataset.path)">📎 ${LX('عرض السجل','View')}</button>`:''}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
@@ -2062,9 +2208,10 @@ function renderProviders(){
             <span class="pc-t-tr">${((x.trades||[]).map(tr=>esc((CATALOG.cats.find(c=>c.id===tr)||{}).name||tr)).join(LX('، ',', '))||LX('بلا تخصص','No trade'))}</span>
             <span class="status ${(x.active===false?'st-cancelled':'st-done')}">${(x.active===false?LX('موقوف','Off'):LX('فعّال','On'))}</span></div>` ).join('')
           : `<p style="color:var(--muted);margin:6px 2px">${LX('ما انضم له فنيون بعد','No technicians joined yet')}</p>`;
-        return nums + `<button class="pc-team" onclick="toggleProvTeam('${esc(String(p.code).toUpperCase())}')">👥 ${LX('الفريق','Team')} (${ar(t.length)}) ${open?'▲':'▼'}</button>
+        return nums + `<button class="pc-team" data-code="${esc(String(p.code).toUpperCase())}" onclick="toggleProvTeam(this.dataset.code)">👥 ${LX('الفريق','Team')} (${ar(t.length)}) ${open?'▲':'▼'}</button>
           ${open? `<div class="pc-team-box">${rows}</div>` : ''}`;
       })()}
+      ${st==='approved'?renderProvLimits(p):''}
       <div style="display:flex;gap:8px;margin-top:10px">${acts}</div></div>`;
   }).join('');
   return `
@@ -2082,6 +2229,63 @@ function renderProviders(){
     </div>
     ${cards||'<p style="color:var(--muted)">لا نتائج بهذا الفلتر.</p>'}`;
 }
+/* ── الحجب الصامت: التخصصات اللي توصل المزوّد فعليًا ──
+   المديرة تحجب بصمت بعض تخصصات مزوّد معيّن (khafet_provider_limits، للمدير فقط): طلبات التخصص المحجوب ما توصله
+   ولا يقبلها ولا يوصله عنها إشعار، بينما تطبيقه يعرض تخصصاته كاملة. الحفظ upsert بالمدير، والخادم يسجّل الأثر. */
+function provSvcList(p){ return (Array.isArray(p&&p.services)?p.services:[]).map(s=>String(s==null?'':s)).filter(Boolean); }
+function provLimitSaved(p){ const L=LIMITS[String(p&&p.id||'')]; return L?{hidden:L.hidden.slice(), note:L.note||''}:{hidden:[], note:''}; }
+function provLimitState(p){
+  const pid=String(p.id||''); if(limitDraft[pid]) return limitDraft[pid];
+  const saved=provLimitSaved(p); return {hidden:new Set(saved.hidden), note:saved.note, dirty:false};
+}
+function provHiddenCount(p){ const saved=new Set(provLimitSaved(p).hidden); return provSvcList(p).filter(s=>saved.has(s)).length; }
+function provLimitBadge(p){
+  if((p.status||'pending')!=='approved'||!p.id) return '';
+  const n=provHiddenCount(p); if(!n) return '';
+  return ` <span class="status pl-badge" title="${LX('تخصصات محجوبة بصمت عن هذا المزوّد','Trades hidden silently from this provider')}">${LX(ar(n)+' محجوب بصمت', n+' hidden')}</span>`;
+}
+function renderProvLimits(p){
+  if(!p.id) return '';
+  const svcs=provSvcList(p); if(!svcs.length) return '';
+  const st=provLimitState(p); const pid=String(p.id);
+  const nHidden=svcs.filter(s=>st.hidden.has(s)).length;
+  const chips=svcs.map(s=>{ const off=st.hidden.has(s);
+    return `<button type="button" class="pl-chip ${off?'off':'on'}" data-pid="${esc(pid)}" data-svc="${esc(s)}" onclick="toggleProvLimit(this.dataset.pid,this.dataset.svc)"
+      title="${off?LX('محجوب بصمت · اضغط ليرجع يوصله','Hidden silently, tap to deliver again'):LX('يوصله · اضغط لحجبه بصمت','Delivered, tap to hide silently')}"><b>${esc(trData(s))}</b><small>${off?LX('محجوب بصمت','hidden'):LX('يوصله','delivered')}</small></button>`; }).join('');
+  return `<div class="pl-box ${nHidden?'has-hidden':''}" data-pid="${esc(pid)}">
+      <div class="pl-h">🛠️ ${LX('التخصصات اللي توصله فعليًا','Trades actually delivered to him')}${nHidden?`<span class="pl-cnt">${LX(ar(nHidden)+' محجوب', nHidden+' hidden')}</span>`:''}</div>
+      <div class="pl-chips">${chips}</div>
+      <p class="pl-note">${LX('الحجب صامت: المزوّد ما يشوف هذا الحجب، وتطبيقه يعرض تخصصاته كاملة كما هي. لكن طلبات التخصص المحجوب ما توصله، ولا يقدر يقبلها، ولا يوصله عنها إشعار. تقدر ترجّع له أي تخصص في أي وقت.','Hiding is silent: the provider never sees it and his app still lists all his trades. Orders in a hidden trade never reach him, cannot be accepted by him and send him no notification. You can restore any trade at any time.')}</p>
+      <div class="pl-row">
+        <input class="pl-in" data-pid="${esc(pid)}" value="${esc(st.note)}" maxlength="500" placeholder="${LX('ملاحظة داخلية (اختياري، المزوّد ما يشوفها)','Internal note (optional, not visible to the provider)')}" oninput="noteProvLimit(this.dataset.pid,this.value)" />
+        <button type="button" class="sbtn ok pl-save" data-pid="${esc(pid)}" onclick="saveProvLimit(this.dataset.pid)" ${st.dirty?'':'disabled'}>💾 ${LX('حفظ','Save')}</button>
+      </div></div>`;
+}
+function toggleProvLimit(pid,svc){
+  const p=PROVIDERS.find(x=>String(x.id)===String(pid)); if(!p) return;
+  const st=provLimitState(p); if(st.hidden.has(svc)) st.hidden.delete(svc); else st.hidden.add(svc);
+  st.dirty=true; limitDraft[String(pid)]=st; render();
+}
+function noteProvLimit(pid,v){
+  const p=PROVIDERS.find(x=>String(x.id)===String(pid)); if(!p) return;
+  const st=provLimitState(p); st.note=String(v==null?'':v).slice(0,500); st.dirty=true; limitDraft[String(pid)]=st;
+  // بلا إعادة رسم (حتى ما ينمسح ما يكتبه): نفعّل زر الحفظ فقط
+  document.querySelectorAll('.pl-save').forEach(b=>{ if(b.dataset.pid===String(pid)) b.disabled=false; });
+}
+async function saveProvLimit(pid){
+  const p=PROVIDERS.find(x=>String(x.id)===String(pid)); if(!p) return;
+  const st=provLimitState(p);
+  const hidden=provSvcList(p).filter(s=>st.hidden.has(s));   // من تخصصاته الحالية فقط
+  const note=String(st.note||'').trim().slice(0,500);
+  if(!cloudReady){ toast(LX('تعذّر الاتصال','Connection failed')); return; }
+  try{
+    const { error } = await sb.from('khafet_provider_limits').upsert({ provider_id:p.id, hidden_services:hidden, note:note||null }, { onConflict:'provider_id' });
+    if(error) throw error;
+    LIMITS[String(p.id)]={hidden:hidden.slice(), note:note}; delete limitDraft[String(p.id)];
+    toast(hidden.length? LX('✅ انحفظ · '+ar(hidden.length)+' تخصص محجوب بصمت عن هذا المزوّد','✅ Saved · '+hidden.length+' trade(s) hidden silently') : LX('✅ انحفظ · كل تخصصاته توصله','✅ Saved · all trades are delivered'));
+  }catch(e){ toast(LX('⚠️ تعذّر الحفظ، حاول مرة ثانية','⚠️ Could not save, try again')); }
+  render();
+}
 function renderAdminOrder(o){
   const itemsRows=o.items.map(i=>`<div class="li"><span>${esc(i.ico||'')} ${esc(itemName(i))}${i.qty>1?' ×'+ar(i.qty):''}</span><span>${i.custom?'—':money((i.price||0)*(i.qty||1))}</span></div>`).join('');
   const created=new Date(o.createdAt); const cs=_enUI()? created.getDate()+' '+EN_MON[created.getMonth()] : ar(created.getDate())+' '+AR_MON[created.getMonth()];
@@ -2092,6 +2296,8 @@ function renderAdminOrder(o){
   else if(o.status==='progress') acts=`<button class="sbtn ok" onclick="setStatus('${o.id}','done')">✅ إنهاء</button>`;
   else if(o.status==='done') acts=`<span style="color:var(--ok);font-weight:800">${LX('✅ مكتمل','✅ Completed')}${o.rating?' · '+'⭐'.repeat(o.rating):''}</span>`;
   else acts=`<span style="color:var(--danger);font-weight:700">ملغي</span>`;
+  // طلب إلغاء من الفني أو المزوّد بانتظار قرار الإدارة: زر يودّي لقسم طلبات الإلغاء
+  if(o.cancelReq==='pending'&&!['done','cancelled'].includes(o.status)) acts=`<button class="sbtn" onclick="setAdminSection('cancels')">${LX('مراجعة طلب الإلغاء','Review cancellation request')}</button>`+acts;
   const a=o.address||{};
   // مراحل الطلب · شلنا «جارٍ العمل» لأنها ما تفيد العميل (يشوف الفني قدامه)،
   // وخلّينا «الفني وصل الموقع» مرحلة أساسية · هذي اللي تخلي العميل يستقبله.
@@ -2103,7 +2309,7 @@ function renderAdminOrder(o){
     <i class="${o.arrived&&!done?'arr':((o.arrived||done)?'on':'')}">🚪 الفني وصل الموقع</i><span>${ARW}</span>
     <i class="${done?'on':''}">✅ تمت الخدمة</i>
   </div>`;
-  return `<div class="aorder ${STATUS_CLS[o.status]}"><div class="ah"><div class="who"><b>${o.id}</b> <span class="status ${STATUS_CLS[o.status]}">${STATUS_AR[o.status]}</span>${o.arrived&&!done?` <span class="status st-arrived">🚪 الفني وصل الموقع</span>`:''}${o.delayMin>0&&!done?` <span class="status st-delay">${LX(`⏳ متأخّر ${ar(o.delayMin)} د`,`⏳ ${o.delayMin} min late`)}</span>`:''}
+  return `<div class="aorder ${STATUS_CLS[o.status]}"><div class="ah"><div class="who"><b>${o.id}</b> <span class="status ${STATUS_CLS[o.status]}">${STATUS_AR[o.status]}</span>${o.arrived&&!done?` <span class="status st-arrived">🚪 الفني وصل الموقع</span>`:''}${o.delayMin>0&&!done?` <span class="status st-delay">${LX(`⏳ متأخّر ${ar(o.delayMin)} د`,`⏳ ${o.delayMin} min late`)}</span>`:''}${(o.cancelReq==='pending'&&!done&&o.status!=='cancelled')?` <span class="status st-delay">${LX('طلب إلغاء بانتظار قرارك','Cancellation request pending')}</span>`:''}${(o.cancelReq==='rejected'&&!done&&o.status!=='cancelled')?` <span class="status st-new">${LX('رُفض طلب الإلغاء','Cancellation request rejected')}</span>`:''}
     <div style="margin-top:4px">👤 ${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></div></div>
     <div style="text-align:left;color:var(--muted);font-size:.8rem">${cs}</div></div>
     ${flow}
@@ -2123,7 +2329,7 @@ function renderAdminOrder(o){
           <button class="sbtn" onclick="toggleReviewAnon('${o.id}')">${o.reviewAnon?'👤 إظهار الاسم':'🕶️ إخفاء الاسم'}</button>
           <button class="sbtn ${o.reviewHidden?'ok':'danger'}" onclick="toggleReviewHidden('${o.id}')">${o.reviewHidden?'👁️ إظهار التقييم':'🙈 إخفاء التقييم'}</button>
         </div></div>`:''}
-      ${o.rejectReason?`<div><div class="k">❌ رفض الفني</div><span style="color:var(--danger);font-weight:700">${esc(o.rejectReason)}</span></div>`:''}
+      ${o.rejectReason?`<div><div class="k">${o.status==='cancelled'?LX('❌ سبب الإلغاء','❌ Cancellation reason'):'❌ رفض الفني'}</div><span style="color:var(--danger);font-weight:700">${esc(o.rejectReason)}</span></div>`:''}
       ${(o.wantsEarlier && !['done','cancelled'].includes(o.status))?`<div><div class="k">🔔 موعد أبكر</div><span style="color:#0b7a3b;font-weight:700">العميل يرحّب بموعد أبكر</span></div>`:''}
     </div>
     <div class="aitems">${o.quick?LX('⚡ طلب سريع (معاينة)','⚡ Quick request (inspection)'):itemsRows}</div>
@@ -2132,7 +2338,7 @@ function renderAdminOrder(o){
 /* ---- لوحات قابلة للطي ----
    الحالة محفوظة بالمتصفح، فترجع مثل ما تركتيها كل مرة تدخلين. */
 /* اللوحات اللي تبدأ مصغّرة (الأقل استخداماً يومياً) */
-const PANEL_STARTS_CLOSED={ inv:true, log:true, prices:true, subs:true, prov:true, rem:false, comm:false };
+const PANEL_STARTS_CLOSED={ inv:true, log:true, prices:true, subs:true, prov:true, rem:false, comm:false, devpay:true };
 let collapsed={};
 try{ collapsed=JSON.parse(localStorage.getItem('khafet_admin_collapsed')||'{}'); }catch(e){ collapsed={}; }
 function isPanelOpen(key){ return (key in collapsed) ? !collapsed[key] : !PANEL_STARTS_CLOSED[key]; }
@@ -2245,6 +2451,7 @@ function render(){
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
+    ['cancels','❌',LX('طلبات الإلغاء','Cancellation requests'), crPending(), LX('طلبات الفنيين والمزوّدين لإلغاء طلب · القبول يرجّع المبلغ للعميل','Technician and provider requests to cancel an order · approval refunds the customer'), false],
     ['team','👥','الفريق', pendingProv+PENDING_TECHS.length, 'الفنيّون · المزوّدون · المستحقات', true],
     ['cust','💬','العملاء', newSugs+newSubs+openCmp, 'الشكاوى · الرسائل · الاشتراكات · المقالات', false],
     ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
@@ -2268,7 +2475,8 @@ function render(){
       <div class="fbar">${fbar}</div>
       ${orderCards||`<p style="color:var(--muted);margin-top:14px">${LX('لا طلبات بهذا الفلتر.','No orders with this filter.')}</p>`}
       <div style="height:10px"></div>
-      ${block(LX('📩 تذكيرات المواعيد القريبة','📩 Upcoming appointment reminders'), remHtml)}`;
+      ${block(LX('📩 تذكيرات المواعيد القريبة','📩 Upcoming appointment reminders'), remHtml)}
+      ${panel('devpay', LX('🧾 مطابقة دفعات الجهاز اليوم','🧾 Card machine reconciliation today'), renderDevPay)}`;
   } else if(adminSection==='team'){
     body=`${block(LX(`🧑‍🔧 فنيين خافت (${ar(STAFF.filter(s=>s.role==='tech').length)})`,`🧑‍🔧 Khafet technicians (${STAFF.filter(s=>s.role==='tech').length})`), renderTechs())}
       ${block(LX(`🤝 مزودين الصيانة (${ar(PROVIDERS.length)})`,`🤝 Maintenance providers (${PROVIDERS.length})`), renderProviders())}
@@ -2287,6 +2495,8 @@ function render(){
     body=renderBroadcast();
   } else if(adminSection==='joins'){
     body=renderJoinReqs();
+  } else if(adminSection==='cancels'){
+    body=renderCancelReqs();
   } else if(adminSection==='settings'){
     body=renderSettings();
   } else if(adminSection==='biz'){
@@ -2294,7 +2504,7 @@ function render(){
   } else if(adminSection==='solutions'){
     body=block(LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'), renderSolutionsAdmin());
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers')})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),cancels:LX('❌ طلبات الإلغاء','❌ Cancellation requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers')})[adminSection]||'';
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico">🏢</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     ${dashHtml()}
@@ -2338,7 +2548,7 @@ function stalePanelHtml(){
   const rows=(STALE||[]).map(o=>`<label class="st-sw" style="margin:6px 0;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fff">
       <input type="checkbox" data-id="${esc(o.id)}" ${(+o.paid_amount>0)?'disabled':'checked'}>
       <span style="flex:1;min-width:0"><b>#${ar(o.order_no)}</b> · ${esc(o.customer_name||'')} ${o.quick?'⚡':''}
-        <small style="display:block;color:var(--muted);font-weight:700">${esc(String(o.created_at||'').slice(0,10))} · ${({new:A?'جديد':'New',confirmed:A?'مؤكد':'Confirmed',progress:A?'قيد التنفيذ':'In progress'})[o.status]||o.status}${(+o.paid_amount>0)?' · '+(A?'مدفوع، يُلغى من بطاقته':'paid, cancel from its card'):''}</small></span>
+        <small style="display:block;color:var(--muted);font-weight:700">${esc(String(o.created_at||'').slice(0,10))} · ${esc(({new:A?'جديد':'New',confirmed:A?'مؤكد':'Confirmed',progress:A?'قيد التنفيذ':'In progress'})[o.status]||o.status)}${(+o.paid_amount>0)?' · '+(A?'مدفوع، يُلغى من بطاقته':'paid, cancel from its card'):''}</small></span>
     </label>`).join('');
   return `<div class="panel" id="stalePanel" style="margin-top:0;border-color:var(--gold)">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2366,12 +2576,12 @@ function renderComplaintsA(){
     return `<div class="panel" style="margin-top:10px;padding:14px;${late?'border-color:#dc2626':''}">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>#${ar(c.ticket_no)} · ${LX(k[0],k[1])}</b>${late?`<span style="color:#b91c1c;font-weight:800;font-size:.8rem">⏰ ${LX('تجاوزت مدة الرد','Past reply deadline')}</span>`:''}
         <span style="flex:1"></span>
-        <select onchange="cmpSetStatusA('${c.id}',this.value)" style="padding:6px 10px;border-radius:10px;border:1px solid var(--line);font-family:inherit;font-weight:800">
+        <select data-id="${esc(c.id)}" onchange="cmpSetStatusA(this.dataset.id,this.value)" style="padding:6px 10px;border-radius:10px;border:1px solid var(--line);font-family:inherit;font-weight:800">
           ${[['open',LX('مفتوحة','Open')],['progress',LX('جارٍ المعالجة','In progress')],['closed',LX('مغلقة','Closed')]].map(o=>`<option value="${o[0]}" ${c.status===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
       <small style="color:var(--muted);font-weight:700;display:block;margin-top:4px">${esc(c.customer_name||'')} · <a href="tel:${esc(c.customer_phone||'')}" dir="ltr">${esc(c.customer_phone||'')}</a>${c.order_no?' · '+LX('طلب','Order')+' #'+ar(c.order_no):''} · ${esc(String(c.created_at||'').slice(0,10))}</small>
       <p style="margin-top:8px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere">${esc(c.body)}</p>
-      <textarea id="cmpr_${c.id}" rows="2" placeholder="${LX('ردّك على العميل (يظهر له في التطبيق)','Your reply (shown to the customer in the app)')}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:inherit">${esc(c.reply||'')}</textarea>
-      <button class="sbtn ok" style="margin-top:6px" onclick="cmpSaveReplyA('${c.id}')">💬 ${LX('حفظ الرد','Save reply')}</button>
+      <textarea id="cmpr_${esc(c.id)}" rows="2" placeholder="${LX('ردّك على العميل (يظهر له في التطبيق)','Your reply (shown to the customer in the app)')}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:inherit">${esc(c.reply||'')}</textarea>
+      <button class="sbtn ok" style="margin-top:6px" data-id="${esc(c.id)}" onclick="cmpSaveReplyA(this.dataset.id)">💬 ${LX('حفظ الرد','Save reply')}</button>
     </div>`; }).join('');
 }
 async function cmpSetStatusA(id, st){
@@ -2415,7 +2625,7 @@ function audiencePanelHtml(){
   </div>`;
 }
 function adminHomeTap(){ try{ if(typeof loggedIn!=='undefined' && loggedIn && typeof adminSection!=='undefined' && adminSection){ setAdminSection(''); window.scrollTo(0,0); return; } }catch(e){} location.href='index.html#stay'; }
-function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='cancels') loadCancelReqs().then(render); if(s==='team') loadCommission().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
 
 /* ═══════ 📨 طلبات الانضمام: من نموذج الانضمام مباشرة إلى جدول khafet_join_requests ═══════ */
 async function loadJoinReqs(){
@@ -2429,12 +2639,12 @@ async function loadJoinReqs(){
 const JR_ST=()=>({ new:LX('جديد','New'), contacted:LX('تواصلت','Contacted'), waitlist:LX('على القائمة','Waitlist'), accepted:LX('مقبول','Accepted'), rejected:LX('مرفوض','Rejected') });
 /* درجة الجودة (من 15): تُرتّب بها القائمة تلقائيًا · مؤسسة موثقة، خدمات كثيرة، ضمان أطول، صور أعمال، سيارة، خبرة */
 function jrScore(x){
-  const d=x.data||{}; let s=0;
-  if(/مؤسسة/.test(d.type||'')) s+=2; if(d.doc||d.company) s+=1;
-  s+=Math.min(4, Math.floor((+x.services_count||0)/3));
+  const d=(x&&x.data&&typeof x.data==='object')?x.data:{}; let s=0;
+  if(/مؤسسة/.test(String(d.type||''))) s+=2; if(d.doc||d.company) s+=1;
+  s+=Math.min(4, Math.max(0, Math.floor((+x.services_count||0)/3)));
   const w=String(d.warranty||''); if(/سنة/.test(w)) s+=4; else if(/6|٦/.test(w)) s+=3; else if(/3|٣/.test(w)) s+=3; else if(/شهر/.test(w)) s+=2; else if(/أسبوع/.test(w)) s+=1;
-  if((x.cities||[]).length>=2) s+=1;
-  if(d.portfolio) s+=2; if((d.equipment||[]).some(e=>/سيارة/.test(e))) s+=1;
+  if((Array.isArray(x.cities)?x.cities:[]).length>=2) s+=1;
+  if(d.portfolio) s+=2; if((Array.isArray(d.equipment)?d.equipment:[]).some(e=>/سيارة/.test(String(e||'')))) s+=1;
   const e=String(d.exp||''); if(/10/.test(e)) s+=3; else if(/5/.test(e)) s+=2; else if(/3/.test(e)) s+=1;
   return Math.min(15,s);
 }
@@ -2461,7 +2671,7 @@ function renderJoinReqs(){
   const ST=JR_ST(), cnt=k=>JOINREQ.filter(x=>k==='all'||x.status===k).length;
   const filters=['new','waitlist','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
   // ترتيب تلقائي بالجودة (الأعلى أولًا)، والقائمة مرقّمة
-  const list=JOINREQ.filter(x=>joinFilter==='all'||x.status===joinFilter).slice().sort((a,b)=>jrScore(b)-jrScore(a)||new Date(a.created_at)-new Date(b.created_at));
+  const list=JOINREQ.filter(x=>x&&typeof x==='object'&&(joinFilter==='all'||x.status===joinFilter)).slice().sort((a,b)=>jrScore(b)-jrScore(a)||new Date(a.created_at)-new Date(b.created_at));
   const share='https://fadiaalzhrani-debug.github.io/khaft-partners/www/join.html';
   const head=renderCapacity()+`<div class="panel" style="margin-top:0">
       <p style="margin:0 0 8px;font-weight:700">${LX('رابط النموذج اللي ترسله للفنيين ومقدمي الخدمات:','Form link to send to technicians and providers:')}</p>
@@ -2470,42 +2680,49 @@ function renderJoinReqs(){
       <button class="sbtn" onclick="loadJoinReqs().then(render)">🔄 ${LX('تحديث','Refresh')}</button></div>
     </div><div class="jr-filters" style="margin-top:14px">${filters}</div>`;
   if(!list.length) return head+`<p style="color:var(--muted)">${joinFilter==='new'?LX('ما فيه طلبات جديدة.','No new requests.'):LX('ما فيه طلبات هنا.','No requests here.')}</p>`;
-  return head+list.map((x,idx)=>{
-    const d=x.data||{}, cats=Array.isArray(d.categories)?d.categories:[];
+  // البيانات هنا من نموذج عام بلا حساب: كل قيمة تمر على esc، وأي معرّف يروح للأزرار عبر data-attributes (لا نصوص متغيرة داخل onclick)
+  const A=v=>Array.isArray(v)?v:[];
+  const J=v=>A(v).map(x=>(typeof x==='string'||typeof x==='number')?String(x):'').filter(Boolean).join('، ');
+  const stl=k=>Object.prototype.hasOwnProperty.call(ST,k)?ST[k]:String(k==null?'':k);
+  const card=(x,idx)=>{
+    const d=(x.data&&typeof x.data==='object')?x.data:{}, cats=A(d.categories).filter(c=>c&&typeof c==='object');
     const sc=jrScore(x);
     const svcHtml=cats.map(c=>`<div class="jr-cat"><b>${esc(c.name||c.id||'')}</b>${c.isNew?`<span class="jr-new">${LX('قسم جديد','New section')}</span>`:''}
-      ${(c.services||[]).map((s,si)=>{ const inApp=jrFindSvc(c.id,s); return `<div class="jr-svc"><div>${esc(s.name||'')}${inApp?`<span class="jr-in">${LX('في التطبيق','In app')}</span>`:`<button class="sbtn jr-add" onclick="jrAddService('${x.id}','${c.id}',${si})">➕ ${LX('أضفها للتطبيق','Add to app')}</button>`}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`; }).join('')}</div>`).join('');
+      ${A(c.services).map((s,si)=>{ if(!s||typeof s!=='object') return ''; const inApp=jrFindSvc(c.id,s); return `<div class="jr-svc"><div>${esc(s.name||'')}${inApp?`<span class="jr-in">${LX('في التطبيق','In app')}</span>`:`<button class="sbtn jr-add" data-req="${esc(x.id)}" data-cat="${esc(c.id)}" data-si="${si}" onclick="jrAddService(this.dataset.req,this.dataset.cat,+this.dataset.si)">➕ ${LX('أضفها للتطبيق','Add to app')}</button>`}<em>${esc(s.inspect?'':(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`; }).join('')}</div>`).join('');
+    const visit=(d.visit&&typeof d.visit==='object')?d.visit:null;
     const kv=[
       [LX('المواد','Materials'), d.materials], [LX('الضمان','Warranty'), d.warranty],
-      [LX('المعاينة','Inspection'), d.visit? (d.visit.type==='بسعر' ? (ar(d.visit.price||'')+' '+LX('ريال','SAR')+(d.visit.deduct?LX('، تنخصم إذا تم الشغل','، deducted if the job goes ahead'):'')) : d.visit.type) : ''],
-      [LX('النوع','Type'), d.type], [LX('الفريق','Team'), d.team], [LX('الخبرة','Experience'), d.exp], [LX('المؤسسة','Company'), d.company], [LX('الوثيقة','Document'), d.doc],
-      [LX('عنده','Has'), (d.equipment||[]).join('، ')], [LX('الأوقات','Times'), (d.times||[]).join('، ')],
+      [LX('المعاينة','Inspection'), visit? (visit.type==='بسعر' ? (ar(String(visit.price==null?'':visit.price))+' '+LX('ريال','SAR')+(visit.deduct?LX('، تنخصم إذا تم الشغل','، deducted if the job goes ahead'):'')) : visit.type) : ''],
+      [LX('السجل التجاري','CR number'), d.cr_number], [LX('النوع','Type'), d.type], [LX('الفريق','Team'), d.team], [LX('الخبرة','Experience'), d.exp], [LX('المؤسسة','Company'), d.company], [LX('الوثيقة','Document'), d.doc],
+      [LX('عنده','Has'), J(d.equipment)], [LX('الأوقات','Times'), J(d.times)],
       [LX('الجمعة','Fridays'), d.friday?LX('نعم','Yes'):''], [LX('المستعجل','Urgent'), d.urgent?LX('نعم','Yes'):''],
       [LX('ملاحظات','Notes'), d.notes], [LX('لغة التعبئة','Form language'), x.lang==='en'?'English':'']
-    ].filter(r=>r[1]).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('');
-    const acts=['contacted','waitlist','accepted','rejected'].map(k=>`<button class="sbtn ${x.status===k?'on':''}" onclick="setJoinStatus('${x.id}','${x.status===k?'new':k}')">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
+    ].filter(r=>r[1]&&(typeof r[1]==='string'||typeof r[1]==='number')).map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('');
+    const acts=['contacted','waitlist','accepted','rejected'].map(k=>`<button class="sbtn ${x.status===k?'on':''}" data-id="${esc(x.id)}" data-st="${x.status===k?'new':k}" onclick="setJoinStatus(this.dataset.id,this.dataset.st)">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
     return `<div class="jr ${x.status==='new'?'new':''}">
-      <div class="jr-top"><h4>${x.status==='waitlist'?`<span class="jr-rank">${ar(idx+1)}</span>`:''}#${ar(x.ref_no)} · ${esc(x.name)}<span class="jr-score" title="${LX('درجة الجودة','Quality score')}">${jrStars(sc)} <b>${ar(sc)}</b>/15</span><small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${x.status}">${ST[x.status]||x.status}</span></div>
-      <div class="jr-meta"><span>📍 ${esc((x.cities||[]).join('، ')||'')}</span><span>🧰 ${ar(x.services_count)} ${LX('خدمة','services')}</span>${(x.categories||[]).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
+      <div class="jr-top"><h4>${x.status==='waitlist'?`<span class="jr-rank">${ar(idx+1)}</span>`:''}#${ar(esc(x.ref_no))} · ${esc(x.name)}<span class="jr-score" title="${LX('درجة الجودة','Quality score')}">${jrStars(sc)} <b>${ar(sc)}</b>/15</span><small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${esc(x.status)}">${esc(stl(x.status))}</span></div>
+      <div class="jr-meta"><span>📍 ${esc(J(x.cities))}</span><span>🧰 ${ar(esc(x.services_count))} ${LX('خدمة','services')}</span>${A(x.categories).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
       <div class="jr-contact">
         <a class="sbtn" href="https://wa.me/${jrPhoneIntl(x.phone)}" target="_blank" rel="noopener">💬 ${LX('واتساب','WhatsApp')}</a>
         <a class="sbtn" href="tel:${esc(x.phone)}">📞 ${esc(x.phone)}</a>
       </div>
       ${svcHtml}
       ${kv?`<details><summary>${LX('باقي التفاصيل','More details')}</summary><dl class="jr-kv">${kv}</dl></details>`:''}
-      <textarea class="jr-note" rows="2" placeholder="${LX('ملاحظة لك (اختياري)','Your note (optional)')}" onchange="setJoinNote('${x.id}',this.value)">${esc(x.admin_note||'')}</textarea>
+      <textarea class="jr-note" rows="2" placeholder="${LX('ملاحظة لك (اختياري)','Your note (optional)')}" data-id="${esc(x.id)}" onchange="setJoinNote(this.dataset.id,this.value)">${esc(x.admin_note||'')}</textarea>
       <div class="jr-acts">${acts}
-        <button class="sbtn" onclick="jrCopy(JOINREQ.find(r=>r.id==='${x.id}').message||'')">📋 ${LX('نسخ','Copy')}</button>
-        <button class="sbtn" style="color:#b91c1c" onclick="deleteJoinReq('${x.id}')">🗑️</button>
+        <button class="sbtn" data-id="${esc(x.id)}" onclick="jrCopyReq(this.dataset.id)">📋 ${LX('نسخ','Copy')}</button>
+        <button class="sbtn" style="color:#b91c1c" data-id="${esc(x.id)}" onclick="deleteJoinReq(this.dataset.id)">🗑️</button>
       </div>
     </div>`;
-  }).join('');
+  };
+  // طلب واحد خربان (بيانات غير متوقعة) ما يطيح القائمة كلها
+  return head+list.map((x,idx)=>{ try{ return card(x,idx); }catch(e){ return `<div class="jr"><b>#${ar(esc(x.ref_no))}</b> · ${LX('تعذّر عرض هذا الطلب','Could not display this request')}</div>`; } }).join('');
 }
 /* تضيف خدمة المزوّد لكتالوج التطبيق كما هي، وتقدرين تعدّلينها بعدها من «الأقسام والخدمات» */
 async function jrAddService(reqId, catId, si){
-  const x=JOINREQ.find(r=>r.id===reqId); if(!x) return;
-  const cats=Array.isArray((x.data||{}).categories)?x.data.categories:[];
-  const c=cats.find(q=>q.id===catId); const s=c&&(c.services||[])[si]; if(!s) return;
+  const x=JOINREQ.find(r=>r&&r.id===reqId); if(!x) return;
+  const d=(x.data&&typeof x.data==='object')?x.data:{}; const cats=Array.isArray(d.categories)?d.categories:[];
+  const c=cats.find(q=>q&&typeof q==='object'&&String(q.id)===String(catId)); const s=(c&&Array.isArray(c.services))?c.services[si]:null; if(!s||typeof s!=='object') return;
   const name=jrNorm(s.name); if(!name){ toast(LX('الخدمة بلا اسم','The service has no name')); return; }
   if(!(CATALOG.cats||[]).some(q=>q.id===catId)){ toast(LX('القسم مو موجود في التطبيق','That section is not in the app')); return; }
   if(jrFindSvc(catId,s)){ toast(LX('موجودة أصلًا','Already there')); return; }
@@ -2514,11 +2731,13 @@ async function jrAddService(reqId, catId, si){
     icon:'🔧', price, duration:60, custom:price<=0, active:true, quick:false,
     sort:Math.max(0,...(CATALOG.svcs||[]).filter(q=>q.cat_id===catId).map(q=>+q.sort||0))+10 };
   const { error }=await sb.from('khafet_services').upsert(row);
-  if(error){ toast(LX('ما انحفظت، حاولي مرة ثانية','Not saved, try again')); return; }
+  if(error){ toast(LX('ما انحفظت، حاول مرة ثانية','Not saved, try again')); return; }
   s.sid=row.id;
   await loadCatalog(); render();
-  toast(LX('✅ انضافت للتطبيق · تعدّلينها من «الأقسام والخدمات»','✅ Added to the app'));
+  toast(LX('✅ انضافت للتطبيق · تعدّلها من «الأقسام والخدمات»','✅ Added to the app'));
 }
+/* نسخ رسالة طلب الانضمام (المعرّف يجي من data-id) */
+function jrCopyReq(id){ const x=JOINREQ.find(r=>r&&r.id===id); jrCopy((x&&x.message)||''); }
 function jrCopy(t){
   try{ navigator.clipboard.writeText(t).then(()=>toast(LX('📋 انتسخ','📋 Copied')),()=>toast(LX('ما قدرت أنسخ','Could not copy'))); }
   catch(e){ toast(LX('ما قدرت أنسخ','Could not copy')); }
@@ -2542,6 +2761,88 @@ async function deleteJoinReq(id){
   JOINREQ=JOINREQ.filter(q=>q.id!==id); render();
 }
 
+/* ═══════ ❌ طلبات الإلغاء: الفني أو المزوّد ما يقدر يلغي بنفسه، يرسل طلب إلغاء بالسبب والإدارة تقبل أو ترفض من هنا.
+   القبول عبر rpc khafet_decide_cancel يحوّل الطلب إلى ملغي ويشغّل مسار الاسترجاع الموجود، والرفض يترك الطلب كما هو. ═══════ */
+let CANCELREQ=[], cancelReqLoaded=false, cancelFilter='pending', cancelBusy={};
+async function loadCancelReqs(){
+  if(!cloudReady) return;
+  try{ const r=await sb.from('khafet_cancel_requests').select('*').order('created_at',{ascending:false}).limit(300); if(!r.error){ CANCELREQ=(r.data||[]).filter(x=>x&&typeof x==='object'); cancelReqLoaded=true; } }catch(e){}
+}
+function crPending(){ return (CANCELREQ||[]).filter(x=>x&&x.status==='pending').length; }
+function crOrder(r){ return ORDERS.find(o=>o.dbId===r.order_id)||null; }
+/* اسم الطالب: فني من قائمة الطاقم، أو مزوّد الطلب، وإلا الدور فقط */
+function crRequester(r,o){
+  const role=r.requester_role==='provider'?LX('المزوّد','Provider'):LX('الفني','Technician');
+  let name='';
+  const st=(STAFF||[]).find(x=>x.user_id===r.requested_by); if(st&&st.name) name=st.name;
+  if(!name && r.requester_role==='provider' && o && o.providerPhone) name=provName(o.providerPhone);
+  if(!name && o && o.handledBy){ const h=(STAFF||[]).find(x=>x.user_id===o.handledBy); if(h&&h.name) name=h.name; }
+  return role+(name?': '+name:'');
+}
+function renderCancelReqs(){
+  if(!cancelReqLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
+  const ST={pending:LX('بانتظار قرارك','Awaiting your decision'),approved:LX('مقبول','Approved'),rejected:LX('مرفوض','Rejected')};
+  const stl=k=>Object.prototype.hasOwnProperty.call(ST,k)?ST[k]:String(k==null?'':k);
+  const cnt=k=>CANCELREQ.filter(x=>k==='all'||x.status===k).length;
+  const filters=['pending','approved','rejected','all'].map(k=>`<button class="${cancelFilter===k?'on':''}" data-k="${k}" onclick="cancelFilter=this.dataset.k;render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
+  const head=`<div class="panel" style="margin-top:0"><p class="sp-hint" style="margin:0">${LX('الفني أو المزوّد ما يقدر يلغي الطلب بنفسه. يرسل طلب إلغاء بالسبب، والإدارة تقبل أو ترفض من هنا. عند القبول يتحوّل الطلب إلى ملغي ويرجع المبلغ المدفوع للعميل تلقائيًا.','Technicians and providers cannot cancel an order themselves. They send a request with a reason and you approve or reject it here. On approval the order is cancelled and any paid amount is refunded automatically.')}</p>
+      <button class="sbtn" style="margin-top:8px" onclick="loadCancelReqs().then(render)">🔄 ${LX('تحديث','Refresh')}</button></div><div class="jr-filters" style="margin-top:14px">${filters}</div>`;
+  const list=CANCELREQ.filter(x=>x&&(cancelFilter==='all'||x.status===cancelFilter));
+  if(!list.length) return head+`<p style="color:var(--muted)">${cancelFilter==='pending'?LX('ما فيه طلبات إلغاء بانتظارك.','No cancellation requests waiting.'):LX('ما فيه طلبات هنا.','No requests here.')}</p>`;
+  // كل قيمة تمر على esc، والمعرّفات عبر data-attributes
+  return head+list.map(r=>{ try{
+    const o=crOrder(r); const pend=r.status==='pending'; const paid=o?(+o.paidAmount||0):0;
+    return `<div class="jr ${pend?'new':''}">
+      <div class="jr-top"><h4>${o?esc(o.id):LX('طلب','Order')}${o&&o.customer.name?' · '+esc(o.customer.name):''}<small>${jrWhen(r.created_at)}</small></h4><span class="jr-st ${pend?'new':(r.status==='approved'?'accepted':'rejected')}">${esc(stl(r.status))}</span></div>
+      <div class="jr-meta"><span>${esc(crRequester(r,o))}</span>${o?`<span>${esc(STATUS_AR[o.status]||o.status)}</span><span>${dayLabel(o.date)} · ${fmtTime(o.startMin)}</span>`:''}</div>
+      <div style="margin-top:10px;line-height:1.7"><b>${LX('السبب','Reason')}:</b> <span style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.reason||'')}</span></div>
+      ${(paid>0&&pend)?`<div class="pc-warn">${LX('العميل دافع '+money(paid)+'، وقبول الإلغاء يرجّع له المبلغ تلقائيًا.','The customer paid '+money(paid)+', approving refunds it automatically.')}</div>`:''}
+      ${pend?`<textarea class="jr-note" id="crn_${esc(r.id)}" rows="2" placeholder="${LX('ملاحظة للطالب (اختياري)','Note to the requester (optional)')}"></textarea>
+      <div class="jr-acts"><button class="sbtn ok" data-id="${esc(r.id)}" onclick="decideCancel(this.dataset.id,true)">${LX('قبول الإلغاء','Approve cancellation')}</button><button class="sbtn danger" data-id="${esc(r.id)}" onclick="decideCancel(this.dataset.id,false)">${LX('رفض','Reject')}</button></div>`
+      :`<div class="jr-meta">${r.decided_at?`<span>${jrWhen(r.decided_at)}</span>`:''}${r.decision_note?`<span>${LX('ملاحظة الإدارة','Admin note')}: ${esc(r.decision_note)}</span>`:''}</div>`}
+    </div>`; }catch(e){ return `<div class="jr">${LX('تعذّر عرض هذا الطلب','Could not display this request')}</div>`; } }).join('');
+}
+async function decideCancel(id, approve){
+  const r=CANCELREQ.find(x=>x&&x.id===id); if(!r||cancelBusy[id]) return;
+  const o=crOrder(r); const paid=o?(+o.paidAmount||0):0;
+  const q=approve
+    ? LX('قبول الإلغاء؟ الطلب يتحوّل إلى ملغي'+(paid>0?' ويرجع '+money(paid)+' للعميل':'')+'.','Approve? The order becomes cancelled'+(paid>0?' and '+money(paid)+' is refunded to the customer':'')+'.')
+    : LX('رفض طلب الإلغاء؟ يبقى الطلب كما هو ويُبلَّغ الطالب.','Reject the request? The order stays as is and the requester is notified.');
+  if(!confirm(q)) return;
+  const el=document.getElementById('crn_'+id); const note=((el&&el.value)||'').trim();
+  cancelBusy[id]=true;
+  try{
+    const res=await sb.rpc('khafet_decide_cancel',{ p_req:id, p_approve:!!approve, p_note:note||null });
+    if(res.error) throw res.error;
+    toast(approve?LX('تم قبول الإلغاء','Cancellation approved'):LX('تم رفض طلب الإلغاء','Cancellation request rejected'));
+    await loadCancelReqs(); loadAll();
+  }catch(e){ toast(srvMsgA(e)); render(); }
+  finally{ delete cancelBusy[id]; }
+}
+/* رسائل أكواد الخادم KHAFET_* بصيغة مفهومة (المقابل لدالة serverMsg في تطبيق العميل) */
+function srvMsgA(e){
+  const m=String((e&&(e.message||e.details||e.hint))||e||'');
+  const MAP={
+    KHAFET_CANCEL_NEEDS_APPROVAL: LX('الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب','Cancellation needs admin approval, send a cancellation request with the reason'),
+    KHAFET_CANCEL_PENDING: LX('فيه طلب إلغاء لهذا الطلب قيد المراجعة','A cancellation request for this order is already under review'),
+    KHAFET_CANCEL_DECIDED: LX('هذا الطلب محسوم من قبل، حدّث القائمة','This request was already decided, refresh the list'),
+    KHAFET_FORBIDDEN: LX('هذا الإجراء للإدارة فقط','Admins only'),
+    KHAFET_NOT_ADMIN: LX('هذا الإجراء للإدارة فقط','Admins only'),
+    KHAFET_NOT_SIGNED_IN: LX('انتهت الجلسة، سجّل دخول من جديد','Session ended, sign in again'),
+    KHAFET_NOT_YOURS: LX('طلب الإلغاء غير موجود، حدّث القائمة','Request not found, refresh the list'),
+    KHAFET_CANCEL_REASON: LX('السبب لازم يكون بين 3 و500 حرف','The reason must be 3 to 500 characters'),
+    KHAFET_BAD_STATUS: LX('حالة الطلب ما تسمح بهذا الإجراء','The order status does not allow this action'),
+    KHAFET_NO_CANCEL: LX('ما يمكن إلغاء الطلب في حالته الحالية','This order can no longer be cancelled'),
+    KHAFET_UNPAID: LX('الطلب ما ينقفل قبل دفع المتبقي','The order cannot be closed before the balance is paid'),
+    KHAFET_BAD_INVOICE: LX('صيغة الفاتورة قديمة، حدّث التطبيق ثم أعد الحفظ','The invoice format is outdated, update the app and save again'),
+    KHAFET_INVOICE_ITEM: LX('قطعة من المستودع بلا سعر بيع، سعّرها من المستودع','A stock item has no sell price, set it in the warehouse'),
+    KHAFET_INVOICE_LIMIT: LX('مبلغ البنود الحرة يتجاوز الحد المسموح','Free-text lines exceed the allowed limit'),
+    KHAFET_NO_INVOICE: LX('الطلب يحتاج فاتورة قبل الإقفال','The order needs an invoice before closing')
+  };
+  for(const k in MAP){ if(m.indexOf(k)>=0) return MAP[k]; }
+  return LX('تعذّر تنفيذ الإجراء، حاول مرة ثانية','Could not complete the action, try again');
+}
+
 /* ═══════ 📣 إشعار للكل: معاينة بشكل الجوال، تجربة على جوالي، تأكيد قبل الإرسال، وإشعار واحد باليوم (يفرضه الخادم) ═══════ */
 const BC_MAX_T=60, BC_MAX_B=180;
 let BC={ title:'', body:'', audience:'all', view:'ios', counts:null, today:null, history:[], busy:false, loaded:false };
@@ -2558,7 +2859,10 @@ async function callBroadcast(payload){
 async function loadBroadcast(){
   if(!cloudReady) return;
   const c=await callBroadcast({ mode:'count' });
-  if(c&&c.ok){ BC.counts={ customers:c.customers, staff:c.staff, all:c.all }; BC.today=c.today||null; }
+  if(c&&c.ok){ BC.counts={ customers:c.customers, staff:c.staff, all:c.all }; }
+  // إشعار اليوم يُقرأ حتى لو تعذّر عدّ الأجهزة (رد 503 consent_check_failed فيه today)، فلا يبقى زر الإرسال مفعّلًا بعد إرسال اليوم
+  if(c&&Object.prototype.hasOwnProperty.call(c,'today')) BC.today=c.today||null;
+  if(c&&!c.ok&&c.reason==='consent_check_failed') toast('⚠️ '+bcReason(c));
   try{ const { data }=await sb.from('khafet_broadcasts').select('*').order('created_at',{ascending:false}).limit(10); BC.history=data||[]; }catch(e){}
   BC.loaded=true; if(adminSection==='notify') render();
 }
@@ -2674,7 +2978,7 @@ async function bcTest(){
   else toast('⚠️ '+bcReason(r));
 }
 function bcReason(r){ const k=(r&&r.reason)||'';
-  const M={no_session:['انتهت الجلسة، سجّلي دخول','Session ended, please sign in'],network:['ما فيه اتصال','No connection'],daily_limit:['أُرسل إشعار اليوم، الإشعار الجاي بكرة','Today\'s notification was already sent, the next one is tomorrow'],too_long:['النص أطول من المسموح','The text is too long'],empty:['اكتبي العنوان والنص','Write the title and the message'],not_admin:['الإرسال للمدير فقط','Only the admin can send'],no_devices:['ما فيه أجهزة مسجلة لهذا الجمهور','No registered devices for this audience'],send_failed:['ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي','It did not reach any device and was not counted as today\'s notification. Try again in a bit']};
+  const M={no_session:['انتهت الجلسة، سجّلي دخول','Session ended, please sign in'],network:['ما فيه اتصال','No connection'],daily_limit:['أُرسل إشعار اليوم، الإشعار الجاي بكرة','Today\'s notification was already sent, the next one is tomorrow'],too_long:['النص أطول من المسموح','The text is too long'],empty:['اكتبي العنوان والنص','Write the title and the message'],not_admin:['الإرسال للمدير فقط','Only the admin can send'],consent_check_failed:['تعذّر التحقق من موافقة العملاء على العروض، ما انرسل شيء ولا انحسب من إشعار اليوم، جرّب بعد شوي','Could not check customers\' consent for offers. Nothing was sent or counted as today\'s notification, try again shortly'],no_devices:['ما فيه أجهزة مسجلة لهذا الجمهور','No registered devices for this audience'],send_failed:['ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي','It did not reach any device and was not counted as today\'s notification. Try again in a bit']};
   const m=Object.prototype.hasOwnProperty.call(M,k)?M[k]:['تعذّر الإرسال','Couldn\'t send']; return LX(m[0],m[1]); }
 function bcConfirm(){
   if(!BC.title.trim()||!BC.body.trim()||BC.today||BC.busy) return;
@@ -2716,9 +3020,10 @@ function exportSection(k){
       downloadCSV(EN?'Warehouse_'+d:'المستودع-'+d, EN?['Item','Category','Code','Qty','Unit','Buy price','Sell price','Reorder level','Target','Percent','Usage (6 months)']:['الصنف','الفئة','الكود','الكمية','الوحدة','سعر الشراء','سعر البيع','حد الطلب','المستهدف','النسبة','استخدام 6 أشهر'],
         INV.map(it=>[EN?whName(it):it.name,EN?(CAT_EN[it.category]||it.category||''):(it.category||''),it.code||'',it.qty,EN?whUnit(it.unit):(it.unit||''),it.buy_price||0,it.sell_price||0,it.min_qty||0,it.target_qty||0,(invPct(it)===null?'':invPct(it)+'%'),invUsage(it.id).u6]));
     } else if(k==='team'){
-      const byP=commissionByProvider();
+      // ملف المستحقات من نفس أرقام الخادم اللي تعرضها اللوحة
+      if(!COMM){ toast(LX('حمّل المستحقات من الخادم أولًا','Load the dues from the server first')); loadCommission(true).then(render); return; }
       downloadCSV(EN?'Provider_dues_'+d:'مستحقات-المزوّدين-'+d, EN?['Provider','Phone','Completed orders','Labour (SAR)','Due (SAR)']:['المزوّد','الجوال','طلبات منجزة','أجرة اليد (ر.س)','المستحق (ر.س)'],
-        Object.keys(byP).map(ph=>[provName(ph),ph,byP[ph].n,byP[ph].labor,byP[ph].sum]));
+        COMM.rows.map(r=>[r.name||provName(r.phone),r.phone,r.orders,r.labor,r.due]));
     }
     toast('⤓ تم تنزيل ملف Excel');
   }catch(e){ toast('تعذّر التصدير'); }
@@ -2789,9 +3094,9 @@ const T_DICT = {
   "✅ تم اعتماد المزوّد":"✅ Provider approved","تم التحديث":"Updated","تعذّر فتح الملف":"Couldn't open the file",
   // الفريق
   "الفني يدخل برقم جواله وكلمة المرور · بدون رسائل، فلا تكلفة على كل دخول. زر 🔑 يغيّر كلمة مروره.":"Technicians sign in with their mobile number and password. No SMS, so signing in costs nothing. The 🔑 button changes their password.",
-  "الاسم (مثال: أحمد علي)":"Name (e.g. Ahmed Ali)","رقم جواله (05xxxxxxxx)":"Mobile number (05xxxxxxxx)","كلمة المرور (٦ خانات فأكثر)":"Password (6 characters or more)","إيقاف":"Suspend",
-  "عبّي الاسم ورقم الجوال":"Fill in the name and mobile number","كلمة المرور ٦ خانات فأكثر":"Password must be 6 characters or more","⏳ جارٍ إنشاء الحساب...":"⏳ Creating the account...",
-  "تعذّر الإنشاء":"Couldn't create","تعذّر":"Failed","✅ فُعّل الفني":"✅ Technician activated","⛔ أُوقف الفني":"⛔ Technician suspended","٦ خانات على الأقل":"At least 6 characters",
+  "الاسم (مثال: أحمد علي)":"Name (e.g. Ahmed Ali)","رقم جواله (05xxxxxxxx)":"Mobile number (05xxxxxxxx)","كلمة المرور (٨ خانات فأكثر)":"Password (8 characters or more)","إيقاف":"Suspend",
+  "عبّي الاسم ورقم الجوال":"Fill in the name and mobile number","كلمة المرور ٨ خانات فأكثر":"Password must be 8 characters or more","⏳ جارٍ إنشاء الحساب...":"⏳ Creating the account...",
+  "تعذّر الإنشاء":"Couldn't create","تعذّر":"Failed","✅ فُعّل الفني":"✅ Technician activated","⛔ أُوقف الفني":"⛔ Technician suspended","٨ خانات على الأقل":"At least 8 characters",
   "✅ تغيّرت كلمة المرور":"✅ Password changed","تم الرفض":"Rejected","انتهت الجلسة · سجّل دخول":"Session ended, please sign in",
   "لا يوجد معلّقون":"No pending providers","⚠️ تعذّر الاعتماد الجماعي":"⚠️ Bulk approval failed","⏸️ أُوقف المزوّد · ما تصله طلبات":"⏸️ Provider suspended, no new orders","▶️ أُعيد تفعيله":"▶️ Reactivated",
   // العملاء: الرسائل والاشتراكات والمقالات

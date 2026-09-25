@@ -7,6 +7,8 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23141414'/><text y='.9em' x='20' font-size='60'>🧑‍🔧</text></svg>" />
 <meta name="theme-color" content="#141414" />
+<!-- سياسة أمان المحتوى: سكربتات الصفحة ومكتبة QR للفاتورة فقط، والاتصال بمشروع Supabase فقط. frame-src blob: لعرض PDF طلب الشراء -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; media-src 'self' blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; connect-src 'self' https://zulogtqxbuqxmdmjpzqj.supabase.co wss://zulogtqxbuqxmdmjpzqj.supabase.co; frame-src 'self' blob:; worker-src 'self' blob:">
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
@@ -126,6 +128,19 @@
   .rj-list{display:grid;gap:9px}
   .rj-opt{width:100%;text-align:start;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:14px 15px;font-weight:700;font-size:1rem;cursor:pointer;font-family:inherit}
   .rj-opt:hover{border-color:#fca5a5}
+  /* طلب الإلغاء: السبب المختار، وشارات الحالة على بطاقة الطلب */
+  .rj-opt.on{background:#FBE4E1 !important;box-shadow:inset 0 0 0 2px #B42318;color:#B42318}
+  /* سعر الشراء بالجملة للمدير فقط: مخفي عن الفني في صفحة التعديل ونموذج الصنف (warehouse.js) */
+  body.kh-nobuy .we-grid label:first-child{display:none}
+  body.kh-nobuy .wh-f label:has(#wf_buy){display:none}
+  .cx-note{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-weight:700;font-size:1rem;font-family:inherit;margin-top:12px;resize:vertical}
+  .cx-note:focus{outline:none;border-color:var(--gold)}
+  /* نافذة تغيير رقم الجوال */
+  .pc-in{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-weight:700;font-size:1.05rem;font-family:inherit}
+  .pc-in:focus{outline:none;border-color:var(--gold)}
+  .pc-link{display:block;width:100%;background:none;border:0;color:var(--muted);font-weight:800;font-size:.9rem;margin-top:10px;cursor:pointer;font-family:inherit;text-decoration:underline}
+  .status.cx-pend{background:#FCEBD8;color:#B4560F;border-color:transparent;white-space:normal;text-align:start}
+  button.status.cx-rej{background:#FBE4E1;color:#B42318;border-color:transparent;white-space:normal;text-align:start;cursor:pointer;font-family:inherit}
   .tbtn.follow{flex:0 0 auto;background:rgba(56,132,255,.14);border:1px solid rgba(56,132,255,.4);color:#7fb0ff;font-size:.95rem}
   .fu-field{margin-bottom:13px}
   .fu-field label{display:block;font-weight:800;color:var(--muted);font-size:.9rem;margin-bottom:6px}
@@ -149,6 +164,9 @@
   .inv-pay .due{font-size:1.15rem;color:#93c5fd}
   .inv-row .ir-lock{font-size:.8rem;font-weight:800;color:#5ee68f;margin-inline-start:6px}
   .inv-row .ir-static{min-width:74px;text-align:center;font-weight:900;font-size:1.05rem}
+  /* فرق سعر تبديل القطعة المحجوزة (يظهر تحت خيارات اللون) */
+  .inv-row .ir-swap{display:block;margin-top:4px;font-size:.82rem;font-weight:800;color:#B4560F}
+  .inv-row .ir-swap.minus{color:#0b7a3b}
   .tbtn.onway{background:#3884ff;color:#fff}
   .tbtn.onwaylbl{background:rgba(56,132,255,.15);color:#7fb0ff}
   .tj-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
@@ -180,6 +198,8 @@
   .inv-row .ir-qty button{width:38px;height:40px;font-weight:900;color:var(--gold-deep);font-size:1.35rem}
   .inv-row .ir-qty span{min-width:30px;text-align:center;font-weight:900;font-size:1.15rem}
   .inv-row .ir-price{width:92px;padding:11px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--text);font-weight:900;text-align:center;font-size:1.1rem}
+  /* سعر من الخادم (قطعة مستودع أو خدمة من الكتالوج): للقراءة فقط */
+  .inv-row .ir-price-ro{min-width:64px;padding:11px 8px;border-radius:10px;background:var(--panel);color:var(--muted);font-weight:900;text-align:center;font-size:1.05rem;font-variant-numeric:tabular-nums}
   .inv-row .ir-del{color:var(--danger);font-size:1.3rem;padding:6px}
   /* بنود الحجز: القطعة المحجوزة لها ✕ (العميل عنده الغرض) وخيارات اللون */
   .inv-row .ir-bk{flex:1;min-width:0}
@@ -644,6 +664,18 @@ a.card:active,.card:active{transform:scale(.97)}
 .langpick .sheet,.lp-sheet{border-radius:32px}
 
 </style><!--/kh-skin-->
+<style id="fn-tasks">
+/* «مهامي» لفني المؤسسة: صفوف المهام وشارة العدد على التبويب */
+.ftask{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:8px}
+.ftask.done{opacity:.72;background:var(--ok-soft,#E3F4E8)}
+.ftask .tx{flex:1;min-width:0}
+.ftask .tx b{display:block;font-weight:800;line-height:1.45;word-break:break-word}
+.ftask.done .tx b{text-decoration:line-through}
+.ftask .tx small{display:block;color:var(--muted);font-size:.78rem;font-weight:700}
+.tb .tnum{position:absolute;top:3px;inset-inline-end:16%;background:#e11d48;color:#fff;font-size:.62rem;font-weight:900;min-width:16px;height:16px;border-radius:999px;display:grid;place-items:center;padding:0 4px;font-style:normal;line-height:1}
+.tnum-in{background:#e11d48;color:#fff;font-size:.72rem;font-weight:900;border-radius:999px;padding:2px 9px}
+.tb-link{background:none;border:0;color:var(--gold-deep);font-weight:800;font-size:.84rem;cursor:pointer;font-family:inherit;margin-inline-start:auto}
+</style>
 </head>
 <body>
 
@@ -687,7 +719,7 @@ const KH_SECURE=new Set(['sb-zulogtqxbuqxmdmjpzqj-auth-token','khafet_remember',
 async function _secGet(k){ if(!_khSec||!KH_SECURE.has(k)) return null; try{ await _khFreshP; }catch(e){} try{ const r=await _khSec.get({key:k}); return (r&&r.value!=null)?String(r.value):null; }catch(e){ return null; } }
 function _secSet(k,v){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.set({key:k,value:String(v)}).catch(()=>{}); }catch(e){} }
 function _secRm(k){ if(!_khSec||!KH_SECURE.has(k)) return; try{ _khSec.remove({key:k}).catch(()=>{}); }catch(e){} }
-const KH_MIRROR=new Set(['khafet_techlang','kh_tour_done','siyanah_v1','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth']);
+const KH_MIRROR=new Set(['khafet_techlang','kh_tour_done','siyanah_v1','khafet_remember','khafet_staff_ok','khafet_admin_ok','khafet_provider_phone','khafet_lang','khafet_uilang','khafet_worker_auth','khafet_phone_sync']);
 /* المفاتيح الحسّاسة (توكن الجلسة وأعلام الدخول) لا تُكتب في Preferences،
    لأنه مخزن غير مشفّر. مكانها الكيتشين المحمي بقفل الجهاز وحده. */
 const _khPlain=k=>!KH_SECURE.has(k);
@@ -711,7 +743,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=106;
+const RIZQ_BUILD=107;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -799,7 +831,8 @@ const I18N={
        makeInvoice:'🧾 बिल बनाउनुहोस्', invoiceSent:'बिल पठाइयो ✓', addService:'＋ सेवा थप्नुहोस्', customItem:'अन्य', addPart:'🔧 पार्ट्स', partPh:'जस्तै: LED बल्ब', total:'जम्मा', saveSend:'बचत गरी ग्राहकलाई पठाउनुहोस्', print:'🖨️ प्रिन्ट', qtyLbl:'सङ्ख्या', priceLbl:'मूल्य',
        arrived:'🚪 म स्थानमा पुगें', arrivedDone:'✅ ग्राहकलाई सूचित गरियो', arrivedToast:'भयो · ग्राहकलाई एपमा सूचना गयो', arrivedBadge:'🚪 स्थानमा पुगे', whatsapp:'💬 WhatsApp',
        moreTime:'⏳ थप समय चाहियो', extraTime:'थप समय', min:'मिनेट', delayToast:'भयो · अर्को ग्राहकलाई सूचित',
-       rejectBtn:'✖ काम अस्वीकार', rejectTitle:'अस्वीकारको कारण', rejectPick:'कारण छान्नुहोस् · ग्राहक र संस्थालाई पठाइन्छ', rejectDone:'काम अस्वीकृत, ग्राहकलाई सूचित',
+       cxBtn:'रद्द गर्न अनुरोध', cxTitle:'रद्द गर्ने अनुरोध', cxPick:'कारण छान्नुहोस् · व्यवस्थापनले रद्द गर्ने वा नगर्ने निर्णय गर्छ', cxNote:'थप विवरण (वैकल्पिक)', cxSend:'रद्द अनुरोध पठाउनुहोस्', cxSent:'अनुरोध व्यवस्थापनमा पुग्यो, स्वीकृतिको प्रतीक्षामा', cxPending:'रद्द गर्न व्यवस्थापनको स्वीकृति पर्खिँदै', cxRejected:'व्यवस्थापनले रद्द अस्वीकार गर्‍यो', cxNeedReason:'कारण छान्नुहोस् वा लेख्नुहोस्', cxCodePending:'यो कामको रद्द अनुरोध समीक्षामा छ', cxCodeApproval:'रद्द गर्न व्यवस्थापनको स्वीकृति चाहिन्छ, कारणसहित रद्द अनुरोध पठाउनुहोस्',
+       eBadInvoice:'बिलको ढाँचा पुरानो छ, एप अपडेट गरी फेरि सेभ गर्नुहोस्', eInvItem:'भण्डारको एउटा पार्ट्सको बिक्री मूल्य छैन, व्यवस्थापनलाई मूल्य राख्न भन्नुहोस्', eInvLimit:'खुला वस्तुहरूको रकम सीमाभन्दा बढी छ, व्यवस्थापनलाई सम्पर्क गर्नुहोस्', eNoInvoice:'काम सकाउनुअघि बिल जारी गर्नुहोस्', eNoCancel:'काम सकिएको वा रद्द भइसकेको छ, रद्द अनुरोध गर्न सकिँदैन', eInvAdmin:'वस्तु र मूल्य परिवर्तन व्यवस्थापनले मात्र गर्छ', eStockItem:'यो वस्तु भण्डारमा छैन', eForbidden:'तपाईंलाई यो कामको अनुमति छैन',
        followBtn:'📅 फलोअप भ्रमण', followTitle:'फलोअप भ्रमण बुक गर्नुहोस्', followDate:'मिति', followTime:'समय', followReason:'कारण (वैकल्पिक)', followBook:'✅ बुक गर्नुहोस्', followDone:'भ्रमण बुक भयो ✅',
        invTitle:'📦 भण्डार', invBuy:'किन्नु ＋', invGive:'दिनु －', invAddBtn:'➕ वस्तु थप्नुहोस्', invAvail:'उपलब्ध', invNamePh:'वस्तुको नाम', invEmpty:'भण्डार खाली छ', invSaved:'भयो ✅',
        st:{new:'नयाँ',confirmed:'पुष्टि भयो',progress:'चलिरहेको',done:'सम्पन्न'} },
@@ -811,7 +844,8 @@ const I18N={
        makeInvoice:'🧾 Create invoice', invoiceSent:'Invoice sent ✓', addService:'＋ Add service', customItem:'Custom', addPart:'🔧 Spare part', partPh:'e.g. LED bulb', total:'Total', saveSend:'Save & send to customer', print:'🖨️ Print', qtyLbl:'Qty', priceLbl:'Price',
        arrived:'🚪 I have arrived on site', arrivedDone:'✅ Customer notified', arrivedToast:'Done · customer notified in the app', arrivedBadge:'🚪 On site', whatsapp:'💬 WhatsApp',
        moreTime:'⏳ Need more time', extraTime:'Extra time', min:'min', delayToast:'Done · next customer notified',
-       rejectBtn:'✖ Decline job', rejectTitle:'Reason for declining', rejectPick:'Pick a reason · sent to customer & admin', rejectDone:'Job declined, customer notified',
+       cxBtn:'Request cancellation', cxTitle:'Cancellation request', cxPick:'Pick a reason · management decides whether to cancel', cxNote:'More details (optional)', cxSend:'Send cancellation request', cxSent:'Request sent to management, awaiting approval', cxPending:'Awaiting management approval to cancel', cxRejected:'Management declined the cancellation', cxNeedReason:'Pick or write a reason', cxCodePending:'A cancellation request for this job is already under review', cxCodeApproval:'Cancelling needs management approval, send a cancellation request with the reason',
+       eBadInvoice:'Old invoice format, update the app and save again', eInvItem:'A stock part has no sell price, ask management to price it', eInvLimit:'Free items exceed the allowed limit, contact management', eNoInvoice:'Issue the invoice before finishing the job', eNoCancel:'The job is already finished or cancelled and cannot be cancelled', eInvAdmin:'Item details, prices, adding and deleting are for management only; technicians change quantities only', eStockItem:'This item is not in the warehouse', eForbidden:'You are not allowed to do this',
        followBtn:'📅 Follow-up visit', followTitle:'Book follow-up visit', followDate:'Date', followTime:'Time', followReason:'Reason (optional)', followBook:'✅ Book', followDone:'Follow-up booked ✅',
        invTitle:'📦 Inventory', invBuy:'Buy ＋', invGive:'Dispense －', invAddBtn:'➕ Add item', invAvail:'Available', invNamePh:'Item name', invEmpty:'Inventory is empty', invSaved:'Done ✅',
        st:{new:'New',confirmed:'Confirmed',progress:'In progress',done:'Done'} },
@@ -823,7 +857,8 @@ const I18N={
        makeInvoice:'🧾 إنشاء فاتورة', invoiceSent:'أُرسلت الفاتورة ✓', addService:'＋ أضف خدمة', customItem:'بند مخصص', addPart:'🔧 قطعة غيار', partPh:'مثال: لمبة LED', total:'الإجمالي', saveSend:'حفظ وإرسال للعميل', print:'🖨️ طباعة', qtyLbl:'العدد', priceLbl:'السعر',
        arrived:'🚪 وصلت الموقع', arrivedDone:'✅ تم إبلاغ العميل', arrivedToast:'تم · وصل العميل إشعار «الفني عند بابك»', arrivedBadge:'🚪 وصل الموقع', whatsapp:'💬 واتساب',
        moreTime:'⏳ أحتاج وقت إضافي', extraTime:'وقت إضافي', min:'د', delayToast:'تم · سيُبلَّغ العميل التالي',
-       rejectBtn:'✖ رفض الطلب', rejectTitle:'سبب رفض الطلب', rejectPick:'اختر السبب · يوصل العميل والمؤسسة', rejectDone:'تم رفض الطلب وإبلاغ العميل',
+       cxBtn:'طلب إلغاء', cxTitle:'طلب إلغاء الطلب', cxPick:'اختر السبب · الإدارة تقرّر قبول الإلغاء أو رفضه', cxNote:'تفاصيل إضافية (اختياري)', cxSend:'أرسل طلب الإلغاء', cxSent:'وصل طلب الإلغاء للإدارة، بانتظار الموافقة', cxPending:'بانتظار موافقة الإدارة على الإلغاء', cxRejected:'الإدارة رفضت الإلغاء', cxNeedReason:'اختر سببًا أو اكتب السبب', cxCodePending:'فيه طلب إلغاء لهذا الطلب قيد المراجعة', cxCodeApproval:'الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب',
+       eBadInvoice:'صيغة الفاتورة قديمة، حدّث التطبيق ثم أعد الحفظ', eInvItem:'قطعة من المستودع بلا سعر بيع، اطلب من الإدارة تسعيرها', eInvLimit:'مبلغ البنود الحرة يتجاوز الحد المسموح، تواصل مع الإدارة', eNoInvoice:'أصدر الفاتورة قبل إنهاء الطلب', eNoCancel:'الطلب منتهٍ أو ملغى ولا يمكن طلب إلغائه', eInvAdmin:'تعديل بيانات الصنف وأسعاره وإضافته وحذفه من صلاحية الإدارة، والفني يعدّل الكمية فقط', eStockItem:'الصنف غير موجود في المستودع', eForbidden:'ما عندك صلاحية لهذا الإجراء',
        followBtn:'📅 زيارة متابعة', followTitle:'حجز زيارة متابعة', followDate:'التاريخ', followTime:'الوقت', followReason:'سبب الزيارة (اختياري)', followBook:'✅ احجز الموعد', followDone:'تم حجز الزيارة ✅',
        invTitle:'📦 المخزن', invBuy:'شراء ＋', invGive:'صرف －', invAddBtn:'➕ إضافة صنف', invAvail:'المتوفر', invNamePh:'اسم الصنف', invEmpty:'المخزن فارغ', invSaved:'تم ✅',
        st:{new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'} },
@@ -835,7 +870,8 @@ const I18N={
        makeInvoice:'🧾 बिल बनाएं', invoiceSent:'बिल भेजा गया ✓', addService:'＋ सेवा जोड़ें', customItem:'अन्य', addPart:'🔧 पार्ट्स', partPh:'जैसे: LED बल्ब', total:'कुल', saveSend:'सहेजें और ग्राहक को भेजें', print:'🖨️ प्रिंट', qtyLbl:'मात्रा', priceLbl:'कीमत',
        arrived:'🚪 मैं साइट पर पहुँच गया', arrivedDone:'✅ ग्राहक को सूचित किया', arrivedToast:'हो गया · ग्राहक को ऐप में सूचना गई', arrivedBadge:'🚪 साइट पर', whatsapp:'💬 WhatsApp',
        moreTime:'⏳ और समय चाहिए', extraTime:'अतिरिक्त समय', min:'मिनट', delayToast:'हो गया · अगले ग्राहक को सूचित',
-       rejectBtn:'✖ काम अस्वीकार', rejectTitle:'अस्वीकार का कारण', rejectPick:'कारण चुनें · ग्राहक व प्रशासन को भेजा जाएगा', rejectDone:'काम अस्वीकृत, ग्राहक को सूचित',
+       cxBtn:'रद्द करने का अनुरोध', cxTitle:'रद्द करने का अनुरोध', cxPick:'कारण चुनें · प्रबंधन तय करेगा कि रद्द हो या नहीं', cxNote:'अतिरिक्त विवरण (वैकल्पिक)', cxSend:'रद्द अनुरोध भेजें', cxSent:'अनुरोध प्रबंधन को भेजा गया, मंज़ूरी का इंतज़ार', cxPending:'रद्द करने के लिए प्रबंधन की मंज़ूरी का इंतज़ार', cxRejected:'प्रबंधन ने रद्द करने से मना किया', cxNeedReason:'कारण चुनें या लिखें', cxCodePending:'इस काम का रद्द अनुरोध पहले से समीक्षा में है', cxCodeApproval:'रद्द करने के लिए प्रबंधन की मंज़ूरी चाहिए, कारण के साथ रद्द अनुरोध भेजें',
+       eBadInvoice:'बिल का प्रारूप पुराना है, ऐप अपडेट करके दोबारा सहेजें', eInvItem:'स्टॉक के एक पुर्जे का बिक्री मूल्य नहीं है, प्रबंधन से कीमत तय करवाएँ', eInvLimit:'खुले आइटम की राशि सीमा से अधिक है, प्रबंधन से संपर्क करें', eNoInvoice:'काम पूरा करने से पहले बिल जारी करें', eNoCancel:'काम पहले ही पूरा या रद्द हो चुका है, रद्द अनुरोध नहीं हो सकता', eInvAdmin:'आइटम और कीमतें केवल प्रबंधन बदल सकता है', eStockItem:'यह आइटम स्टॉक में नहीं है', eForbidden:'आपको इसकी अनुमति नहीं है',
        followBtn:'📅 फ़ॉलो-अप विज़िट', followTitle:'फ़ॉलो-अप विज़िट बुक करें', followDate:'तारीख', followTime:'समय', followReason:'कारण (वैकल्पिक)', followBook:'✅ बुक करें', followDone:'विज़िट बुक ✅',
        invTitle:'📦 स्टॉक', invBuy:'खरीद ＋', invGive:'जारी －', invAddBtn:'➕ आइटम जोड़ें', invAvail:'उपलब्ध', invNamePh:'आइटम नाम', invEmpty:'स्टॉक खाली है', invSaved:'हो गया ✅',
        st:{new:'नया',confirmed:'पुष्टि',progress:'चल रहा है',done:'पूर्ण'} },
@@ -847,7 +883,8 @@ const I18N={
        makeInvoice:'🧾 بل بنائیں', invoiceSent:'بل بھیج دیا گیا ✓', addService:'＋ سروس شامل کریں', customItem:'دیگر', addPart:'🔧 پرزہ', partPh:'مثلاً: LED بلب', total:'کل', saveSend:'محفوظ کر کے گاہک کو بھیجیں', print:'🖨️ پرنٹ', qtyLbl:'تعداد', priceLbl:'قیمت',
        arrived:'🚪 میں سائٹ پر پہنچ گیا', arrivedDone:'✅ گاہک کو اطلاع دی', arrivedToast:'ہو گیا · گاہک کو ایپ میں اطلاع بھیج دی گئی', arrivedBadge:'🚪 سائٹ پر', whatsapp:'💬 واٹس ایپ',
        moreTime:'⏳ مزید وقت درکار', extraTime:'اضافی وقت', min:'منٹ', delayToast:'ہو گیا · اگلے گاہک کو اطلاع',
-       rejectBtn:'✖ کام مسترد', rejectTitle:'مسترد کرنے کی وجہ', rejectPick:'وجہ منتخب کریں · گاہک اور ادارے کو بھیجی جائے گی', rejectDone:'کام مسترد، گاہک کو اطلاع',
+       cxBtn:'منسوخی کی درخواست', cxTitle:'منسوخی کی درخواست', cxPick:'وجہ منتخب کریں · انتظامیہ منسوخی کا فیصلہ کرے گی', cxNote:'اضافی تفصیل (اختیاری)', cxSend:'منسوخی کی درخواست بھیجیں', cxSent:'درخواست انتظامیہ کو بھیج دی گئی، منظوری کا انتظار', cxPending:'منسوخی کے لیے انتظامیہ کی منظوری کا انتظار', cxRejected:'انتظامیہ نے منسوخی مسترد کر دی', cxNeedReason:'وجہ منتخب کریں یا لکھیں', cxCodePending:'اس کام کی منسوخی کی درخواست پہلے سے زیرِ جائزہ ہے', cxCodeApproval:'منسوخی کے لیے انتظامیہ کی منظوری درکار ہے، وجہ کے ساتھ منسوخی کی درخواست بھیجیں',
+       eBadInvoice:'بل کا فارمیٹ پرانا ہے، ایپ اپڈیٹ کر کے دوبارہ محفوظ کریں', eInvItem:'اسٹاک کے ایک پرزے کی فروخت قیمت نہیں، انتظامیہ سے قیمت لگوائیں', eInvLimit:'آزاد آئٹمز کی رقم حد سے زیادہ ہے، انتظامیہ سے رابطہ کریں', eNoInvoice:'کام ختم کرنے سے پہلے بل جاری کریں', eNoCancel:'کام پہلے ہی مکمل یا منسوخ ہو چکا ہے، منسوخی کی درخواست نہیں ہو سکتی', eInvAdmin:'آئٹمز اور قیمتیں صرف انتظامیہ بدل سکتی ہے', eStockItem:'یہ آئٹم اسٹاک میں موجود نہیں', eForbidden:'آپ کو اس کی اجازت نہیں',
        followBtn:'📅 فالو اپ وزٹ', followTitle:'فالو اپ وزٹ بک کریں', followDate:'تاریخ', followTime:'وقت', followReason:'وجہ (اختیاری)', followBook:'✅ بک کریں', followDone:'وزٹ بک ہو گئی ✅',
        invTitle:'📦 اسٹاک', invBuy:'خرید ＋', invGive:'اجرا －', invAddBtn:'➕ آئٹم شامل کریں', invAvail:'دستیاب', invNamePh:'آئٹم کا نام', invEmpty:'اسٹاک خالی ہے', invSaved:'ہو گیا ✅',
        st:{new:'نیا',confirmed:'تصدیق شدہ',progress:'جاری',done:'مکمل'} },
@@ -867,6 +904,39 @@ const MON={
   ur:['جنوری','فروری','مارچ','اپریل','مئی','جون','جولائی','اگست','ستمبر','اکتوبر','نومبر','دسمبر'],
 };
 function t(k){ return I18N[lang][k]; }
+/* تغيير رقم الجوال (خمس لغات) */
+Object.assign(I18N.ar,{ pcRow:'تغيير رقم الجوال', pcTitle:'📱 تغيير رقم الجوال', pcCurrent:'الرقم الحالي:', pcNewPh:'رقم الجوال الجديد (05xxxxxxxx)', pcHint:'نرسل رمز تأكيد للرقم الجديد، وبعد التأكيد يصير هو رقم دخولك.', pcSend:'أرسل رمز التأكيد', pcSentTo:'📲 أرسلنا رمز تأكيد إلى', pcCodePh:'رمز التأكيد', pcVerify:'تأكيد الرقم الجديد', pcResend:'لم يصلك الرمز؟ إعادة الإرسال', pcResent:'📲 أُعيد إرسال الرمز', pcSentToast:'📲 أرسلنا رمز تأكيد للرقم الجديد', pcDone:'✅ تم تغيير رقمك', pcSynced:'✅ تم تحديث بياناتك بالرقم الجديد', pcSyncFail:'تعذّر تحديث بياناتك بالرقم الجديد، أعد فتح التطبيق', pcNeedCode:'اكتب رمز التأكيد', pcRestart:'ابدأ من جديد بكتابة الرقم', pcBad:'رقم الجوال غير صحيح', pcSame:'هذا هو رقمك الحالي', pcTaken:'هذا الرقم مستخدم في حساب آخر', pcBlocked:'ما يمكن استخدام هذا الرقم', pcDemo:'حساب المراجعة ما يغيّر رقمه', pcMany:'محاولات كثيرة، حاول بعد ساعة', pcLimit:'تجاوزت حد الإرسال، حاول بعد شوي', pcCode:'الرمز غير صحيح أو انتهى', pcNoPhone:'الحساب بلا جوال موثّق', pcNotVerified:'ما اكتمل التحقق من الرقم الجديد', pcFail:'تعذّر، حاول مرة ثانية' });
+Object.assign(I18N.en,{ pcRow:'Change mobile number', pcTitle:'📱 Change mobile number', pcCurrent:'Current number:', pcNewPh:'New mobile number (05xxxxxxxx)', pcHint:'We send a confirmation code to the new number. After confirming, it becomes your sign-in number.', pcSend:'Send confirmation code', pcSentTo:'📲 We sent a confirmation code to', pcCodePh:'Confirmation code', pcVerify:'Confirm new number', pcResend:'No code? Resend', pcResent:'📲 Code sent again', pcSentToast:'📲 We sent a code to the new number', pcDone:'✅ Your number was changed', pcSynced:'✅ Your data was updated with the new number', pcSyncFail:'Could not update your data with the new number, reopen the app', pcNeedCode:'Enter the confirmation code', pcRestart:'Start again by entering the number', pcBad:'Invalid mobile number', pcSame:'This is already your current number', pcTaken:'This number is used by another account', pcBlocked:'This number cannot be used', pcDemo:'The review account cannot change its number', pcMany:'Too many attempts, try again in an hour', pcLimit:'Sending limit reached, try again shortly', pcCode:'Wrong or expired code', pcNoPhone:'This account has no verified mobile number', pcNotVerified:'The new number was not verified yet', pcFail:'Failed, try again' });
+Object.assign(I18N.ne,{ pcRow:'मोबाइल नम्बर परिवर्तन', pcTitle:'📱 मोबाइल नम्बर परिवर्तन', pcCurrent:'हालको नम्बर:', pcNewPh:'नयाँ मोबाइल नम्बर (05xxxxxxxx)', pcHint:'हामी नयाँ नम्बरमा पुष्टि कोड पठाउँछौं। पुष्टि पछि यो तपाईंको लगइन नम्बर हुनेछ।', pcSend:'पुष्टि कोड पठाउनुहोस्', pcSentTo:'📲 पुष्टि कोड पठाइयो', pcCodePh:'पुष्टि कोड', pcVerify:'नयाँ नम्बर पुष्टि गर्नुहोस्', pcResend:'कोड आएन? फेरि पठाउनुहोस्', pcResent:'📲 कोड फेरि पठाइयो', pcSentToast:'📲 नयाँ नम्बरमा कोड पठाइयो', pcDone:'✅ तपाईंको नम्बर परिवर्तन भयो', pcSynced:'✅ नयाँ नम्बरसँग तपाईंको डाटा अपडेट भयो', pcSyncFail:'नयाँ नम्बरसँग डाटा अपडेट हुन सकेन, एप फेरि खोल्नुहोस्', pcNeedCode:'पुष्टि कोड लेख्नुहोस्', pcRestart:'नम्बर लेखेर फेरि सुरु गर्नुहोस्', pcBad:'मोबाइल नम्बर गलत छ', pcSame:'यो पहिले नै तपाईंको हालको नम्बर हो', pcTaken:'यो नम्बर अर्को खातामा प्रयोग भइरहेको छ', pcBlocked:'यो नम्बर प्रयोग गर्न मिल्दैन', pcDemo:'समीक्षा खाताले नम्बर परिवर्तन गर्न सक्दैन', pcMany:'धेरै प्रयासहरू, एक घण्टापछि प्रयास गर्नुहोस्', pcLimit:'पठाउने सीमा पुग्यो, केही बेरपछि प्रयास गर्नुहोस्', pcCode:'कोड गलत वा म्याद सकियो', pcNoPhone:'यो खातामा प्रमाणित मोबाइल नम्बर छैन', pcNotVerified:'नयाँ नम्बर अझै प्रमाणित भएको छैन', pcFail:'सकिएन, फेरि प्रयास गर्नुहोस्' });
+Object.assign(I18N.hi,{ pcRow:'मोबाइल नंबर बदलें', pcTitle:'📱 मोबाइल नंबर बदलें', pcCurrent:'वर्तमान नंबर:', pcNewPh:'नया मोबाइल नंबर (05xxxxxxxx)', pcHint:'हम नए नंबर पर पुष्टि कोड भेजेंगे। पुष्टि के बाद यही आपका लॉगिन नंबर होगा।', pcSend:'पुष्टि कोड भेजें', pcSentTo:'📲 हमने पुष्टि कोड भेजा', pcCodePh:'पुष्टि कोड', pcVerify:'नया नंबर पुष्टि करें', pcResend:'कोड नहीं आया? दोबारा भेजें', pcResent:'📲 कोड दोबारा भेजा गया', pcSentToast:'📲 नए नंबर पर कोड भेजा गया', pcDone:'✅ आपका नंबर बदल गया', pcSynced:'✅ नए नंबर के साथ आपका डेटा अपडेट हो गया', pcSyncFail:'नए नंबर के साथ डेटा अपडेट नहीं हो सका, ऐप दोबारा खोलें', pcNeedCode:'पुष्टि कोड लिखें', pcRestart:'नंबर लिखकर दोबारा शुरू करें', pcBad:'मोबाइल नंबर गलत है', pcSame:'यह पहले से आपका वर्तमान नंबर है', pcTaken:'यह नंबर किसी और खाते में इस्तेमाल हो रहा है', pcBlocked:'यह नंबर इस्तेमाल नहीं किया जा सकता', pcDemo:'समीक्षा खाता अपना नंबर नहीं बदल सकता', pcMany:'बहुत ज़्यादा कोशिशें, एक घंटे बाद कोशिश करें', pcLimit:'भेजने की सीमा पूरी हुई, थोड़ी देर बाद कोशिश करें', pcCode:'कोड गलत या समाप्त', pcNoPhone:'इस खाते में सत्यापित मोबाइल नंबर नहीं है', pcNotVerified:'नया नंबर अभी सत्यापित नहीं हुआ', pcFail:'विफल, फिर कोशिश करें' });
+Object.assign(I18N.ur,{ pcRow:'موبائل نمبر تبدیل کریں', pcTitle:'📱 موبائل نمبر تبدیل کریں', pcCurrent:'موجودہ نمبر:', pcNewPh:'نیا موبائل نمبر (05xxxxxxxx)', pcHint:'ہم نئے نمبر پر تصدیقی کوڈ بھیجیں گے۔ تصدیق کے بعد یہی آپ کا لاگ ان نمبر ہو گا۔', pcSend:'تصدیقی کوڈ بھیجیں', pcSentTo:'📲 ہم نے تصدیقی کوڈ بھیجا', pcCodePh:'تصدیقی کوڈ', pcVerify:'نئے نمبر کی تصدیق کریں', pcResend:'کوڈ نہیں آیا؟ دوبارہ بھیجیں', pcResent:'📲 کوڈ دوبارہ بھیج دیا گیا', pcSentToast:'📲 نئے نمبر پر کوڈ بھیج دیا گیا', pcDone:'✅ آپ کا نمبر تبدیل ہو گیا', pcSynced:'✅ نئے نمبر کے ساتھ آپ کا ڈیٹا اپڈیٹ ہو گیا', pcSyncFail:'نئے نمبر کے ساتھ ڈیٹا اپڈیٹ نہیں ہو سکا، ایپ دوبارہ کھولیں', pcNeedCode:'تصدیقی کوڈ لکھیں', pcRestart:'نمبر لکھ کر دوبارہ شروع کریں', pcBad:'موبائل نمبر درست نہیں', pcSame:'یہ پہلے ہی آپ کا موجودہ نمبر ہے', pcTaken:'یہ نمبر کسی اور اکاؤنٹ میں استعمال ہو رہا ہے', pcBlocked:'یہ نمبر استعمال نہیں کیا جا سکتا', pcDemo:'جائزہ اکاؤنٹ اپنا نمبر تبدیل نہیں کر سکتا', pcMany:'بہت زیادہ کوششیں، ایک گھنٹے بعد کوشش کریں', pcLimit:'بھیجنے کی حد پوری ہو گئی، تھوڑی دیر بعد کوشش کریں', pcCode:'کوڈ غلط یا ختم ہو گیا', pcNoPhone:'اس اکاؤنٹ میں تصدیق شدہ موبائل نمبر نہیں', pcNotVerified:'نئے نمبر کی تصدیق ابھی نہیں ہوئی', pcFail:'ناکام، دوبارہ کوشش کریں' });
+/* ═ «مهامي» لفني المؤسسة (provider_tasks) + رسائل أكواد المهام والنقاط والملاحظات · بخمس لغات ═ */
+Object.assign(I18N.ar,{ tkTitle:'مهامي', tkSub:'المهام اليومية من صاحب المؤسسة · اضغط «تم» عند الإنجاز', tkToday:'مهام اليوم', tkUpcoming:'المهام القادمة', tkLate:'متأخرة من أيام سابقة', tkDone:'تم', tkDoneLbl:'منجزة', tkAll:'للكل', tkDoneAll:'ما فيه مهام اليوم', tkNone:'ما فيه مهام', tkMarked:'✅ تم تعليم المهمة منجزة', tkUnmarked:'رجعت المهمة غير منجزة', tkLeft:'باقي', tkDoneN:'منجز', tkOpen:'عرض الكل ›',
+  eTaskOwner:'تعديل المهام من صلاحية صاحب المؤسسة، الفني يعلّم الإنجاز فقط', eTaskTech:'هذا الفني ليس من فريق مؤسستك', eTaskTitle:'اكتب عنوان المهمة (حتى 200 حرف)', eTaskDate:'تاريخ المهمة غير صالح', eTaskRepeat:'نوع التكرار غير معروف',
+  eLoyOff:'نظام النقاط غير مفعّل، فعّله من الإعدادات', eLoyPhone:'رقم جوال العميل غير صالح (05xxxxxxxx)', eLoyPoints:'عدد النقاط غير صالح', eLoyMin:'الحد الأدنى للاستبدال {detail} نقطة', eLoyBalance:'رصيد النقاط لا يكفي (الرصيد {detail})', eLoyOrder:'الطلب غير موجود أو ليس من طلبات مؤسستك أو لم يكتمل', eLoyDup:'نقاط هذا الطلب مضافة من قبل', eLoyReason:'سبب الإضافة غير معروف',
+  eNoteText:'اكتب نص الملاحظة (حتى 2000 حرف)', eNoteLimit:'وصلت للحد الأقصى من الملاحظات (500)' });
+Object.assign(I18N.en,{ tkTitle:'My tasks', tkSub:'Daily tasks from your employer. Tap Done when finished', tkToday:"Today's tasks", tkUpcoming:'Upcoming tasks', tkLate:'Overdue from previous days', tkDone:'Done', tkDoneLbl:'Completed', tkAll:'Everyone', tkDoneAll:'No tasks today', tkNone:'No tasks', tkMarked:'✅ Task marked as done', tkUnmarked:'Task marked as not done', tkLeft:'left', tkDoneN:'done', tkOpen:'View all ›',
+  eTaskOwner:'Only the business owner edits tasks; technicians only mark them done', eTaskTech:'This technician is not in your team', eTaskTitle:'Enter the task title (up to 200 characters)', eTaskDate:'Invalid task date', eTaskRepeat:'Unknown repeat type',
+  eLoyOff:'Points are not enabled, enable them in Settings', eLoyPhone:'Invalid customer phone (05xxxxxxxx)', eLoyPoints:'Invalid number of points', eLoyMin:'Minimum to redeem is {detail} points', eLoyBalance:'Not enough points (balance {detail})', eLoyOrder:'The job does not exist, is not one of your business jobs, or is not completed', eLoyDup:'Points for this job were already added', eLoyReason:'Unknown reason',
+  eNoteText:'Write the note text (up to 2000 characters)', eNoteLimit:'You reached the maximum number of notes (500)' });
+Object.assign(I18N.ne,{ tkTitle:'मेरा काम', tkSub:'मालिकबाट दैनिक कामहरू · सकिएपछि «भयो» थिच्नुहोस्', tkToday:'आजका कामहरू', tkUpcoming:'आगामी कामहरू', tkLate:'अघिल्ला दिनका बाँकी', tkDone:'भयो', tkDoneLbl:'सम्पन्न', tkAll:'सबैका लागि', tkDoneAll:'आज कुनै काम छैन', tkNone:'कुनै काम छैन', tkMarked:'✅ काम सम्पन्न भनी चिन्ह लगाइयो', tkUnmarked:'काम फेरि बाँकीमा राखियो', tkLeft:'बाँकी', tkDoneN:'सम्पन्न', tkOpen:'सबै हेर्नुहोस् ›',
+  eTaskOwner:'काम सम्पादन मालिकले मात्र गर्छ, टेक्निसियनले सम्पन्न मात्र चिन्ह लगाउँछ', eTaskTech:'यो टेक्निसियन तपाईंको टोलीमा छैन', eTaskTitle:'कामको शीर्षक लेख्नुहोस् (२०० अक्षरसम्म)', eTaskDate:'कामको मिति गलत छ', eTaskRepeat:'दोहोरिने प्रकार अज्ञात',
+  eLoyOff:'पोइन्ट प्रणाली सक्रिय छैन, सेटिङमा सक्रिय गर्नुहोस्', eLoyPhone:'ग्राहकको मोबाइल नम्बर गलत छ (05xxxxxxxx)', eLoyPoints:'पोइन्ट संख्या गलत छ', eLoyMin:'रिडिम गर्न न्यूनतम {detail} पोइन्ट', eLoyBalance:'पोइन्ट पर्याप्त छैन (ब्यालेन्स {detail})', eLoyOrder:'काम छैन, तपाईंको संस्थाको होइन, वा सम्पन्न भएको छैन', eLoyDup:'यो कामको पोइन्ट पहिले नै थपिएको छ', eLoyReason:'कारण अज्ञात',
+  eNoteText:'नोटको पाठ लेख्नुहोस् (२००० अक्षरसम्म)', eNoteLimit:'नोटको अधिकतम सीमा (५००) पुग्यो' });
+Object.assign(I18N.hi,{ tkTitle:'मेरे काम', tkSub:'मालिक की ओर से दैनिक कार्य · पूरा होने पर «हो गया» दबाएँ', tkToday:'आज के कार्य', tkUpcoming:'आगामी कार्य', tkLate:'पिछले दिनों के बाकी', tkDone:'हो गया', tkDoneLbl:'पूर्ण', tkAll:'सभी के लिए', tkDoneAll:'आज कोई कार्य नहीं', tkNone:'कोई कार्य नहीं', tkMarked:'✅ कार्य पूर्ण के रूप में चिह्नित', tkUnmarked:'कार्य फिर से बाकी में', tkLeft:'बाकी', tkDoneN:'पूर्ण', tkOpen:'सभी देखें ›',
+  eTaskOwner:'कार्य संपादन केवल मालिक करता है, तकनीशियन केवल पूर्ण चिह्नित करता है', eTaskTech:'यह तकनीशियन आपकी टीम में नहीं है', eTaskTitle:'कार्य का शीर्षक लिखें (200 अक्षर तक)', eTaskDate:'कार्य की तारीख गलत है', eTaskRepeat:'दोहराव का प्रकार अज्ञात',
+  eLoyOff:'पॉइंट सिस्टम सक्रिय नहीं है, सेटिंग्स में सक्रिय करें', eLoyPhone:'ग्राहक का मोबाइल नंबर गलत है (05xxxxxxxx)', eLoyPoints:'पॉइंट की संख्या गलत है', eLoyMin:'रिडीम के लिए न्यूनतम {detail} पॉइंट', eLoyBalance:'पॉइंट पर्याप्त नहीं (शेष {detail})', eLoyOrder:'कार्य मौजूद नहीं, आपकी संस्था का नहीं, या पूर्ण नहीं हुआ', eLoyDup:'इस कार्य के पॉइंट पहले ही जोड़े गए', eLoyReason:'कारण अज्ञात',
+  eNoteText:'नोट का पाठ लिखें (2000 अक्षर तक)', eNoteLimit:'नोट्स की अधिकतम सीमा (500) पूरी हुई' });
+Object.assign(I18N.ur,{ tkTitle:'میرے کام', tkSub:'مالک کی طرف سے روزانہ کے کام · مکمل ہونے پر «ہو گیا» دبائیں', tkToday:'آج کے کام', tkUpcoming:'آنے والے کام', tkLate:'پچھلے دنوں کے باقی', tkDone:'ہو گیا', tkDoneLbl:'مکمل', tkAll:'سب کے لیے', tkDoneAll:'آج کوئی کام نہیں', tkNone:'کوئی کام نہیں', tkMarked:'✅ کام مکمل کے طور پر نشان زد', tkUnmarked:'کام دوبارہ باقی میں', tkLeft:'باقی', tkDoneN:'مکمل', tkOpen:'سب دیکھیں ›',
+  eTaskOwner:'کام میں تبدیلی صرف مالک کرتا ہے، ٹیکنیشن صرف مکمل نشان زد کرتا ہے', eTaskTech:'یہ ٹیکنیشن آپ کی ٹیم میں نہیں', eTaskTitle:'کام کا عنوان لکھیں (200 حروف تک)', eTaskDate:'کام کی تاریخ غلط ہے', eTaskRepeat:'تکرار کی قسم معلوم نہیں',
+  eLoyOff:'پوائنٹ سسٹم فعال نہیں، سیٹنگز سے فعال کریں', eLoyPhone:'گاہک کا موبائل نمبر غلط ہے (05xxxxxxxx)', eLoyPoints:'پوائنٹس کی تعداد غلط ہے', eLoyMin:'ریڈیم کے لیے کم از کم {detail} پوائنٹس', eLoyBalance:'پوائنٹس کافی نہیں (بیلنس {detail})', eLoyOrder:'کام موجود نہیں، آپ کے ادارے کا نہیں، یا مکمل نہیں ہوا', eLoyDup:'اس کام کے پوائنٹس پہلے ہی شامل ہیں', eLoyReason:'وجہ معلوم نہیں',
+  eNoteText:'نوٹ کا متن لکھیں (2000 حروف تک)', eNoteLimit:'نوٹس کی زیادہ سے زیادہ حد (500) پوری ہو گئی' });
+/* جولة الإصلاح 1: رسائل أكواد جديدة (حدود حجز الطاقم، طلب لا يخص المؤسسة، رفض الانضمام) بخمس لغات */
+Object.assign(I18N.ar,{ eTooMany:'وصلت للحد اليومي، حاول لاحقًا', eOrderNotMine:'هذا الطلب لا يناسب هذا الإجراء', eJoinBlocked:'ما يمكن إرسال طلب الانضمام، تواصل مع الإدارة' });
+Object.assign(I18N.en,{ eTooMany:'Daily limit reached, try later', eOrderNotMine:'This job does not fit this action', eJoinBlocked:'The join request cannot be sent, contact management' });
+Object.assign(I18N.ne,{ eTooMany:'दैनिक सीमा पुग्यो, पछि प्रयास गर्नुहोस्', eOrderNotMine:'यो काम यस कार्यका लागि मिल्दैन', eJoinBlocked:'सामेल हुने अनुरोध पठाउन सकिँदैन, व्यवस्थापनलाई सम्पर्क गर्नुहोस्' });
+Object.assign(I18N.hi,{ eTooMany:'दैनिक सीमा पूरी हुई, बाद में कोशिश करें', eOrderNotMine:'यह कार्य इस क्रिया के लिए उपयुक्त नहीं है', eJoinBlocked:'जुड़ने का अनुरोध नहीं भेजा जा सकता, प्रबंधन से संपर्क करें' });
+Object.assign(I18N.ur,{ eTooMany:'روزانہ کی حد پوری ہو گئی، بعد میں کوشش کریں', eOrderNotMine:'یہ کام اس عمل کے لیے موزوں نہیں', eJoinBlocked:'شامل ہونے کی درخواست نہیں بھیجی جا سکتی، انتظامیہ سے رابطہ کریں' });
 // أرقام حسب اللغة: عربي ٠-٩ · أردو ۰-۹ · هندي/نيبالي ०-९ · إنجليزي 0-9
 const DIGITS={ ar:'٠١٢٣٤٥٦٧٨٩', ur:'۰۱۲۳۴۵۶۷۸۹', hi:'०१२३४५६७८९', ne:'०१२३४५६७८९', en:'0123456789' };
 function ar(n){ const d=DIGITS[lang]||DIGITS.en; return String(n).replace(/[0-9]/g,x=>d[+x]); }
@@ -925,17 +995,18 @@ async function initCloud(){
       cloudReady=true;
       sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg','rizq_announcement']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{});
       // استعادة الجلسة: الدخول محفوظ في Supabase مو في المتصفح
-      const { data:{ session } }=await sb.auth.getSession();
+      const { data:{ session }, error:sessErr }=await sb.auth.getSession();
       if(session && localStorage.getItem('khafet_remember')==='0'){
         // «تذكرني» غير مفعّل · ننهي الجلسة القديمة ويسجّل من جديد
-        try{ await sb.auth.signOut(); }catch(e){}
+        await khPushOff(); try{ await sb.auth.signOut(); }catch(e){} khWipeCache();
       } else if(session){
         let r=null; try{ r=await sb.rpc('staff_role'); }catch(e){ r={ error:e }; }
         if(r && r.data){ loggedIn=true; MYROLE=String(r.data); try{ localStorage.setItem('khafet_staff_ok','1'); localStorage.setItem('khafet_role',MYROLE); }catch(e){} await loadMyName(); }
         else if(r && r.error && localStorage.getItem('khafet_staff_ok')==='1'){ loggedIn=true; try{ await loadMyName(); }catch(e){} }   // انقطاع شبكة: نبقيه داخل
-        else { loggedIn=false; const st=await techState(); if(st&&st.exists){ PENDING=st; } else { try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} } render(); }
-      } else if(loggedIn){ loggedIn=false; try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} render(); }   // ما فيه جلسة محفوظة
-      loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn){ initPush(); khMaybeTour(); }
+        else { loggedIn=false; const st=await techState(); if(st&&st.exists){ PENDING=st; } else { try{ await sb.auth.signOut(); }catch(e){} khWipeCache(); } render(); }
+      } else if(sessErr && khNetErr(sessErr)){ if(loggedIn){ loggedIn=false; try{ localStorage.removeItem('khafet_staff_ok'); }catch(e){} render(); } }   // تعذّر تحديث الجلسة بلا نت: الكاش يبقى حتى يرجع الاتصال
+      else { const was=loggedIn; loggedIn=false; khWipeCache(); if(was) render(); }   // ما فيه جلسة محفوظة (أو أُلغيت ورُفض تحديثها): كاش الحساب السابق لا يبقى على الجهاز (البند 27)
+      loadPrices(); loadInv(); loadStockLog(); loadOrders(); subscribe(); if(loggedIn){ initPush(); khMaybeTour(); try{ fnPhoneSyncRetry(); }catch(e){} }   // إكمال نقل تغيير الجوال لو انقطع الاتصال سابقًا
       return;
     }
   }catch(e){}
@@ -949,6 +1020,13 @@ function getPushPlugin(){
   return (C.Plugins && C.Plugins.PushNotifications) || null;
 }
 let _pn=null, _pnReady=false;
+/* جولة الإصلاح 5 (البند 27): قبل الخروج يُحذف رمز إشعارات هذا الجهاز من الحساب (unregister_staff_device)، فلا تستمر إشعارات الحساب
+   السابق على الجهاز المشترك. بمهلة قصيرة حتى لا يعلق الخروج بلا نت */
+async function khPushOff(){
+  let tk=''; try{ tk=localStorage.getItem('kh_push_tok')||''; }catch(e){}
+  if(!tk||!sb||!cloudReady) return;
+  try{ await Promise.race([ sb.rpc('unregister_staff_device', { p_token:tk }), new Promise(r=>setTimeout(r,3000)) ]); }catch(e){}
+}
 async function initPush(){
   if(!inApp() || !cloudReady) return;          // التطبيق فقط، وبعد جاهزية السحابة
   try{
@@ -956,6 +1034,7 @@ async function initPush(){
     if(!_pnReady){
       // لازم ننتظر تركيب المستمع قبل register وإلا يضيع ردّ آبل
       await PN.addListener('registration', async (t)=>{
+        try{ localStorage.setItem('kh_push_tok', String(t.value||'')); }catch(e){}
         try{ await sb.rpc('register_staff_device', { p_token:t.value, p_platform:((window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'ios') }); }
         catch(e){ console.warn('حفظ جهاز الفني:', e); }
       });
@@ -1053,7 +1132,7 @@ function showJoin(msg){
   const waiting = st.status==='pending';
   document.getElementById('app').innerHTML=`<div class="login">
     <div class="ic">${waiting?'⏳':'🏢'}</div>
-    <h1>${waiting?(A?'بانتظار اعتماد '+(st.org_name||''):'Awaiting approval from '+(st.org_name||'')):(A?'اختر جهة عملك':'Pick your workplace')}</h1>
+    <h1>${waiting?(A?'بانتظار اعتماد '+esc(st.org_name||''):'Awaiting approval from '+esc(st.org_name||'')):(A?'اختر جهة عملك':'Pick your workplace')}</h1>
     ${waiting
       ? `<p>${A?'طلبك وصل إلى':'Your request was sent to'} <b>${esc(st.org_name||'')}</b>. ${A?'بعد ما يعتمدك صاحب العمل اضغط «تحقق الآن».':'Once approved, tap Check now.'}</p>
          <button class="btn" onclick="recheckJoin()">🔄 ${A?'تحقق الآن':'Check now'}</button>
@@ -1090,7 +1169,7 @@ async function pickOrg(no){
   const A=lang==='ar'; const o=ORGS.find(x=>+x.org_no===+no); if(!o) return;
   if(!confirm((A?'إرسال طلب الانضمام إلى ':'Send a join request to ')+orgLabel(o)+'؟')) return;
   try{ const { data }=await sb.rpc('join_org_by_no',{ p_no:+no });
-    if(!data||!data.ok){ showJoin(A?'تعذّر إرسال الطلب، حاول مرة ثانية':'Could not send the request, try again'); return; }
+    if(!data||!data.ok){ showJoin(data&&data.reason==='too_many'?t('pcMany'):data&&data.reason==='blocked'?t('eJoinBlocked'):(A?'تعذّر إرسال الطلب، حاول مرة ثانية':'Could not send the request, try again')); return; }
     PENDING={ status:'pending', org_name:data.org_name, org:data.org }; toast('📨 '+(A?'أُرسل طلبك إلى ':'Request sent to ')+data.org_name); render();
   }catch(e){ showJoin(A?'تعذّر الاتصال':'Connection failed'); }
 }
@@ -1099,7 +1178,7 @@ async function submitJoin(){
   if(code.length<4){ showJoin(A?'اكتب الكود كاملًا':'Enter the full code'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
   try{ const { data }=await sb.rpc('join_org',{ p_code:code });
-    if(!data||!data.ok){ showJoin(data&&data.reason==='bad_code'?(A?'الكود غير صحيح، تأكد منه من صاحب العمل':'Wrong code'):(A?'تعذّر، حاول مرة ثانية':'Failed, try again')); return; }
+    if(!data||!data.ok){ showJoin(data&&data.reason==='bad_code'?(A?'الكود غير صحيح، تأكد منه من صاحب العمل':'Wrong code'):data&&data.reason==='too_many'?t('pcMany'):data&&data.reason==='blocked'?t('eJoinBlocked'):(A?'تعذّر، حاول مرة ثانية':'Failed, try again')); return; }
     PENDING={ status:'pending', org_name:data.org_name, org:data.org }; toast('📨 '+(A?'أُرسل طلبك إلى ':'Request sent to ')+data.org_name); render();
   }catch(e){ showJoin(A?'تعذّر الاتصال':'Connection failed'); }
 }
@@ -1110,7 +1189,14 @@ async function recheckJoin(){
     const st=await techState(); if(st&&st.exists) PENDING=st; toast(A?'ما زال بانتظار الاعتماد':'Still awaiting approval'); render();
   }catch(e){ toast('⚠️'); }
 }
-async function leaveJoin(){ try{ await sb.auth.signOut(); }catch(e){} PENDING=null; loggedIn=false; render(); }
+async function leaveJoin(){ await khPushOff(); try{ await sb.auth.signOut(); }catch(e){} khWipeLocal(); PENDING=null; loggedIn=false; render(); }
+/* كل ما يخص الحساب على الجهاز: الصادر المعلّق، كاش المخزن، الحفظ المحلي، وعلامات العرض */
+/* الخروج الصريح: الصادر المؤجل هنا وفي صفحة المزوّد (kh_pv_outbox) يُمسح، مع كاش المخزن في الصفحتين (جولة الإصلاح 3، البند 27) */
+function khWipeLocal(){ [OUTBOX_KEY,'kh_pv_outbox'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); khWipeCache(); try{ obBadge(); }catch(e){} }
+/* الخروج الضمني («تذكرني» مطفي، حساب بلا دور): كل شيء ما عدا الصادر المعلّق، فهو موسوم بمعرّف صاحبه ولا يُرسل باسم غيره */
+function khWipeCache(){ ['khafet_worker_auth','khafet_staff_ok','khafet_role','khafet_org','kh_inv_cache','kh_pinv_cache','khafet_tech_seen','khafet_cx_seen','khafet_seen_avail',SAVE_KEY].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ INV=[]; STOCKLOG=[]; }catch(e){} }
+/* خطأ اتصال (بلا نت أو مهلة) لا رفض من الخادم: لا يُعامل كخروج */
+function khNetErr(e){ return /fetch|network|load failed|timed? ?out|offline|ECONN/i.test(String((e&&(e.message||e.name))||e||'')); }
 async function loadMyName(){
   try{ const { data:{ user } }=await sb.auth.getUser();
     if(user){ myPhone = user.phone ? ('0'+String(user.phone).replace(/^\+?966/,'')) : '';
@@ -1122,10 +1208,11 @@ function copyMyCode(){ if(!myCode) return; try{ navigator.clipboard.writeText(my
 async function loadPrices(){
   if(!cloudReady) return;
   // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
-  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden').order('sort');
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden,extra_price').order('sort');
     if(!r.error && r.data && r.data.length){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
-        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden});
+        // custom: خدمة مخصّصة سعرها حر (يكتبه الفني) · extra: سعر الوحدة الإضافية (مثل الخادم)
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price)});
         if(d.name_en && !(SVC_I18N[d.id]&&SVC_I18N[d.id].en)) SVC_I18N[d.id]=Object.assign({}, SVC_I18N[d.id]||{}, {en:d.name_en}); });
       if(invEditing) renderInvoice(); return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); if(invEditing) renderInvoice(); } }catch(e){}
@@ -1134,15 +1221,44 @@ async function loadPrices(){
 let INV=[], showInv=false;
 let PARTSPUB=[];   // خيارات القطع لكل خدمة (لمبة أبيض/أصفر...) من khafet_parts_public
 let MYROLE=(()=>{ try{ return localStorage.getItem('khafet_role')||''; }catch(e){ return ''; } })(), invLoaded=false, invCat3='all';
-try{ const c=JSON.parse(localStorage.getItem('kh_inv_cache')||'null'); if(Array.isArray(c)&&c.length) INV=c; }catch(e){}   // تظهر الأصناف فورًا من آخر نسخة محفوظة
+/* بيانات الفني من الخادم (my_staff_info): صلاحياته داخل المؤسسة (perms.stock ...) */
+let MYINFO=null, MYPERMS={};
+/* سعر الشراء للمدير فقط · الفني ما يقرأه ولا يرسله */
+function canSeeBuy(){ return MYROLE==='admin' || (MYROLE==='provider' && /^provider:/.test(MYORG||'')); }
+/* تعديل المستودع (الأسعار، الإضافة، الحذف): المدير في مستودع خافت، وفني المؤسسة لو المزوّد أعطاه صلاحية المخزن */
+function whCanEdit(){ if(MYROLE==='admin') return true; return MYROLE==='provider' && /^provider:/.test(MYORG||''); }   // صاحب المؤسسة يعدّل مستودعه، وفنيّوها الكمية فقط (الخادم يرفض غيرها)
+/* الاطلاع على المستودع: مستودع خافت متاح لفنيّي خافت، ومستودع المؤسسة حسب صلاحية المزوّد */
+function invAllowed(){ if(MYROLE==='admin') return true; if(!/^provider:/.test(MYORG||'')) return true; return !!(MYPERMS&&MYPERMS.stock); }
+/* الأعمدة بدون سعر الشراء (للفني) · المدير يقرأ كل الأعمدة */
+const INV_COLS_NOBUY={ khafet_inventory:'id,name,unit,qty,updated_at,sell_price,min_qty,category,target_qty,code,image_url,name_en', provider_inventory:'id,provider_id,name,unit,qty,sell_price,created_at,category,min_qty,target_qty,image_url,code,name_en' };
+/* المستودع: أي حفظ من الفني يُشال منه buy_price (الحقل مخفي عنه في الواجهة أصلًا) */
+function whSb(){
+  if(canSeeBuy()) return sb;
+  const strip=p=>{ if(!p||typeof p!=='object') return p; if(Array.isArray(p)) return p.map(strip); const q=Object.assign({},p); delete q.buy_price; return q; };
+  return { from:t=>{ const b=sb.from(t); return { update:p=>b.update(strip(p)), insert:p=>b.insert(strip(p)), upsert:p=>b.upsert(strip(p)), delete:()=>b.delete(), select:(...a)=>b.select(...a) }; }, rpc:(...a)=>sb.rpc(...a), storage:sb?sb.storage:null };
+}
+try{ const c=JSON.parse(localStorage.getItem('kh_inv_cache')||'null'); if(Array.isArray(c)&&c.length) INV=c.filter(x=>x&&typeof x==='object').map(x=>{ const y=Object.assign({},x); delete y.buy_price; return y; }); }catch(e){}   // تظهر الأصناف فورًا من آخر نسخة محفوظة
 /* المستودع الاحترافي: بحث + فلترة بالحالة */
 let invSearch='', invFilter='all';   // all | ok | low | out
 function invStatus(it){ const q=+it.qty||0, mn=+it.min_qty||0; if(q<=0) return 'out'; if(q<=mn) return 'low'; return 'ok'; }
 function setInvSearch(v){ invSearch=(v||'').trim(); render(); }
 function setInvFilter(f){ invFilter=f; render(); }
 async function loadOrg(){ if(!cloudReady) return; try{ const r=await sb.rpc('my_org'); if(!r.error){ const v=r.data||''; if(v!==MYORG){ MYORG=v; try{ localStorage.setItem('khafet_org',MYORG); }catch(e){} INV=[]; invLoaded=false; } }
+    try{ const si=await sb.rpc('my_staff_info'); if(!si.error&&si.data&&typeof si.data==='object'){ MYINFO=si.data; MYPERMS=(si.data.perms&&typeof si.data.perms==='object')?si.data.perms:{}; } }catch(e){}
     const p=/^provider:(.+)$/.exec(MYORG||''); if(p){ try{ const pr=await sb.from('khafet_providers').select('name').eq('id',p[1]).maybeSingle(); window.MYORG_NAME=(pr.data&&pr.data.name)||''; }catch(e){} } }catch(e){} }
-async function loadInv(){ if(!cloudReady) return; try{ await loadOrg(); const src=invSrc(); const iv=await sb.from(src.table).select('*').order('name'); if(!iv.error){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; invCache3(); } } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; }
+/* المنظور غير موجود بعد (قبل تطبيق fix-2026-09-24-access.sql): نرجع للجدول نفسه بأعمدة بلا سعر الشراء */
+let KH_INV_VIEW_MISSING=false;
+function invViewMissing(e){ return !!e && /42P01|PGRST205|schema cache|does not exist/i.test(String((e.message||'')+' '+(e.code||'')+' '+(e.details||''))); }
+/* جولة الإصلاح 4 (البند 27): رد التحميل الذي يصل بعد الخروج أو بعد تغيّر الحساب يُتجاهل، فلا يرجع كاش حساب خرج من الجهاز */
+async function loadInv(){ if(!cloudReady) return; const uid0=obUid(); const stale=()=>!loggedIn || obUid()!==uid0;
+  try{ await loadOrg(); try{ loadMyTasks(); }catch(e){} let src=invSrc();
+    if(stale()){ invLoaded=true; return; }
+    if(!invAllowed()){ INV=[]; invCache3(); invLoaded=true; if(loggedIn) render(); return; }   // المزوّد ما أعطى الفني صلاحية المخزن
+    let iv=await sb.from(src.table).select('*').order('name');
+    if(iv.error && src.view && invViewMissing(iv.error)){ KH_INV_VIEW_MISSING=true; src=invSrc(); iv=await sb.from(src.table).select(INV_COLS_NOBUY[src.table]||'*').order('name'); }
+    if(iv.error && !canSeeBuy() && /column|42703/i.test(String((iv.error.message||'')+' '+(iv.error.code||'')))) iv=await sb.from(src.table).select('*').order('name');   // احتياط لو تغيّرت الأعمدة
+    if(stale()){ invLoaded=true; return; }
+    if(!iv.error){ INV=iv.data||[]; invCache3(); } invLoaded=true; if(loggedIn) render(); }catch(e){ invLoaded=true; }
   try{ const pp=await sb.from('khafet_parts_public').select('*'); if(!pp.error && Array.isArray(pp.data)) PARTSPUB=pp.data; }catch(e){}
   try{ const st=await sb.from('khafet_settings').select('key,value'); if(!st.error && Array.isArray(st.data)){ KHSET={}; st.data.forEach(x=>{ KHSET[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} if(loggedIn) render(); } }catch(e){} }
 /* إعدادات الإدارة اللي تهم خافت شركاء: إعلان الفنيين */
@@ -1226,13 +1342,46 @@ function obBadge(){ let b=document.getElementById('obBadge'); const n=obLoad().l
 async function obRun(op){ if(op.kind==='update'){ const r=await sb.from(op.table).update(op.patch).eq('id',op.id); if(r.error){ r.error._status=r.status; throw r.error; } } else if(op.kind==='insert'){ const r=await sb.from(op.table).insert(op.row); if(r.error){ r.error._status=r.status; throw r.error; } } }
 /* رفض من الخادم (مو انقطاع نت): ما نحفظه بالجهاز، نوضّح السبب */
 function srvRejected(e){ return !!(e && +e._status>0); }
-function srvMsg(e){ return /KHAFET_UNPAID/.test((e&&e.message)||'') ? lg('unpaidDone') : lg('serverErr'); }
+/* رسالة مفهومة لأكواد حرّاس القاعدة KHAFET_* بلغة الفني */
+function srvMsg(e){
+  const m=String((e&&(e.message||e.details||e.hint))||e||'');
+  const MAP={ KHAFET_CANCEL_PENDING:t('cxCodePending'), KHAFET_CANCEL_NEEDS_APPROVAL:t('cxCodeApproval'), KHAFET_UNPAID:lg('unpaidDone'), KHAFET_UPDATE_REQUIRED:lg('updateReq'),
+    KHAFET_BAD_INVOICE:t('eBadInvoice'), KHAFET_INVOICE_ITEM:t('eInvItem'), KHAFET_INVOICE_LIMIT:t('eInvLimit'), KHAFET_NO_INVOICE:t('eNoInvoice'), KHAFET_NO_CANCEL:t('eNoCancel'),
+    KHAFET_CANCEL_REASON:lg('cxReasonShort'), KHAFET_CANCEL_DECIDED:lg('cxDecided'), KHAFET_NOT_YOURS:lg('notYours'), KHAFET_BAD_STATUS:lg('badStatus'), KHAFET_NOT_SIGNED_IN:lg('notSignedIn'),
+    KHAFET_INV_ADMIN_ONLY:t('eInvAdmin'), KHAFET_STOCK_ITEM:t('eStockItem'), KHAFET_FORBIDDEN:t('eForbidden'),
+    KHAFET_TASK_OWNER_ONLY:t('eTaskOwner'), KHAFET_TASK_NOT_MY_TECH:t('eTaskTech'), KHAFET_TASK_TITLE:t('eTaskTitle'), KHAFET_TASK_DATE:t('eTaskDate'), KHAFET_TASK_REPEAT:t('eTaskRepeat'),
+    KHAFET_LOYALTY_OFF:t('eLoyOff'), KHAFET_LOYALTY_PHONE:t('eLoyPhone'), KHAFET_LOYALTY_POINTS:t('eLoyPoints'), KHAFET_LOYALTY_MIN:t('eLoyMin'), KHAFET_LOYALTY_BALANCE:t('eLoyBalance'), KHAFET_LOYALTY_ORDER:t('eLoyOrder'), KHAFET_LOYALTY_DUP:t('eLoyDup'), KHAFET_LOYALTY_REASON:t('eLoyReason'),
+    KHAFET_NOTE_TEXT:t('eNoteText'), KHAFET_NOTE_LIMIT:t('eNoteLimit'),
+    KHAFET_TOO_MANY:t('eTooMany'), KHAFET_ORDER_NOT_MINE:t('eOrderNotMine'), KHAFET_PHONE_CHANGE_DENIED:t('pcRestart') };
+  // {detail} = رقم يرسله الخادم مع الكود (الحد الأدنى أو الرصيد)
+  for(const k in MAP){ if(m.indexOf(k)>=0){ const txt=String(MAP[k]||''); return txt.indexOf('{detail}')<0 ? txt : txt.replace('{detail}', ar(String((e&&e.details)||'').replace(/[^0-9]/g,'')||'0')); } }
+  if(/fetch|network|Failed to fetch/i.test(m)) return lg('noconn');
+  return lg('serverErr');
+}
 let _obBusy=false;
 async function obFlush(){ if(!cloudReady||_obBusy) return; const q=obLoad(); if(!q.length) return; _obBusy=true;
-  try{ const rest=[]; for(const op of q){ try{ await obRun(op); }catch(e){ if(!srvRejected(e)) rest.push(op); } } obSave(rest);
-    if(!rest.length){ toast(lang==='ar'?'✅ أُرسلت التغييرات المعلّقة':'✅ Pending changes sent'); loadInv(); loadStockLog(); loadOrders(); } }
+  try{ const uid=obUid(); if(!uid) return;   // بدون جلسة: تبقى لحين دخول صاحبها
+    const rest=[], done=new Set(); let mine=0;
+    for(const op of q){
+      if(obUid()!==uid) return;   // تبدّلت الجلسة أثناء الإرسال (خروج أو حساب ثانٍ): نوقف ولا نعيد كتابة الصندوق
+      done.add(JSON.stringify(op));
+      if(!op||op.uid!==uid) continue;   // من حساب سابق على نفس الجهاز: لا تُرسل باسم الحساب الحالي
+      mine++; try{ await obRun(op); }catch(e){ if(!srvRejected(e)) rest.push(op); } }
+    if(obUid()!==uid) return;
+    // ما أُضيف للصندوق أثناء الإرسال يبقى (لا يُكتب فوقه)
+    obSave(rest.concat(obLoad().filter(x=>!done.has(JSON.stringify(x)))));
+    if(mine && !rest.length){ toast(lang==='ar'?'✅ أُرسلت التغييرات المعلّقة':'✅ Pending changes sent'); loadInv(); loadStockLog(); loadOrders(); } }
   finally{ _obBusy=false; } }
-async function khSave(op){ if(cloudReady){ try{ await obRun(op); return true; }catch(e){ if(srvRejected(e)){ toast(srvMsg(e)); return false; } } } obSave(obLoad().concat([Object.assign({t:Date.now()},op)])); toast(lang==='ar'?'⏳ ما فيه اتصال، محفوظ بالجهاز ويُرسل تلقائيًا':'⏳ Offline, saved on device and will sync'); return false; }
+/* الحفظ مع تمييز النتيجة: {ok} نجح · {rejected,error} الخادم رفض (لا يُحفظ بالجهاز) · {queued} بلا اتصال، بصندوق الصادر */
+/* معرّف الحساب من الجلسة المحفوظة بالجهاز (يعمل بدون نت) */
+function obUid(){ try{ const j=JSON.parse(localStorage.getItem('sb-zulogtqxbuqxmdmjpzqj-auth-token')||'null'); const u=j&&(j.user||(j.currentSession&&j.currentSession.user)); return (u&&u.id)||null; }catch(e){ return null; } }
+async function khSaveEx(op){
+  // الحساب وقت بداية العملية (لا وقت فشلها): لو تبدّلت الجلسة أثناء الطلب لا يُحفظ التعديل باسم الحساب الجديد
+  const uid0=obUid();
+  if(cloudReady){ try{ await obRun(op); return {ok:true}; }catch(e){ if(srvRejected(e)) return {ok:false,rejected:true,error:e}; } }
+  if(!uid0 || obUid()!==uid0) return {ok:false,dropped:true};
+  obSave(obLoad().concat([Object.assign({t:Date.now(),uid:uid0},op)])); toast(lang==='ar'?'⏳ ما فيه اتصال، محفوظ بالجهاز ويُرسل تلقائيًا':'⏳ Offline, saved on device and will sync'); return {ok:false,queued:true}; }
+async function khSave(op){ const r=await khSaveEx(op); if(r.rejected) toast(srvMsg(r.error)); return !!r.ok; }
 try{ window.addEventListener('online',()=>setTimeout(obFlush,1500)); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') obFlush(); }); setInterval(obFlush,30000); setTimeout(obBadge,1500); }catch(e){}
 async function invSaveQty(it){ invCache3(); if(!it.id) return true; return khSave({kind:'update',table:invSrc().table,id:it.id,patch:{qty:it.qty}}); }
 async function logStock(it, delta, reason){ const src=invSrc(); const entry={ item_id:it.id||null, item_name:it.name||'', delta, reason, actor:(myName||'الفني') }; if(src.pid) entry.provider_id=src.pid; const ok=await khSave({kind:'insert',table:src.log,row:entry}); if(ok) loadStockLog(); return ok; }
@@ -1305,6 +1454,7 @@ function rowToOrder(r){
     customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, createdAt:r.created_at||null,
     free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0,
+    cancelReq:r.cancel_req||null,   // null | 'pending' | 'rejected' · حالة طلب الإلغاء (تقرّرها الإدارة)
     price:+r.price||0, finalPrice:+r.final_price||0, bookedFinal:+r.booked_final||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payRequired:!!r.pay_required };
 }
 /* المتبقي على العميل (الخادم يحسبه) */
@@ -1313,12 +1463,17 @@ async function markCardPaid(id){
   const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId||window._payBusy) return;
   const due=payDue(o); if(!(due>0)) return;
   if(!confirm(lg('deviceConfirm')+' '+ar(due)+' '+lg('cur'))) return;
+  // مرجع عملية الجهاز (رقم الإيصال أو آخر 4 أرقام من البطاقة): 4 إلى 60 حرفًا، يُسجَّل مع الدفعة للمطابقة
+  const refRaw=prompt(lg('deviceRefAsk'),''); if(refRaw===null) return;
+  const ref=String(refRaw).replace(/\s+/g,' ').trim().slice(0,60);
+  if(ref && ref.length<4){ toast(lg('deviceRefNeed')); return; }
   window._payBusy=true;
   try{
-    const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId });
-    if(error||!data||!data.ok) throw (error||new Error((data&&data.error)||'fail'));
+    const { data, error } = await sb.rpc('khafet_record_device_payment',{ p_order:o.dbId, p_ref:ref||null });
+    if(error) throw error;
+    if(!data||!data.ok){ const R={ need_ref:lg('deviceRefNeed'), too_big:lg('deviceTooBig'), forbidden:lg('notYours'), cancelled:lg('ciCancelled'), not_staff:lg('notSignedIn') }; toast(R[(data&&data.error)||'']||lg('serverErr')); return; }
     toast(lg('deviceDone')); await loadOrders();
-  }catch(e){ toast(lg('serverErr')); }
+  }catch(e){ toast(srvMsg(e)); }
   finally{ window._payBusy=false; }
 }
 function loadLocal(){
@@ -1395,24 +1550,62 @@ const REJECT_REASONS=[
   {ar:'الوقت المحجوز غير كافٍ لحجم العمل', en:'The booked time is not enough for the job', ne:'बुक गरिएको समय कामको लागि पुग्दैन', hi:'बुक किया समय काम के लिए पर्याप्त नहीं', ur:'بک کیا وقت کام کے لیے کافی نہیں'},
   {ar:'ظرف طارئ منعني من الحضور', en:'An emergency prevented me from attending', ne:'आकस्मिक कारणले आउन सकिनँ', hi:'आपात स्थिति के कारण नहीं आ सका', ur:'ہنگامی صورتحال کی وجہ سے نہیں آ سکا'},
 ];
-function openReject(id){
+/* ═ طلب الإلغاء ═ الفني ما يلغي الطلب بنفسه: يرسل طلب إلغاء بالسبب (rpc khafet_request_cancel) والإدارة تقبل أو ترفض.
+   الحالة تبقى كما هي محليًا، وتظهر شارة «بانتظار موافقة الإدارة» من عمود cancel_req بعد إعادة التحميل. */
+let cxSel=null;
+/* شارة «الإدارة رفضت الإلغاء» تختفي بعد أول ضغطة أو فتح لطلب إلغاء جديد (محفوظ بالجهاز، لأن cancel_req لا يعدّله الفني) */
+function cxSeen(){ try{ return new Set(JSON.parse(localStorage.getItem('khafet_cx_seen')||'[]')); }catch(e){ return new Set(); } }
+function cxDismiss(dbId){ if(!dbId) return; try{ const s=cxSeen(); s.add(dbId); localStorage.setItem('khafet_cx_seen',JSON.stringify([...s].slice(-200))); }catch(e){} render(); }
+function cxBadge(o){
+  if(!o||!o.dbId||o.status==='done'||o.status==='cancelled') return '';
+  if(o.cancelReq==='pending') return `<span class="status cx-pend">${t('cxPending')}</span>`;
+  if(o.cancelReq==='rejected' && !cxSeen().has(o.dbId)) return `<button type="button" class="status cx-rej" data-id="${esc(o.dbId)}" onclick="cxDismiss(this.dataset.id)">${t('cxRejected')}</button>`;
+  return '';
+}
+function openCancelReq(id){
+  const o=ORDERS.find(x=>x.id===id); if(!o) return;
   const m=document.getElementById('invModal'); if(!m) return;
-  const opts=REJECT_REASONS.map((r,i)=>`<button class="rj-opt" onclick="doReject('${id}',${i})">${esc(r[lang]||r.ar)}</button>`).join('');
+  if(o.cancelReq==='pending'){ toast(t('cxCodePending')); return; }
+  if(o.cancelReq==='rejected' && o.dbId) cxDismiss(o.dbId);
+  cxSel=null;
+  const opts=REJECT_REASONS.map((r,i)=>`<button type="button" class="rj-opt" data-i="${i}" onclick="pickCancelReason(this)">${esc(r[lang]||r.ar)}</button>`).join('');
   m.innerHTML=`<div class="inv-card">
-    <div class="inv-head"><b>✖ ${t('rejectTitle')}</b><button onclick="closeReject()">✕</button></div>
-    <p style="color:var(--muted);margin:2px 0 14px;font-size:.95rem">${t('rejectPick')}</p>
-    <div class="rj-list">${opts}</div>
+    <div class="inv-head"><b>${t('cxTitle')} ${esc(o.id)}</b><button type="button" onclick="closeReject()">✕</button></div>
+    <p style="color:var(--muted);margin:2px 0 14px;font-size:.95rem">${t('cxPick')}</p>
+    <div class="rj-list" id="cxList">${opts}</div>
+    <textarea id="cxNote" class="cx-note" rows="2" maxlength="300" placeholder="${esc(t('cxNote'))}"></textarea>
+    <button type="button" class="tbtn reject" id="cxSend" style="width:100%;margin-top:12px;font-size:1.05rem;padding:15px" data-id="${esc(o.id)}" onclick="sendCancelReq(this.dataset.id)">${t('cxSend')}</button>
   </div>`;
   m.classList.add('show');
 }
-function closeReject(){ const m=document.getElementById('invModal'); if(m){ m.classList.remove('show'); m.innerHTML=''; } }
-async function doReject(id, idx){
+function openReject(id){ openCancelReq(id); }   // الاسم القديم (تستخدمه أدوات الفحص)
+function pickCancelReason(btn){
+  const i=+((btn&&btn.dataset&&btn.dataset.i)||-1); if(!(i>=0)) return;
+  cxSel = (cxSel===i) ? null : i;
+  document.querySelectorAll('#cxList .rj-opt').forEach(b=>b.classList.toggle('on', +b.dataset.i===cxSel));
+}
+function closeReject(){ const m=document.getElementById('invModal'); if(m){ m.classList.remove('show'); m.innerHTML=''; } cxSel=null; }
+async function sendCancelReq(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
-  const reasonAr=(REJECT_REASONS[idx]||{}).ar||'';
-  o.status='cancelled'; o.rejectReason=reasonAr;
-  if(cloudReady && o.dbId){ try{ await sb.from('khafet_orders').update({status:'cancelled', reject_reason:reasonAr}).eq('id',o.dbId); }catch(e){} }
-  else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===id); if(tt){ tt.status='cancelled'; tt.rejectReason=reasonAr; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
-  closeReject(); toast(t('rejectDone')); render();
+  if(window._cxBusy) return;
+  const base=(cxSel!=null && REJECT_REASONS[cxSel]) ? REJECT_REASONS[cxSel].ar : '';   // يُخزَّن بالعربي عشان يوصل الإدارة والعميل مفهومًا
+  const note=String(((document.getElementById('cxNote')||{}).value)||'').trim().slice(0,300);
+  const reason=[base, note].filter(Boolean).join(' · ').slice(0,500);
+  if(reason.trim().length<3){ toast(t('cxNeedReason')); return; }
+  if(!cloudReady || !sb || !o.dbId){ toast(lg('noconn')); return; }
+  const btn=document.getElementById('cxSend'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  window._cxBusy=true;
+  try{
+    const r=await sb.rpc('khafet_request_cancel',{ p_order:o.dbId, p_reason:reason });
+    if(r.error) throw r.error;
+    o.cancelReq='pending'; o.rejectReason=reason;   // الحالة status ما تتغيّر محليًا · القرار للإدارة
+    closeReject(); toast(t('cxSent')); render(); loadOrders();
+  }catch(e){
+    toast(srvMsg(e));
+    if(btn){ btn.disabled=false; btn.textContent=t('cxSend'); }
+    if(/KHAFET_CANCEL_PENDING/.test(String((e&&e.message)||''))){ o.cancelReq='pending'; closeReject(); render(); }
+  }
+  finally{ window._cxBusy=false; }
 }
 // حجز زيارة متابعة لنفس العميل (طلب جديد بنفس بيانات العميل والموقع)
 function openFollowup(id){
@@ -1446,7 +1639,7 @@ async function createFollowup(id){
   const btn=document.querySelector('#invModal .tbtn.done'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
   if(cloudReady){
     try{ const r=await sb.from('khafet_orders').insert(payload).select().single(); if(r.error) throw r.error; }
-    catch(e){ toast('⚠️'); if(btn){ btn.disabled=false; btn.textContent=t('followBook'); } return; }
+    catch(e){ toast('⚠️ '+srvMsg(e)); if(btn){ btn.disabled=false; btn.textContent=t('followBook'); } return; }
   } else {
     try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; s.orders=s.orders||[]; s.seq=(s.seq||1000)+1;
       s.orders.unshift({id:'#'+ar(s.seq),num:s.seq,dbId:null,customer:{name:o.customer.name,phone:o.customer.phone},address:o.address||{},items:payload.items,date:date,startMin:startMin,duration:duration,endMin:startMin+duration,price:0,finalPrice:0,free:false,status:'confirmed',quick:true,note:followNote});
@@ -1461,29 +1654,66 @@ async function createFollowup(id){
 let invEditing=null, invItems=[];
 function svcName2(s){ if(lang==='ar') return s.name; const tr=SVC_I18N[s.id]; return (tr&&tr[lang])?tr[lang]:s.name; }
 function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(s) return svcName2(s); } return it.name; }
-/* القطع المحجوزة اللي شالها الفني لأن العميل عنده الغرض (يرجع مبلغها للعميل)، وفرق سعر تبديل اللون */
-let invDrops=[], invAdj=0;
+/* القطع المحجوزة اللي شالها الفني لأن العميل عنده الغرض (يرجع مبلغها للعميل) */
+let invDrops=[];
+/* تبديل قطعة محجوزة بلون أو نوع ثاني: البند يبقى محجوزًا (booked) ويحمل معرّف البديل stockId، والخادم (khafet_pay_calc)
+   يحسب الفرق بنفسه من فرق سعر البيع بين قطع الحجز الأصلية وقطع الفاتورة المحجوزة. المعروض هنا تقدير بنفس المعادلة،
+   والرقم المعتمد يجي من الخادم بعد الحفظ (loadOrders). حقل adj في الفاتورة تقديري ويتجاهله الخادم. */
+const KH_DROP_MAX=300, KH_DROP_PCT=60;   // سقف الخصم من قيمة الحجز (invoice_drop_max/pct في الإعدادات، غير مقروءة للفني فنستخدم الافتراضي)
+function invSell(stockId, fallback){ const it=(INV||[]).find(x=>String(x.id)===String(stockId)); return it ? (+it.sell_price||0) : (+fallback||0); }
+function swapDiff(it){ if(!it||!it.booked||!it.swap) return 0; return round2(((+it.swap.price||0)-(+it.swap.fromPrice||0))*(+it.qty||1)*(1-invPct()/100)); }
+function swapLabel(it){ return 'فرق تبديل «'+String((it.swap&&it.swap.from)||'')+'» إلى «'+String(it.name||'')+'»'; }
+/* قيمة قطع الحجز الأصلية وقطع الفاتورة المحجوزة بسعر البيع الحالي (مثل الخادم) */
+function invOrigParts(){ const o=invOrder(); return round2(((o&&o.items)||[]).filter(i=>i&&i.id!=='quick'&&(String(i.id||'').startsWith('part:')||i.stockId)).reduce((a,i)=>a+invSell(i.stockId||String(i.id).slice(5), i.price)*Math.max(1,+i.qty||1),0)); }
+function invNowParts(){ return round2(invItems.filter(it=>it.booked&&(it.id==='stock'||it.stockId)).reduce((a,it)=>a+invSell(it.stockId, it.swap?it.swap.price:it.price)*Math.max(1,+it.qty||1),0)); }
+/* فرق قطع الحجز: سالب = أغراض شالها الفني أو بديل أرخص (بسقف)، موجب = بديل أغلى */
+function invDelta(){
+  const o=invOrder(); const bf=o?(+o.bookedFinal||0):0;
+  let d=round2((invNowParts()-invOrigParts())*(1-invPct()/100));
+  if(d<0) d=-Math.max(0, Math.min(-d, KH_DROP_MAX, round2(bf*KH_DROP_PCT/100), bf));
+  return d;
+}
+/* مبلغ سطر الفاتورة كما يحسبه الخادم (khafet_inv_line): قطعة مستودع بسعر البيع، خدمة من الكتالوج، بند حر بسعره */
+function invLineKind(it){
+  if(!it) return 'free';
+  if(it.id==='stock'||it.stockId||String(it.id||'').startsWith('part:')) return 'stock';
+  if(it.id==='fee'||it.id==='smallfee') return 'fee';
+  const s=(it.id&&it.id!=='custom'&&it.id!=='part')?svc(it.id):null;
+  return (s&&!s.custom)?'service':'free';
+}
+function lineAmount(it){
+  const q=Math.max(1,+it.qty||1), k=invLineKind(it);
+  if(k==='stock') return round2(q*invSell(it.stockId||String(it.id).slice(5), it.price));
+  if(k==='fee'){ const s=svc(it.id); return round2(q*(s?(+s.price||0):(+it.price||0))); }
+  if(k==='service'){ const s=svc(it.id); const p=+s.price||0, ex=(s.extra!=null)?+s.extra:p; return round2(p+(q-1)*ex); }
+  return round2(q*Math.max(0,+it.price||0));
+}
+function invPriceEditable(it){ return !it.booked && invLineKind(it)==='free'; }
 function partOpts(stockId){ const row=(PARTSPUB||[]).find(r=>r.item_id===stockId); if(!row) return []; return (PARTSPUB||[]).filter(r=>r.service_id===row.service_id && r.group_key===row.group_key); }
 function invDropBooked(i){
   captureInvPrices(); const it=invItems[i]; if(!it||!it.booked||it.id!=='stock') return; const A=lang==='ar';
   const amt=Math.round((+it.price||0)*(+it.qty||1)*100)/100;
-  if(!confirm(A?'العميل عنده «'+it.name+'» وما يحتاجها؟ تنشال من الفاتورة ويرجع له '+ar(amt)+' ر.س':'Customer already has "'+it.name+'"? It is removed and '+amt+' SAR goes back to the customer')) return;
+  const nm=(it.swap&&it.swap.from)||it.name;   // الاسم الأصلي المحجوز (لو كان مبدّلًا)
+  if(!confirm(A?'العميل عنده «'+nm+'» وما يحتاجها؟ تنشال من الفاتورة ويرجع له '+ar(amt)+' ر.س':'Customer already has "'+nm+'"? It is removed and '+amt+' SAR goes back to the customer')) return;
   if(it.deducted>0){ const inv=INV.find(x=>x.id===it.stockId); if(inv){ inv.qty=(+inv.qty||0)+it.deducted; invSaveQty(inv); logStock(inv, it.deducted, (A?'إرجاع · فاتورة ':'return · ')+invEditing); } }
-  invDrops.push({name:it.name, stockId:it.stockId||null, qty:+it.qty||1, amount:amt});
+  invDrops.push({name:nm, stockId:(it.swap&&it.swap.fromId)||it.stockId||null, qty:+it.qty||1, amount:amt});
   invItems.splice(i,1); renderInvoice();
 }
 function invSwap(i,itemId){
   captureInvPrices(); const it=invItems[i]; if(!it||it.stockId===itemId) return; const nv=INV.find(x=>x.id===itemId); if(!nv) return;
   if(it.deducted>0){ const old=INV.find(x=>x.id===it.stockId); if(old){ old.qty=(+old.qty||0)+it.deducted; invSaveQty(old); } it.deducted=0; }
-  const np=+nv.sell_price||0; invAdj += (np-(+it.price||0))*(+it.qty||1);
-  it.stockId=itemId; it.name=nv.name; it.img=nv.image_url||''; it.price=np; renderInvoice();
+  if(!it.swap) it.swap={ fromId:it.stockId, from:it.name, fromImg:it.img||'', fromPrice:invSell(it.stockId, it.price) };
+  if(it.swap.fromId===itemId){ it.stockId=itemId; it.name=it.swap.from; it.img=it.swap.fromImg||''; delete it.swap; renderInvoice(); return; }   // رجع للقطعة الأصلية: لا فرق
+  it.swap.price=+nv.sell_price||0;   // سعر بيع البديل · السعر المدفوع it.price يبقى كما هو والخادم يحسب الفرق
+  it.stockId=itemId; it.name=nv.name; it.img=nv.image_url||''; renderInvoice();
 }
 function invRefund(){ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; return Math.max(0, Math.round((paid-invGrand())*100)/100); }
 function openInvoice(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   invEditing=id;
-  invDrops=(o.invoice&&Array.isArray(o.invoice.dropped))?o.invoice.dropped.slice():[]; invAdj=(o.invoice&&+o.invoice.adj)||0;
-  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})) : [];
+  // بنود «فرق تبديل» وعناصر dropped الخاصة بالتبديل مشتقة، تُعاد حسابها عند الحفظ ولا تُحمَّل كبنود
+  invDrops=(o.invoice&&Array.isArray(o.invoice.dropped))?o.invoice.dropped.filter(d=>d&&!d.swap):[];
+  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.filter(it=>it&&it.id!=='swap').map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked, swap:(it.booked&&it.swap&&typeof it.swap==='object')?Object.assign({},it.swap):undefined})) : [];
   // فاتورة جديدة: خدمات الحجز تنضاف مقفولة (أجرتها محسوبة وقت الحجز)، والفني يضيف الأغراض
   // حجز الطاقم: خدمات الحجز من الأقسام تنضاف للفاتورة جاهزة (غير مقفولة)
   if(!o.invoice && o.dbId && o.quick){
@@ -1497,18 +1727,20 @@ function openInvoice(id){
   }
   renderInvoice();
 }
-/* حساب الفاتورة: أجرة الحجز الصافية + الإضافات */
+/* حساب الفاتورة: تقدير بنفس معادلة الخادم (khafet_pay_calc للفني والمزوّد) عشان المعروض يطابق المطلوب من العميل:
+   الإجمالي = أجرة الحجز المدفوعة + فرق قطع الحجز (تبديل أو شيل، بسقف) + الإضافات بأسعار الخادم (المستودع والكتالوج، والحر بسعر الفني).
+   الرقم المعتمد (final_price/amount_due) يجي من الخادم بعد الحفظ. */
 function invOrder(){ return ORDERS.find(x=>x.id===invEditing); }
-function invExtras(){ return invItems.filter(it=>!it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); }
+function round2(v){ return Math.round((+v||0)*100)/100; }
+function invExtras(){ return round2(invItems.filter(it=>!it.booked).reduce((a,it)=>a+lineAmount(it),0)); }
 function invBookedNet(){
-  const o=invOrder(); const f=1-invPct()/100;
-  const dropped=invDrops.reduce((a,d)=>a+(+d.amount||0),0);
-  if(!invItems.some(it=>it.booked) && !dropped) return 0;
-  // أجرة الحجز المدفوعة ناقص القطع اللي العميل عنده، زائد فرق تبديل اللون
-  if(o && o.bookedFinal>0) return Math.max(0, Math.round((+o.bookedFinal - dropped*f + invAdj*f)*100)/100);
+  const o=invOrder();
+  if(o && o.dbId) return Math.max(0, round2((+o.bookedFinal||0)+invDelta()));   // طلب من الخادم: نفس معادلته
+  if(!invItems.some(it=>it.booked)) return 0;
+  const f=1-invPct()/100;   // طلب محلي فقط (بلا خادم)
   return Math.round(invItems.filter(it=>it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0)*f);
 }
-function invGrand(){ return Math.round((invBookedNet()+invExtras())*100)/100; }
+function invGrand(){ return Math.max(0, round2(invBookedNet()+invExtras())); }
 function invDueNow(){ const o=invOrder(); return Math.max(0, invGrand()-(o?(+o.paidAmount||0):0)); }
 /* قطعة من المستودع: تدخل الفاتورة بسعر البيع، وتنخصم عند الحفظ */
 
@@ -1561,43 +1793,76 @@ async function saveInvoice(){
   const big=invItems.some(it=>(+it.price||0)*(+it.qty||1)>2000)||invTotal()>5000;
   if(big && !confirm(A?'المبلغ كبير غير معتاد: '+ar(invTotal())+' ريال. تأكد من الأسعار ثم اضغط موافق للحفظ.':'Unusually large total: '+invTotal()+' SAR. Check the prices, then press OK to save.')) return;
   window._invSaving=true;
-  // خصم قطع المستودع من المخزون · الفرق فقط (يمنع الخصم المزدوج عند إعادة الحفظ/التعديل)
-  for(const it of invItems){
-    if(it.id==='stock' && it.stockId){
-      const inv=INV.find(x=>x.id===it.stockId); if(!inv) continue;
-      const want=+it.qty||1, done=+it.deducted||0, delta=want-done;
-      if(delta!==0){
-        inv.qty=Math.max(0,(+inv.qty||0)-delta);
-        await invSaveQty(inv);
-        await logStock(inv, -delta, (lang==='ar'?'صرف · فاتورة ':'invoice · ')+o.id);
-        it.deducted=want;
-      }
-    }
-  }
-  const invoice={ v:2, items:invItems.map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked})), subtotal:invTotal(), discountPct:invPct(), total:invGrand(), dropped:invDrops, adj:invAdj, refund:invRefund(), createdAt:Date.now() };
-  o.invoice=invoice;
-  let ok=true;
-  if(o.dbId){ ok=await khSave({kind:'update',table:'khafet_orders',id:o.dbId,patch:{invoice:invoice, final_price:+invoice.total||0}}); o.finalPrice=+invoice.total||0; }
+  // خطة خصم قطع المستودع (الفرق فقط، يمنع الخصم المزدوج) · الخصم الفعلي بعد ما يقبل الخادم الفاتورة، وإلا يبقى المخزون كما هو
+  const plan=[];
+  invItems.forEach(it=>{ if(it.id==='stock' && it.stockId){ const inv=INV.find(x=>x.id===it.stockId); if(!inv) return; const want=+it.qty||1, done=+it.deducted||0; if(want!==done) plan.push({it,inv,delta:want-done,want}); } });
+  const items=invItems.map(it=>{ const p=plan.find(x=>x.it===it);
+    const x={id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:p?p.want:(+it.deducted||0),img:it.img||'',booked:!!it.booked};
+    if(it.booked&&it.swap) x.swap={fromId:it.swap.fromId||null,from:it.swap.from||'',fromImg:it.swap.fromImg||'',fromPrice:+it.swap.fromPrice||0,price:+it.swap.price||0}; return x; });
+  // adj تقديري (فرق التبديل) · الخادم يحسبه بنفسه من أسعار البيع ويتجاهل المرسل
+  const invoice={ v:2, items, subtotal:invTotal(), discountPct:invPct(), total:invGrand(), dropped:invDrops.slice(), adj:round2(invItems.reduce((a,it)=>a+swapDiff(it),0)), refund:invRefund(), createdAt:Date.now() };
+  let res={ok:true};
+  // المبلغ النهائي يحسبه الخادم من الفاتورة (khafet_pay_calc) ولا يُرسل من هنا
+  if(o.dbId) res=await khSaveEx({kind:'update',table:'khafet_orders',id:o.dbId,patch:{invoice:invoice}});
   else { try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY))||{}; const tt=(s.orders||[]).find(x=>x.id===o.id); if(tt){ tt.invoice=invoice; localStorage.setItem(SAVE_KEY,JSON.stringify(s)); } }catch(e){} }
+  if(res.rejected){ window._invSaving=false; toast(srvMsg(res.error)); return; }   // الخادم رفض الفاتورة: لا خصم من المخزون، والمحرر يبقى مفتوحًا للتصحيح
+  for(const p of plan){
+    p.inv.qty=Math.max(0,(+p.inv.qty||0)-p.delta);
+    await invSaveQty(p.inv);
+    await logStock(p.inv, -p.delta, (lang==='ar'?'صرف · فاتورة ':'invoice · ')+o.id);
+    p.it.deducted=p.want;
+  }
+  o.invoice=invoice; if(o.dbId && !res.ok) o.finalPrice=+invoice.total||0;   // محفوظة بلا نت: تقدير حتى المزامنة
   window._invSaving=false;
-  const dueAfter=Math.max(0, invoice.total-(+o.paidAmount||0));
-  if(ok) toast(dueAfter>0 ? t('invoiceSent')+' · '+lg('dueNow')+' '+ar(dueAfter)+' '+lg('cur') : (invoice.refund>0 ? t('invoiceSent')+' · '+(A?'يرجع للعميل ':'refund to customer ')+ar(invoice.refund)+' '+lg('cur') : t('invoiceSent')));
   closeInvoice(); render();
+  if(res.ok && cloudReady && o.dbId){
+    // جولة الإصلاح 3 (بند 28): المتبقي والاسترجاع في رسالة الحفظ من حساب الخادم بعد الحفظ (هو المرجع)، لا من تقدير الفاتورة هنا
+    await loadOrders();
+    const f=ORDERS.find(x=>x.dbId===o.dbId)||o; const fin=Math.max(0,+f.finalPrice||0), paid=+f.paidAmount||0, due=Math.max(0,+f.amountDue||0);
+    toast(due>0 ? t('invoiceSent')+' · '+lg('dueNow')+' '+ar(due)+' '+lg('cur') : (paid>fin+0.01 ? t('invoiceSent')+' · '+(A?'يرجع للعميل ':'refund to customer ')+ar(round2(paid-fin))+' '+lg('cur') : t('invoiceSent')));
+    return;
+  }
+  const dueAfter=Math.max(0, invoice.total-(+o.paidAmount||0));
+  if(res.ok) toast(dueAfter>0 ? t('invoiceSent')+' · '+lg('dueNow')+' '+ar(dueAfter)+' '+lg('cur') : (invoice.refund>0 ? t('invoiceSent')+' · '+(A?'يرجع للعميل ':'refund to customer ')+ar(invoice.refund)+' '+lg('cur') : t('invoiceSent')));
 }
-function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return; const tmp={...o, invoice:{items:invItems,subtotal:invTotal(),discountPct:invPct(),total:invNet()}}; printInvoiceDoc(tmp); }
+function invSig(items){ return JSON.stringify((items||[]).filter(it=>it&&it.id!=='swap').map(it=>[String(it.id||'custom'),String(it.stockId||''),+it.qty||1,round2(+it.price||0),!!it.booked,String(it.name||'')])); }
+function invSaved(o){ return !!(o&&o.invoice&&Array.isArray(o.invoice.items)&&invSig(o.invoice.items)===invSig(invItems)&&JSON.stringify((o.invoice.dropped||[]).filter(d=>d&&!d.swap).map(d=>[String(d.name||''),+d.qty||1]))===JSON.stringify(invDrops.map(d=>[String(d.name||''),+d.qty||1]))); }
+function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
+  if(o.dbId){ if(!invSaved(o)){ toast(lg('saveFirst')); return; } printInvoiceDoc(Object.assign({},o,{_srv:true})); return; }
+  const tmp={...o, invoice:{v:2,items:invItems,subtotal:invTotal(),discountPct:invPct(),total:invGrand(),dropped:invDrops.slice(),refund:invRefund()}}; printInvoiceDoc(tmp); }
 /* الفاتورة المطبوعة: أقسام (الشغل، القطع، الرسوم) مع صور القطع، ثم المجموع والمدفوع والمتبقي والضمان (نفس تصميم تطبيق العميل) */
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
   const kind=it=>{ if(!it) return 'svc'; if(it.id==='fee'||it.id==='smallfee') return 'fee'; if(it.id==='stock'||it.stockId||it.part||it.id==='part'||String(it.id||'').startsWith('part:')) return 'part'; return 'svc'; };
-  const g={svc:[],part:[],fee:[]}; (inv.items||[]).forEach(it=>g[kind(it)].push(it));
+  const srv=!!(o._srv&&o.dbId);   // فاتورة محفوظة على الخادم: الإجمالي والمدفوع والمتبقي من حسابه لا من نص الفاتورة
+  const g={svc:[],part:[],fee:[]}; (inv.items||[]).forEach(it=>{ if(!it||it.id==='swap') return; g[kind(it)].push(it);
+    // قطعة مبدّلة: سطر «فرق تبديل» بالتقدير. فاتورة الخادم (srv=1) فرقها داخل التسوية (adj) فلا يُضاف سطر من النص
+    if(!(srv&&+inv.srv===1)&&it.booked&&it.swap&&typeof it.swap==='object'){ const d=round2(((+it.swap.price||0)-(+it.swap.fromPrice||0))*Math.max(1,+it.qty||1)); if(d) g.part.push({id:'swap',name:'فرق تبديل «'+String(it.swap.from||'')+'» إلى «'+String(it.name||'')+'»',qty:1,price:d}); } });
   const m=v=>arNum(Math.round((+v||0)*100)/100)+' ر.س';
-  const sub=(inv.items||[]).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0); const total=(+inv.total>0)?+inv.total:sub; const disc=inv.discountPct>0?Math.max(0,sub-total):0;
-  const paid=+o.paidAmount||0, due=Math.max(0,total-paid);
-  const ico=it=>{ const s=it&&it.id?svc(it.id):null; return (s&&s.ico)||'🔧'; };
+  const swapSum=round2(g.part.filter(x=>x&&x.id==='swap').reduce((a,x)=>a+(+x.price||0),0));
+  const sub=round2((inv.items||[]).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0)+swapSum); const total=srv?Math.max(0,+o.finalPrice||0):((+inv.total>0)?+inv.total:sub);
+  const dPct=srv?(+o.discountPct||0):(+inv.discountPct||0); let disc=dPct>0?Math.max(0,round2(sub-total)):0; if(srv&&disc>round2(sub*dPct/100)+1) disc=0;
+  // جولة الإصلاح 3 (بند 28): فاتورة الخادم (srv=1) تُعرض بأسعار أسطرها فقط لو معادلته صحيحة (المجموع − خصم المؤسسة + التسوية = الإجمالي)
+  let orgDisc=0, adj=0, lines=true;
+  if(srv){
+    if(+inv.srv===1){ orgDisc=Math.max(0,round2(inv.orgDisc)); adj=round2(inv.adj); disc=0;
+      lines=Math.abs(sub-(+inv.subtotal||0))<=0.5 && Math.abs(round2(sub-orgDisc+adj)-total)<=0.5; }
+    else lines=Math.abs(sub-total)<=0.5 || disc>0;
+    if(!lines){ orgDisc=0; adj=0; disc=0; }
+  }
+  const paid=+o.paidAmount||0, due=srv?Math.max(0,+o.amountDue||0):Math.max(0,total-paid);
+  const ico=it=>{ const s=it&&it.id?svc(it.id):null; return esc((s&&s.ico)||'🔧'); };
   const row=(it,k)=>{ const q=+it.qty||1,p=+it.price||0; const media=k==='part'?(it.img?`<img src="${esc(it.img)}" alt="">`:'🔩'):(k==='fee'?'🚚':ico(it));
-    return `<div class="r"><span class="im">${media}</span><span class="nm"><b>${esc(itemDisplay(it))}</b><small>${q>1?arNum(q)+' × '+m(p):m(p)}</small></span><span class="tt">${m(p*q)}</span></div>`; };
+    return `<div class="r"><span class="im">${media}</span><span class="nm"><b>${esc(itemDisplay(it))}</b><small>${lines?(q>1?arNum(q)+' × '+m(p):m(p)):(q>1?'× '+arNum(q):'')}</small></span>${lines?`<span class="tt">${m(p*q)}</span>`:''}</div>`; };
+  const sumRows=(disc>0||orgDisc>0||Math.abs(adj)>=0.01)
+    ? `<div><span>المجموع</span><span>${m(sub)}</span></div>`
+      +(disc>0?`<div class="g"><span>🎟️ خصم ${arNum(dPct)}٪</span><span>− ${m(disc)}</span></div>`:'')
+      +(orgDisc>0?`<div class="g"><span>🎁 خصم المؤسسة</span><span>− ${m(orgDisc)}</span></div>`:'')
+      +(adj<=-0.01?`<div class="g"><span>🎟️ خصومات وتسويات</span><span>− ${m(-adj)}</span></div>`:'')
+      +(adj>=0.01?`<div><span>فرق القطع والتسويات</span><span>+ ${m(adj)}</span></div>`:'')
+    : '';
   const sec=(t,rows,k)=>rows.length?`<div class="sec">${t}</div>${rows.map(r=>row(r,k)).join('')}`:'';
-  const drops=(inv.dropped||[]); const refund=+inv.refund||Math.max(0,paid-total);
+  const drops=(inv.dropped||[]).filter(x=>x&&!x.swap), swapBack=srv?[]:(inv.dropped||[]).filter(x=>x&&x.swap); const refund=srv?(o.status!=='cancelled'&&paid>total+0.01?round2(paid-total):0):(+inv.refund||Math.max(0,paid-total));
   const d=new Date(); const ds=arNum(d.getDate())+'/'+arNum(d.getMonth()+1)+'/'+arNum(d.getFullYear());
   const a=o.address||{}; const addr=[a.city, a.house?'منزل '+a.house:''].filter(Boolean).join(' · ');
   const html=`<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>فاتورة ${esc(o.id)}</title>
@@ -1627,12 +1892,12 @@ function printInvoiceDoc(o){
 <div class="wrap">
 <div class="meta"><div><span>العميل</span>${esc((o.customer||{}).name||'')}</div><div><span>الجوال</span>${esc((o.customer||{}).phone||'')}</div>${addr?`<div><span>العنوان</span>${esc(addr)}</div>`:''}${o.date?`<div><span>تاريخ الخدمة</span>${esc(o.date)}</div>`:''}</div>
 ${sec('الشغل',g.svc,'svc')}${sec('القطع والأغراض',g.part,'part')}${sec('الرسوم',g.fee,'fee')}
-<div class="sum">${disc>0?`<div><span>المجموع</span><span>${m(sub)}</span></div><div class="g"><span>🎟️ خصم ${arNum(inv.discountPct)}٪</span><span>− ${m(disc)}</span></div>`:''}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${khVatOf(total)>0?`<div><span>منها ضريبة القيمة المضافة ${arNum(khLegal().vatPct)}٪</span><span>${m(khVatOf(total))}</span></div>`:''}${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
+<div class="sum">${sumRows}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${khVatOf(total)>0?`<div><span>منها ضريبة القيمة المضافة ${arNum(khLegal().vatPct)}٪</span><span>${m(khVatOf(total))}</span></div>`:''}${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${swapBack.length?`<div class="g"><span>↩️ فرق تبديل يرجع للعميل</span><span>${m(swapBack.reduce((a,x)=>a+(+x.amount||0),0))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
 <div class="wr"><span>🛡️ ضمان الشغل ${o.warrantyDays>0?arNum(o.warrantyDays)+' يوم':'٧ أيام'}</span>${g.part.length?'<span>🔩 ضمان القطع سنتان</span>':''}</div>
 ${khQr(total, khVatOf(total), o.date)?`<div id="qr" style="margin:14px auto 0;width:140px"></div>`:''}
 <div class="ft">${khLegalLine()}<br>${khVatLine()}<br>شكراً لتعاملك مع ${BRAND} · ${PHONE}</div>
 <div class="noprint"><button onclick="print()">🖨️ طباعة</button></div>
-${khQr(total, khVatOf(total), o.date)?`<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>try{ new QRCode(document.getElementById('qr'),{text:'${khQr(total, khVatOf(total), o.date)}',width:140,height:140}); }catch(e){}<\/script>`:''}
+${khQr(total, khVatOf(total), o.date)?`<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"><\/script><script>try{ new QRCode(document.getElementById('qr'),{text:'${khQr(total, khVatOf(total), o.date)}',width:140,height:140}); }catch(e){}<\/script>`:''}
 </div>
 </body></html>`;
   const w=window.open('','_blank'); if(!w){ toast(lg('popup')); return; } w.document.write(html); w.document.close();
@@ -1641,15 +1906,16 @@ function renderInvoice(){
   const m=document.getElementById('invModal');
   if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
   const A=lang==='ar';
-  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${s.id}">${s.ico} ${svcName2(s)} · ${ar(s.price)}</option>`).join('');
-  const invOpts=(INV||[]).map(it=>`<option value="${it.id}">${esc(it.name)} · ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
+  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${esc(s.id)}">${esc(s.ico)} ${esc(svcName2(s))} · ${ar(+s.price||0)}</option>`).join('');
+  const invOpts=(INV||[]).map(it=>`<option value="${esc(it.id)}">${esc(it.name)} · ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
   const rows = invItems.length ? invItems.map((it,i)=>{
     if(it.booked){
       const isPart=it.id==='stock'&&it.stockId; const opts=isPart?partOpts(it.stockId):[];
       return `<div class="inv-row">
       ${isPart&&it.img?`<img class="ir-img" src="${esc(it.img)}" alt="">`:''}
       <div class="ir-bk"><span class="ir-name">${isPart&&!it.img?'📦 ':''}${esc(itemDisplay(it))}<span class="ir-lock">🔒 ${lg('booked')}</span></span>
-        ${opts.length>1?`<div class="ir-opts">${opts.map(op=>`<button type="button" class="${op.item_id===it.stockId?'on':''}" onclick="invSwap(${i},'${op.item_id}')">${esc(op.label||op.item_name||'')}</button>`).join('')}</div>`:''}
+        ${opts.length>1?`<div class="ir-opts">${opts.map(op=>`<button type="button" class="${op.item_id===it.stockId?'on':''}" data-i="${i}" data-item="${esc(op.item_id)}" onclick="invSwap(+this.dataset.i,this.dataset.item)">${esc(op.label||op.item_name||'')}</button>`).join('')}</div>`:''}
+        ${(()=>{ const d=swapDiff(it); if(!d) return ''; return `<span class="ir-swap ${d<0?'minus':''}">${lg('swapDiff')}: ${d>0?'+':'−'}${ar(Math.abs(d))} ${lg('cur')}</span>`; })()}
       </div>
       <span class="ir-static">×${ar(it.qty)}</span>
       ${isPart?`<button class="ir-del" title="${A?'العميل عنده الغرض':'Customer has it'}" onclick="invDropBooked(${i})">✕</button>`:''}
@@ -1659,12 +1925,17 @@ function renderInvoice(){
     const nameCell = editable
       ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
       : `<span class="ir-name">${it.id==='stock'&&!it.img?'📦 ':''}${esc(itemDisplay(it))}</span>`;
+    // السعر يُكتب فقط للبنود الحرة (custom/part/خدمة مخصّصة) · قطع المستودع وخدمات الكتالوج يسعّرها الخادم من سعر البيع والكتالوج
+    const free=invPriceEditable(it); const amt=lineAmount(it); const unit=round2(amt/Math.max(1,+it.qty||1));
+    const priceCell = free
+      ? `<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`
+      : `<span class="ir-price-ro" title="${A?'السعر من الخادم':'Server price'}">${ar(unit)}</span>`;
     return `<div class="inv-row">
       ${nameCell}
       <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
       <span class="ir-x">×</span>
-      <input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />
-      <span class="ir-line">= ${ar((+it.qty||0)*(+it.price||0))}</span>
+      ${priceCell}
+      <span class="ir-line">= ${ar(amt)}</span>
       <button class="ir-del" onclick="invRemove(${i})">🗑️</button>
     </div>`;
   }).join('') : `<div class="inv-empty">${t('addService')}</div>`;
@@ -1680,10 +1951,12 @@ function renderInvoice(){
     <div class="inv-items">${rows}</div>
     ${invPct()>0&&!invItems.some(it=>it.booked)?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل · ينطبق تلقائياً</div>`:''}
     <div class="inv-total"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
-    ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=invBookedNet(); if(!bk&&!paid) return ''; return `<div class="inv-pay">
+    <div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:4px">${lg('estimateNote')}</div>
+    ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=(o&&o.dbId)?(+o.bookedFinal||0):invBookedNet(); if(!bk&&!paid&&!invDelta()) return ''; return `<div class="inv-pay">
       ${bk?`<div><span>${lg('bookedFee')}</span><span>${ar(bk)} ${lg('cur')}</span></div>`:''}
       <div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>
       ${invDrops.length?`<div><span>↩️ ${A?'أغراض عند العميل':'Customer has'}</span><span>${esc(invDrops.map(d=>d.name).join('، '))}</span></div>`:''}
+      ${(()=>{ const d=invDelta(); if(!d) return ''; return d<0?`<div class="refund"><span>${lg('partsBack')}</span><span>${ar(-d)} ${lg('cur')}</span></div>`:`<div><span>${lg('swapDiff')}</span><span>+${ar(d)} ${lg('cur')}</span></div>`; })()}
       ${paid?`<div><span>${lg('paidLbl')}</span><span>${ar(paid)} ${lg('cur')}</span></div>`:''}
       ${invRefund()>0?`<div class="refund"><span>${A?'يرجع للعميل':'Refund to customer'}</span><span>${ar(invRefund())} ${lg('cur')}</span></div>`:`<div class="due"><span>${lg('dueNow')}</span><span>${ar(invDueNow())} ${lg('cur')}</span></div>`}
     </div>`; })()}
@@ -1738,6 +2011,7 @@ Object.assign(LG.en,{custInv:'Customer invoice',ciSvcs:'Services',ciParts:'Parts
 Object.assign(LG.ne,{custInv:'ग्राहकको बिल',ciSvcs:'सेवाहरू',ciParts:'सामानहरू',ciFees:'शुल्क',ciDisc:'छुट',ciTotal:'जम्मा',ciPaid:'ग्राहकले तिरेको',ciDue:'तिर्न बाँकी',ciRefund:'ग्राहकलाई फिर्ता',ciCancelled:'रद्द',feeDelivery:'सामान डेलिभरी शुल्क',feeSmall:'सानो अर्डर शुल्क'});
 Object.assign(LG.hi,{custInv:'ग्राहक का बिल',ciSvcs:'सेवाएँ',ciParts:'सामान',ciFees:'शुल्क',ciDisc:'छूट',ciTotal:'कुल',ciPaid:'ग्राहक ने चुकाया',ciDue:'बाकी भुगतान',ciRefund:'ग्राहक को वापस',ciCancelled:'रद्द',feeDelivery:'सामान डिलीवरी शुल्क',feeSmall:'छोटे ऑर्डर का शुल्क'});
 Object.assign(LG.ur,{custInv:'گاہک کا بل',ciSvcs:'خدمات',ciParts:'سامان',ciFees:'فیس',ciDisc:'رعایت',ciTotal:'کل',ciPaid:'گاہک نے ادا کیا',ciDue:'باقی ادائیگی',ciRefund:'گاہک کو واپس',ciCancelled:'منسوخ',feeDelivery:'سامان کی ترسیل فیس',feeSmall:'چھوٹے آرڈر کی فیس'});
+Object.assign(LG.ar,{saveFirst:'احفظ الفاتورة أولًا، ثم اطبعها'}); Object.assign(LG.en,{saveFirst:'Save the invoice first, then print it'}); Object.assign(LG.ne,{saveFirst:'पहिले बिल सेभ गर्नुहोस्, अनि प्रिन्ट गर्नुहोस्'}); Object.assign(LG.hi,{saveFirst:'पहले बिल सेव करें, फिर प्रिंट करें'}); Object.assign(LG.ur,{saveFirst:'پہلے بل محفوظ کریں، پھر پرنٹ کریں'});
 Object.assign(LG.ne,{paidLbl:'💳 तिरेको'}); Object.assign(LG.hi,{paidLbl:'💳 भुगतान हुआ'}); Object.assign(LG.ur,{paidLbl:'💳 ادا شدہ'});
 /* اسم القطعة بلغة الفني: الإنجليزي من المستودع لغير العربي */
 function partNameL(i){ if(lang!=='ar'){ const inv=(typeof INV!=='undefined'&&INV||[]).find(x=>x.id===i.stockId); if(inv&&inv.name_en) return inv.name_en; } return i.name||''; }
@@ -1769,8 +2043,8 @@ function cancelledRefundRows(){
   return list.map(o=>{ const amt=(+o.paidAmount>0?+o.paidAmount:(+o.bookedFinal||+o.finalPrice||0));
     return `<div class="tjob-cx"><span class="cx-ic">🚫</span><span class="cx-tx"><b>${lg('ciCancelled')} · ${esc(o.id||'')}</b><small>${jobTime(o.startMin)} · ${jobDate(o.date)} · ${lg('ciRefund')}</small></span><b class="cx-amt"><span dir="ltr">−${ar(amt)}</span> ${lg('cur')}</b></div>`; }).join('');
 }
-Object.assign(LG.ar,{paidLbl:'💳 مدفوع',waitPay:'💳 بانتظار الدفع',deviceBtn:'💳 دفع بجهاز الفني',deviceConfirm:'تأكيد استلام',deviceDone:'✓ تم تسجيل الدفع',unpaidDone:'فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.',serverErr:'ما انحفظ، حاول مرة ثانية',booked:'محجوز',bookedFee:'أجرة الحجز',extras:'الإضافات',dueNow:'المتبقي على العميل'});
-Object.assign(LG.en,{paidLbl:'💳 Paid',waitPay:'💳 Awaiting payment',deviceBtn:'💳 Paid by card machine',deviceConfirm:'Confirm you received',deviceDone:'✓ Payment recorded',unpaidDone:'The customer still owes money. Ask them to pay in the app or record a card machine payment.',serverErr:'Not saved, try again',booked:'Booked',bookedFee:'Booking fee',extras:'Extras',dueNow:'Customer owes'});
+Object.assign(LG.ar,{paidLbl:'💳 مدفوع',waitPay:'💳 بانتظار الدفع',deviceBtn:'💳 دفع بجهاز الفني',deviceConfirm:'تأكيد استلام',deviceDone:'✓ تم تسجيل الدفع',unpaidDone:'فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.',serverErr:'ما انحفظ، حاول مرة ثانية',booked:'محجوز',bookedFee:'أجرة الحجز',extras:'الإضافات',dueNow:'المتبقي على العميل',updateReq:'حدّث التطبيق من المتجر عشان تكمل',swapDiff:'فرق التبديل (تقديري)',partsBack:'يرجع للعميل من قطع الحجز (تقديري)',estimateNote:'المبالغ تقديرية بأسعار الخادم، والمبلغ المعتمد يظهر على الطلب بعد الحفظ',stockNoAccess:'المخزن غير متاح لك، اطلب الصلاحية من مزوّدك',notYours:'هذا الطلب مسند لفني آخر',notSignedIn:'سجّل دخولك ثم أعد المحاولة',cxReasonShort:'اكتب سبب الإلغاء (3 أحرف على الأقل)',cxDecided:'تم البت في طلب الإلغاء هذا من قبل',badStatus:'ما يمكن تغيير حالة الطلب بهذا الشكل',deviceRefAsk:'رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة',deviceRefNeed:'اكتب رقم إيصال الجهاز أو آخر 4 أرقام من البطاقة',deviceTooBig:'المبلغ أكبر من حد الدفع بالجهاز، تواصل مع الإدارة'});
+Object.assign(LG.en,{paidLbl:'💳 Paid',waitPay:'💳 Awaiting payment',deviceBtn:'💳 Paid by card machine',deviceConfirm:'Confirm you received',deviceDone:'✓ Payment recorded',unpaidDone:'The customer still owes money. Ask them to pay in the app or record a card machine payment.',serverErr:'Not saved, try again',booked:'Booked',bookedFee:'Booking fee',extras:'Extras',dueNow:'Customer owes',updateReq:'Update the app from the store to continue',swapDiff:'Swap difference (estimate)',partsBack:'Refund to customer for booked parts (estimate)',estimateNote:'Amounts are estimates at server prices; the final amount shows on the job after saving',stockNoAccess:'Stock is not available to you, ask your provider for access',notYours:'This job is assigned to another technician',notSignedIn:'Sign in and try again',cxReasonShort:'Write the cancellation reason (at least 3 characters)',cxDecided:'This cancellation request was already decided',badStatus:'The job status cannot be changed this way',deviceRefAsk:'Card machine receipt number or last 4 digits of the card',deviceRefNeed:'Enter the card machine receipt number or the last 4 digits of the card',deviceTooBig:'The amount is above the card machine limit, contact management'});
 function lg(k){ const d=LG[lang]||LG.ar; return d[k]||LG.ar[k]||''; }
 /* الشرح التعريفي: مرة وحدة بعد أول دخول على هذا الجهاز؛ لو اللغة ما اختيرت قبل يبدأ باختيار اللغة */
 function khMaybeTour(){
@@ -1866,6 +2140,7 @@ async function confirmForgot(){
   try{
     const { error:ve }=await sb.auth.verifyOtp({ phone:_fgPhone, token:code, type:'sms' });
     if(ve){ showForgotCode(lg('fcBadCode')); return; }
+    khWipeCache();   // جولة الإصلاح 5 (البند 27): جلسة جديدة قد تكون لحساب غير صاحب الكاش
     const { error:ue }=await sb.auth.updateUser({ password:a });
     if(ue){ showForgotCode(lg('fcSaveFail')); return; }
     _fgPhone=null;
@@ -1886,6 +2161,8 @@ async function doLogin(){
   try{
     const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:p });
     if(error) throw new Error('bad');
+    // جولة الإصلاح 5 (البند 27): دخول ناجح قد يكون لحساب غير صاحب الكاش (فُتح التطبيق بلا نت فبقي كاش الحساب السابق)، فيُمسح قبل ضبط الدور
+    khWipeCache(); MYROLE=''; MYORG=''; ORDERS=[]; invLoaded=false;
     const { data:role }=await sb.rpc('staff_role');
     if(!role){
       const st=await techState();
@@ -1900,9 +2177,9 @@ async function doLogin(){
     lgFail((e&&e.message==='no-role') ? lg('notreg') : lg('wrong'));
   }
 }
-async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false;
+async function logout(){ await khPushOff(); try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false;
   // امسح كل ما يخص الحساب من الجهاز حتى لا يرى الفني التالي بيانات سابقه
-  ['khafet_worker_auth','khafet_staff_ok','khafet_role','khafet_org','kh_inv_cache','khafet_tech_seen',SAVE_KEY].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  khWipeLocal();
   MYROLE=''; MYORG=''; INV=[]; STOCKLOG=[]; ORDERS=[]; invLoaded=false; myName=''; myCode=''; render(); }
 /* 🏠 الرئيسية = صفحة حسابه الرئيسية (طلباته)، مو اختيار البوابات */
 function goHome(){ if(loggedIn){ tab='home'; calFilter=''; try{window.scrollTo(0,0);}catch(e){} render(); } else { location.href='index.html#stay'; } }
@@ -1921,14 +2198,134 @@ async function deleteAccount(){
   if(!confirm(lang==='ar'?'حذف حسابك؟ لن تستقبل مهام بعدها.':'Delete your account?')) return;
   let ok=false; try{ const { data }=await sb.rpc('deactivate_my_account'); ok=!!data; }catch(e){}
   if(!ok){ toast(lang==='ar'?'تعذّر الحذف · راجع الإدارة':'Delete failed'); return; }
-  try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; localStorage.removeItem('khafet_worker_auth'); render();
+  await khPushOff();
+  try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; khWipeLocal(); INV=[]; STOCKLOG=[]; ORDERS=[]; render();
   toast(lang==='ar'?'تم حذف الحساب':'Account deleted');
+}
+/* ═ تغيير رقم الجوال ═ خطوتان في نافذة: الرقم الجديد → رمز التحقق.
+   1) rpc khafet_phone_change_start: تحقق خفيف في الخادم (صالح، غير مستخدم، غير محظور) ويحفظ الرقم القديم للحساب.
+   2) Supabase Auth يرسل الرمز للرقم الجديد (updateUser ثم verifyOtp نوع phone_change، عبر دالة sms-hook: أرقام سعودية، 3 بالساعة و6 باليوم).
+   3) rpc khafet_after_phone_change: تنقل صف الفني في الطاقم (أو المزوّد وطلباته) للرقم الجديد في سياق النظام، ثم نعيد تحميل بياناتي.
+   لو انقطع الاتصال بين 2 و3 تبقى علامة khafet_phone_sync ويُكمَل النقل عند الفتح القادم (fnPhoneSyncRetry). */
+let _pc=null;   // {e164, local} أثناء انتظار الرمز
+function openPhoneChange(){
+  const m=document.getElementById('invModal'); if(!m) return;
+  _pc=null;
+  m.innerHTML=`<div class="inv-card">
+    <div class="inv-head"><b>${t('pcTitle')}</b><button type="button" onclick="closePhoneChange()">✕</button></div>
+    <p style="color:var(--muted);margin:2px 0 12px;font-size:.95rem">${t('pcCurrent')} <b style="direction:ltr;display:inline-block">${esc(myPhone||'')}</b></p>
+    <div id="pc_step1">
+      <input id="pc_phone" class="pc-in" inputmode="tel" autocomplete="tel" maxlength="16" placeholder="${esc(t('pcNewPh'))}" style="direction:ltr;text-align:center;letter-spacing:1px" onkeydown="if(event.key==='Enter')phoneChangeSend()" />
+      <p style="color:var(--muted);margin:8px 0 0;font-size:.9rem">${t('pcHint')}</p>
+      <button type="button" class="tbtn done" id="pc_send" style="width:100%;margin-top:12px" onclick="phoneChangeSend()">${t('pcSend')}</button>
+    </div>
+    <div id="pc_step2" style="display:none">
+      <p style="color:var(--muted);margin:0 0 8px;font-size:.95rem">${t('pcSentTo')} <b id="pc_to" style="direction:ltr;display:inline-block"></b></p>
+      <input id="pc_code" class="pc-in" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="${esc(t('pcCodePh'))}" style="text-align:center;letter-spacing:5px" onkeydown="if(event.key==='Enter')phoneChangeVerify()" />
+      <button type="button" class="tbtn done" id="pc_verify" style="width:100%;margin-top:12px" onclick="phoneChangeVerify()">${t('pcVerify')}</button>
+      <button type="button" class="pc-link" id="pc_resend" onclick="phoneChangeResend()">${t('pcResend')}</button>
+    </div>
+  </div>`;
+  m.classList.add('show');
+  setTimeout(function(){ const i=document.getElementById('pc_phone'); if(i) i.focus(); }, 50);
+}
+function closePhoneChange(){ const m=document.getElementById('invModal'); if(m){ m.classList.remove('show'); m.innerHTML=''; } _pc=null; }
+/* جوال سعودي فقط: يرجع 9665xxxxxxxx أو null */
+function pcNorm(v){ const d=normPhone(v); return /^9665[0-9]{8}$/.test(d) ? d : null; }
+/* رسالة مفهومة بلغة الفني لردود rpc تغيير الجوال وأخطاء Supabase Auth */
+function pcMsg(e){
+  const R={ bad_phone:'pcBad', same_phone:'pcSame', phone_taken:'pcTaken', blocked:'pcBlocked', not_staff:'notSignedIn', not_signed_in:'notSignedIn', demo:'pcDemo', too_many:'pcMany', no_phone:'pcNoPhone', no_request:'pcRestart', expired:'pcRestart', not_verified:'pcNotVerified' };
+  if(typeof e==='string' && R[e]) return t(R[e])||lg(R[e]);
+  const m=[e&&e.message, e&&e.msg, e&&e.error_description, e&&e.code, e&&e.error_code].filter(x=>typeof x==='string').join(' ');
+  const st=+((e&&e.status)||0);
+  if(st===429 || /rate limit|too many|over_sms_send_rate_limit/i.test(m)) return t('pcLimit');
+  if(st===422 || /already.*(registered|exists)|phone_exists/i.test(m)) return t('pcTaken');
+  if(/otp|token|expired|invalid/i.test(m)) return t('pcCode');
+  if(/fetch|network|Failed to fetch/i.test(m)) return lg('noconn');
+  if(/session/i.test(m)) return lg('notSignedIn');
+  const am=String((e&&(e.message||e.msg))||'');
+  if(/[؀-ۿ]/.test(am)) return am.slice(0,120);   // رسالة عربية من دالة sms-hook (مثل الأرقام غير السعودية أو حدود الإرسال)
+  return t('pcFail');
+}
+async function phoneChangeSend(){
+  const raw=((document.getElementById('pc_phone')||{}).value)||'';
+  const d=pcNorm(raw); if(!d){ toast(t('pcBad')); return; }
+  if(!cloudReady||!sb){ toast(lg('noconn')); return; }
+  if(window._pcBusy) return; window._pcBusy=true;
+  const btn=document.getElementById('pc_send'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    const r=await sb.rpc('khafet_phone_change_start',{ p_new:'+'+d });
+    if(r.error) throw r.error;
+    if(!r.data || r.data.ok!==true) throw ((r.data&&r.data.reason)||'fail');
+    const e164=String(r.data.phone||('+'+d));
+    const { error }=await sb.auth.updateUser({ phone:e164 });
+    if(error) throw error;
+    _pc={ e164:e164, local:'0'+e164.replace(/\D/g,'').slice(3) };
+    const s1=document.getElementById('pc_step1'), s2=document.getElementById('pc_step2'), to=document.getElementById('pc_to');
+    if(s1) s1.style.display='none'; if(s2) s2.style.display='block'; if(to) to.textContent=_pc.local;
+    toast(t('pcSentToast'));
+    setTimeout(function(){ const i=document.getElementById('pc_code'); if(i) i.focus(); }, 50);
+  }catch(e){ toast(pcMsg(e)); }
+  finally{ window._pcBusy=false; if(btn){ btn.disabled=false; btn.textContent=t('pcSend'); } }
+}
+async function phoneChangeResend(){
+  if(!_pc||!sb) return;
+  const b=document.getElementById('pc_resend'); if(b) b.disabled=true;
+  try{ const { error }=await sb.auth.resend({ type:'phone_change', phone:_pc.e164 }); if(error) throw error; toast(t('pcResent')); }
+  catch(e){ toast(pcMsg(e)); }
+  finally{ if(b) setTimeout(function(){ b.disabled=false; }, 20000); }
+}
+async function phoneChangeVerify(){
+  if(!_pc){ toast(t('pcRestart')); return; }
+  const code=(((document.getElementById('pc_code')||{}).value)||'').replace(/\D/g,'');
+  if(code.length<4){ toast(t('pcNeedCode')); return; }
+  if(window._pcBusy) return; window._pcBusy=true;
+  const btn=document.getElementById('pc_verify'); if(btn){ btn.disabled=true; btn.textContent='⏳'; }
+  try{
+    const { error }=await sb.auth.verifyOtp({ phone:_pc.e164, token:code, type:'phone_change' });
+    if(error) throw error;
+    // الرقم تغيّر في Auth؛ ننقل بياناتنا في القاعدة للرقم الجديد (ولو فشل الاتصال نكمل عند الفتح القادم)
+    try{ localStorage.setItem('khafet_phone_sync','1'); }catch(e){}
+    const local=_pc.local; closePhoneChange();
+    const ok=await fnPhoneSync(local);
+    toast(ok?t('pcDone'):t('pcSyncFail'));
+  }catch(e){ toast(pcMsg(e)); if(btn){ btn.disabled=false; btn.textContent=t('pcVerify'); } }
+  finally{ window._pcBusy=false; }
+}
+/* نقل صفوف الحساب للرقم الجديد (rpc في سياق النظام) ثم إعادة تحميل اسمي ورقمي وطلباتي */
+async function fnPhoneSync(local){
+  let r=null; try{ r=await sb.rpc('khafet_after_phone_change'); }catch(e){ r={ error:e }; }
+  const d=r&&!r.error&&r.data;
+  if(d && (d.ok===true || d.reason==='no_request' || d.reason==='not_verified')){
+    try{ localStorage.removeItem('khafet_phone_sync'); }catch(e){}
+    if(d.ok===true){
+      const pn=myName, pc=myCode;
+      myPhone=String(d.phone||local||myPhone); try{ await loadMyName(); }catch(e){}
+      if(!myName) myName=pn; if(!myCode) myCode=pc;   // انقطاع أثناء إعادة التحميل: نبقي الاسم والكود المعروضين
+      loadOrders(); render();
+    }
+    return d.ok===true;
+  }
+  return false;
+}
+/* عند فتح التطبيق: لو نجح التحقق سابقًا وانقطع الاتصال قبل نقل البيانات، نكمل النقل */
+async function fnPhoneSyncRetry(){
+  try{ if(localStorage.getItem('khafet_phone_sync')!=='1') return; }catch(e){ return; }
+  if(!cloudReady||!sb) return;
+  let local='';
+  try{ const { data:{ session } }=await sb.auth.getSession(); if(!session) return; local='0'+String((session.user&&session.user.phone)||'').replace(/\D/g,'').slice(3); }catch(e){ return; }
+  if(await fnPhoneSync(local)) toast(t('pcSynced'));
 }
 
 /* ---- تقويم الشهر (نظرة عامة على الحجوزات) ---- */
 let calMonth=(function(){ const d=new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })();
 /* يفتح على اليوم الحالي · الفني يشوف شغل اليوم أول شي */
 let calFilter=dateISO(new Date());
+/* مكان تمرير شريط الأيام: يُحفظ عند كل تمرير (مرحلة الالتقاط لأن الشريط يُعاد بناؤه مع كل رسم)
+   حتى لا يقفز الشريط مع كل إعادة رسم (التحديث اللحظي للطلبات، الرجوع للتطبيق، اختيار يوم) */
+let _fnStrip=null;
+function fnStripKey(){ return calMonth.getFullYear()+'-'+calMonth.getMonth()+'-'+(document.documentElement.getAttribute('dir')||'rtl'); }
+document.addEventListener('scroll', function(e){ const el=e.target; if(el && el.id==='fnCalStrip') _fnStrip={ key:fnStripKey(), left:el.scrollLeft }; }, true);
 /* الطلبات المنجزة تنصفط؛ الضغط عليها يفتحها (فاتورة/متابعة) */
 let doneOpen={};
 function toggleDone(id){ doneOpen[id]=!doneOpen[id]; render(); }
@@ -1958,7 +2355,7 @@ function renderCalendar(){
     ? `<div class="cal-filter"><b>📅 ${dayHeadLabel(calFilter)}</b><button onclick="calClear()">${showAll}</button></div>` : '';
   return `<div class="calbar">
     <div class="cal-head"><button class="cal-nav" onclick="calPrev()">${isRTL()?'›':'‹'}</button><b>${MON[lang][m]+' '+ar(y)}</b><button class="cal-nav" onclick="calNext()">${isRTL()?'‹':'›'}</button></div>
-    <div class="cal-strip">${cells}</div>
+    <div class="cal-strip" id="fnCalStrip">${cells}</div>
     ${filterBar}
   </div>`;
 }
@@ -2020,6 +2417,7 @@ function renderAccountTab(){
         <input id="np2" type="password" placeholder="${x.renew}" autocomplete="new-password" style="margin-top:8px" onkeydown="if(event.key==='Enter')changePass()" />
         <button class="tbtn done" style="width:100%;margin-top:10px" onclick="changePass()">💾 ${x.save}</button>
       </div>
+      <div class="set-row" id="set_phone_row" onclick="openPhoneChange()"><div class="sr-l"><span class="sr-ic">📱</span> ${t('pcRow')}</div><span class="sr-ar">›</span></div>
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> ${x.del}</div><span class="sr-ar">›</span></div>
     </div>
     ${docsCardHtml()}
@@ -2029,60 +2427,104 @@ function renderAccountTab(){
 }
 function renderTabs(){
   const K=[['home','🏠'],['orders','📋'],['inv','📦'],['book','📅'],['invoices','🧾']];   // «حسابي» ثابت بالهيدر (acctBtn) بدل تبويب مكرّر
-  return `<nav class="tabbar">${K.map(([k,ic],i)=>
-    `<button class="tb ${tab===k?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><i>${ic}</i><span>${k==='home'?(({ar:'الرئيسية',en:'Home',ur:'ہوم',ne:'गृह',hi:'होम'})[lang]||'الرئيسية'):tl(i-1)}</span>${(k==='inv'&&invLow())?'<em class="tdot"></em>':''}</button>`
-  ).join('')}</nav>`;
+  if(isOrgTech()) K.push(['tasks','📝']);   // «مهامي» لفني المؤسسة فقط، مع شارة عدد مهام اليوم غير المنجزة
+  const left=tasksTodayLeft();
+  return `<nav class="tabbar">${K.map(([k,ic],i)=>{
+    const lbl=k==='home'?(({ar:'الرئيسية',en:'Home',ur:'ہوم',ne:'गृह',hi:'होम'})[lang]||'الرئيسية'):(k==='tasks'?t('tkTitle'):tl(i-1));
+    const badge=(k==='tasks'&&left)?`<em class="tnum">${ar(left)}</em>`:((k==='inv'&&invLow())?'<em class="tdot"></em>':'');
+    return `<button class="tb ${tab===k?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><i>${ic}</i><span>${lbl}</span>${badge}</button>`; }).join('')}</nav>`;
 }
+/* ═ مهامي: مهام المؤسسة اليومية (provider_tasks · fix-2026-09-24-prov-app.sql) لفني المؤسسة فقط.
+   القراءة عبر RLS (مهامه أو مهام الكل)، والتعديل الوحيد المسموح: done (الحارس يرفض غيره بـ KHAFET_TASK_OWNER_ONLY) ═ */
+let MYTASKS=[];
+function isOrgTech(){ return /^provider:/.test(MYORG||'') && MYROLE!=='admin' && MYROLE!=='provider'; }
+async function loadMyTasks(){
+  if(!cloudReady||!isOrgTech()){ MYTASKS=[]; return; }
+  try{
+    const from=dateISO(new Date(Date.now()-7*864e5)), to=dateISO(new Date(Date.now()+30*864e5));
+    const r=await sb.from('provider_tasks').select('*').gte('task_date',from).lte('task_date',to).order('task_date').order('created_at');
+    if(r.error) throw r.error;
+    MYTASKS=r.data||[]; if(loggedIn) render();
+  }catch(e){ MYTASKS=[]; }
+}
+function tasksTodayLeft(){ const d=dateISO(new Date()); return MYTASKS.filter(x=>x.task_date===d && !x.done).length; }
+async function taskDone(id){
+  const x=MYTASKS.find(v=>String(v.id)===String(id)); if(!x) return;
+  if(!cloudReady){ toast(lg('noconn')); return; }
+  const nv=!x.done;
+  try{
+    const r=await sb.from('provider_tasks').update({ done:nv }).eq('id',x.id).select().maybeSingle();
+    if(r.error) throw r.error;
+    Object.assign(x,(r.data&&typeof r.data==='object')?r.data:{ done:nv, done_at:nv?new Date().toISOString():null });
+    render(); toast(nv?t('tkMarked'):t('tkUnmarked'));
+  }catch(e){ toast(srvMsg(e)); }
+}
+function taskRowF(x){
+  return `<div class="ftask ${x.done?'done':''}" id="ftask-${esc(x.id)}">
+    <div class="tx"><b>${esc(x.title)}</b><small>${x.tech_user?'':'🧑‍🔧 '+t('tkAll')}${x.note?(x.tech_user?'':' · ')+esc(x.note):''}</small></div>
+    <button type="button" class="tbtn ${x.done?'donelbl':'done'}" style="flex:0 0 auto;padding:10px 16px;font-size:.95rem;margin:0" data-id="${esc(x.id)}" onclick="taskDone(this.dataset.id)">${x.done?'✓ '+t('tkDoneLbl'):t('tkDone')}</button>
+  </div>`;
+}
+function renderTasksTab(){
+  if(!isOrgTech()) return `<div class="empty"><div class="ico">📝</div><h3>${t('tkNone')}</h3></div>`;
+  const today=dateISO(new Date());
+  const todayL=MYTASKS.filter(x=>x.task_date===today), up=MYTASKS.filter(x=>x.task_date>today), late=MYTASKS.filter(x=>x.task_date<today && !x.done);
+  const done=todayL.filter(x=>x.done).length;
+  let last=null; const upHtml=up.map(x=>{ let h=''; if(x.task_date!==last){ last=x.task_date; h=`<div class="day-head">📅 ${dayHeadLabel(x.task_date)}</div>`; } return h+taskRowF(x); }).join('');
+  return `<div class="hero"><h1>📝 ${t('tkTitle')}</h1><p>${t('tkSub')}</p>
+      <div class="stat-row"><div class="stat"><div class="n gold">${ar(todayL.length-done)}</div><div class="l">${t('tkLeft')}</div></div><div class="stat"><div class="n">${ar(done)}</div><div class="l">${t('tkDoneN')}</div></div></div>
+    </div>
+    ${late.length?`<div class="day-head" style="background:#B4560F;color:#fff">⏳ ${t('tkLate')}</div>${late.map(taskRowF).join('')}`:''}
+    <div class="day-head">📅 ${t('tkToday')}</div>
+    ${todayL.length?todayL.map(taskRowF).join(''):`<div class="empty" style="padding:26px 10px"><div class="ico">✅</div><h3>${t('tkDoneAll')}</h3></div>`}
+    ${up.length?`<div style="margin-top:18px;font-weight:900;font-size:1.05rem">${t('tkUpcoming')}</div>${upHtml}`:''}`;
+}
+/* لوحة صغيرة في الرئيسية: مهام اليوم غير المنجزة (تنبيه داخل التطبيق) */
+function tasksHomePanel(){
+  if(!isOrgTech()) return '';
+  const today=dateISO(new Date());
+  const list=MYTASKS.filter(x=>(x.task_date===today)||(x.task_date<today&&!x.done)).sort((a,b)=>(a.done?1:0)-(b.done?1:0));
+  if(!list.length) return '';
+  const left=list.filter(x=>!x.done).length;
+  return `<div class="bkpanel" style="margin-top:14px"><h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px">📝 ${t('tkToday')}${left?` <span class="tnum-in">${ar(left)} ${t('tkLeft')}</span>`:''}<button type="button" class="tb-link" onclick="setTab('tasks')">${t('tkOpen')}</button></h3>
+    ${list.slice(0,4).map(taskRowF).join('')}</div>`;
+}
+setInterval(function(){ if(loggedIn&&cloudReady&&!document.hidden&&isOrgTech()) loadMyTasks(); }, 120000);
 /* ---- قسم المستودع ---- */
 function invMoney(n){ return ar(Math.round(+n||0)); }
 /* ═ المستودع: الوحدة المشتركة warehouse.js. خافت → khafet_inventory، المزوّد وفنيّوه → provider_inventory ═ */
 let MYORG=(()=>{ try{ return localStorage.getItem('khafet_org')||''; }catch(e){ return ''; } })();   // 'khafet' | 'provider:<uuid>' | ''
-function invSrc(){ const p=/^provider:(.+)$/.exec(MYORG||''); return p?{table:'provider_inventory',log:'provider_stock_log',pid:p[1]}:{table:'khafet_inventory',log:'khafet_stock_log',pid:null}; }
+/* مصدر المستودع: المدير وصاحب المؤسسة يقرؤون الجدول نفسه، والفني يقرأ منظور الفني (بلا سعر الشراء، يعدّل الكمية فقط)
+   khafet_inventory_tech / provider_inventory_tech (fix-2026-09-24-access.sql) · view: true لما المصدر منظور */
+function invSrc(){
+  const p=/^provider:(.+)$/.exec(MYORG||''); const boss=(MYROLE==='admin'||MYROLE==='provider')||KH_INV_VIEW_MISSING;
+  if(p) return {table:boss?'provider_inventory':'provider_inventory_tech', log:'provider_stock_log', pid:p[1], view:!boss};
+  return {table:boss?'khafet_inventory':'khafet_inventory_tech', log:'khafet_stock_log', pid:null, view:!boss};
+}
 const WH_HOST={
   L:(a,e)=>lang==='ar'?a:e, num:n=>ar(n), esc, toast,
-  inv:()=>INV, setInv:v=>{ INV=v; }, log:()=>STOCKLOG, sb:()=>sb, cloud:()=>cloudReady,
+  inv:()=>INV, setInv:v=>{ INV=v; }, log:()=>STOCKLOG, sb:()=>whSb(), cloud:()=>cloudReady,
   get table(){ return invSrc().table; }, get logTable(){ return invSrc().log; }, extra:()=>{ const p=invSrc().pid; return p?{provider_id:p}:{}; },
   loaded:()=>invLoaded,
   saveQty:async it=>invSaveQty(it),
   logStock:(it,d,reason)=>logStock(it,d,reason),
   afterChange:()=>render(), refreshLog:()=>{},
   upload:(id,f)=>uploadPartPhoto(id,f), clearImage:async id=>{ if(cloudReady){ try{ await sb.from(invSrc().table).update({image_url:null}).eq('id',id); }catch(e){} } },
-  canEdit:()=>!!MYORG, needReason:()=>MYROLE!=='admin',
+  canEdit:()=>whCanEdit(), needReason:()=>MYROLE!=='admin',
   get org(){ return MYORG==='khafet'?{ name:'مؤسسة خافت للسباكة والكهرباء', city:'الخبر', phone:'0590497866' }:{ name:(window.MYORG_NAME||'المزوّد'), city:'', phone:myPhone||'' }; },
   imgOpts:()=>[], pickImg:()=>{}, linker:null,
   cacheSave:()=>invCache3()
 };
-function invCache3(){ try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} }
+/* كاش المخزن للعرض السريع: لا يُكتب بلا حساب داخل، وبلا سعر الشراء (قارئ الكاش يحذفه أصلًا، فلا يبقى على الجهاز) */
+function invCache3(){ if(!loggedIn) return; try{ localStorage.setItem('kh_inv_cache',JSON.stringify((INV||[]).map(x=>{ const y=Object.assign({},x); delete y.buy_price; return y; }))); }catch(e){} }
 function renderInvTab(){
+  if(!invAllowed()) return `<div class="hero"><h1>📦 ${tl(1)}</h1></div><div class="empty"><div class="ico">📦</div><h3>${lg('stockNoAccess')}</h3></div>`;
+  // الفني بلا صلاحية تعديل يقدر يطلع طلب شراء PDF (قراءة فقط)
+  const po=(!whCanEdit()&&(INV||[]).length)?`<div class="wh-top3"><button class="wh-big po" onclick="whOpenPO()">🛒 ${lang==='ar'?'طلب شراء':'Purchase order'}<small>${lang==='ar'?'اختر الأصناف واطلع PDF':'Pick items, get a PDF'}</small></button></div>`:'';
   return `<div class="hero"><h1>📦 ${tl(1)}</h1></div>
-    ${whMain()}
+    ${po}${whMain()}
     <div class="sl-head">📋 ${lang==='ar'?'سجل الحركة':'Movement log'}<span>${lang==='ar'?'كل زيادة ونقص باسم صاحبه':'Every change, logged'}</span></div>
     <div class="sl-list">${renderStockLog()}</div>`;
-}
-/* إضافة صنف جديد (باسم + وحدة + كمية + أسعار + حد أدنى) */
-async function invAddPrompt(){
-  const A=lang==='ar';
-  const name=prompt(A?'اسم الصنف:':'Item name:'); if(!name||!name.trim()) return;
-  const unit=prompt(A?'الوحدة (حبة/متر/كرتون):':'Unit:','حبة')||'حبة';
-  const qty=Math.abs(+prompt(A?'الكمية الحالية:':'Current qty:','0')||0);
-  const buy=0;
-  const sell=Math.abs(+prompt(A?'سعر البيع (ر.س):':'Sell price:','0')||0);
-  const mn=Math.abs(+prompt(A?'الحد الأدنى للتنبيه:':'Min alert qty:','3')||3);
-  const data={ name:name.trim(), unit, qty, buy_price:buy, sell_price:sell, min_qty:mn };
-  if(cloudReady){ try{ const r=await sb.from(invSrc().table).insert(Object.assign({},data,WH_HOST.extra())).select().single();
-    if(!r.error&&r.data){ INV.unshift(r.data); if(qty>0) await logStock(r.data,qty,A?'رصيد افتتاحي':'opening'); } }catch(e){ toast('⚠️ '+(e.message||'')); return; } }
-  toast('✅ '+(A?'انضاف':'Added')); render();
-}
-/* تعديل صنف (الأسعار/الحد الأدنى/الوحدة) */
-async function invEdit(id){
-  const A=lang==='ar'; const it=INV.find(x=>x.id===id); if(!it) return;
-  const buy=it.buy_price||0;
-  const sell=prompt(A?('سعر بيع «'+it.name+'»:'):'Sell price:', it.sell_price||0); if(sell===null) return;
-  const mn=prompt(A?'الحد الأدنى للتنبيه:':'Min alert:', it.min_qty||3); if(mn===null) return;
-  const patch={ buy_price:Math.abs(+buy||0), sell_price:Math.abs(+sell||0), min_qty:Math.abs(+mn||0) };
-  Object.assign(it, patch);
-  if(cloudReady&&it.id){ try{ await sb.from(invSrc().table).update(patch).eq('id',it.id); }catch(e){} }
-  toast('✅ '+(A?'تعدّل':'Updated')); render();
 }
 /* ---- قسم: حجز لعميل ---- */
 let bkDate=null, bkTime=null; const bkVals={};
@@ -2452,7 +2894,7 @@ async function createBooking(){
     quick:true, note:note||(A?'حجز أنشأه الفني':'Created by technician'), video_url:'', invoice:null, provider_phone:null };
   if(cloudReady){
     try{ const r=await sb.from('khafet_orders').insert(payload).select().single(); if(r.error) throw r.error; }
-    catch(e){ fail(e.message||''); return; }
+    catch(e){ fail(srvMsg(e)); return; }
   }
   toast('✅ '+(A?'تم الحجز':'Booked'));
   bkTime=null; bkExact=false; bkSvcs=[]; bkFound=null; bkWaOpen=false;
@@ -2464,6 +2906,7 @@ async function createBooking(){
 /* ---- قسم الفواتير ---- */
 function invOrderTotal(o){
   const iv=o.invoice; if(!iv) return 0;
+  if(o.dbId) return Math.max(0,+o.finalPrice||0);   // المعتمد من حساب الخادم
   if(typeof iv.total==='number') return iv.total;
   return (iv.items||[]).reduce((s,it)=>s+((+it.price||0)*(+it.qty||1)),0);
 }
@@ -2504,7 +2947,7 @@ function jobAgo(o){
 }
 function render(){
   document.documentElement.setAttribute('dir', isRTL()?'rtl':'ltr');
-  try{ applyChrome(); }catch(e){}
+  try{ applyChrome(); document.body.classList.toggle('kh-nobuy', !canSeeBuy()); }catch(e){}
   if(docsOpen){ showDocs(''); return; }
   if(!loggedIn){ if(PENDING) showJoin(); else showLogin(); return; }
   const _sj=seenJobs(); window._sj=_sj;
@@ -2553,9 +2996,9 @@ function render(){
     if(['confirmed','progress','done'].includes(o.status)){
       acts += `<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?t('invoiceSent'):t('makeInvoice')}</button>`;
     }
-    // زر رفض الطلب (قبل الإنجاز)
-    if(o.status!=='done'){
-      acts += `<button class="tbtn reject" onclick="openReject('${o.id}')">${t('rejectBtn')}</button>`;
+    // زر طلب الإلغاء (قبل الإنجاز، وما دام ما فيه طلب إلغاء قيد المراجعة) · القرار للإدارة
+    if(o.status!=='done' && o.cancelReq!=='pending'){
+      acts += `<button class="tbtn reject" data-id="${esc(o.id)}" onclick="openCancelReq(this.dataset.id)">${t('cxBtn')}</button>`;
     }
     // زر حجز زيارة متابعة (بعد التأكيد/أثناء/بعد العمل)
     if(['confirmed','progress','done'].includes(o.status)){
@@ -2578,7 +3021,7 @@ function render(){
       ${isNew?`<div class="newband"><span class="dot"></span>${lang==='ar'?'جديد':'NEW'}${agoS?' • '+agoS:''}</div>`:''}
       <div class="tj-head">
         <span class="tj-when">🕐 ${jobTime(o.startMin)} · ${jobDate(o.date)}</span>
-        <span class="tj-badges">${payDue(o)>0&&o.status!=='new'?`<span class="status due-b">💳 ${ar(payDue(o))}</span>`:(o.paidAmount>0&&o.status!=='cancelled'?`<span class="status paid-b">${lg('paidLbl')}</span>`:'')}${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}<span class="status ${esc(o.status)}">${esc(t('st')[o.status]||o.status)}</span></span>
+        <span class="tj-badges">${payDue(o)>0&&o.status!=='new'?`<span class="status due-b">💳 ${ar(payDue(o))}</span>`:(o.paidAmount>0&&o.status!=='cancelled'?`<span class="status paid-b">${lg('paidLbl')}</span>`:'')}${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}${cxBadge(o)}<span class="status ${esc(o.status)}">${esc(t('st')[o.status]||o.status)}</span></span>
       </div>
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
@@ -2631,12 +3074,12 @@ function render(){
   const openLbl=lang==='ar'?'فتح ›':lang==='en'?'Open ›':lang==='ur'?'کھولیں ›':'खोल्नुहोस् ›';
   const cardsHTML=CARDS.map(([k,ic,lbl,sub])=>`<div class="hcard" onclick="setTab('${k}')"><span class="hc-ic">${ic}</span><h3>${lbl}</h3><p>${sub||'&nbsp;'}</p><span class="hc-open">${openLbl}</span></div>`).join('');
   const homeLbl=lang==='ar'?'الرئيسية':lang==='en'?'Home':lang==='ur'?'ہوم':'गृह';
-  const secLbl=({orders:tl(0),inv:tl(1),book:tl(2),invoices:tl(3),acct:tl(4)})[tab]||'';
+  const secLbl=({orders:tl(0),inv:tl(1),book:tl(2),invoices:tl(3),acct:tl(4),tasks:t('tkTitle')})[tab]||'';
 
   let view;
   if(tab==='home'){
     /* الرئيسية: الجدول فقط · تفاصيل الحجز تطلع بس للمربع المضغوط */
-    view=`${heroHTML}${schedHTML()}${shown.length?`
+    view=`${heroHTML}${tasksHomePanel()}${schedHTML()}${shown.length?`
       <div style="margin-top:16px;font-weight:900;font-size:1.08rem">📋 ${lang==='ar'?'تفاصيل الحجز':'Booking details'}</div>
       <div class="jobs" style="margin-top:10px">${cards}</div>`:''}`;
   } else {
@@ -2645,6 +3088,7 @@ function render(){
     else if(tab==='book')     sec=renderBookTab();
     else if(tab==='invoices') sec=renderInvoicesTab();
     else if(tab==='acct')     sec=renderAccountTab();
+    else if(tab==='tasks')    sec=renderTasksTab();
     else                      sec=ordersContent;
     view=`<div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
         <button class="backbtn" onclick="goHome()">‹ ${homeLbl}</button>
@@ -2654,7 +3098,16 @@ function render(){
   }
   /* الشريط السفلي الثابت + مسافة تمنع تغطية آخر المحتوى */
   document.getElementById('app').innerHTML = view + '<div style="height:84px"></div>' + renderTabs();
-  try{ const td=document.querySelector('.cal-day.sel')||document.querySelector('.cal-day.today'); if(td) td.scrollIntoView({inline:'center',block:'nearest'}); }catch(e){}
+  /* شريط التقويم: يتمركز على اليوم المختار أو الحالي مرة واحدة فقط (أول عرض أو تغيير الشهر أو اللغة)،
+     وبعدها يرجع لمكان تمرير المستخدم المحفوظ في _fnStrip فلا يهتز مع كل إعادة رسم (قيم scrollLeft السالبة في RTL تُحفظ كما هي) */
+  try{
+    const strip=document.getElementById('fnCalStrip');
+    if(strip){
+      const key=fnStripKey();
+      if(_fnStrip && _fnStrip.key===key){ strip.scrollLeft=_fnStrip.left; }
+      else{ const td=strip.querySelector('.cal-day.sel')||strip.querySelector('.cal-day.today'); if(td) td.scrollIntoView({inline:'center',block:'nearest'}); _fnStrip={ key:key, left:strip.scrollLeft }; }
+    }
+  }catch(e){}
   /* بعد ما شاف قائمة الطلبات، الجديد الحالي يُعتبر مقروءاً */
   if(tab==='orders'){
     const ids=jobs.map(o=>o.dbId).filter(Boolean);
