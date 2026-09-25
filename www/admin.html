@@ -680,7 +680,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=138, KH_RIZQ_BUILD=107;
+const KH_APP_BUILD=140, KH_RIZQ_BUILD=107;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1620,6 +1620,8 @@ function waStatsBox(){
     ${unk?`<p class="st-d" style="margin-top:8px"><b>${LX('رسائل ما فهمها البوت','Messages the bot did not understand')}</b></p>${unk}`:''}
   </div>`;
 }
+document.addEventListener('input', e=>{ const el=e.target; if(el&&el.id&&el.id.startsWith('st_')) el.dataset.dirty='1'; }, true);
+document.addEventListener('change', e=>{ const el=e.target; if(el&&el.id&&el.id.startsWith('st_')) el.dataset.dirty='1'; }, true);
 function renderSettings(){
   if(!settingsLoaded) return `<p style="color:var(--muted)">${LX('جاري التحميل…','Loading…')}</p>`;
   // كل مجموعة تُرسم لحالها داخل try: لو خربت مجموعة وحدة ما تطيح شاشة الإعدادات كلها
@@ -1641,16 +1643,18 @@ function renderSettings(){
 async function saveSettingsGroup(gid){
   const g=ST_GROUPS.find(x=>x.id===gid); if(!g) return;
   const rows=[];
-  for(const [k,,,ty] of (Array.isArray(g.f)?g.f:(g.rows||[]))){ const el=document.getElementById('st_'+k); if(!el) continue; let v;
+  for(const [k,,,ty] of (Array.isArray(g.f)?g.f:(g.rows||[]))){ const el=document.getElementById('st_'+k); if(!el) continue; if(!el.dataset.dirty) continue;   // 2026-09-25: نحفظ فقط ما غيّره المستخدم فعلًا
+    let v;
     if(ty==='bool') v=el.checked?'1':'0';
     else if(ty==='list'){ const parts=el.value.split(/[،,]/).map(s=>s.trim()).filter(Boolean); v=JSON.stringify(k==='off_days'?parts.map(Number).filter(n=>n>=0&&n<=6):parts); }
     else v=el.value.trim();
     // تجميع الأقسام لازم يكون JSON كائنًا صالحًا (الخادم يقرأه في حساب السعة)
     if(k==='slot_groups'&&v){ try{ const j=JSON.parse(v); if(!j||typeof j!=='object'||Array.isArray(j)) throw new Error('shape'); v=JSON.stringify(j); }catch(e){ toast('⚠️ '+LX('صيغة تجميع الأقسام غير صحيحة، اكتبها JSON مثل {"plumb":"core"}','Invalid section grouping, write JSON like {"plumb":"core"}')); return; } }
     rows.push({ key:k, value:v, updated_at:new Date().toISOString() }); }
+  if(!rows.length){ toast(LX('ما فيه تغييرات جديدة','No changes')); return; }
   const r=await sb.from('khafet_settings').upsert(rows,{ onConflict:'key' }).select('key');
   if(r.error||!r.data||r.data.length!==rows.length){ toast('⚠️ '+LX('ما انحفظ، جرّب مرة ثانية','Not saved, try again')); return; }
-  rows.forEach(x=>{ SETTINGS[x.key]=x.value; });
+  rows.forEach(x=>{ SETTINGS[x.key]=x.value; const el=document.getElementById('st_'+x.key); if(el) delete el.dataset.dirty; });
   // رسوم التوصيل تُقرأ في التطبيق من خدمة «رسوم التوصيل» المخفية، فنحدّثها معها
   if(gid==='policy'){ const fee=parseFloat(SETTINGS.delivery_fee); if(isFinite(fee)){ try{ await sb.from('khafet_services').update({price:fee}).eq('id','fee'); }catch(e){} }
     const sf=parseFloat(SETTINGS.small_order_fee); if(isFinite(sf)&&sf>=0){ try{ await sb.from('khafet_services').update({price:sf}).eq('id','smallfee'); }catch(e){} } }
