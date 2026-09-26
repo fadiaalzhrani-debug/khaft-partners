@@ -126,12 +126,15 @@
   .st-arrived{background:rgba(37,211,102,.2);color:#0b7a3b;animation:arrBlink 1.8s ease-in-out infinite}
   @keyframes arrBlink{0%,100%{opacity:1}50%{opacity:.6}}
   .st-delay{background:#FEF0C7;color:#92600A}
+  /* الفني في الطريق · يظهر جنب الحالة لين يوصل */
+  .st-onway{background:#DBEAFE;color:#1E40AF;animation:arrBlink 1.8s ease-in-out infinite}
   /* شريط مراحل الطلب */
   .flow{display:flex;align-items:center;gap:5px;margin:10px 0 2px;flex-wrap:wrap}
   .flow i{font-style:normal;font-size:.72rem;font-weight:800;padding:4px 9px;border-radius:20px;
     background:var(--bg);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
   .flow i.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .flow i.arr{background:#0b7a3b;color:#fff;border-color:#0b7a3b}
+  .flow i.way{background:#1E40AF;color:#fff;border-color:#1E40AF}
   .flow span{color:var(--line);font-weight:900;font-size:.7rem}
   .mini-ok{color:#0b7a3b;font-weight:800;font-size:.82rem;align-self:center;margin-inline-end:6px}
   .paychip{display:inline-block;border-radius:8px;padding:2px 9px;font-weight:800;font-size:.84rem}
@@ -615,6 +618,7 @@ html[dir="ltr"] .bc-ios,html[dir="ltr"] .bc-and{text-align:start}
 
 
 html,body{touch-action:manipulation}
+  .ws-list{display:grid;grid-template-columns:minmax(0,1fr);gap:12px} .ws-item{min-width:0}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
 <style id="kh-skin">
@@ -743,7 +747,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* أرقام نسخ المحتوى الحالية للتطبيقين (تطابق APP_BUILD في خافت وRIZQ_BUILD في خافت شركاء). تُزاد مع كل رفع للمتاجر */
-const KH_APP_BUILD=141, KH_RIZQ_BUILD=108;
+const KH_APP_BUILD=142, KH_RIZQ_BUILD=109;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-admin/'+KH_APP_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -805,7 +809,7 @@ function renderJoinPanelA(){
       <button class="sbtn ok" data-uid="${esc(t.user_id)}" onclick="approveTechA(this.dataset.uid,true)">✔️ اعتماد</button><button class="sbtn danger" data-uid="${esc(t.user_id)}" onclick="approveTechA(this.dataset.uid,false)">رفض</button></div>`).join('') : '';
   return `<div style="margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:14px">
     <b style="display:block;margin-bottom:6px">🔑 ${LX('كود انضمام فنيّي خافت','Khafet team join code')}</b>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">${LX('أعطي هذا الكود لعمالك فقط. الفني يسجّل في خافت شركاء ويكتبه، ويظهر لك هنا لتعتمديه. غيّريه متى شئتِ ويبطل القديم فورًا.','Give this code to your own workers only. They enter it in Khafet Partner and appear here for approval.')}</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:8px">${LX('أعطِ هذا الكود لعمالك فقط. الفني يسجّل في خافت شركاء ويكتبه، ويظهر لك هنا لتعتمده. غيّره متى شئت ويبطل القديم فورًا.','Give this code to your own workers only. They enter it in Khafet Partner and appear here for approval.')}</p>
     <div class="jcode">${esc(JOIN_CODE||'…')}</div>
     <div class="jrow"><button class="sbtn" style="flex:1" onclick="copyJoinCodeA()">📋 ${LX('نسخ','Copy')}</button><button class="sbtn" style="flex:1" onclick="regenJoinCodeA()">🎲 ${LX('كود جديد عشوائي','New random code')}</button></div>
   </div>
@@ -1176,7 +1180,7 @@ function rowToOrder(r){ return { id:'#'+arDigits(r.order_no), num:r.order_no, db
   items:r.items||[], customer:{name:r.customer_name||'',phone:r.customer_phone||''}, address:r.address||{},
   date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, price:Number(r.price)||0, finalPrice:Number(r.final_price)||0,
   free:!!r.free, status:r.status||'new', rating:r.rating||0, reminded:!!r.reminded, quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', feedback:r.feedback||'', rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, reviewAnon:!!r.review_anon, reviewHidden:!!r.review_hidden, discountPct:+r.discount_pct||0, promoCode:r.promo_code||'',
-  arrived:!!r.arrived, delayMin:+r.delay_min||0,
+  arrived:!!r.arrived, onTheWay:!!r.on_the_way, handledByName:r.handled_by_name||'', delayMin:+r.delay_min||0,
   payRequired:!!r.pay_required, released:r.released!==false, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'',
   cancelReq:r.cancel_req||'', cancelledBy:r.cancelled_by||'', handledBy:r.handled_by||'' }; }
 /* حالة الدفع للمدير */
@@ -1269,6 +1273,7 @@ let DEV_PAYS={};
 function refundHold(o){ return /^needs_admin_review/.test(String((o&&REFUND_ERR[o.dbId])||'')); }
 async function loadAll(){
   if(!cloudReady||!loggedIn){ render(); return; }
+  _liveLast=Date.now();   // آخر تحميل (حتى ما يتكرر التحميل عند رجوع التطبيق مباشرة بعده)
   loadSmsBalance(); loadBiz();
   // كل الاستعلامات مع بعض بدل واحد ورا الثاني (كانت تاخذ وقت طويل على شبكة الجوال)
   const Q=(p,f)=>Promise.resolve().then(()=>p).then(r=>{ try{ f(r); }catch(e){} }).catch(()=>{});
@@ -1426,7 +1431,7 @@ function dashHtml(){
 function dashCustomize(){
   const defs=dashDefs(), keys=dashKeys();
   cgModal('<h3>'+LX('وش تبين يظهر فوق؟','What do you want on top?')+'</h3>'+
-    '<p class="sp-hint">'+LX('اختاري الأرقام اللي تهمك، وترتيبها زي ما تختارينها هنا.','Pick the numbers that matter to you.')+'</p>'+
+    '<p class="sp-hint">'+LX('اختر الأرقام اللي تهمك، وترتيبها زي ما تختارها هنا.','Pick the numbers that matter to you.')+'</p>'+
     '<div class="dash-pick">'+defs.map(function(d){
       return '<label class="cg-sw"><input type="checkbox" class="dash-cb" value="'+d[0]+'" '+(keys.includes(d[0])?'checked':'')+'> '+d[1]+' '+d[2]+'</label>';
     }).join('')+'</div>'+
@@ -2121,9 +2126,82 @@ function renderSubs(){
     <div class="rl-t"><b>${esc(s.name||'')}</b> ${LX('—','·')} ${esc(s.plan||'')} (${money(+s.price||0)})<small>📞 ${esc(s.phone||'')} · ${(s.status==='active')?LX('✅ مفعّل','✅ Active'):LX('🕐 جديد','🕐 New')}</small></div>
     ${s.status==='active'?'':`<button class="sbtn ok" data-id="${esc(s.id)}" onclick="subMark(this.dataset.id,'active')">تفعيل</button>`}</div>`).join('');
 }
-function subscribe(){ if(!cloudReady) return; try{ sb.channel('khafet_admin').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(loggedIn) loadAll(); }).subscribe(); }catch(e){} }
+/* ═ التحديث الحي للطلبات ═
+   قناة Realtime على khafet_orders: أي تغيير (في الطريق، وصلت، بدء العمل...) يعيد تحميل اللوحة.
+   ولو انقطعت القناة نعيد الاشتراك، ولو رجع التطبيق من الخلفية أو رجع النت نعيد التحميل (أحداث فاتتنا وهو نايم). */
+let _rtCh=null, _rtRetryT=null, _rtWait=0, _rtSeq=0;
+let _liveT=null, _liveBusy=0, _liveAgain=false, _liveLast=0, _livePend=false;
+/* المدير يكتب في حقل أو عنده تعديل ما انحفظ؟ إعادة رسم اللوحة تمسح اللي كتبه
+   (مثل: يكتب اسم فني جديد ويروح الواتساب ينسخ رقمه ويرجع)، فنأجل التحميل لين يطلع من الحقل أو يضغط شي */
+const _LIVE_SKIP=/^(checkbox|radio|button|submit|reset|file|range|color|hidden|image)$/i;
+function admEditing(){
+  const app=document.getElementById('app'); if(!app) return false;
+  const ae=document.activeElement;
+  if(ae && app.contains(ae) && (ae.isContentEditable || ae.tagName==='TEXTAREA' || ae.tagName==='SELECT' || (ae.tagName==='INPUT' && !_LIVE_SKIP.test(ae.type||'')))) return true;
+  if(app.querySelector('[data-dirty]')) return true;   // إعدادات تغيّرت وما انحفظت
+  for(const el of app.querySelectorAll('input,textarea')){   // نص مكتوب وما انحفظ: قيمته غير اللي انرسم
+    if(el.tagName==='INPUT' && _LIVE_SKIP.test(el.type||'')) continue;
+    if(el.value!==el.defaultValue) return true;
+  }
+  return false;
+}
+function liveReload(){   // يجمع الأحداث المتتالية في تحميل واحد بدل تحميل لكل حدث
+  if(!loggedIn||!cloudReady) return;
+  clearTimeout(_liveT);
+  _liveT=setTimeout(async()=>{
+    if(!loggedIn) return;
+    if(admEditing()){ _livePend=true; return; }   // يكمل بعد ما يطلع من الحقل أو يضغط زر
+    _livePend=false;
+    if(_liveBusy && Date.now()-_liveBusy<30000){ _liveAgain=true; return; }   // تحميل شغّال (ولو علّق أكثر من 30 ث بشبكة ضعيفة ما نوقف عليه)
+    const me=_liveBusy=Date.now(); _liveLast=me;
+    try{ await loadAll(); }catch(e){}
+    if(_liveBusy===me) _liveBusy=0;
+    if(_liveAgain){ _liveAgain=false; liveReload(); }
+  },400);
+}
+function rtAlive(){ const s=_rtCh&&_rtCh.state; return s==='joined'||s==='joining'; }
+function rtStop(){ clearTimeout(_rtRetryT); _rtRetryT=null; _rtWait=0; const c=_rtCh; _rtCh=null; if(c&&sb){ try{ sb.removeChannel(c).catch(()=>{}); }catch(e){} } }
+function rtRetry(){   // إعادة الاشتراك بعد انقطاع القناة (مهلة تكبر تدريجيًا لين دقيقة)
+  if(_rtRetryT||!loggedIn) return;
+  _rtWait=Math.min(60000,_rtWait?_rtWait*2:3000);
+  _rtRetryT=setTimeout(()=>{ _rtRetryT=null; if(!loggedIn) return; if(rtAlive()){ _rtWait=0; return; } subscribe(); },_rtWait);
+}
+function subscribe(){
+  if(!cloudReady||!sb||!loggedIn) return;
+  if(rtAlive()) return;   // مشترك أصلًا: ما نكرر القناة (كل دخول يستدعيها)
+  const old=_rtCh; _rtCh=null;
+  if(old){ try{ sb.removeChannel(old).catch(()=>{}); }catch(e){} }
+  try{
+    // اسم جديد لكل محاولة: المكتبة ترجّع القناة القديمة لو الاسم نفسه وهي ما انحذفت بعد
+    const ch=sb.channel('khafet_admin_'+(++_rtSeq));
+    _rtCh=ch;
+    ch.on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>{ if(loggedIn) liveReload(); })
+      .subscribe(st=>{
+        if(_rtCh!==ch) return;   // قناة قديمة استُبدلت
+        if(st==='SUBSCRIBED'){ const again=_rtWait>0; _rtWait=0; clearTimeout(_rtRetryT); _rtRetryT=null; if(again) liveReload(); }   // رجع الاتصال بعد انقطاع: نحمّل اللي فاتنا
+        else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED') rtRetry();
+      });
+  }catch(e){ rtRetry(); }
+}
+// رجوع التطبيق من الخلفية أو رجوع النت: نعيد التحميل (مرة كل 15 ثانية بالكثير) ونتأكد إن القناة شغّالة
+function liveWake(force){
+  if(!loggedIn||!cloudReady) return;
+  if(document.visibilityState==='hidden') return;
+  if(!rtAlive()){ clearTimeout(_rtRetryT); _rtRetryT=null; subscribe(); }
+  if(force || Date.now()-_liveLast>15000) liveReload();
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') liveWake(false); });
+window.addEventListener('focus',()=>liveWake(false));
+window.addEventListener('pageshow',e=>{ if(e&&e.persisted) liveWake(true); });
+window.addEventListener('online',()=>liveWake(true));
+// تحميل مؤجل لأن المدير كان يكتب: نكمله أول ما يطلع من الحقل أو يضغط أي شي (ويتأجل مرة ثانية لو التعديل للحين ما انحفظ)
+document.addEventListener('focusout',()=>{ if(_livePend) liveReload(); },true);
+document.addEventListener('click',()=>{ if(_livePend) liveReload(); },true);
 async function patch(dbId,p){ if(!cloudReady||!dbId) return; try{ const r=await sb.from('khafet_orders').update(p).eq('id',dbId); if(r&&r.error){ toast(LX('ما انحفظ التعديل','Change not saved')); loadAll(); } }catch(e){} }
-function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return; if(st==='cancelled' && o.paidAmount>0 && !confirm(LX('العميل دافع '+money(o.paidAmount)+'، يرجع له المبلغ تلقائيًا. إلغاء الطلب؟','The customer paid '+money(o.paidAmount)+' and will be refunded automatically. Cancel the order?'))) return; o.status=st; patch(o.dbId,{status:st}); toast(LX('تم تحديث الحالة: '+STATUS_AR[st],'Status updated: '+trData(STATUS_AR[st]))); render(); }
+function setStatus(id,st){ const o=ORDERS.find(x=>x.id===id); if(!o) return;
+  if(st==='cancelled' && !(o.paidAmount>0) && !confirm(LX('إلغاء الطلب '+o.id+'؟','Cancel order '+o.id+'?'))) return;
+  if(st==='done' && !confirm(LX('إنهاء الطلب '+o.id+'؟ العميل يوصله إنه اكتمل.','Finish order '+o.id+'? The customer is told it is complete.'))) return;
+  if(st==='cancelled' && o.paidAmount>0 && !confirm(LX('العميل دافع '+money(o.paidAmount)+'، يرجع له المبلغ تلقائيًا. إلغاء الطلب؟','The customer paid '+money(o.paidAmount)+' and will be refunded automatically. Cancel the order?'))) return; o.status=st; patch(o.dbId,{status:st}); toast(LX('تم تحديث الحالة: '+STATUS_AR[st],'Status updated: '+trData(STATUS_AR[st]))); render(); }
 // تعليم وصول الفني · يفعّل مرحلة «الفني وصل الموقع» ويُشعر العميل تلقائياً
 function markArrivedAdmin(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.arrived=true; patch(o.dbId,{arrived:true}); toast('🚪 تم إبلاغ العميل بوصول الفني'); render(); }
 function sendReminder(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; o.reminded=true; patch(o.dbId,{reminded:true}); toast(LX('📩 أُرسل تذكير إلى '+o.customer.name,'📩 Reminder sent to '+o.customer.name)); render(); }
@@ -2154,14 +2232,14 @@ function lgFail(msg){ const e=document.getElementById('lgerr'); if(e){ e.textCon
 function resetOtp(){ otpSent=false; otpPhone=''; showLogin(); }
 function showLogin(){ const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   document.getElementById('app').innerHTML=`<div class="login"><div class="ic">🏢</div><h1>لوحة المؤسسة</h1>
-    <p>${otpSent?LX('أدخل الرمز المُرسل إلى '+otpPhone,'Enter the code sent to '+otpPhone):LX('ادخلي برقم جوالك، يوصلك رمز برسالة','Enter your mobile number, a code will be sent by SMS')}</p>
+    <p>${otpSent?LX('أدخل الرمز المُرسل إلى '+otpPhone,'Enter the code sent to '+otpPhone):LX('ادخل برقم جوالك، يوصلك رمز برسالة','Enter your mobile number, a code will be sent by SMS')}</p>
     ${otpSent?`
     <input id="ac" inputmode="numeric" maxlength="6" placeholder="رمز التحقق" style="letter-spacing:.4em;text-align:center;font-weight:900" />
     <button class="btn" onclick="verifyAdminOtp()">تأكيد ودخول</button>
     <button class="btn" style="background:transparent;border:1px solid rgba(255,255,255,.25);margin-top:8px" onclick="resetOtp()">تغيير الرقم</button>`
     :`
     <input id="au" inputmode="tel" placeholder="رقم الجوال · 05xxxxxxxx" autocomplete="tel" />
-    <label class="rememberme"><input type="checkbox" id="lg_rem" ${localStorage.getItem('khafet_remember')==='0'?'':'checked'}> ${LX('ابقَ مسجّل الدخول','Stay signed in')}<small>${LX('ما تحتاجين رمز مرة ثانية إلا لو ضغطتي خروج','No new code needed unless you sign out')}</small></label>
+    <label class="rememberme"><input type="checkbox" id="lg_rem" ${localStorage.getItem('khafet_remember')==='0'?'':'checked'}> ${LX('ابقَ مسجّل الدخول','Stay signed in')}<small>${LX('ما تحتاج رمز مرة ثانية إلا لو ضغطت خروج','No new code needed unless you sign out')}</small></label>
     <button class="btn" onclick="sendAdminOtp()">أرسل الرمز</button>`}
     <div id="lgerr" class="lgerr" style="display:none">تعذّر الدخول</div></div>`;
   const f=document.getElementById(otpSent?'ac':'au');
@@ -2194,7 +2272,7 @@ async function verifyAdminOtp(){
     otpSent=false; loggedIn=true; loadAll(); subscribe();
   }catch(e){ lgFail((e&&e.message==='no-admin') ? 'هذا الرقم ليس له صلاحية إدارة' : (e&&e.message==='net') ? 'تعذّر الاتصال بالخادم، حاولي مرة ثانية' : 'الرمز غير صحيح'); }
 }
-async function logout(){ if(!confirm(LX('تسجيل الخروج؟ بتحتاج رمز جديد بالرسائل عند الدخول القادم.','Sign out? You will need a new SMS code next time.'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_outbox','kh_pv_outbox'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); admWipeCache(); render(); }
+async function logout(){ if(!confirm(LX('تسجيل الخروج؟ بتحتاج رمز جديد بالرسائل عند الدخول القادم.','Sign out? You will need a new SMS code next time.'))) return; rtStop(); try{ if(sb) await sb.auth.signOut(); }catch(e){} loggedIn=false; ['khafet_admin_auth','khafet_admin_ok','kh_outbox','kh_pv_outbox'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); admWipeCache(); render(); }
 /* جولة الإصلاح 4 (البند 27): كاش المخزن في البوابتين (فيه أسعار الشراء) لا يبقى على الجهاز بعد الخروج الصريح أو الضمني */
 /* جولة الإصلاح 5: ومعه الحفظ المحلي وعلامات العرض لبوابتي الفنيين والمزوّد (siyanah_v1 وkhafet_*_seen) كما تمسحها البوابتان عند خروجهما */
 function admWipeCache(){ ['kh_inv_cache','kh_pinv_cache','siyanah_v1','khafet_cx_seen','khafet_seen_avail','khafet_tech_seen'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ INV=[]; }catch(e){} }
@@ -2226,13 +2304,17 @@ async function bulkApprove(){
   if(!pendAll.length){ toast('لا يوجد معلّقون'); return; }
   if(!pend.length){ toast(LX('ما فيه معلّق مكتمل السجل التجاري','No pending provider has a complete CR')); return; }
   if(!confirm(LX('اعتماد المعلّقين مكتملي السجل التجاري ('+pend.length+' من '+pendAll.length+')؟','Approve pending providers with a complete CR ('+pend.length+' of '+pendAll.length+')?'))) return;
-  try{ await sb.from('khafet_providers').update({status:'approved'}).eq('status','pending').in('phone', pend.map(p=>p.phone));
-    pend.forEach(p=>p.status='approved'); toast(LX('✅ اعتُمد الجميع ('+pend.length+')','✅ All approved ('+pend.length+')'));
+  try{ const r=await sb.from('khafet_providers').update({status:'approved'}).eq('status','pending').in('phone', pend.map(p=>p.phone)).select('phone');
+    if(r.error||!Array.isArray(r.data)){ toast('⚠️ تعذّر الاعتماد الجماعي'); render(); return; }
+    const okSet=new Set(r.data.map(x=>x.phone)); pend.forEach(p=>{ if(okSet.has(p.phone)) p.status='approved'; }); toast(LX('✅ اعتُمد الجميع ('+pend.length+')','✅ All approved ('+pend.length+')'));
   }catch(e){ toast('⚠️ تعذّر الاعتماد الجماعي'); }
   render();
 }
 async function suspendProvider(phone,to){
-  try{ await sb.from('khafet_providers').update({status:to}).eq('phone',phone);
+  if(to==='suspended' && !confirm(LX('إيقاف المزوّد؟ ما توصله طلبات لين ترجّعه.','Suspend this provider? No jobs reach them until you restore them.'))) return;
+  try{ const r=await sb.from('khafet_providers').update({status:to}).eq('phone',phone).select('phone');
+    // supabase ما يرمي خطأ: نتأكد إن الصف تغيّر فعلًا قبل ما نقول «تم»
+    if(r.error||!Array.isArray(r.data)||!r.data.length){ toast(LX('⚠️ ما انحفظ التغيير، جرّب مرة ثانية','⚠️ The change was not saved, try again')); render(); return; }
     const p=PROVIDERS.find(x=>x.phone===phone); if(p) p.status=to;
     toast(to==='suspended'?'⏸️ أُوقف المزوّد · ما تصله طلبات':'▶️ أُعيد تفعيله');
   }catch(e){ toast('⚠️ تعذّر'); }
@@ -2395,14 +2477,19 @@ function renderAdminOrder(o){
   // مراحل الطلب · شلنا «جارٍ العمل» لأنها ما تفيد العميل (يشوف الفني قدامه)،
   // وخلّينا «الفني وصل الموقع» مرحلة أساسية · هذي اللي تخلي العميل يستقبله.
   const done=o.status==='done', conf=['confirmed','progress','done'].includes(o.status);
+  // «في الطريق» يضغطه الفني من تطبيقه (اختياري قبل «وصلت»)، و«بدء العمل» يظهر كمرحلة لما يكون الطلب قيد التنفيذ
+  const prog=o.status==='progress', live=!done&&o.status!=='cancelled';
+  const passedArr=o.arrived||prog||done, passedWay=o.onTheWay||passedArr;
   const ARW=_enUI()?'→':'←';   // اتجاه السهم يتبع اتجاه الواجهة
   const flow = o.status==='cancelled' ? '' : `<div class="flow">
     <i class="on">📥 وصلنا الطلب</i><span>${ARW}</span>
     <i class="${conf?'on':''}">✔️ تأكيد الموعد</i><span>${ARW}</span>
-    <i class="${o.arrived&&!done?'arr':((o.arrived||done)?'on':'')}">🚪 الفني وصل الموقع</i><span>${ARW}</span>
+    <i class="${(o.onTheWay&&!passedArr)?'way':(passedWay?'on':'')}">${LX('🚗 في الطريق','🚗 On the way')}</i><span>${ARW}</span>
+    <i class="${(o.arrived&&!prog&&!done)?'arr':(passedArr?'on':'')}">🚪 الفني وصل الموقع</i><span>${ARW}</span>
+    ${prog?`<i class="arr">${LX('🔧 بدء العمل','🔧 Work started')}</i><span>${ARW}</span>`:''}
     <i class="${done?'on':''}">✅ تمت الخدمة</i>
   </div>`;
-  return `<div class="aorder ${STATUS_CLS[o.status]}"><div class="ah"><div class="who"><b>${o.id}</b> <span class="status ${STATUS_CLS[o.status]}">${STATUS_AR[o.status]}</span>${o.arrived&&!done?` <span class="status st-arrived">🚪 الفني وصل الموقع</span>`:''}${o.delayMin>0&&!done?` <span class="status st-delay">${LX(`⏳ متأخّر ${ar(o.delayMin)} د`,`⏳ ${o.delayMin} min late`)}</span>`:''}${(o.cancelReq==='pending'&&!done&&o.status!=='cancelled')?` <span class="status st-delay">${LX('طلب إلغاء بانتظار قرارك','Cancellation request pending')}</span>`:''}${(o.cancelReq==='rejected'&&!done&&o.status!=='cancelled')?` <span class="status st-new">${LX('رُفض طلب الإلغاء','Cancellation request rejected')}</span>`:''}
+  return `<div class="aorder ${STATUS_CLS[o.status]}"><div class="ah"><div class="who"><b>${o.id}</b> <span class="status ${STATUS_CLS[o.status]}">${STATUS_AR[o.status]}</span>${(o.onTheWay&&!passedArr&&live)?` <span class="status st-onway">${LX('🚗 في الطريق','🚗 On the way')}</span>`:''}${(o.arrived&&live)?` <span class="status st-arrived">🚪 الفني وصل الموقع</span>`:''}${o.delayMin>0&&!done?` <span class="status st-delay">${LX(`⏳ متأخّر ${ar(o.delayMin)} د`,`⏳ ${o.delayMin} min late`)}</span>`:''}${(o.cancelReq==='pending'&&!done&&o.status!=='cancelled')?` <span class="status st-delay">${LX('طلب إلغاء بانتظار قرارك','Cancellation request pending')}</span>`:''}${(o.cancelReq==='rejected'&&!done&&o.status!=='cancelled')?` <span class="status st-new">${LX('رُفض طلب الإلغاء','Cancellation request rejected')}</span>`:''}
     <div style="margin-top:4px">👤 ${esc(o.customer.name)} · <a href="tel:${esc(o.customer.phone)}">📞 ${esc(o.customer.phone)}</a></div></div>
     <div style="text-align:left;color:var(--muted);font-size:.8rem">${cs}</div></div>
     ${flow}
@@ -2413,6 +2500,7 @@ function renderAdminOrder(o){
       <div><div class="k">${LX('💳 الدفع','💳 Payment')}</div>${payCell(o)}</div>
       <div><div class="k">💰 الإجمالي</div>${o.free?LX('مجاني 🎁','Free 🎁'):money(o.finalPrice)}${o.discountPct>0?` <span style="color:#0b7a3b;font-weight:800">${LX(`🎟️ خصم ${ar(o.discountPct)}٪`,`🎟️ ${o.discountPct}% off`)}${o.promoCode?' ('+esc(o.promoCode)+')':''}</span>`:''}</div>
       ${o.providerPhone?`<div><div class="k">🤝 المزوّد</div>${esc(provName(o.providerPhone))}</div>`:''}
+      ${o.handledByName?`<div><div class="k">${LX('👷 الفني','👷 Technician')}</div>${esc(o.handledByName)}</div>`:''}
       ${o.note?`<div><div class="k">🛠️ المشكلة</div>${esc(o.note)}</div>`:''}
       ${o.videoUrl?`<div><div class="k">📷 صورة/مقطع</div><button data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)" style="color:#7c3aed;font-weight:800;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:inherit">🎥 عرض</button></div>`:''}
       ${o.rating?`<div><div class="k">⭐ التقييم</div>${'⭐'.repeat(o.rating)}</div>`:''}
@@ -2748,9 +2836,9 @@ function jrWhen(ts){
     return dayLabel(iso)+' · '+fmtTime(d.getHours()*60+d.getMinutes()); }catch(e){ return ''; }
 }
 /* اعتماد طلب الانضمام: الخادم ينشئ صف المزوّد معتمدًا (approve_join_request)، والمزوّد يفعّل دخوله من «أول مرة؟ فعّل حسابك» */
-const JR_LINK='https://fadiaalzhrani-debug.github.io/khaft-partners/www/provider.html';
-const JR_WELCOME='حياك الله في خافت شركاء! تم اعتماد طلبك. حدّث أو حمّل تطبيق «خافت شركاء»، وافتح «مزودين خافِت»، واختر «أول مرة؟ فعّل حسابك» واكتب رقم جوالك هذا، وبعدها تختار كلمة المرور. وتقدر تدخل من المتصفح كمان: '+JR_LINK;
-const JR_WELCOME_EN='Welcome to Khafet Partners! Your request is approved. Update or install the “Khafet Partners” app, open “Khafet providers”, choose “First time? Activate your account” and enter this mobile number, then choose a password. You can also sign in from the browser: '+JR_LINK;
+const JR_LINK='https://partners.khafet.com/login/';   // رابط دخول خافت شركاء على دومين خافت (بدل الطويل اللي فيه اسم الحساب)
+const JR_WELCOME='حياك الله في خافت شركاء ✅ الحين توصلك طلبات مدنك على التطبيق. ادخل برقمك وكلمة المرور، ولو نسيتها اختر «نسيت كلمة المرور». '+JR_LINK;
+const JR_WELCOME_EN='Welcome to Khafet Partners ✅ Jobs in your cities now reach you in the app. Sign in with your number and password, or choose “Forgot password” if you need one. '+JR_LINK;
 async function jrApprove(id){
   const x=JOINREQ.find(r=>String(r.id)===String(id)); if(!x) return;
   if(!confirm(LX('اعتماد «'+(x.name||'')+'» وإنشاء حساب مزوّد له؟ تأكد إنك راجعت السجل التجاري.','Approve "'+(x.name||'')+'" and create a provider account? Make sure you checked the CR.'))) return;
@@ -2782,7 +2870,7 @@ function renderJoinReqs(){
   const filters=['new','waitlist','contacted','accepted','rejected','all'].map(k=>`<button class="${joinFilter===k?'on':''}" onclick="joinFilter='${k}';render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
   // ترتيب تلقائي بالجودة (الأعلى أولًا)، والقائمة مرقّمة
   const list=JOINREQ.filter(x=>x&&typeof x==='object'&&(joinFilter==='all'||x.status===joinFilter)).slice().sort((a,b)=>jrScore(b)-jrScore(a)||new Date(a.created_at)-new Date(b.created_at));
-  const share='https://tinyurl.com/khafet-join';   // رابط مختصر يحوّل لنموذج الانضمام (join.html)
+  const share='https://partners.khafet.com/join/';   // رابط الانضمام على دومين خافت (يحوّل لـjoin.html)
   const head=renderCapacity()+`<div class="panel" style="margin-top:0">
       <p style="margin:0 0 8px;font-weight:700">${LX('رابط النموذج اللي ترسله للفنيين ومقدمي الخدمات:','Form link to send to technicians and providers:')}</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><code style="direction:ltr;background:var(--panel,#f3eee2);padding:6px 10px;border-radius:9px;font-size:.85rem;overflow-wrap:anywhere">${share}</code>
@@ -3090,11 +3178,11 @@ async function bcTest(){
   BC.busy=true; bcPaint(); toast(LX('⏳ جاري الإرسال لجوالك…','⏳ Sending to your phone…'));
   const r=await callBroadcast({ mode:'test', title:BC.title.trim(), body:BC.body.trim() });
   BC.busy=false; bcPaint();
-  if(r&&r.ok) toast(r.total?LX('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')','📱 Sent to your phone ('+r.sent+' of '+r.total+')'):LX('ما فيه جوال مسجّل لحسابك. افتحي تطبيق خافت شركاء مرة ووافقي على الإشعارات','No phone is linked to your account. Open the Khafet Partner app once and allow notifications'));
+  if(r&&r.ok) toast(r.total?LX('📱 وصل لجوالك ('+ar(r.sent)+' من '+ar(r.total)+')','📱 Sent to your phone ('+r.sent+' of '+r.total+')'):LX('ما فيه جوال مسجّل لحسابك. افتح تطبيق خافت شركاء مرة ووافق على الإشعارات','No phone is linked to your account. Open the Khafet Partner app once and allow notifications'));
   else toast('⚠️ '+bcReason(r));
 }
 function bcReason(r){ const k=(r&&r.reason)||'';
-  const M={no_session:['انتهت الجلسة، سجّلي دخول','Session ended, please sign in'],network:['ما فيه اتصال','No connection'],daily_limit:['أُرسل إشعار اليوم، الإشعار الجاي بكرة','Today\'s notification was already sent, the next one is tomorrow'],too_long:['النص أطول من المسموح','The text is too long'],empty:['اكتبي العنوان والنص','Write the title and the message'],not_admin:['الإرسال للمدير فقط','Only the admin can send'],consent_check_failed:['تعذّر التحقق من موافقة العملاء على العروض، ما انرسل شيء ولا انحسب من إشعار اليوم، جرّب بعد شوي','Could not check customers\' consent for offers. Nothing was sent or counted as today\'s notification, try again shortly'],no_devices:['ما فيه أجهزة مسجلة لهذا الجمهور','No registered devices for this audience'],send_failed:['ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي','It did not reach any device and was not counted as today\'s notification. Try again in a bit']};
+  const M={no_session:['انتهت الجلسة، سجّل دخول','Session ended, please sign in'],network:['ما فيه اتصال','No connection'],daily_limit:['أُرسل إشعار اليوم، الإشعار الجاي بكرة','Today\'s notification was already sent, the next one is tomorrow'],too_long:['النص أطول من المسموح','The text is too long'],empty:['اكتبي العنوان والنص','Write the title and the message'],not_admin:['الإرسال للمدير فقط','Only the admin can send'],consent_check_failed:['تعذّر التحقق من موافقة العملاء على العروض، ما انرسل شيء ولا انحسب من إشعار اليوم، جرّب بعد شوي','Could not check customers\' consent for offers. Nothing was sent or counted as today\'s notification, try again shortly'],no_devices:['ما فيه أجهزة مسجلة لهذا الجمهور','No registered devices for this audience'],send_failed:['ما وصل لأي جهاز، ما انحسب من إشعار اليوم، جرّبي بعد شوي','It did not reach any device and was not counted as today\'s notification. Try again in a bit']};
   const m=Object.prototype.hasOwnProperty.call(M,k)?M[k]:['تعذّر الإرسال','Couldn\'t send']; return LX(m[0],m[1]); }
 function bcConfirm(){
   if(!BC.title.trim()||!BC.body.trim()||BC.today||BC.busy) return;

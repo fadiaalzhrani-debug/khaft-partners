@@ -200,6 +200,12 @@
   .tbtn.done{background:var(--ok);color:#fff}
   .tbtn.devpay{background:#2563eb;color:#fff}
   .tbtn.waitpay{background:#EEF6FF;color:#0b3d6b;border:1px solid #BBD6F5}
+  /* حالة الإضافة بانتظار العميل */
+  .xbox{display:flex;gap:9px;align-items:flex-start;margin:10px 0 4px;padding:11px 12px;border-radius:12px;font-size:.92rem;line-height:1.55;border:1.5px solid transparent}
+  .xbox span b{display:block;font-weight:900}
+  .xbox.wait{background:#FFF7DA;border-color:#F0D68A;color:#5c4500}
+  .xbox.obj{background:#FFF3F2;border-color:#F2B8B5;color:#8a1c12}
+  .xbox.ok{background:#e8f7ee;border-color:#9fd8b3;color:#0b5e2e}
   .status.paidb{background:var(--ok-soft);color:var(--ok);border-color:#BBF7D0;margin-inline-end:6px}
   .status.dueb{background:#EEF6FF;color:#0b3d6b;border-color:#BBD6F5;margin-inline-end:6px}
   .tbtn.inv{background:var(--gold-tint);border:1px solid var(--gold-soft);color:var(--gold-deep)}
@@ -323,6 +329,18 @@
 .pweye svg{width:21px;height:21px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 .forgot-link{display:block;width:100%;background:none;border:0;color:var(--gold-deep,#9C7A0A);font-weight:800;font-size:.9rem;font-family:inherit;padding:10px 4px;margin-top:8px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* اتفاقية المزوّد: روابط شاشة الدخول وشاشة الموافقة (مرة وحدة) */
+.pv-legal{margin-top:18px;font-size:.82rem;font-weight:700;color:var(--muted)}
+.pv-legal a{color:var(--gold-deep,#9C7A0A);text-underline-offset:3px}
+#pvTerms{z-index:75}
+.pvt{text-align:center;padding:22px 20px calc(18px + env(safe-area-inset-bottom))}
+.pvt-ic{font-size:2.4rem;line-height:1}
+.pvt h3{font-size:1.35rem;font-weight:900;margin:8px 0 6px}
+.pvt p{color:var(--muted);font-weight:700;font-size:.95rem;margin:0 0 14px}
+.pvt-pts{list-style:none;margin:0 0 14px;padding:0;text-align:start;display:grid;gap:8px}
+.pvt-pts li{background:var(--card);border-radius:14px;padding:10px 14px;font-weight:700;font-size:.92rem}
+.pvt-links{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.pvt-links a{background:var(--card);border-radius:999px;padding:9px 16px;font-weight:800;font-size:.9rem;color:var(--ink);text-decoration:none;border:1px solid var(--line)}
 .forgot-link:hover{opacity:.75}
 
 .rememberme{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:.88rem;font-weight:700;color:var(--muted,#6E5F44);cursor:pointer;user-select:none}
@@ -547,6 +565,7 @@ body.kh-nobuy .we-grid label:first-child{display:none}
 body.kh-nobuy .wh-f label:has(#wf_buy){display:none}
 </style>
 <style id="kp-polish">
+.kp-pending{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#FFF3C4;border:1.5px solid #F5C518;color:#3A3029;font-weight:700;font-size:.9rem;text-align:center}
 /* ═ مراجعة التصميم 2026-09-25: تنقّل أبسط، أيقونات مرسومة، شبكات بدل التمرير الأفقي، تباين ومساحات لمس أكبر ═ */
 :root{--muted:#6F6356}
 .brand{cursor:pointer}
@@ -671,7 +690,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=108;
+const RIZQ_BUILD=109;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -841,13 +860,15 @@ async function loadPrices(){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
         // custom: خدمة مخصّصة سعرها حر · extra: سعر الوحدة الإضافية (مثل الخادم)
         Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price)}); });
+      // خدمة مكتوبة في التطبيق وانحذفت من الكتالوج: ما تنعرض في الفاتورة والحجز (كانت تنحسب بسعر قديم)
+      { const live=new Set(r.data.map(d=>d.id)); SERVICES.forEach(s=>{ if(!live.has(s.id) && !["custom","quick","fee","smallfee"].includes(s.id)) s.inactive=true; }); }
       return; } }catch(e){}
   try{ const { data }=await sb.from('khafet_prices').select('*'); if(data&&data.length){ const map={}; data.forEach(r=>{ map[r.sid]=Number(r.price); }); SERVICES.forEach(s=>{ if(map[s.id]!=null) s.price=map[s.id]; }); } }catch(e){}
 }
 async function initCloud(){
   try{ await khRestore(); }catch(e){}
   setTimeout(function(){ try{ pvPhoneSyncRetry(); }catch(e){} }, 3000);   // إكمال نقل تغيير الجوال لو انقطع الاتصال سابقًا
-  try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; registerInstall('rizq', RIZQ_BUILD); sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET_P[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{}); loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
+  try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; registerInstall('rizq', RIZQ_BUILD); sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg','device_pay_enabled']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET_P[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{}); loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
   render();
 }
 /* ===== إشعارات المزوّد: تسجيل الجهاز لاستقبال «طلب جديد وصلك» ===== */
@@ -909,12 +930,33 @@ function rowToOrder(r){
     source:r.source||'', cancelReq:r.cancel_req||null, rejectReason:r.reject_reason||'',   // مصدر الطلب + حالة طلب الإلغاء (null | pending | rejected) وسببه
     bookedFinal:+r.booked_final||0,   // أجرة الحجز المدفوعة (أساس فاتورة v2)
     rating:+r.rating||0, feedback:r.feedback||'', reviewAnon:!!r.review_anon, warrantyDays:+r.warranty_days||0,
-    finalPrice:+r.final_price||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid' };
+    finalPrice:+r.final_price||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid',
+    // إضافة فوق سعر الحجز (الخادم): pending بانتظار العميل · objected اعترض · device وافق ويدفع بالجهاز · paid وافق ودفع
+    extraStatus:r.extra_status||'', extraAmount:+r.extra_amount||0, extraLines:Array.isArray(r.extra_lines)?r.extra_lines:[], extraNote:r.extra_note||'' };
 }
 /* المتبقي على العميل (الخادم يحسبه) */
 function payDue(o){ return (o && o.dbId && o.status!=='cancelled') ? Math.max(0, +o.amountDue||0) : 0; }
+/* الإضافة بانتظار العميل (موافقة أو بعد اعتراضه): ما ينتهي الطلب وما ينسجّل دفع بالجهاز قبل رده */
+function xPendP(o){ return !!(o && o.dbId && o.status!=='cancelled' && (o.extraStatus==='pending'||o.extraStatus==='objected')); }
+function xBoxP(o){
+  if(!o||!o.dbId||o.status==='cancelled') return '';
+  if(o.extraStatus==='pending') return `<div class="xbox wait">⏳ <span><b>${LX('بانتظار موافقة العميل','Waiting for customer approval')}</b>${LX('الإضافة','Extra')} ${pvMoney(o.extraAmount)}</span></div>`;
+  if(o.extraStatus==='objected') return `<div class="xbox obj">✋ <span><b>${LX('العميل اعترض على الإضافة','The customer objected to the extra')}</b>${LX('الإضافة','Extra')} ${pvMoney(o.extraAmount)}${_uiEN()?', ':'، '}${LX('عدّل الفاتورة أو تواصل مع العميل','edit the invoice or contact the customer')}${o.extraNote?'<br>«'+esc(o.extraNote)+'»':''}</span></div>`;
+  if(o.extraStatus==='device' && payDue(o)>0 && o.status!=='done') return `<div class="xbox ok">✅ <span><b>${LX('العميل وافق وبيدفع بالجهاز','The customer approved and will pay by card machine')}</b>${LX('المطلوب','Due')} ${pvMoney(payDue(o))}</span></div>`;
+  return '';
+}
+/* تنبيه لحظي لما يرد العميل على الإضافة (التحديث اللحظي للطلبات يعيد التحميل) */
+function xNotifyP(prev){
+  if(!prev||!prev.size) return;
+  for(const o of ORDERS){ const was=prev.get(o.dbId); if(!was||was===o.extraStatus||!['pending','objected','device'].includes(was)) continue;
+    const m=o.extraStatus==='objected'?'✋ '+LX('العميل اعترض على الإضافة','The customer objected to the extra')
+          :o.extraStatus==='device'?'✅ '+LX('العميل وافق وبيدفع بالجهاز','The customer approved and will pay by card machine')
+          :o.extraStatus==='paid'?'✅ '+LX('العميل وافق ودفع الإضافة','The customer approved and paid the extra'):'';
+    if(m){ toast(m+' · '+o.id); return; } }
+}
 async function markCardPaid(id){
   const o=ORDERS.find(x=>x.id===id); if(!o||!o.dbId||window._payBusy) return;
+  if(xPendP(o)){ toast(LX('انتظر موافقة العميل على الإضافة قبل تسجيل الدفع','Wait for the customer to approve the extra before recording a payment')); return; }
   const due=payDue(o); if(!(due>0)) return;
   if(!confirm(LX('تأكيد استلام ','Confirm you received ')+due+LX(' ر.س بجهاز الدفع؟',' SAR by card machine?'))) return;
   // مرجع عملية الجهاز (رقم الإيصال أو آخر 4 أرقام من البطاقة): 4 إلى 60 حرفًا، يُسجَّل مع الدفعة للمطابقة
@@ -964,7 +1006,9 @@ async function loadOrders(){
       sb.from('khafet_open_orders').select('*').order('service_date').order('start_min')  // المتاحة (آمنة)
     ]);
     if(pvStale(g)) return;
+    const prevX=new Map((ORDERS||[]).filter(x=>x&&x.dbId).map(x=>[x.dbId,x.extraStatus||'']));
     ORDERS=(m.data||[]).map(rowToOrder);
+    xNotifyP(prevX);
     OPEN=(o.data||[]).map(openToOrder);
     notifyFresh();
     loadTechs();   // فريق المزوّد (يحدّث العدّاد)
@@ -1146,7 +1190,7 @@ async function login(){
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳...'; }
   try{
     const { error }=await sb.auth.signInWithPassword({ phone:'+'+d, password:pass });
-    if(error){ showLogin(LX('❌ الرقم أو كلمة المرور غير صحيحة. أول مرة؟ اختر «فعّل حسابك» تحت.','❌ Wrong number or password. First time? Choose “Activate your account” below.')); return; }
+    if(error){ showLogin(LX('❌ الرقم أو كلمة المرور غير صحيحة.','❌ Wrong number or password.')); return; }
     // جولة الإصلاح 5 (البند 27): دخول ناجح قد يكون لحساب غير صاحب الكاش (فُتح التطبيق بلا نت فبقي كاش الحساب السابق)، فيُمسح قبل أي شيء
     pvWipeCache();
     const local05='0'+d.slice(3);
@@ -1158,7 +1202,7 @@ async function login(){
       try{ const { data:info }=await sb.rpc('my_staff_info'); if(info && info.role==='tech'){ await enterTechMode(info, d); return; } }catch(e2){}
       try{ const { data:st }=await sb.rpc('my_tech_state'); if(st&&st.exists){ try{ localStorage.setItem('khafet_provider_phone', local05); }catch(e3){} if(st.status==='pending') showJoinWait(st.org_name); else showJoinCode(''); return; } }catch(e2){}
       try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin('❌ الرقم غير مسجّل · سجّل كمزوّد أو كفني بكودك.'); return; }
-    if((p.status||'pending')!=='approved'){ try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin((p.status==='suspended'||p.status==='rejected')?LX('⛔ حسابك موقوف. تواصل مع الإدارة.','⛔ Your account is suspended. Contact the admin.'):LX('⏳ حسابك قيد المراجعة. بننتظر اعتماد الإدارة.','⏳ Your account is under review.'), !(p.status==='suspended'||p.status==='rejected')); return; }
+    if(!pvCanEnter(p)){ try{ await sb.auth.signOut(); }catch(e2){} pvWipeCache(); showLogin(LX('⛔ حسابك موقوف. تواصل مع الإدارة.','⛔ Your account is suspended. Contact the admin.'), false); return; }
     me=p; localStorage.setItem('khafet_provider_phone',p.phone);
     try{ localStorage.setItem('khafet_remember', (document.getElementById('lg_rem')||{checked:true}).checked?'1':'0'); }catch(e){}
     loadOrders(); initPush();
@@ -1184,7 +1228,7 @@ async function autoLogin(){
     if(r1.error && pvNetErr(r1.error)){ pvOffline(); return; }
     const data=r1.data; let p=(data||[])[0];
     if(!p){ const moved=await pcAutoFinish(); if(moved){ const { data:d2 }=await sb.from('khafet_providers').select('*').eq('phone',moved); p=(d2||[])[0]; if(p){ try{ localStorage.setItem('khafet_provider_phone',p.phone); }catch(e){} } } }   // تغيير جوال لم يُنقل بعد
-    if(p && (p.status||'')==='approved'){ me=p; loadOrders(); initPush(); return; }
+    if(p && pvCanEnter(p)){ me=p; loadOrders(); initPush(); return; }
     // مو مزوّد؟ جرّب فني
     const r2=await sb.rpc('my_staff_info');
     if(r2.error && pvNetErr(r2.error)){ pvOffline(); return; }
@@ -1375,7 +1419,7 @@ async function pvPhoneSync(local){
 async function pvReloadMe(local){
   try{
     if(me&&me.tech){ const { data:info }=await sb.rpc('my_staff_info'); if(info&&info.role==='tech'){ await enterTechMode(info, normPhone(local)); render(); return; } }
-    else{ const { data }=await sb.from('khafet_providers').select('*').eq('phone',local); const p=(data||[])[0]; if(p&&(p.status||'')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); render(); return; } }
+    else{ const { data }=await sb.from('khafet_providers').select('*').eq('phone',local); const p=(data||[])[0]; if(p&&pvCanEnter(p)){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); loadOrders(); render(); return; } }
   }catch(e){}
   if(me){ me.phone=local; try{ localStorage.setItem('khafet_provider_phone',local); }catch(e){} loadOrders(); }
   render();
@@ -1395,6 +1439,65 @@ async function pvPhoneSyncRetry(){
   try{ const { data:{ session } }=await sb.auth.getSession(); if(!session) return; local='0'+String((session.user&&session.user.phone)||'').replace(/\D/g,'').slice(3); }catch(e){ return; }
   if(await pvPhoneSync(local)) toast('✅ تم تحديث بياناتك بالرقم الجديد');
 }
+/* ═══════ اتفاقية المزوّد وسياسة الخصوصية (2026-09-26) ═══════
+   صاحب المؤسسة اللي ما وافق على النسخة الحالية تطلع له شاشة الموافقة مرة وحدة بعد الدخول.
+   الموافقة تنحفظ في الخادم (khafet_accept_provider_terms)، والخادم يختم وقتها بنفسه.
+   PV_TERMS_VER نفس khafet_provider_terms_version() في الخادم وTERMS_VER في join.html */
+var PV_TERMS_VER='2026-09-26', _pvTermsBusy=false, _pvOwnId=null, _pvOwnAsked=false;   // var والدوال (مو const): تنقرأ قبل سطرها بدون خطأ لو انرسمت شاشة الدخول بدري
+function pvTermsHref(){ return 'https://fadiaalzhrani-debug.github.io/khaft-partners/www/terms.html?lang='+(_uiEN()?'en':'ar'); }
+function pvPrivUrl(){ return 'https://fadiaalzhrani-debug.github.io/khaft/www/privacy.html'; }
+function pvTermsCheck(){
+  const old=document.getElementById('pvTerms');
+  // الشاشة لصاحب المؤسسة فقط (مو فني المؤسسة)، وبعد تطبيق ملف الخادم (العمود موجود في الصف)
+  // النسخة تاريخ (YYYY-MM-DD): الموافقة على نسخة أحدث من نسخة التطبيق تكفي
+  const ver=me&&me.terms_version?String(me.terms_version):'';
+  let need=!!(me && !me.tech && cloudReady && sb && Object.prototype.hasOwnProperty.call(me,'terms_version')
+               && !(ver && ver>=PV_TERMS_VER && me.terms_accepted_at));
+  // مؤسسة خافت نفسها (own_provider_id في الإعدادات) ما تنسأل عن اتفاقية بينها وبين نفسها
+  if(need && _pvOwnId===null){
+    if(!_pvOwnAsked){ _pvOwnAsked=true;
+      sb.from('khafet_settings').select('value').eq('key','own_provider_id')
+        .then(r=>{ _pvOwnId=(r&&!r.error&&r.data&&r.data[0]&&String(r.data[0].value||'').trim())||''; }, ()=>{ _pvOwnId=''; })
+        .then(()=>{ try{ pvTermsCheck(); }catch(e){} });
+    }
+    need=false;
+  }
+  if(need && _pvOwnId && String(me.id)===_pvOwnId) need=false;
+  if(!need){ if(old) old.remove(); return; }
+  if(old) return;
+  const el=document.createElement('div'); el.id='pvTerms'; el.className='inv-modal show';
+  el.innerHTML=`<div class="inv-card pvt" role="dialog" aria-modal="true" aria-labelledby="pvtH">
+    <div class="pvt-ic">📜</div>
+    <h3 id="pvtH">${LX('اتفاقية المزوّد','Provider Agreement')}</h3>
+    <p>${LX('قبل ما تكمل، اقرأ اتفاقية المزوّد وسياسة الخصوصية ووافق عليها. تحتاجها مرة وحدة.','Before you continue, read and accept the Provider Agreement and the Privacy Policy. You only do this once.')}</p>
+    <ul class="pvt-pts">
+      <li>💰 ${LX('بدون عمولة على طلباتك حاليًا','No commission on your jobs for now')}</li>
+      <li>🛡️ ${LX('ضمان 30 يوم على الشغل والقطع، وتكلفته على المنشأة','30 day warranty on labor and parts, paid by the business')}</li>
+      <li>🔒 ${LX('بيانات العميل لتنفيذ طلبه فقط','Customer data is only for doing the job')}</li>
+      <li>↩️ ${LX('الإلغاء بطلب من التطبيق، والإدارة تقرّر','Cancellations go by request, management decides')}</li>
+    </ul>
+    <div class="pvt-links"><a href="${pvTermsHref()}" target="_blank" rel="noopener">📜 ${LX('اقرأ الاتفاقية','Read the agreement')}</a><a href="${pvPrivUrl()}" target="_blank" rel="noopener">🔒 ${LX('سياسة الخصوصية','Privacy Policy')}</a></div>
+    <button type="button" class="btn" id="pvtOk" onclick="pvTermsAccept()">${LX('✅ أوافق وأكمل','✅ I agree, continue')}</button>
+    <button type="button" class="forgot-link" onclick="pvTermsLogout()">${LX('تسجيل الخروج','Log out')}</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+async function pvTermsAccept(){
+  if(_pvTermsBusy||!me||!sb) return; _pvTermsBusy=true;
+  const b=document.getElementById('pvtOk'); const lbl=b?b.textContent:''; if(b){ b.disabled=true; b.textContent='⏳...'; }
+  try{
+    const { data, error }=await sb.rpc('khafet_accept_provider_terms',{ p_version:PV_TERMS_VER });
+    if(error||!data||data.ok!==true){
+      toast(data&&data.reason==='old_version'?LX('حدّث التطبيق من المتجر عشان تكمل','Update the app from the store to continue'):LX('تعذّر حفظ الموافقة، حاول مرة ثانية','Could not save, please try again'));
+      if(b){ b.disabled=false; b.textContent=lbl; } return;
+    }
+    if(me){ me.terms_version=data.version; me.terms_accepted_at=data.accepted_at; }
+    const el=document.getElementById('pvTerms'); if(el) el.remove();
+    toast(LX('✅ شكرًا، انحفظت موافقتك','✅ Thanks, your acceptance is saved'));
+  }catch(e){ toast(LX('تعذّر الاتصال، حاول مرة ثانية','Connection failed, please try again')); if(b){ b.disabled=false; b.textContent=lbl; } }
+  finally{ _pvTermsBusy=false; }
+}
+function pvTermsLogout(){ const el=document.getElementById('pvTerms'); if(el) el.remove(); logout(); }
 function settingsPanel(){
   const waCtx='966'+String(CONTACT||'').replace(/^0/,'');
   return `
@@ -1413,6 +1516,8 @@ function settingsPanel(){
 ${loyaltySettings()}
       <div class="set-row"><div class="sr-l"><span class="sr-ic">🔔</span> تنبيه صوتي للطلبات</div>
         <button class="sw ${soundOn()?'on':''}" onclick="toggleSound()"></button></div>
+      <a class="set-row" href="${pvTermsHref()}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">📜</span> ${LX('اتفاقية المزوّد','Provider Agreement')}</div><span class="sr-ar">›</span></a>
+      <a class="set-row" href="${pvPrivUrl()}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">🔒</span> ${LX('سياسة الخصوصية','Privacy Policy')}</div><span class="sr-ar">›</span></a>
       <a class="set-row" href="https://wa.me/${waCtx}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">💬</span> تواصل مع الدعم</div><span class="sr-ar">›</span></a>
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> حذف الحساب</div><span class="sr-ar">›</span></div>
     </div>
@@ -1431,7 +1536,7 @@ async function acceptOrder(id){
     if(!data || data.ok!==true){
       const R={ taken:'اعتذار · الطلب أخذه مزوّد آخر',
                 limit:'وصلت حدّ 3 طلبات نشطة · أنجز طلباً قبل ما تقبل جديداً',
-                not_approved:'حسابك موقوف أو قيد المراجعة · تواصل مع الإدارة',
+                not_approved:'غير متاح حاليًا',
                 no_profile:'رقمك غير مسجّل كمزوّد',
                 not_provider:'هذا الحساب ليس حساب مزوّد',
                 not_your_trade:'الطلب خارج تخصص مؤسستك',
@@ -1455,16 +1560,23 @@ async function setWarranty(dbId,days){
 }
 async function setJobStatus(id, st){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
-  if(st==='done' && payDue(o)>0){ toast(LX('فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.','The customer still owes money. Ask them to pay in the app or record a card machine payment.')); return; }
+  if(st==='done' && xPendP(o)){ toast(LX('ما تقدر تنهي الطلب قبل موافقة العميل على الإضافة','You cannot finish the job until the customer approves the extra')); return; }
+  if(st==='done' && payDue(o)>0){ toast(devicePayOnP()||!o.userId?LX('فيه مبلغ متبقي على العميل. خله يدفع من التطبيق أو سجّل الدفع بجهازك.','The customer still owes money. Ask them to pay in the app or record a card machine payment.'):LX('فيه مبلغ متبقي على العميل، ويدفعه من التطبيق.','The customer still owes money and pays it in the app.')); return; }
+  if(st==='done' && !confirm(LX('خلصت الشغل؟ العميل يوصله إن الطلب اكتمل ويقيّمك.','Is the job finished? The customer will be told it is complete and asked to rate you.'))) return;
   let r=null;
   try{ r=await sb.from('khafet_orders').update({status:st}).eq('id',o.dbId); }catch(e){}
   if(r && r.error){ toast(srvMsgP(r.error)); loadOrders(); return; }
   o.status=st; toast('✓'); loadOrders();
 }
 /* رسالة مفهومة لأكواد حرّاس القاعدة KHAFET_* (تُترجم للإنجليزي عبر T_DICT عند العرض) */
+/* الدفع بجهاز الفني: موقوف لما device_pay_enabled = 0 (الدفع كله من التطبيق). حجوزات المؤسسة لعملائها خارج التطبيق تبقى */
+function devicePayOnP(){ const v=String((typeof KHSET_P!=='undefined' && KHSET_P && KHSET_P.device_pay_enabled!=null)?KHSET_P.device_pay_enabled:'1'); return !(v==='0'||v==='false'); }
 function srvMsgP(e){
   const m=String((e&&(e.message||e.details||e.hint))||e||'');
-  const MAP={ KHAFET_WARRANTY_FIXED:LX('ضمان طلبات خافت ثابت وما يتغيّر','Khafet order warranty is fixed'), KHAFET_CANCEL_PENDING:'فيه طلب إلغاء لهذا الطلب قيد المراجعة', KHAFET_CANCEL_NEEDS_APPROVAL:'الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب', KHAFET_UNPAID:'فيه مبلغ متبقي على العميل', KHAFET_UPDATE_REQUIRED:'حدّث التطبيق من المتجر عشان تكمل',
+  const MAP={ KHAFET_ORDER_CLOSED:LX('الطلب مقفل، وفاتورته ما تتعدّل. كلّم الإدارة لو فيه تعديل.','This order is closed, so its invoice cannot change. Contact admin if something needs fixing.'),
+    KHAFET_EXTRA_PENDING:LX('العميل ما وافق على الإضافة للحين، انتظر رده','The customer has not approved the extra yet, wait for their reply'),
+    KHAFET_EXTRA_UNPAID:LX('العميل وافق على الإضافة، سجّل دفعه بالجهاز قبل الإنهاء','The customer approved the extra, record the card machine payment before finishing'),
+    KHAFET_WARRANTY_FIXED:LX('ضمان طلبات خافت ثابت وما يتغيّر','Khafet order warranty is fixed'), KHAFET_CANCEL_PENDING:'فيه طلب إلغاء لهذا الطلب قيد المراجعة', KHAFET_CANCEL_NEEDS_APPROVAL:'الإلغاء يحتاج موافقة الإدارة، أرسل طلب إلغاء بالسبب', KHAFET_UNPAID:'فيه مبلغ متبقي على العميل', KHAFET_UPDATE_REQUIRED:'حدّث التطبيق من المتجر عشان تكمل',
     KHAFET_BAD_INVOICE:'صيغة الفاتورة قديمة، حدّث التطبيق ثم أعد الحفظ', KHAFET_INVOICE_ITEM:'قطعة من المستودع بلا سعر بيع، اطلب من الإدارة تسعيرها', KHAFET_INVOICE_LIMIT:'مبلغ البنود الحرة يتجاوز الحد المسموح، تواصل مع الإدارة', KHAFET_NO_INVOICE:'أصدر الفاتورة قبل إنهاء الطلب', KHAFET_NO_CANCEL:'الطلب منتهٍ أو ملغى ولا يمكن طلب إلغائه',
     KHAFET_CANCEL_REASON:'اكتب سبب الإلغاء (3 أحرف على الأقل)', KHAFET_CANCEL_DECIDED:'تم البت في طلب الإلغاء هذا من قبل', KHAFET_NOT_YOURS:'هذا الطلب مسند لفني آخر', KHAFET_BAD_STATUS:'ما يمكن تغيير حالة الطلب بهذا الشكل', KHAFET_NOT_SIGNED_IN:'سجّل دخولك ثم أعد المحاولة',
     KHAFET_INV_ADMIN_ONLY:'تعديل بيانات الصنف وأسعاره وإضافته وحذفه من صلاحية الإدارة، والفني يعدّل الكمية فقط', KHAFET_STOCK_ITEM:'الصنف غير موجود في المستودع', KHAFET_FORBIDDEN:'ما عندك صلاحية لهذا الإجراء',
@@ -1577,7 +1689,10 @@ async function saveInvoice(){
   window._invSaving=false;
   if(!r || r.error){ toast(r&&r.error?srvMsgP(r.error):LX('ما انحفظت الفاتورة، حاول مرة ثانية','Invoice not saved, try again')); return; }   // الخادم رفض: المحرر يبقى مفتوحًا للتصحيح
   o.invoice=invoice;
-  toast('أُرسلت الفاتورة ✓'); closeInvoice(); loadOrders();   // المبلغ المعتمد من الخادم
+  closeInvoice(); await loadOrders();   // المبلغ المعتمد من الخادم
+  // إضافة فوق سعر الحجز: تروح للعميل يوافق عليها أول
+  const f=ORDERS.find(x=>x.dbId===o.dbId);
+  toast(f&&xPendP(f)?LX('أُرسلت للعميل · بانتظار موافقته على ','Sent to the customer · waiting for approval of ')+pvMoney(f.extraAmount):LX('أُرسلت الفاتورة ✓','Invoice sent ✓'));
 }
 function invSig(items){ return JSON.stringify((items||[]).filter(it=>it&&it.id!=='swap').map(it=>[String(it.id||'custom'),String(it.stockId||''),+it.qty||1,Math.round((+it.price||0)*100)/100,!!it.booked,String(it.name||'')])); }
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
@@ -1704,14 +1819,17 @@ function showLogin(msg, wait){
     <button class="btn" onclick="login()">دخول</button>
     <label class="rememberme"><input type="checkbox" id="lg_rem" checked> تذكرني · ابقَ مسجّلًا بهذا الجهاز</label>
     <button type="button" class="forgot-link" onclick="showForgot('',false)">نسيت كلمة المرور؟</button>
-    <button type="button" class="forgot-link" style="font-weight:800" onclick="showForgot('',true)">${LX('أول مرة؟ فعّل حسابك','First time? Activate your account')}</button>
     ${msg?`<div class="msg ${wait?'wait':''}">${msg}</div>`:''}
     <div style="margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)">
       <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">ما عندك حساب مزوّد؟ سجّل الآن 👇</div>
       <button class="btn" style="background:transparent;border:2px solid var(--gold);color:var(--ink)" onclick="location.href='join.html'">➕ تسجيل مزوّد جديد</button>
     </div>
+    <div class="pv-legal"><a href="${pvTermsHref()}" target="_blank" rel="noopener">${LX('اتفاقية المزوّد','Provider Agreement')}</a> · <a href="${pvPrivUrl()}" target="_blank" rel="noopener">${LX('سياسة الخصوصية','Privacy Policy')}</a></div>
   </div>`;
 }
+/* يدخل المزوّد المعتمد و«قيد المراجعة» (التفعيل لطلبات مدنه فقط)، والموقوف أو المرفوض لا */
+function pvCanEnter(p){ const s=(p&&p.status)||'pending'; return s==='approved'||s==='pending'; }
+function pvPendingBar(){ return ''; }   // بدون شريط: قبل التفعيل يستخدم التطبيق عادي، وطلبات خافت بس ما توصله
 /* ═══════ نسيت كلمة المرور · كود على الجوال ثم كلمة مرور جديدة ═══════ */
 let _fgPhone=null;   // الجوال بصيغة E164 بعد إرسال الكود
 let _fgNew=false;    // تفعيل أول مرة: ينشئ حساب الدخول للمزوّد المعتمد (2026-09-25)
@@ -1734,7 +1852,7 @@ async function sendForgotCode(){
   if(!cloudReady){ showForgot('لا يوجد اتصال بالخادم'); return; }
   const btn=document.querySelector('.login .btn'); if(btn){ btn.disabled=true; btn.textContent='⏳ جاري الإرسال...'; }
   try{
-    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ shouldCreateUser:_fgNew } });
+    const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ shouldCreateUser:true } });   // يشتغل كمان لمزوّد اعتمدته الإدارة وما عنده كلمة مرور
     if(error){ showForgot(_fgNew?LX('❌ تعذّر الإرسال · حاول بعد قليل.','❌ Could not send · try again shortly.'):'❌ الرقم غير مسجّل، أو تعذّر الإرسال · حاول بعد قليل.'); return; }
     _fgPhone='+'+d;
     showForgotCode('');
@@ -1780,7 +1898,7 @@ async function autoLoginAfterReset(){
     const { data }=await sb.from('khafet_providers').select('*').in('phone',[local05, ph, '+'+ph]);
     const p=(data||[])[0];
     const okMsg=_fgNew?LX('✅ تم تفعيل حسابك','✅ Account activated'):LX('✅ تم تغيير كلمة المرور','✅ Password changed');
-    if(p && (p.status||'pending')==='approved'){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); toast(okMsg); loadOrders(); initPush(); return; }
+    if(p && pvCanEnter(p)){ me=p; localStorage.setItem('khafet_provider_phone',p.phone); toast(okMsg); loadOrders(); initPush(); return; }
     const { data:info }=await sb.rpc('my_staff_info');
     if(info && info.role==='tech'){ toast(okMsg); await enterTechMode(info, ph); return; }
     // فني ينتظر موافقة مؤسسته: شاشة الانتظار بدل «قدّم طلب انضمام»
@@ -2147,10 +2265,16 @@ function jobCard(o, mode){
   let acts='';
   if(mode==='available') acts=`<button class="tbtn accept" onclick="acceptOrder('${o.id}')">✅ اقبل الطلب</button>`;
   else { // mine
-    if(o.status==='confirmed') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','progress')">🔧 بدء العمل</button>`;
-    else if(o.status==='progress') acts = payDue(o)>0
-      ? `<div class="tbtn waitpay">💳 ${LX('بانتظار الدفع','Awaiting payment')} · ${payDue(o)}</div><button class="tbtn devpay" onclick="markCardPaid('${o.id}')">💳 ${LX('دفع بجهاز الفني','Paid by card machine')}</button>`
-      : `<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
+    // الخطوات حرّة (فادية 2026-09-26): «إنهاء» متاح من غير «بدء العمل»، مع تأكيد
+    if(o.status==='confirmed'||o.status==='progress'){
+      if(o.status==='confirmed') acts=`<button class="tbtn done" onclick="setJobStatus('${o.id}','progress')">🔧 بدء العمل</button>`;
+      acts += xPendP(o)
+        // الإضافة بانتظار العميل: لا إنهاء قبل ما يدفع أو يرد
+        ? `<div class="tbtn waitpay">${o.extraStatus==='objected'?'✋ '+LX('العميل اعترض على الإضافة','The customer objected to the extra'):'⏳ '+LX('بانتظار موافقة العميل','Waiting for customer approval')} · ${pvMoney(o.extraAmount)}</div>`
+        : payDue(o)>0
+        ? `<div class="tbtn waitpay">💳 ${LX('بانتظار الدفع','Awaiting payment')} · ${payDue(o)}</div>`+((devicePayOnP()||o.userId===null||o.userId==='')?`<button class="tbtn devpay" onclick="markCardPaid('${o.id}')">💳 ${LX('دفع بجهاز الفني','Paid by card machine')}</button>`:'')
+        : `<button class="tbtn done" onclick="setJobStatus('${o.id}','done')">✅ إنهاء</button>`;
+    }
     else if(o.status==='done') acts=`<div class="tbtn donelbl">✓ مكتمل</div><button class="tbtn fold" onclick="toggleDone('${o.id}')">▴</button>`;
     acts+= me.tech
       ? `<button class="tbtn inv ${o.invoice?'sent':''}" onclick="openInvoice('${o.id}')">${o.invoice?'✓ الفاتورة':'🧾 فاتورة'}</button>`
@@ -2158,8 +2282,9 @@ function jobCard(o, mode){
     // المزوّد يوزّع الطلب على فني من فريقه
     if(!me.tech && TECHS.length && o.status!=='done'){
       acts+=`<select class="assign-sel" onchange="assignOrder('${o.dbId}',this.value)">
-        <option value="">🧑‍🔧 توزيع على فني…</option>
+        <option value="" disabled ${o.handledBy?'':'selected'}>🧑‍🔧 توزيع على فني…</option>
         ${TECHS.map(t=>`<option value="${t.user_id}" ${o.handledBy===t.user_id?'selected':''}>${esc(t.name||'فني')}</option>`).join('')}
+        ${o.handledBy?`<option value="__none">${LX('— بدون توزيع —','Not assigned')}</option>`:''}
       </select>`;
     }
     // طلب إلغاء (قبل الإنجاز، وما دام ما فيه طلب إلغاء قيد المراجعة) · الإدارة تقرّر، والحالة ما تتغيّر من هنا
@@ -2171,6 +2296,7 @@ function jobCard(o, mode){
     <div class="tj-head"><span class="tj-when">🕐 ${fmtTime(o.startMin)} · ${dayLabel(o.date)}</span><span>${mode!=='available'&&payDue(o)>0?`<span class="status dueb">💳 ${payDue(o)}</span>`:(mode!=='available'&&o.paidAmount>0?`<span class="status paidb">💳 ${LX('مدفوع','Paid')}</span>`:'')}${mode==='mine'?cxBadgeP(o):''}</span><span class="status ${esc(o.status)}">${esc(({new:'جديد',confirmed:'مؤكد',progress:'قيد التنفيذ',done:'مكتمل'})[o.status]||o.status)}</span></div>
     <div class="tj-body">
       ${work}
+      ${mode==='mine'?xBoxP(o):''}
       ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ المشكلة</span><span class="tj-v">${esc(o.note)}</span></div>`:''}
       ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 صورة/مقطع</span><span class="tj-v"><button class="tvideo" data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)">🎥 عرض</button></span></div>`:''}
       <div class="tj-row"><span class="tj-k">⏱️ المدة</span><span class="tj-v">${fmtDur(o.duration)}</span></div>
@@ -2189,6 +2315,7 @@ function jobCard(o, mode){
   </div>`;
 }
 function render(){
+  try{ pvTermsCheck(); }catch(e){}   // شاشة موافقة اتفاقية المزوّد (مرة وحدة)، وتختفي عند الخروج
   if(!me){ showLogin(''); return; }
   document.getElementById('logoutBtn').style.display='none';   // الخروج صار داخل «حسابي» و«الإعدادات»
   document.getElementById('acctBtn').style.display='';
@@ -2365,7 +2492,7 @@ function render(){
       const badge=(k==='team'||k==='tasks')?tasksLeft:0;
       return `<button class="${on?'on':''}" onclick="${k==='home'?'goHome()':`setTab('${k}')`}"><span>${pic(ic,24)}</span>${l}${badge?`<i class="bb-n">${pvNum(badge)}</i>`:''}</button>`; }).join('')}</div>`;
   document.getElementById('app').innerHTML=`
-    ${inHome?homeHTML:`
+    ${inHome?pvPendingBar()+homeHTML:`
       <div class="sechead" style="display:flex;align-items:center;gap:10px;margin-top:14px">
         ${barKeys.includes(tab)?'':`<button class="backbtn" onclick="setTab(_pvBackTo||'more')">${pic('chev',18)} ${LX('رجوع','Back')}</button>`}
         <b class="kp-sectitle" style="font-size:1.12rem;font-weight:900;flex:1">${secTitle}</b>
@@ -2463,7 +2590,7 @@ function renderTeam(){
         <div class="perm-title" style="margin-top:9px">📍 مدينته:</div>
         <select class="assign-sel" style="width:100%;min-width:0" onchange="setTechCity('${t.user_id}',this.value)">
           <option value="">كل مدنك</option>
-          ${SA_CITIES.map(c=>`<option value="${c}" ${pm.city===c?'selected':''}>${cityLabel(c)}</option>`).join('')}
+          ${((Array.isArray(me.cities)&&me.cities.length)?me.cities:(me.city?[me.city]:SA_CITIES)).map(c=>`<option value="${c}" ${pm.city===c?'selected':''}>${cityLabel(c)}</option>`).join('')}
         </select>
       </div>`; }).join('') : '<div class="hint" style="margin:4px 0 0">ما أضفت فنيّين بعد.</div>'}
     </div>
@@ -2492,7 +2619,7 @@ function geoPt(a){ const la=Number(a&&a.lat), ln=Number(a&&a.lng);
   if(isFinite(la)&&isFinite(ln)&&la&&ln&&Math.abs(la)<=90&&Math.abs(ln)<=180) return encodeURIComponent(la.toFixed(6)+','+ln.toFixed(6));
   return encodeURIComponent([a&&a.city,a&&a.district,a&&a.street].filter(Boolean).join(' ')); }
 /* حالة «لا طلبات متاحة»: طمأنة إن الإشعار بيوصل، وإن التطبيق بينشر قريبًا */
-function emptyAvail(){ return `<div class="empty"><div class="ico">🧰</div><h3>لا توجد طلبات متاحة في مدن خدمتك حالياً</h3><p class="empty-note">أول ما يوصل طلب جديد في تخصصك يوصلك إشعار، ولفنيّيك المسجّلين عندك.<br>التطبيق بيتم الإعلان عنه ونشره للعملاء قريبًا.</p></div>`; }
+function emptyAvail(){ return `<div class="empty"><div class="ico">🧰</div><h3>لا توجد طلبات متاحة في مدن خدمتك حالياً</h3><p class="empty-note">أول ما يوصل طلب جديد في تخصصك يوصلك إشعار، ولفنيّيك المسجّلين عندك.</p></div>`; }
 function renderRoute(){
   const today=new Date().toISOString().slice(0,10);
   const jobs=myJobsList().filter(o=>o.status!=='done'&&o.status!=='cancelled'&&(o.date||'')>=today)
@@ -2725,10 +2852,12 @@ async function submitBooking(){
       if(!me.tech && p05 && !PCUST.some(c=>custPhone05(c.phone)===p05)){ try{ await sb.from('provider_customers').insert({ provider_id:myPid(), name, phone, city }); loadCustomers(); }catch(e){} }
       loadOrders();
     }
-    else { const R={ not_my_tech:'الفني مو من فريقك', bad_date:'التاريخ خارج المدى المسموح', bad_phone:'رقم جوال العميل غير صحيح', too_many:'وصلت للحد اليومي للحجوزات، حاول لاحقًا', not_approved:'حسابك موقوف أو قيد المراجعة · تواصل مع الإدارة', not_provider:'هذا الحساب ليس حساب مزوّد' }; toast((data&&R[data.reason])||'تعذّر الحجز'); }
+    else { const R={ not_my_tech:'الفني مو من فريقك', bad_date:'التاريخ خارج المدى المسموح', bad_phone:'رقم جوال العميل غير صحيح', too_many:'وصلت للحد اليومي للحجوزات، حاول لاحقًا', not_approved:'غير متاح حاليًا', not_provider:'هذا الحساب ليس حساب مزوّد' }; toast((data&&R[data.reason])||'تعذّر الحجز'); }
   }catch(e){ toast(/KHAFET_/.test(String((e&&e.message)||''))?srvMsgP(e):'تعذّر الحجز'); }
 }
 async function assignOrder(dbId,techUid){
+  if(techUid==='__none'){ if(!confirm(LX('إلغاء توزيع الطلب على الفني؟','Remove the technician from this job?'))){ render(); return; } techUid=''; }
+  else if(!techUid){ render(); return; }   // الخيار الأول عنوان بس
   try{
     const { data }=await sb.rpc('assign_order_tech',{ p_order:dbId, p_tech:techUid||null });
     if(data&&data.ok){ toast(techUid?'✅ وُزّع على الفني':'أُلغي التوزيع'); loadOrders(); }
@@ -2858,7 +2987,8 @@ function schedRow(o){
 }
 function schedTap(id){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
-  if(tab!=='schedule'){ tab='schedule'; schedMode='day'; schedDate=o.date; }
+  // من عرض الأسبوع: يفتح يوم الموعد ويعرض تفاصيله (كان الضغط ما يسوي شي)
+  if(tab!=='schedule'||schedMode==='week'){ tab='schedule'; schedMode='day'; schedDate=o.date; }
   schedOpen=(schedOpen===id?null:id); if(o.status==='done') doneOpen[o.id]=true;
   render();
   if(schedOpen) setTimeout(function(){ const el=document.getElementById('sched-open'); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:'smooth',block:'start'}); },80);
