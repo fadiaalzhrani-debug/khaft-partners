@@ -277,7 +277,9 @@
   .cg-head,.cg-svc{display:flex;align-items:center;gap:8px}
   .cg-head{padding-bottom:10px;border-bottom:1px solid var(--line)}
   .cg-main{flex:1;display:flex;align-items:center;gap:11px;background:none;border:0;padding:6px 2px;text-align:start;font-family:inherit;cursor:pointer;color:inherit;min-width:0}
-  .cg-ic{width:38px;height:38px;border-radius:11px;background:#f6f4ec;display:grid;place-items:center;font-size:1.25rem;flex:none}
+  .cg-ic{width:38px;height:38px;border-radius:11px;background:#f6f4ec;display:grid;place-items:center;font-size:1.25rem;flex:none;overflow:hidden}
+  .cg-ic img{width:100%;height:100%;object-fit:cover;display:block}   /* صورة الخدمة نفسها اللي تطلع للعميل */
+  .cg-svc .cg-ic{width:48px;height:48px}
   .cg-ic.big{width:46px;height:46px;font-size:1.5rem;background:#FBF3D0}
   .cg-t{display:flex;flex-direction:column;min-width:0}
   .cg-t b{font-weight:800;font-size:.98rem} .cg-head .cg-t b{font-size:1.08rem;font-weight:900}
@@ -985,7 +987,7 @@ function renderCatalogEditor(){
   const html=cats.map((c,ci)=>{
     const svcs=CATALOG.svcs.filter(s=>s.cat_id===c.id).sort(bySort);
     const rows=svcs.map((s,si)=>`<div class="cg-svc ${s.active?'':'off'}">
-        <button class="cg-main" data-id="${esc(s.id)}" onclick="editService(this.dataset.id)"><span class="cg-ic">${esc(s.icon||'🔧')}</span><span class="cg-t"><b>${esc(s.name)}</b><small>${s.custom?LX('السعر بعد المعاينة','Price after inspection'):money(+s.price||0)} · ${fmtDur(+s.duration||0)}${s.active?'':' · '+LX('مخفية','Hidden')}</small></span></button>
+        <button class="cg-main" data-id="${esc(s.id)}" onclick="editService(this.dataset.id)"><span class="cg-ic">${s.image_url?`<img src="${esc(s.image_url)}" alt="" loading="lazy">`:esc(s.icon||'🔧')}</span><span class="cg-t"><b>${esc(s.name)}</b><small>${s.custom?LX('السعر بعد المعاينة','Price after inspection'):money(+s.price||0)} · ${fmtDur(+s.duration||0)}${s.active?'':' · '+LX('مخفية','Hidden')}</small></span></button>
         <span class="cg-ord"><button data-id="${esc(s.id)}" onclick="moveCatalog('svc',this.dataset.id,-1)" ${si===0?'disabled':''}>▲</button><button data-id="${esc(s.id)}" onclick="moveCatalog('svc',this.dataset.id,1)" ${si===svcs.length-1?'disabled':''}>▼</button></span>
       </div>`).join('');
     return `<div class="cg-cat ${c.active?'':'off'}">
