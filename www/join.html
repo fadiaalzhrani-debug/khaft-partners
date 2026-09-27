@@ -394,7 +394,7 @@ input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px 
       </div>
       <div class="fld" id="fCr"><label for="cr" data-i="cr">رقم السجل التجاري</label><input id="cr" inputmode="numeric" maxlength="10" autocomplete="off" data-ip="crPh" placeholder="10 أرقام"><div class="err" data-i="eCr">اكتب رقم السجل التجاري (10 أرقام)</div><small style="display:block;margin-top:6px;color:#8b7f72;font-size:.82rem;line-height:1.6" data-i="crHint">التسجيل للمؤسسات المسجّلة فقط، وتُطلب صورة السجل التجاري عند إنشاء الحساب.</small></div>
       <div class="fld" id="fPhone"><label for="phone" data-i="phone">رقم الجوال</label><input id="phone" type="tel" inputmode="tel" dir="ltr" autocomplete="tel" placeholder="05xxxxxxxx"><span class="hint" data-i="phoneH">نتواصل معك عليه بواتساب أو اتصال.</span><div class="err" data-i="ePhone">رقم الجوال لازم يكون سعودي 05xxxxxxxx</div></div>
-      <div class="fld" id="fCities"><span class="lb"><span data-i="cities">المدن اللي تخدمها</span> <span class="hint" data-i="citiesH">اختر كل اللي يناسبك</span></span><div class="chips" id="cityChips"></div><input id="cityOther" style="margin-top:8px" data-ip="cityOtherPh" placeholder="مدينة أخرى (اختياري)"><div class="err" data-i="eCity">اختر مدينة واحدة على الأقل</div></div>
+      <div class="fld" id="fCities" hidden><span class="lb"><span data-i="cities">المدن اللي تخدمها</span> <span class="hint" data-i="citiesH">اختر كل اللي يناسبك</span></span><div class="chips" id="cityChips"></div><input id="cityOther" style="margin-top:8px" data-ip="cityOtherPh" placeholder="مدينة أخرى (اختياري)"><div class="err" data-i="eCity">اختر مدينة واحدة على الأقل</div></div>
     </div>
 
     <div class="pane" id="p2">
@@ -712,7 +712,7 @@ function validate(step){
     if(bad('fCompany',$('company').value.trim().length<2))ok=false;
     if(bad('fCr',!/^[0-9]{10}$/.test(westDigits($('cr').value).replace(/\D/g,''))))ok=false;
     if(bad('fPhone',!validPhone($('phone').value)))ok=false;
-    if(bad('fCities',!Object.keys(S.cities).length&&!$('cityOther').value.trim()))ok=false;
+    /* المدن انشالت: المؤسسة تخدم كل المدن */
   }
   if(step===2){ if(bad('fCats',!Object.keys(S.cats).length))ok=false; }
   if(step===3){ if(bad('fWar',!S.warranty||(S.warranty==='other'&&!$('warOther').value.trim())))ok=false; if(bad('fPass',($('pass').value||'').length<6))ok=false; if(bad('fTerms',!$('terms').checked))ok=false; }

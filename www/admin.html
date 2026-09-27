@@ -2349,7 +2349,7 @@ function renderProviders(){
   const list=PROVIDERS.filter(p=>{
     const st=p.status||'pending';
     if(provSt!=='all' && st!==provSt) return false;
-    if(provCity!=='all' && !provCityList(p).includes(provCity)) return false;
+    if(provCity!=='all' && provCityList(p).length && !provCityList(p).includes(provCity)) return false;   // بدون مدن = كل المدن
     if(provQ){ const q=provQ.trim().toLowerCase();
       if(!((p.name||'').toLowerCase().includes(q) || String(p.phone||'').includes(q))) return false; }
     return true;
@@ -2361,7 +2361,7 @@ function renderProviders(){
     else if(st==='approved') acts=`<button class="sbtn danger" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'suspended')">⏸️ إيقاف</button>`;
     else acts=`<button class="sbtn ok" data-phone="${esc(p.phone)}" onclick="suspendProvider(this.dataset.phone,'approved')">▶️ تفعيل</button>`;
     return `<div class="prov-card"><div class="pc-top"><div><b>${esc(p.name)}</b> <span class="status ${stC[st]||'st-new'}">${esc(_uiEN()?(T_DICT[stL[st]]||stL[st]||st):(stL[st]||st))}</span>${provLimitBadge(p)}
-      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||'—')}</div>
+      <div style="margin-top:3px;font-size:.88rem">📍 ${esc(provCityList(p).map(trData).join(LX('، ',', '))||LX('كل المدن','All cities'))}</div>
       <div style="margin-top:3px;font-size:.88rem">🧾 ${LX('السجل التجاري','CR')}: ${/^[0-9]{10}$/.test(String(p.cr_number||''))?'<b dir="ltr">'+esc(p.cr_number)+'</b>':'<b style="color:#b91c1c">'+LX('غير مرفق','missing')+'</b>'} ${p.cr_doc_path?`<button class="sbtn" style="padding:4px 10px" data-path="${esc(p.cr_doc_path)}" onclick="openDocA(this.dataset.path)">📎 ${LX('عرض السجل','View')}</button>`:''}</div></div>
       <a href="tel:${esc(p.phone)}" style="color:var(--ink);font-weight:800;border-bottom:2px solid var(--gold);white-space:nowrap">📞 ${esc(p.phone)}</a></div>
       <div style="font-size:.87rem;color:var(--muted);margin-top:6px">🛠️ ${esc(sv)||LX('(ما حدّد خدماته)','(no services set)')}${p.experience?LX(' · خبرة ',' · Experience: ')+esc(p.experience):''}${p.note?' · '+esc(p.note):''}</div>
