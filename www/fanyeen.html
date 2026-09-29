@@ -2151,8 +2151,8 @@ ${(d.sums&&d.sums.length)?`<div class="sums">${d.sums.map(sr).join('')}</div>`:'
 ${(d.after&&d.after.length)?`<div class="after">${d.after.map(sr).join('')}</div>`:''}
 ${d.due?`<div class="due${d.due.cls?' '+d.due.cls:''}"><span>${E(d.due.label)}</span>${d.due.value?`<b>${E(d.due.value)}</b>`:''}</div>`:''}
 ${d.qrHtml||''}
-${(d.notesHtml&&d.notesHtml.length)?`<p class="note">${d.notesHtml.filter(Boolean).join('<br>')}</p>`:''}
-<div class="foot">${d.legalHtml||''}<b>${E(d.thanks)}</b></div>
+${(d.notesHtml&&d.notesHtml.filter(Boolean).length)?`<p class="note">${d.notesHtml.filter(Boolean).join('<br>')}</p>`:''}
+${(d.legalHtml||d.thanks)?`<div class="foot">${d.legalHtml||''}${d.thanks?`<b>${E(d.thanks)}</b>`:''}</div>`:''}
 <div class="noprint"><button onclick="print()">${E(d.printLbl||'طباعة')}</button></div>
 </div></body></html>`;
 }
@@ -2209,8 +2209,8 @@ function printInvoiceDoc(o){
     sums, total:{label:'الإجمالي',value:M(total)}, after,
     due: due>0?{cls:'',label:'المتبقي',value:M(due)}:(refund>0?{cls:'back',label:'يرجع للعميل',value:M(refund)}:(paid>0?{cls:'ok',label:'الحالة',value:'✓ مدفوعة بالكامل'}:null)),
     qrHtml: qr?`<div id="qr" class="qr"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"><\/script><script>try{ new QRCode(document.getElementById('qr'),{text:'${qr}',width:128,height:128}); }catch(e){}<\/script>`:'',
-    notesHtml:[khVatLine(), (wd>0&&o.status!=='cancelled')?('ضمان الشغل والقطع '+arNum(wd)+' يوم من تاريخ الخدمة'):''],
-    legalHtml:khLegalLine(), thanks:'شكرًا لثقتك في خافت · '+PHONE, printLbl:'🖨️ طباعة' });
+    notesHtml:[(khLegal().vat&&khLegal().vatNo)?khVatLine():''],
+    legalHtml:'', thanks:'', printLbl:'🖨️ طباعة' });
   const w=window.open('','_blank'); if(!w){ toast(lg('popup')); return; } w.document.write(html); w.document.close();
 }
 function renderInvoice(){

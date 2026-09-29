@@ -1929,8 +1929,8 @@ ${(d.sums&&d.sums.length)?`<div class="sums">${d.sums.map(sr).join('')}</div>`:'
 ${(d.after&&d.after.length)?`<div class="after">${d.after.map(sr).join('')}</div>`:''}
 ${d.due?`<div class="due${d.due.cls?' '+d.due.cls:''}"><span>${E(d.due.label)}</span>${d.due.value?`<b>${E(d.due.value)}</b>`:''}</div>`:''}
 ${d.qrHtml||''}
-${(d.notesHtml&&d.notesHtml.length)?`<p class="note">${d.notesHtml.filter(Boolean).join('<br>')}</p>`:''}
-<div class="foot">${d.legalHtml||''}<b>${E(d.thanks)}</b></div>
+${(d.notesHtml&&d.notesHtml.filter(Boolean).length)?`<p class="note">${d.notesHtml.filter(Boolean).join('<br>')}</p>`:''}
+${(d.legalHtml||d.thanks)?`<div class="foot">${d.legalHtml||''}${d.thanks?`<b>${E(d.thanks)}</b>`:''}</div>`:''}
 <div class="noprint"><button onclick="print()">${E(d.printLbl||'طباعة')}</button></div>
 </div></body></html>`;
 }
@@ -1978,8 +1978,8 @@ function printInvoiceDoc(o){
     sums, total:{label:LX('الإجمالي','Total'),value:M(N.tot)}, after,
     due: due>0?{cls:'',label:LX('المتبقي','Remaining'),value:M(due)}:(refund>0?{cls:'back',label:LX('يرجع للعميل','Refund to customer'),value:M(refund)}:((paid>0&&live)?{cls:'ok',label:LX('الحالة','Status'),value:LX('✓ مدفوعة بالكامل','✓ Fully paid')}:null)),
     qrHtml:'',
-    notesHtml:[pvVatLine(), (wd>0&&o.status!=='cancelled')?LX('ضمان الشغل والقطع '+num(wd)+' يوم من تاريخ الخدمة','Labor and parts warranty: '+wd+' days from the service date'):''],
-    legalHtml:pvLegalLine(), thanks:LX('شكرًا لثقتك في خافت','Thank you for choosing Khafet')+' · '+CONTACT, printLbl:LX('🖨️ طباعة','🖨️ Print') });
+    notesHtml:[(pvLegal().vat&&pvLegal().vatNo)?pvVatLine():''],
+    legalHtml:'', thanks:'', printLbl:LX('🖨️ طباعة','🖨️ Print') });
   const w=window.open('','_blank'); if(!w){ toast('اسمح بالنوافذ المنبثقة'); return; } w.document.write(html); w.document.close();
 }
 /* محرر الفاتورة بنفس تصميم الفاتورة (ke-*): منتقي خدمات بالصور + بطاقة لكل بند بصورتها · نفس القواعد (المحجوز مقفول، السعر يُكتب للبند الحر فقط) */
