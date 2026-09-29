@@ -602,6 +602,95 @@ body.kh-nobuy .wh-f label:has(#wf_buy){display:none}
 .tj-head small{white-space:nowrap}
 .tj-head>span:last-child{display:inline-flex;align-items:center;gap:6px;flex-wrap:nowrap;white-space:nowrap}
 </style>
+<style id="kh-inv">
+/* ═ محرر الفاتورة بتصميم الفاتورة الجديدة (2026-09-29) · fanyeen.html و provider.html ═
+   هذا آخر ستايل في رأس الصفحة (بعد kh-skin) عشان يغلب القديم. (لا تكتب وسم إغلاق الستايل داخل هذا التعليق: المتصفح يقفل الستايل عنده)
+   البادئة ke- لأن warehouse.css يستخدم il- والتطبيقان فيهما .pic عامة. */
+.inv-card.ke{background:var(--bg);padding:0 0 calc(16px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0}
+.ke-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;background:#1d1a16;color:#fff;padding:14px 16px}
+.ke-top .ke-lg{width:38px;height:38px;border-radius:10px;flex:none;background:#F5C518}
+.ke-t{flex:1;min-width:0}
+.ke-t b{display:block;color:#F5C518;font-weight:900;font-size:1.12rem;line-height:1.3}
+.ke-t small{display:block;color:rgba(255,255,255,.72);font-weight:700;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ke-tag{background:#F5C518;color:#1d1a16;font-weight:900;border-radius:10px;padding:4px 12px;font-size:.9rem;flex:none}
+.ke-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:1.05rem;flex:none;display:grid;place-items:center}
+.ke-in{padding:14px 14px 0}
+.ke .inv-member{margin:0 0 12px}
+/* أزرار الإضافة: الخدمة أول وأكبر، ثم المستودع وقطعة الغيار والبند المخصص */
+.ke-adds{display:flex;flex-wrap:wrap;gap:8px}
+.ke-add{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 6px;font-weight:800;font-size:.86rem;line-height:1.3;color:var(--text);text-align:center;min-height:64px;font-family:inherit;cursor:pointer;transition:transform .25s var(--spring,ease)}
+.ke-add:active{transform:scale(.96)}
+.ke-add .ke-ai{font-size:1.25rem;line-height:1}
+.ke-add.on{border-color:var(--gold);background:var(--gold-tint)}
+.ke-add.main{flex:1 0 100%;flex-direction:row;gap:10px;min-height:56px;background:#1d1a16;border-color:#1d1a16;color:#F5C518;font-size:1.05rem;font-weight:900}
+.ke-add.main.on{background:#1d1a16;box-shadow:0 0 0 3px var(--gold)}
+/* منتقي الخدمات بالصور (نفس روح منتقي المستودع sp-*) */
+.ke-pick{margin-top:10px;background:var(--card);border-radius:20px;padding:10px;box-shadow:var(--shadow)}
+.ke-search{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font:inherit;font-weight:700;font-size:1rem;color:var(--text)}
+.ke-search:focus{outline:none;border-color:var(--gold)}
+.ke-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:52vh;overflow:auto;margin-top:10px;padding:2px}
+@media (min-width:520px){.ke-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ke-sv{position:relative;display:flex;flex-direction:column;background:#fff;border:0;border-radius:16px;overflow:hidden;text-align:start;box-shadow:0 0 0 1px var(--line),0 8px 18px -14px rgba(58,48,41,.5);font:inherit;color:var(--text);cursor:pointer;padding:0;transition:transform .25s var(--spring,ease)}
+.ke-sv:active{transform:scale(.96)}
+.ke-im{position:relative;display:grid;place-items:center;aspect-ratio:4/3;background:var(--gold-soft);font-size:2rem;overflow:hidden}
+.ke-im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ke-sv b{display:block;padding:8px 10px 0;font-size:.9rem;font-weight:800;line-height:1.35;min-height:2.75em}
+.ke-sv small{display:block;padding:2px 10px 9px;color:var(--gold-deep);font-weight:900;font-size:.86rem;font-variant-numeric:tabular-nums}
+.ke-plus{position:absolute;top:7px;inset-inline-start:7px;width:30px;height:30px;border-radius:50%;background:#F5C518;color:#1d1a16;font-weight:900;display:grid;place-items:center;font-size:1.15rem;box-shadow:0 4px 10px -4px rgba(0,0,0,.45)}
+.ke-cnt{position:absolute;top:8px;inset-inline-end:8px;background:#1d1a16;color:#F5C518;border-radius:999px;font-size:.72rem;font-weight:900;padding:2px 8px}
+.ke-none{grid-column:1/-1;color:var(--muted);text-align:center;padding:18px;font-weight:700}
+/* منتقي المستودع الحالي داخل المحرر الجديد: نفس الشكل */
+.ke .sp-wrap{background:var(--card);border:0;border-radius:20px;padding:10px;margin-top:10px;box-shadow:var(--shadow)}
+.ke .sp-search{border-radius:14px;padding:12px 14px;font-size:1rem}
+.ke .sp-it{border:0;border-radius:16px;box-shadow:0 0 0 1px var(--line),0 8px 18px -14px rgba(58,48,41,.5);padding:6px}
+.ke .sp-it .im{background:#fff;border-radius:12px}
+.ke .sp-it .im img{object-fit:contain}
+/* بطاقات البنود */
+.ke-lines{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.ke-ln{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px 12px;align-items:start;background:var(--card);border-radius:18px;padding:10px;box-shadow:0 0 0 1px var(--line)}
+.ke-ln.bk{background:var(--gold-tint)}
+.ke-pic{position:relative;width:64px;height:64px;border-radius:14px;background:var(--gold-soft);display:grid;place-items:center;font-size:1.7rem;overflow:hidden}
+.ke-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ke-pic.part{background:#fff}
+.ke-pic.part img{object-fit:contain;padding:3px}
+.ke-mid{min-width:0}
+.ke-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ke-hd .ir-pname{flex:1;min-width:0}
+.ke-nm{display:block;flex:1;min-width:0;font-weight:800;font-size:1.02rem;line-height:1.4;color:var(--text);overflow-wrap:anywhere}
+.ke-mid .ir-pname{width:100%;padding:9px 11px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font:inherit;font-weight:800;font-size:1rem;color:var(--text)}
+.ke-mid .ir-pname:focus,.ke-mid .ir-price:focus{outline:none;border-color:var(--gold)}
+.ke-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.ke-chip{font-size:.74rem;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--panel);color:var(--muted);white-space:nowrap}
+.ke-chip.lock{background:#E3F4E8;color:#15803D}
+.ke-chip.swap{background:#FCEBD8;color:#B4560F}
+.ke-chip.swap.minus{background:#E3F4E8;color:#15803D}
+.ke-ln .ir-opts{margin-top:7px}
+.ke-hd .ke-del{margin-inline-start:0;flex:none;width:34px;height:34px}
+.ke-ctl{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ke-qty{display:inline-flex;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
+.ke-qty button{width:34px;height:36px;font-weight:900;font-size:1.25rem;color:var(--gold-deep);background:none;border:0;cursor:pointer;font-family:inherit}
+.ke-qty span{min-width:26px;text-align:center;font-weight:900;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.ke-x{color:var(--muted);font-weight:800}
+.ke-mid .ir-price{width:76px;padding:8px 10px;border-radius:12px;border:1.5px solid var(--gold);background:#fff;font:inherit;font-weight:900;font-size:1.02rem;text-align:center;color:var(--text)}
+.ke-mid .ir-price-ro{display:inline-block;min-width:58px;padding:8px 10px;border-radius:12px;background:var(--panel);color:var(--muted);font-weight:900;text-align:center;font-variant-numeric:tabular-nums}
+.ke-sum small{font-size:.72rem;font-weight:800;color:var(--muted)}
+.ke-q{font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums}
+.ke-sum{flex:none;padding-top:1px;font-weight:900;font-size:1.08rem;color:#1d1a16;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ke-del{margin-inline-start:auto;width:38px;height:38px;border-radius:12px;background:#FBE4E1;color:#B42318;font-size:1.05rem;display:grid;place-items:center;border:0;cursor:pointer}
+.ke-empty{background:var(--card);border:1.5px dashed var(--line);border-radius:18px;padding:22px;text-align:center;color:var(--muted);font-weight:800}
+/* الإجمالي والتفاصيل */
+.ke .inv-disc{margin-top:10px;background:#E3F4E8;border:0;border-radius:14px;color:#15803D}
+.ke-tot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;background:#1d1a16;color:#fff;border-radius:16px;padding:13px 16px}
+.ke-tot span{font-weight:800;font-size:1rem}
+.ke-tot b{color:#F5C518;font-weight:900;font-size:1.45rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ke-note{color:var(--muted);font-size:.8rem;font-weight:700;margin:6px 4px 0}
+.ke .inv-pay{background:var(--card);border:0;border-radius:16px;padding:4px 14px;margin-top:10px;box-shadow:0 0 0 1px var(--line)}
+.ke .inv-pay div{font-size:.95rem}
+.ke .inv-pay .due{color:#1d1a16;font-size:1.08rem;font-weight:900}
+.ke .inv-pay .refund{color:#15803D}
+.ke .inv-acts{margin-top:14px}
+@media (max-width:380px){.ke-ln{grid-template-columns:52px minmax(0,1fr);gap:8px 10px}.ke-pic{width:52px;height:52px}.ke-sum{font-size:1rem}.ke-mid .ir-price{width:66px}}
+</style>
 </head>
 <body>
 <header class="top"><div class="wrap">
@@ -855,11 +944,11 @@ let sb=null, cloudReady=false;
 async function loadPrices(){
   if(!cloudReady) return;
   // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
-  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden,extra_price').order('sort');
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden,extra_price,image_url').order('sort');
     if(!r.error && r.data && r.data.length){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
-        // custom: خدمة مخصّصة سعرها حر · extra: سعر الوحدة الإضافية (مثل الخادم)
-        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price)}); });
+        // custom: خدمة مخصّصة سعرها حر · extra: سعر الوحدة الإضافية (مثل الخادم) · img: صورة الخدمة (منتقي الفاتورة والفاتورة المطبوعة)
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price), img:d.image_url||''}); });
       // خدمة مكتوبة في التطبيق وانحذفت من الكتالوج: ما تنعرض في الفاتورة والحجز (كانت تنحسب بسعر قديم)
       { const live=new Set(r.data.map(d=>d.id)); SERVICES.forEach(s=>{ if(!live.has(s.id) && !["custom","quick","fee","smallfee"].includes(s.id)) s.inactive=true; }); }
       return; } }catch(e){}
@@ -868,7 +957,7 @@ async function loadPrices(){
 async function initCloud(){
   try{ await khRestore(); }catch(e){}
   setTimeout(function(){ try{ pvPhoneSyncRetry(); }catch(e){} }, 3000);   // إكمال نقل تغيير الجوال لو انقطع الاتصال سابقًا
-  try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; registerInstall('rizq', RIZQ_BUILD); sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg','device_pay_enabled']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET_P[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{}); loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
+  try{ if(window.supabase && SUPABASE_URL){ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,KH_AUTH_OPTS); cloudReady=true; registerInstall('rizq', RIZQ_BUILD); sb.from('khafet_settings').select('key,value').in('key',['rizq_min_build','app_update_msg','device_pay_enabled','company_name','cr_number','unified_number','company_city','vat_registered','vat_number','vat_pct','app_warranty_days']).then(r=>{ if(r&&!r.error&&Array.isArray(r.data)){ r.data.forEach(x=>{ KHSET_P[x.key]=x.value; }); try{ checkRizqBuild(); }catch(e){} } }).catch(()=>{}); loadPrices(); autoLogin(); subscribe(); return; } }catch(e){}
   render();
 }
 /* ===== إشعارات المزوّد: تسجيل الجهاز لاستقبال «طلب جديد وصلك» ===== */
@@ -1445,7 +1534,7 @@ async function pvPhoneSyncRetry(){
    PV_TERMS_VER نفس khafet_provider_terms_version() في الخادم وTERMS_VER في join.html */
 var PV_TERMS_VER='2026-09-26', _pvTermsBusy=false, _pvOwnId=null, _pvOwnAsked=false;   // var والدوال (مو const): تنقرأ قبل سطرها بدون خطأ لو انرسمت شاشة الدخول بدري
 function pvTermsHref(){ return 'https://fadiaalzhrani-debug.github.io/khaft-partners/www/terms.html?lang='+(_uiEN()?'en':'ar'); }
-function pvPrivUrl(){ return 'https://fadiaalzhrani-debug.github.io/khaft/www/privacy.html'; }
+function pvPrivUrl(){ return 'https://khafet.com/www/privacy.html'; }
 function pvTermsCheck(){
   const old=document.getElementById('pvTerms');
   // الشاشة لصاحب المؤسسة فقط (مو فني المؤسسة)، وبعد تطبيق ملف الخادم (العمود موجود في الصف)
@@ -1664,7 +1753,26 @@ function openInvoice(id){ const o=ORDERS.find(x=>x.id===id); if(!o) return; invE
   else if(o.dbId && !o.quick) invItems=(o.items||[]).filter(it=>it&&it.id&&it.id!=='quick').map(it=>{ if(String(it.id).startsWith('part:')||it.stockId) return {id:'stock',stockId:it.stockId||String(it.id).slice(5),name:it.name||'',qty:+it.qty||1,price:+it.price||0,booked:true}; const s=svc(it.id); return {id:it.id,name:it.name||(s&&s.name)||'',qty:+it.qty||1,price:s?(+s.price||0):(+it.price||0),booked:true}; });
   else invItems=[];
   renderInvoice(); }
-function closeInvoice(){ invEditing=null; const m=document.getElementById('invModal'); m.classList.remove('show'); m.innerHTML=''; }
+function closeInvoice(){ invEditing=null; svcPickOpen=false; svcPickQ=''; const m=document.getElementById('invModal'); m.classList.remove('show'); m.innerHTML=''; }
+/* منتقي الخدمات بالصور (بدل القائمة المنسدلة) · كل ضغطة تضيف سطرًا جديدًا عبر addInvItem (الخادم يسعّر كل سطر بـ extra_price) */
+let svcPickOpen=false, svcPickQ='';
+function toggleSvcPick(){ captureInvPrices(); svcPickOpen=!svcPickOpen; svcPickQ=''; renderInvoice(); }
+function svcPickSearch(v){ svcPickQ=String(v||'').trim().toLowerCase(); const g=document.getElementById('svGrid'); if(g){ g.innerHTML=svcPickGrid(); if(_uiEN()) _translateEl(g); } }
+function svcPickGrid(){
+  const q=svcPickQ; const list=SERVICES.filter(s=>!s.inactive&&!s.hidden).filter(s=>!q||[s.name,svcName(s.name),(typeof T_DICT!=='undefined'?T_DICT[String(s.name||'').trim()]:'')].some(x=>String(x||'').toLowerCase().includes(q)));
+  if(!list.length) return `<div class="ke-none">${LX('ما فيه نتيجة','No match')}</div>`;
+  return list.map(s=>{ const n=invItems.filter(x=>x&&x.id===s.id).length; const u=pvImg(s.img);
+    return `<button type="button" class="ke-sv" data-id="${esc(s.id)}" onclick="pickSvc(this.dataset.id)"><span class="ke-im"><i style="font-style:normal">${esc(s.ico||'🔧')}</i>${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><span class="ke-plus">+</span>${n?`<span class="ke-cnt">×${ar(n)}</span>`:''}<b>${esc(svcName(s.name))}</b><small>${s.custom?LX('سعر حر','Open price'):LX(ar(+s.price||0)+' ر.س',(+s.price||0)+' SAR')}</small></button>`; }).join(''); }
+function pickSvc(id){ svcPickOpen=false; addInvItem(id); }
+/* صورة سطر الفاتورة: صورة الخدمة من الكتالوج، أو صورة القطعة من مخزن المزوّد، وإلا الإيموجي */
+function pvImg(u){ return safeUrl(u==null?'':u,''); }
+function keMedia(it){ const id=String(it&&it.id||'');
+  if(id==='fee'||id==='smallfee') return {img:'', emoji:id==='smallfee'?'🧾':'🚚'};
+  if(id==='stock'||id==='part'||it.stockId||it.part||/^part:/.test(id)){ const sid=it.stockId||(/^part:/.test(id)?id.slice(5):''); const iv=sid?(PINV||[]).find(x=>String(x.id)===String(sid)):null;
+    return {img:pvImg(it.img)||pvImg(iv&&iv.image_url), emoji:id==='part'?'🔧':'🔩', part:true}; }
+  if(id==='custom') return {img:'', emoji:'📝'};
+  const s=svc(id); return {img:pvImg(s&&s.img), emoji:(s&&s.ico)||'🔧'}; }
+function kePic(md){ return `<span class="ke-pic${md.part?' part':''}"><i style="font-style:normal">${esc(md.emoji)}</i>${md.img?`<img src="${esc(md.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`; }
 function captureInvPrices(){ document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; }); }
 function addInvItem(id){ if(!id) return; captureInvPrices(); const s=svc(id); if(s) invItems.push({id:s.id,name:s.name,qty:1,price:s.price}); renderInvoice(); }
 function addCustomItem(){ captureInvPrices(); const nm=prompt(LX('اسم الخدمة:','Service name:')); if(!nm) return; const pr=+prompt(LX('السعر:','Price:'))||0; invItems.push({id:'custom',name:nm,qty:1,price:pr}); renderInvoice(); }
@@ -1714,48 +1822,192 @@ function pvInvNums(o){
   }
   return {sub,tot,orgDisc,adj,lines};
 }
+/* خافت · قالب الفاتورة المطبوعة الموحّد (نفس تصميم فاتورة خلود 2026-09-29)
+   مرجع للتطبيق في الملفات الثلاثة: fanyeen.html و provider.html و khafet-site/index.html.
+   khInvDoc(d) دالة نقية: تاخذ بيانات جاهزة وترجع صفحة HTML كاملة تنكتب في النافذة المنبثقة (w.document.write).
+   كل الحقول نص عادي وتُهرَّب هنا، ما عدا الحقول اللي اسمها ينتهي بـ Html (سطر المنشأة وسطر الضريبة جاهزين من khLegalLine/khVatLine). */
+const KHDOC_FONT = 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap';
+const KHDOC_CSS = [
+'@page{size:A5;margin:0}',
+'*{box-sizing:border-box}',
+'html,body{margin:0;background:#fff}',
+'body{font-family:"Tajawal","Cairo","Segoe UI",Tahoma,sans-serif;color:#1d1a16;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-text-size-adjust:100%}',
+'.page{--gx:clamp(14px,4.6vw,10mm);width:100%;max-width:148mm;min-height:100vh;margin:0 auto;padding:0 0 7mm;display:flex;flex-direction:column;background:#fff}',
+'.top{background:#1d1a16;color:#fff;padding:9mm var(--gx) 7mm;display:flex;align-items:center;gap:12px}',
+'.top .lg{width:52px;height:52px;border-radius:12px;flex:none;object-fit:cover;background:#F5C518}',
+'.top .n{flex:1;min-width:0}',
+'.top h1{margin:0;font-size:18px;font-weight:900;color:#F5C518;line-height:1.35}',
+'.top p{margin:2px 0 0;font-size:11px;opacity:.85;font-weight:700;line-height:1.6}',
+'.tag{flex:none;background:#F5C518;color:#1d1a16;font-weight:900;font-size:16px;border-radius:10px;padding:6px 14px;white-space:nowrap}',
+'.tag.vat{font-size:12px;line-height:1.35;white-space:normal;max-width:98px;text-align:center;padding:6px 10px}',
+'.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:7mm var(--gx) 0}',
+'.box{border:1.5px solid #EDE6DA;border-radius:12px;padding:9px 12px;min-width:0}',
+'.box h3{margin:0 0 4px;font-size:11px;color:#8a7f72;font-weight:800}',
+'.box div{font-weight:800;font-size:13px;line-height:1.7;overflow-wrap:anywhere}',
+'.box span{color:#8a7f72;font-weight:700;font-size:11.5px}',
+'table.items{width:calc(100% - 2 * var(--gx));margin:6mm var(--gx) 0;border-collapse:collapse}',
+'.items th{background:#FBF3D1;font-size:11.5px;font-weight:900;padding:8px 6px;text-align:center;white-space:nowrap}',
+'.items th:first-child{border-start-start-radius:10px;border-end-start-radius:10px}',
+'.items th:last-child{border-start-end-radius:10px;border-end-end-radius:10px}',
+'.items th.s{text-align:start}',
+'.items td{padding:8px 6px;border-bottom:1px solid #EFE9DF;font-weight:700;font-size:13px;vertical-align:middle}',
+'.items td.c{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}',
+'.items td.s{text-align:start;width:100%}',
+'.items td.b{font-weight:900}',
+'.items tr.grp td{border-bottom:0;padding:11px 6px 3px;font-size:11px;font-weight:800;color:#8a7f72}',
+'.items tr.grp td:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#F5C518;margin-inline-end:6px;vertical-align:middle}',
+'.it{display:flex;align-items:center;gap:9px;min-width:0}',
+'.pic{position:relative;width:40px;height:40px;border-radius:10px;background:#FBF3D1;border:1px solid #EFE9DF;display:grid;place-items:center;font-size:19px;line-height:1;overflow:hidden;flex:none}',
+'.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
+'.pic.part{background:#fff}',
+'.pic.part img{object-fit:contain;padding:2px}',
+'.nm{min-width:0}',
+'.nm b{display:block;font-weight:800;font-size:13px;line-height:1.45}',
+'.nm small{display:block;color:#8a7f72;font-weight:700;font-size:10.5px;line-height:1.4}',
+'tr.drop .nm b{text-decoration:line-through;color:#8a7f72;font-weight:700}',
+'tr.drop .pic{background:#F4F1EC}',
+'.sums{margin:4mm var(--gx) 0;padding:0 6px}',
+'.after{margin:2.5mm var(--gx) 0;padding:0 6px}',
+'.sr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 0;font-size:12.5px;font-weight:800;color:#5e554b}',
+'.sr b{font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}',
+'.sr.g{color:#2F8F57}',
+'.tot{margin:3mm var(--gx) 0;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#1d1a16;color:#fff;border-radius:14px;padding:12px 16px}',
+'.tot span{font-weight:800;font-size:14px}',
+'.tot b{font-size:22px;color:#F5C518;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}',
+'.due{margin:3mm var(--gx) 0;display:flex;justify-content:space-between;align-items:center;gap:10px;border:1.5px dashed #E4C75A;background:#FFFBEA;border-radius:12px;padding:10px 14px;font-weight:900;font-size:14px}',
+'.due b{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}',
+'.due.back,.due.ok{border-color:#A9D9B9;background:#EEF8F1;color:#2F8F57}',
+'.qr{margin:5mm auto 0;width:128px}',
+'.qr img,.qr canvas{width:128px!important;height:128px!important}',
+'.note{margin:5mm var(--gx) 0;font-size:11px;color:#6d6358;font-weight:700;line-height:1.8}',
+'.foot{margin-top:auto;padding:6mm var(--gx) 0;text-align:center;font-size:10.5px;color:#8a7f72;font-weight:700;line-height:1.8}',
+'.foot b{display:block;font-size:12px;color:#5e554b;font-weight:800;margin-top:2px}',
+'.noprint{text-align:center;margin:5mm 0 0}',
+'.noprint button{font:inherit;font-weight:800;font-size:14px;border:0;background:#1d1a16;color:#F5C518;border-radius:999px;padding:10px 28px;cursor:pointer}',
+'@media print{.page{width:148mm;min-height:210mm}.noprint{display:none}}',
+'@media (max-width:340px){.meta{grid-template-columns:1fr}}',
+'@media (max-width:430px){.top{padding:20px var(--gx) 16px;gap:10px}.top .lg{width:42px;height:42px;border-radius:10px}.top h1{font-size:15px}.top p{font-size:10.5px}.tag{font-size:13px;padding:5px 10px}.meta{gap:6px;padding-top:14px}.box{padding:8px 10px}.box div{font-size:12px}.box span{font-size:10.5px}table.items{margin-top:16px}.items th,.items td{padding-inline:4px}.items td{font-size:12px}.pic{width:34px;height:34px;font-size:16px}.nm b{font-size:12px}.tot b{font-size:19px}}'
+].join('\n');
+
+function khDocEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* d = {
+     dir:'rtl'|'ltr', lang:'ar'|'en', title,
+     logo,                         // رابط مطلق للشعار (new URL('logo.png', location.href).href)
+     org:{name, sub},              // اسم المنشأة وسطر «سجل تجاري · المدينة · الجوال»
+     tag, tagVat,                  // «فاتورة» أو «فاتورة ضريبية مبسطة» (tagVat=true يصغّر الشارة)
+     boxes:[{h, main, subs:[]}],   // صندوقان: العميل، الفاتورة
+     cols:{no,item,qty,price,total}, prices:true|false,   // prices=false: بلا عمودي السعر والمجموع (معادلة الخادم ما تطابق)
+     groups:[{title, rows:[{kind:'svc'|'part'|'fee'|'free'|'swap', img, emoji, name, sub, qty, price, total}]}],
+     drops:{title, rows:[{name, qty}]} | null,           // أغراض عند العميل ما احتجناها (بلا أسعار)
+     sums:[{label, value, cls}],   // قبل الإجمالي: المجموع، الخصومات، التسوية
+     total:{label, value},
+     after:[{label, value, cls}],  // بعد الإجمالي: منها ضريبة، مدفوع مسبقاً، فرق تبديل يرجع
+     due:{cls:''|'back'|'ok', label, value} | null,       // المتبقي / يرجع للعميل / مدفوعة بالكامل
+     qrHtml,                       // '<div id="qr" class="qr"></div><script ...>' أو ''
+     notesHtml:[],                 // سطر الضريبة (khVatLine) وسطر الضمان
+     legalHtml, thanks, printLbl
+   } */
+function khInvDoc(d){
+  const E=khDocEsc, P=d.prices!==false;
+  const pic=r=>{ const cls='pic'+(r.kind==='part'?' part':''); const em=E(r.emoji||'🔧');
+    return `<span class="${cls}"><i style="font-style:normal">${em}</i>${r.img?`<img src="${E(r.img)}" alt="" loading="eager" onerror="this.remove()">`:''}</span>`; };
+  const row=(r,n)=>`<tr${r.kind==='swap'?' class="swap"':''}><td class="c">${n}</td><td class="s"><div class="it">${pic(r)}<span class="nm"><b>${E(r.name)}</b>${r.sub?`<small>${E(r.sub)}</small>`:''}</span></div></td><td class="c">${E(r.qty)}</td>${P?`<td class="c">${E(r.price)}</td><td class="c b">${E(r.total)}</td>`:''}</tr>`;
+  const span=P?5:3; let n=0;
+  const body=(d.groups||[]).filter(g=>g&&g.rows&&g.rows.length).map(g=>`<tr class="grp"><td colspan="${span}">${E(g.title)}</td></tr>`+g.rows.map(r=>row(r,++n)).join('')).join('')
+    +((d.drops&&d.drops.rows&&d.drops.rows.length)?`<tr class="grp"><td colspan="${span}">${E(d.drops.title)}</td></tr>`+d.drops.rows.map(r=>`<tr class="drop"><td class="c"></td><td class="s"><div class="it"><span class="pic"><i style="font-style:normal">↩️</i></span><span class="nm"><b>${E(r.name)}</b></span></div></td><td class="c">${E(r.qty)}</td>${P?'<td class="c"></td><td class="c"></td>':''}</tr>`).join(''):'');
+  const sr=x=>`<div class="sr${x.cls?' '+x.cls:''}"><span>${E(x.label)}</span>${x.value!=null&&x.value!==''?`<b>${E(x.value)}</b>`:''}</div>`;
+  const c=d.cols||{};
+  return `<!doctype html><html dir="${d.dir||'rtl'}" lang="${d.lang||'ar'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${E(d.title)}</title>
+<link rel="stylesheet" href="${KHDOC_FONT}">
+<style>${KHDOC_CSS}</style></head><body><div class="page">
+<header class="top">${d.logo?`<img class="lg" src="${E(d.logo)}" alt="" onerror="this.remove()">`:''}<div class="n"><h1>${E(d.org.name)}</h1>${d.org.sub?`<p>${E(d.org.sub)}</p>`:''}</div><div class="tag${d.tagVat?' vat':''}">${E(d.tag)}</div></header>
+<section class="meta">${(d.boxes||[]).map(b=>`<div class="box"><h3>${E(b.h)}</h3><div>${E(b.main)}${(b.subs||[]).filter(Boolean).map(s=>`<br><span>${E(s)}</span>`).join('')}</div></div>`).join('')}</section>
+<table class="items"><thead><tr><th>${E(c.no||'#')}</th><th class="s">${E(c.item)}</th><th>${E(c.qty)}</th>${P?`<th>${E(c.price)}</th><th>${E(c.total)}</th>`:''}</tr></thead><tbody>${body}</tbody></table>
+${(d.sums&&d.sums.length)?`<div class="sums">${d.sums.map(sr).join('')}</div>`:''}
+<div class="tot"><span>${E(d.total.label)}</span><b>${E(d.total.value)}</b></div>
+${(d.after&&d.after.length)?`<div class="after">${d.after.map(sr).join('')}</div>`:''}
+${d.due?`<div class="due${d.due.cls?' '+d.due.cls:''}"><span>${E(d.due.label)}</span>${d.due.value?`<b>${E(d.due.value)}</b>`:''}</div>`:''}
+${d.qrHtml||''}
+${(d.notesHtml&&d.notesHtml.length)?`<p class="note">${d.notesHtml.filter(Boolean).join('<br>')}</p>`:''}
+<div class="foot">${d.legalHtml||''}<b>${E(d.thanks)}</b></div>
+<div class="noprint"><button onclick="print()">${E(d.printLbl||'طباعة')}</button></div>
+</div></body></html>`;
+}
+/* تاريخ الفاتورة بالشهر الميلادي (16 سبتمبر 2026 / 16 September 2026) */
+function khInvDate(v, en){ try{ const d=(v instanceof Date)?v:new Date(String(v).length<=10?String(v)+'T00:00:00':v); if(isNaN(d)) return String(v||'');
+  return d.toLocaleDateString(en?'en-GB':'ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'long',year:'numeric'}).replace(/[\u200e\u200f]/g,''); }catch(e){ return String(v||''); } }
+/* الفاتورة المطبوعة بتصميم فاتورة خافت الموحّد (khInvDoc): الأرقام من pvInvNums كما هي (أسعار الأسطر فقط لو معادلة الخادم صحيحة)،
+   أقسام الخدمات والقطع والرسوم بصورها، ثم المدفوع والمتبقي من أرقام الخادم. بلا QR لأن سياسة أمان هذي الصفحة ما تسمح بمكتبته */
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
-  const en=_uiEN(), num=en?(x=>String(x)):ar, cur=en?' SAR':' ر.س', brand=en?'Khafet':BRAND, oid=en?_west(o.id):o.id;
+  const en=_uiEN(), num=en?(x=>String(x)):ar, cur=en?' SAR':' ريال', oid=en?_west(o.id):o.id;
   const N=pvInvNums(o); const r2=v=>Math.round((+v||0)*100)/100;
-  const rows=(inv.items||[]).map(it=>`<tr><td>${esc(svcName(it.name))}</td><td>${num(+it.qty||1)}</td>${N.lines?`<td>${num(+it.price||0)}${cur}</td><td>${num(r2((+it.price||0)*(+it.qty||1)))}${cur}</td>`:''}</tr>`).join('');
-  const subRows=(N.lines&&(N.orgDisc>0||Math.abs(N.adj)>=0.01))
-    ? '<div class="sb"><span>'+LX('المجموع','Subtotal')+'</span><span>'+num(N.sub)+cur+'</span></div>'
-      +(N.orgDisc>0?'<div class="sb"><span>'+LX('خصم المؤسسة','Business discount')+'</span><span>− '+num(N.orgDisc)+cur+'</span></div>':'')
-      +(N.adj<=-0.01?'<div class="sb"><span>'+LX('خصومات وتسويات','Discounts and adjustments')+'</span><span>− '+num(r2(-N.adj))+cur+'</span></div>':'')
-      +(N.adj>=0.01?'<div class="sb"><span>'+LX('فرق القطع والتسويات','Parts difference and adjustments')+'</span><span>+ '+num(N.adj)+cur+'</span></div>':'')
-    : '';
-  const d=new Date(); const ds=num(d.getDate())+'/'+num(d.getMonth()+1)+'/'+num(d.getFullYear());
-  const html='<!doctype html><html dir="'+(en?'ltr':'rtl')+'" lang="'+(en?'en':'ar')+'"><head><meta charset="utf-8"><title>'+LX('فاتورة ','Invoice ')+oid+'</title>'
-   +'<style>body{font-family:Cairo,Arial,sans-serif;padding:24px;color:#141414;max-width:520px;margin:0 auto}.h{display:flex;justify-content:space-between;border-bottom:3px solid #F5C518;padding-bottom:12px}.h .b{font-size:1.5rem;font-weight:900}.h .b span{background:#F5C518;padding:2px 10px;border-radius:8px}.meta{color:#555;font-size:.9rem;margin:12px 0}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:'+(en?'left':'right')+';padding:9px 6px;border-bottom:1px solid #eee}th{background:#FBF3D0}.sb{display:flex;justify-content:space-between;color:#444;font-weight:700;margin-top:8px}.tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.2rem;margin-top:14px;border-top:2px solid #141414;padding-top:10px}.ft{margin-top:22px;text-align:center;color:#888;font-size:.85rem}@media print{.noprint{display:none}}</style></head><body>'
-   +'<div class="h"><div class="b">🔧 <span>'+brand+'</span></div><div style="text-align:'+(en?'right':'left')+'"><b>'+LX('فاتورة','Invoice')+'</b><br>'+oid+'</div></div>'
-   +'<div class="meta"><div>'+LX('العميل: ','Customer: ')+esc(o.customer.name)+' · '+esc(o.customer.phone)+'</div><div>'+LX('المزوّد: ','Provider: ')+esc(me?me.name:'')+'</div><div>'+LX('التاريخ: ','Date: ')+ds+'</div></div>'
-   +'<table><thead><tr><th>'+LX('الخدمة','Service')+'</th><th>'+LX('العدد','Qty')+'</th>'+(N.lines?'<th>'+LX('السعر','Price')+'</th><th>'+LX('الإجمالي','Total')+'</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table>'
-   +subRows
-   +'<div class="tot"><span>'+LX('الإجمالي','Total')+'</span><span>'+num(N.tot)+cur+'</span></div>'
-   +'<div class="ft">'+LX('شكراً لتعاملك مع ','Thank you for choosing ')+brand+' · '+CONTACT+'</div>'
-   +'<div class="noprint" style="text-align:center;margin-top:18px"><button onclick="print()" style="padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer">'+LX('🖨️ طباعة','🖨️ Print')+'</button></div></body></html>';
+  const V=v=>num(r2(v)), M=v=>V(v)+cur;
+  const L=pvLegal(), vatOn=!!(L.vat&&L.vatNo), vat=pvVatOf(N.tot);
+  const isFee=it=>it.id==='fee'||it.id==='smallfee';
+  const isPart=it=>/^part:/.test(String(it.id||''))||!!it.part||!!it.stockId||it.id==='stock'||it.id==='part';
+  const media=(it,k)=>{ if(it.id==='swap') return {img:'',emoji:'🔁',kind:'swap'};
+    if(k==='fee') return {img:'',emoji:it.id==='smallfee'?'🧾':'🚚',kind:'fee'};
+    if(k==='part'){ const sid=it.stockId||(/^part:/.test(String(it.id||''))?String(it.id).slice(5):''); const iv=sid?(PINV||[]).find(x=>String(x.id)===String(sid)):null;
+      return {img:pvImg(it.img)||pvImg(iv&&iv.image_url),emoji:it.id==='part'?'🔧':'🔩',kind:'part'}; }
+    const s=it.id?svc(it.id):null; return {img:pvImg(s&&s.img),emoji:(s&&s.ico)||(it.id==='custom'?'📝':'🔧'),kind:'svc'}; };
+  const g={svc:[],part:[],fee:[]}; (inv.items||[]).forEach(it=>{ if(!it) return; g[it.id==='swap'?'part':(isFee(it)?'fee':(isPart(it)?'part':'svc'))].push(it); });
+  const toRow=k=>it=>{ const q=+it.qty||1,p=+it.price||0,md=media(it,k); return {kind:md.kind,img:md.img,emoji:md.emoji,name:String(svcName(it.name)||''),qty:V(q),price:V(p),total:V(p*q)}; };
+  const drops=(inv.dropped||[]).filter(x=>x&&!x.swap);
+  const sums=(N.lines&&(N.orgDisc>0||Math.abs(N.adj)>=0.01))?[{label:LX('المجموع','Subtotal'),value:M(N.sub)},
+      N.orgDisc>0&&{label:LX('🎁 خصم المؤسسة','🎁 Business discount'),value:'− '+M(N.orgDisc),cls:'g'},
+      N.adj<=-0.01&&{label:LX('🎟️ خصومات وتسويات','🎟️ Discounts and adjustments'),value:'− '+M(-N.adj),cls:'g'},
+      N.adj>=0.01&&{label:LX('فرق القطع والتسويات','Parts difference and adjustments'),value:'+ '+M(N.adj)}].filter(Boolean):[];
+  // المدفوع والمتبقي من أرقام الخادم (طلبات السحابة فقط)
+  const live=!!(o.dbId&&o.status!=='cancelled');
+  const paid=o.dbId?Math.max(0,+o.paidAmount||0):0, due=live?Math.max(0,+o.amountDue||0):0, refund=(live&&paid>N.tot+0.01)?r2(paid-N.tot):0;
+  const after=[vat>0&&{label:LX('منها ضريبة القيمة المضافة ','Including VAT ')+num(L.vatPct)+(en?'%':'٪'),value:M(vat)}, paid>0&&{label:LX('مدفوع مسبقاً','Paid in advance'),value:M(paid)}].filter(Boolean);
+  const a=(o.address&&typeof o.address==='object')?o.address:{}; const addr=[cityLabel(a.city), a.house?LX('منزل ','House ')+a.house:''].filter(Boolean).join(' · ');
+  const prov=me?(me.tech?(me.providerName||me.name):me.name):'';
+  const wv=KHSET_P&&KHSET_P.app_warranty_days, wdef=(wv==null||String(wv).trim()==='')?30:Math.max(0,+wv||0);   // مدة الضمان من الإعدادات (0 = بلا سطر ضمان، مثل تطبيق الفني)
+  const wd=(isOwnBooking(o)&&!o.userId)?Math.max(0,+o.warrantyDays||0):(+o.warrantyDays>0?+o.warrantyDays:wdef);   // حجز المزوّد الخاص: ضمانه اللي اختاره (0 = بدون)
+  const html=khInvDoc({ dir:en?'ltr':'rtl', lang:en?'en':'ar', title:LX('فاتورة ','Invoice ')+oid, logo:new URL('logo.png', location.href).href,
+    org:{name:L.name, sub:[LX('سجل تجاري ','CR ')+num(L.cr), en?pvCityEn(L.city):L.city, CONTACT].filter(Boolean).join(' · ')},
+    tag:vatOn?LX('فاتورة ضريبية مبسطة','Simplified tax invoice'):LX('فاتورة','Invoice'), tagVat:vatOn,
+    boxes:[{h:LX('العميل','Customer'),main:(o.customer||{}).name||'',subs:[(o.customer||{}).phone,addr]},
+           {h:LX('الفاتورة','Invoice'),main:String(oid),subs:[o.date?LX('تاريخ الخدمة ','Service date ')+khInvDate(o.date,en):'',LX('تاريخ الإصدار ','Issued ')+khInvDate(new Date(),en),prov?LX('مقدّم الخدمة: ','Provider: ')+prov:'']}],
+    cols:{no:'#',item:LX('البند','Item'),qty:LX('الكمية','Qty'),price:LX('السعر','Price'),total:LX('المجموع','Total')}, prices:N.lines,
+    groups:[{title:LX('الخدمات','Services'),rows:g.svc.map(toRow('svc'))},{title:LX('القطع والأغراض','Parts & materials'),rows:g.part.map(toRow('part'))},{title:LX('الرسوم','Fees'),rows:g.fee.map(toRow('fee'))}],
+    drops:drops.length?{title:LX('أغراض عند العميل ما احتجناها','Items the customer already had'),rows:drops.map(x=>({name:String(svcName(x.name)||''),qty:V(+x.qty||1)}))}:null,
+    sums, total:{label:LX('الإجمالي','Total'),value:M(N.tot)}, after,
+    due: due>0?{cls:'',label:LX('المتبقي','Remaining'),value:M(due)}:(refund>0?{cls:'back',label:LX('يرجع للعميل','Refund to customer'),value:M(refund)}:((paid>0&&live)?{cls:'ok',label:LX('الحالة','Status'),value:LX('✓ مدفوعة بالكامل','✓ Fully paid')}:null)),
+    qrHtml:'',
+    notesHtml:[pvVatLine(), (wd>0&&o.status!=='cancelled')?LX('ضمان الشغل والقطع '+num(wd)+' يوم من تاريخ الخدمة','Labor and parts warranty: '+wd+' days from the service date'):''],
+    legalHtml:pvLegalLine(), thanks:LX('شكرًا لثقتك في خافت','Thank you for choosing Khafet')+' · '+CONTACT, printLbl:LX('🖨️ طباعة','🖨️ Print') });
   const w=window.open('','_blank'); if(!w){ toast('اسمح بالنوافذ المنبثقة'); return; } w.document.write(html); w.document.close();
 }
+/* محرر الفاتورة بنفس تصميم الفاتورة (ke-*): منتقي خدمات بالصور + بطاقة لكل بند بصورتها · نفس القواعد (المحجوز مقفول، السعر يُكتب للبند الحر فقط) */
 function renderInvoice(){
   const m=document.getElementById('invModal'); if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
-  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${esc(s.id)}">${esc(s.ico)} ${LX(`${esc(s.name)} · ${ar(+s.price||0)}`, `${esc(svcName(s.name))} · ${+s.price||0} SAR`)}</option>`).join('');
+  const o=ORDERS.find(x=>x.id===invEditing); const cu=(o&&o.customer)||{};
   const rows=invItems.length?invItems.map((it,i)=>{
-    if(it.booked) return `<div class="inv-row"><span class="ir-name">${esc(it.name)} <span style="font-size:.8rem;font-weight:800;color:var(--ok)">🔒 محجوز</span></span><span style="min-width:60px;text-align:center;font-weight:900">×${ar(it.qty)}</span></div>`;
+    const pic=kePic(keMedia(it));
+    if(it.booked) return `<div class="ke-ln bk">${pic}<div class="ke-mid"><div class="ke-hd"><span class="ke-nm">${esc(it.name)}</span></div><div class="ke-tags"><span class="ke-chip lock">🔒 ${LX('محجوز','Booked')}</span><span class="ke-chip">×${ar(it.qty)}</span></div></div></div>`;
     // السعر يُكتب للبند الحر فقط · خدمات الكتالوج يسعّرها الخادم
     const free=invLineFree(it); const amt=invLineAmt(it); const unit=Math.round(amt/Math.max(1,+it.qty||1)*100)/100;
-    return `<div class="inv-row"><span class="ir-name">${esc(it.name)}</span>
-    <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
-    ${free?`<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`:`<span class="ir-price-ro" title="السعر من الخادم">${ar(unit)}</span>`}
-    <button class="ir-del" onclick="invRemove(${i})">🗑️</button></div>`; }).join('') : `<div class="inv-empty">＋ أضف خدمة</div>`;
+    return `<div class="ke-ln">${pic}<div class="ke-mid"><div class="ke-hd"><span class="ke-nm">${esc(it.name)}</span><b class="ke-sum">${ar(amt)} <small>ر.س</small></b></div>
+      <div class="ke-ctl"><div class="ke-qty"><button type="button" onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button type="button" onclick="invQty(${i},-1)">−</button></div><span class="ke-x">×</span>${free?`<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`:`<span class="ir-price-ro" title="${LX('السعر من الخادم','Server price')}">${ar(unit)}</span>`}<button type="button" class="ke-del" onclick="invRemove(${i})" aria-label="${LX('حذف','Remove')}">🗑️</button></div></div></div>`; }).join('') : `<div class="ke-empty">＋ ${LX('أضف خدمة','Add service')}</div>`;
   const bk=invBooked();
-  m.innerHTML=`<div class="inv-card"><div class="inv-head"><b>🧾 ${LX('فاتورة','Invoice')} ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
-    <div class="inv-add"><select${_uiEN()?' style="min-width:0"':''} onchange="addInvItem(this.value);this.value=''"><option value="">＋ أضف خدمة</option>${opts}</select><button class="cust" onclick="addCustomItem()">بند مخصص</button></div>
-    <div class="inv-items">${rows}</div>
+  m.innerHTML=`<div class="inv-card ke">
+    <div class="ke-top"><img class="ke-lg" src="logo.png" alt="" onerror="this.remove()"><div class="ke-t"><b>${esc(invEditing)}</b><small>${esc(cu.name||'')}${cu.phone?' · '+esc(cu.phone):''}</small></div><span class="ke-tag">${LX('فاتورة','Invoice')}</span><button type="button" class="ke-close" onclick="closeInvoice()" aria-label="${LX('إغلاق','Close')}">✕</button></div>
+    <div class="ke-in">
+    <div class="ke-adds">
+      <button type="button" class="ke-add main${svcPickOpen?' on':''}" onclick="toggleSvcPick()"><span class="ke-ai">🧰</span>＋ ${LX('أضف خدمة','Add service')}</button>
+      <button type="button" class="ke-add" style="flex-direction:row;gap:8px;min-height:52px" onclick="addCustomItem()"><span class="ke-ai">✎</span>${LX('بند مخصص','Custom item')}</button>
+    </div>
+    ${svcPickOpen?`<div class="ke-pick"><input class="ke-search" placeholder="🔍 ${LX('ابحث عن الخدمة','Search services')}" oninput="svcPickSearch(this.value)" /><div class="ke-grid" id="svGrid">${svcPickGrid()}</div></div>`:''}
+    <div class="ke-lines inv-items">${rows}</div>
+    <div class="ke-tot"><span>${LX('الإجمالي','Total')}</span><b>${ar(invGrand())} ر.س</b></div>
+    <div class="ke-note">المبالغ تقديرية بأسعار الخادم، والمبلغ المعتمد يظهر على الطلب بعد الحفظ</div>
     ${bk?`<div class="inv-pay"><div><span>أجرة الحجز</span><span>${ar(bk)} ر.س</span></div><div><span>الإضافات</span><span>${ar(invExtras())} ر.س</span></div></div>`:''}
-    <div class="inv-total"><span>الإجمالي</span><b>${ar(invGrand())} ر.س</b></div>
-    <div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:4px">المبالغ تقديرية بأسعار الخادم، والمبلغ المعتمد يظهر على الطلب بعد الحفظ</div>
-    <div class="inv-acts"><button class="tbtn done" onclick="saveInvoice()">حفظ وإرسال للعميل</button><button class="tbtn inv" onclick="printInv()">🖨️ طباعة</button></div></div>`;
+    <div class="inv-acts"><button class="tbtn done" onclick="saveInvoice()">حفظ وإرسال للعميل</button><button class="tbtn inv" onclick="printInv()">🖨️ طباعة</button></div>
+    </div></div>`;
   if(_uiEN()) _translateEl(m);   // النافذة خارج #app فلا يراقبها المترجم التلقائي
   m.classList.add('show');
 }
@@ -2073,6 +2325,15 @@ async function submitJoinCode(){
 }
 async function doLogout(){ await pvPushOff(); try{ await sb.auth.signOut(); }catch(e){} try{ localStorage.removeItem('khafet_provider_phone'); }catch(e){} pvWipeLocal(); me=null; location.reload(); }
 let KHSET_P={};
+/* بيانات المنشأة للفاتورة المطبوعة (من الإعدادات، نفس افتراضيات تطبيق الفني وتطبيق العميل) */
+function pvLegal(){ const S=KHSET_P||{}; const s=k=>String(S[k]==null?'':S[k]).trim(); const on=v=>v==='1'||v==='true';
+  return { name:s('company_name')||'مؤسسة خافت للسباكة والكهرباء', cr:s('cr_number')||'2052105014', uni:s('unified_number')||'7042751284', city:s('company_city')||'الخبر، المنطقة الشرقية',
+           vat:on(s('vat_registered')), vatNo:s('vat_number'), vatPct:+s('vat_pct')||15 }; }
+function pvCityEn(c){ const M={'المنطقة الشرقية':'Eastern Province'}; return String(c||'').split('،').map(x=>{ x=x.trim(); return M[x]||cityLabel(x)||x; }).filter(Boolean).join(', '); }
+function pvLegalLine(){ const L=pvLegal(); return _uiEN() ? `${esc(L.name)} · CR ${esc(L.cr)} · Unified no. ${esc(L.uni)} · ${esc(pvCityEn(L.city))}` : `${esc(L.name)} · س.ت ${esc(ar(L.cr))} · الرقم الموحد ${esc(ar(L.uni))} · ${esc(L.city)}`; }
+function pvVatLine(){ const L=pvLegal(); return (L.vat&&L.vatNo) ? LX(`الرقم الضريبي ${esc(ar(L.vatNo))} · الأسعار شاملة ضريبة القيمة المضافة ${esc(ar(L.vatPct))}٪`, `VAT no. ${esc(L.vatNo)} · Prices include ${esc(L.vatPct)}% VAT`)
+  : LX('المنشأة غير مسجّلة في ضريبة القيمة المضافة، والأسعار لا تشمل ضريبة','The business is not VAT registered, and prices do not include VAT'); }
+function pvVatOf(total){ const L=pvLegal(); if(!(L.vat&&L.vatNo)) return 0; return Math.round((total-total/(1+L.vatPct/100))*100)/100; }
 /* ═ إجبار التحديث: إذا النسخة أقدم من rizq_min_build في الإعدادات يظهر حاجز يوجّه للمتجر (أو لتحديث الصفحة على الويب) ═ */
 function checkRizqBuild(){
   const S=KHSET_P||{}; const min=parseInt(S.rizq_min_build,10)||0; let w=document.getElementById('updWall');

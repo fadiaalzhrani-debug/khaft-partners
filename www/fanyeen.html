@@ -569,6 +569,7 @@ html,body{touch-action:manipulation}
   .inv-row .ir-line{margin-inline-start:auto;font-weight:900;color:var(--gold-deep);font-size:1.05rem;white-space:nowrap}
   .inv-acts{flex-direction:column}
   .cal-day .cd-c:empty{display:none}
+  .inv-member{background:var(--gold-tint,#FFF3C4);color:var(--ink,#2A231D);border-radius:12px;padding:9px 12px;font-weight:800;font-size:.92rem;margin:0 0 10px}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&display=swap"><!--kh-font-->
 <style id="kh-skin">
@@ -698,6 +699,96 @@ a.card:active,.card:active{transform:scale(.97)}
 .backbtn{display:inline-flex;align-items:center;gap:4px;min-height:40px}
 [dir=ltr] .backbtn .pic{transform:scaleX(-1)}
 .kp-invbtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);font:inherit;font-weight:800;color:var(--ink,#3A3029);cursor:pointer}
+</style>
+<style id="kh-inv">
+/* ═ محرر الفاتورة بتصميم الفاتورة الجديدة (2026-09-29) · fanyeen.html و provider.html ═
+   مكانه آخر وسم style قبل نهاية الرأس (بعد kh-skin و kp-polish) عشان يغلب القديم.
+   تنبيه: لا تكتب وسم إغلاق style داخل هذا التعليق، المتصفح ينهي الكتلة عنده.
+   البادئة ke- لأن warehouse.css يستخدم il- والتطبيقان فيهما .pic عامة. */
+.inv-card.ke{background:var(--bg);padding:0 0 calc(16px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0}
+.ke-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;background:#1d1a16;color:#fff;padding:14px 16px}
+.ke-top .ke-lg{width:38px;height:38px;border-radius:10px;flex:none;background:#F5C518}
+.ke-t{flex:1;min-width:0}
+.ke-t b{display:block;color:#F5C518;font-weight:900;font-size:1.12rem;line-height:1.3}
+.ke-t small{display:block;color:rgba(255,255,255,.72);font-weight:700;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ke-tag{background:#F5C518;color:#1d1a16;font-weight:900;border-radius:10px;padding:4px 12px;font-size:.9rem;flex:none}
+.ke-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:1.05rem;flex:none;display:grid;place-items:center}
+.ke-in{padding:14px 14px 0}
+.ke .inv-member{margin:0 0 12px}
+/* أزرار الإضافة: الخدمة أول وأكبر، ثم المستودع وقطعة الغيار والبند المخصص */
+.ke-adds{display:flex;flex-wrap:wrap;gap:8px}
+.ke-add{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 6px;font-weight:800;font-size:.86rem;line-height:1.3;color:var(--text);text-align:center;min-height:64px;font-family:inherit;cursor:pointer;transition:transform .25s var(--spring,ease)}
+.ke-add:active{transform:scale(.96)}
+.ke-add .ke-ai{font-size:1.25rem;line-height:1}
+.ke-add.on{border-color:var(--gold);background:var(--gold-tint)}
+.ke-add.main{flex:1 0 100%;flex-direction:row;gap:10px;min-height:56px;background:#1d1a16;border-color:#1d1a16;color:#F5C518;font-size:1.05rem;font-weight:900}
+.ke-add.main.on{background:#1d1a16;box-shadow:0 0 0 3px var(--gold)}
+/* منتقي الخدمات بالصور (نفس روح منتقي المستودع sp-*) */
+.ke-pick{margin-top:10px;background:var(--card);border-radius:20px;padding:10px;box-shadow:var(--shadow)}
+.ke-search{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:#fff;font:inherit;font-weight:700;font-size:1rem;color:var(--text)}
+.ke-search:focus{outline:none;border-color:var(--gold)}
+.ke-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:52vh;overflow:auto;margin-top:10px;padding:2px}
+@media (min-width:520px){.ke-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ke-sv{position:relative;display:flex;flex-direction:column;background:#fff;border:0;border-radius:16px;overflow:hidden;text-align:start;box-shadow:0 0 0 1px var(--line),0 8px 18px -14px rgba(58,48,41,.5);font:inherit;color:var(--text);cursor:pointer;padding:0;transition:transform .25s var(--spring,ease)}
+.ke-sv:active{transform:scale(.96)}
+.ke-im{position:relative;display:grid;place-items:center;aspect-ratio:4/3;background:var(--gold-soft);font-size:2rem;overflow:hidden}
+.ke-im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ke-sv b{display:block;padding:8px 10px 0;font-size:.9rem;font-weight:800;line-height:1.35;min-height:2.75em}
+.ke-sv small{display:block;padding:2px 10px 9px;color:var(--gold-deep);font-weight:900;font-size:.86rem;font-variant-numeric:tabular-nums}
+.ke-plus{position:absolute;top:7px;inset-inline-start:7px;width:30px;height:30px;border-radius:50%;background:#F5C518;color:#1d1a16;font-weight:900;display:grid;place-items:center;font-size:1.15rem;box-shadow:0 4px 10px -4px rgba(0,0,0,.45)}
+.ke-cnt{position:absolute;top:8px;inset-inline-end:8px;background:#1d1a16;color:#F5C518;border-radius:999px;font-size:.72rem;font-weight:900;padding:2px 8px}
+.ke-none{grid-column:1/-1;color:var(--muted);text-align:center;padding:18px;font-weight:700}
+/* منتقي المستودع الحالي داخل المحرر الجديد: نفس الشكل */
+.ke .sp-wrap{background:var(--card);border:0;border-radius:20px;padding:10px;margin-top:10px;box-shadow:var(--shadow)}
+.ke .sp-search{border-radius:14px;padding:12px 14px;font-size:1rem}
+.ke .sp-it{border:0;border-radius:16px;box-shadow:0 0 0 1px var(--line),0 8px 18px -14px rgba(58,48,41,.5);padding:6px}
+.ke .sp-it .im{background:#fff;border-radius:12px}
+.ke .sp-it .im img{object-fit:contain}
+/* بطاقات البنود */
+.ke-lines{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.ke-ln{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px 12px;align-items:start;background:var(--card);border-radius:18px;padding:10px;box-shadow:0 0 0 1px var(--line)}
+.ke-ln.bk{background:var(--gold-tint)}
+.ke-pic{position:relative;width:64px;height:64px;border-radius:14px;background:var(--gold-soft);display:grid;place-items:center;font-size:1.7rem;overflow:hidden}
+.ke-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ke-pic.part{background:#fff}
+.ke-pic.part img{object-fit:contain;padding:3px}
+.ke-mid{min-width:0}
+.ke-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ke-hd .ir-pname{flex:1;min-width:0}
+.ke-nm{display:block;flex:1;min-width:0;font-weight:800;font-size:1.02rem;line-height:1.4;color:var(--text);overflow-wrap:anywhere}
+.ke-mid .ir-pname{width:100%;padding:9px 11px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font:inherit;font-weight:800;font-size:1rem;color:var(--text)}
+.ke-mid .ir-pname:focus,.ke-mid .ir-price:focus{outline:none;border-color:var(--gold)}
+.ke-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.ke-chip{font-size:.74rem;font-weight:800;border-radius:999px;padding:2px 9px;background:var(--panel);color:var(--muted);white-space:nowrap}
+.ke-chip.lock{background:#E3F4E8;color:#15803D}
+.ke-chip.swap{background:#FCEBD8;color:#B4560F}
+.ke-chip.swap.minus{background:#E3F4E8;color:#15803D}
+.ke-ln .ir-opts{margin-top:7px}
+.ke-hd .ke-del{margin-inline-start:0;flex:none;width:34px;height:34px}
+.ke-ctl{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ke-qty{display:inline-flex;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:999px;overflow:hidden}
+.ke-qty button{width:34px;height:36px;font-weight:900;font-size:1.25rem;color:var(--gold-deep);background:none;border:0;cursor:pointer;font-family:inherit}
+.ke-qty span{min-width:26px;text-align:center;font-weight:900;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.ke-x{color:var(--muted);font-weight:800}
+.ke-mid .ir-price{width:76px;padding:8px 10px;border-radius:12px;border:1.5px solid var(--gold);background:#fff;font:inherit;font-weight:900;font-size:1.02rem;text-align:center;color:var(--text)}
+.ke-mid .ir-price-ro{display:inline-block;min-width:58px;padding:8px 10px;border-radius:12px;background:var(--panel);color:var(--muted);font-weight:900;text-align:center;font-variant-numeric:tabular-nums}
+.ke-sum small{font-size:.72rem;font-weight:800;color:var(--muted)}
+.ke-q{font-weight:900;color:var(--muted);font-variant-numeric:tabular-nums}
+.ke-sum{flex:none;padding-top:1px;font-weight:900;font-size:1.08rem;color:#1d1a16;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ke-del{margin-inline-start:auto;width:38px;height:38px;border-radius:12px;background:#FBE4E1;color:#B42318;font-size:1.05rem;display:grid;place-items:center;border:0;cursor:pointer}
+.ke-empty{background:var(--card);border:1.5px dashed var(--line);border-radius:18px;padding:22px;text-align:center;color:var(--muted);font-weight:800}
+/* الإجمالي والتفاصيل */
+.ke .inv-disc{margin-top:10px;background:#E3F4E8;border:0;border-radius:14px;color:#15803D}
+.ke-tot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;background:#1d1a16;color:#fff;border-radius:16px;padding:13px 16px}
+.ke-tot span{font-weight:800;font-size:1rem}
+.ke-tot b{color:#F5C518;font-weight:900;font-size:1.45rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ke-note{color:var(--muted);font-size:.8rem;font-weight:700;margin:6px 4px 0}
+.ke .inv-pay{background:var(--card);border:0;border-radius:16px;padding:4px 14px;margin-top:10px;box-shadow:0 0 0 1px var(--line)}
+.ke .inv-pay div{font-size:.95rem}
+.ke .inv-pay .due{color:#1d1a16;font-size:1.08rem;font-weight:900}
+.ke .inv-pay .refund{color:#15803D}
+.ke .inv-acts{margin-top:14px}
+@media (max-width:380px){.ke-ln{grid-template-columns:52px minmax(0,1fr);gap:8px 10px}.ke-pic{width:52px;height:52px}.ke-sum{font-size:1rem}.ke-mid .ir-price{width:66px}}
 </style>
 </head>
 <body>
@@ -1269,11 +1360,11 @@ function copyMyCode(){ if(!myCode) return; try{ navigator.clipboard.writeText(my
 async function loadPrices(){
   if(!cloudReady) return;
   // الخدمات والأسعار من لوحة المؤسسة (الأقسام والخدمات)
-  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden,extra_price').order('sort');
+  try{ const r=await sb.from('khafet_services').select('id,cat_id,name,name_en,icon,price,custom,active,sort,hidden,extra_price,image_url').order('sort');
     if(!r.error && r.data && r.data.length){
       r.data.forEach(d=>{ let x=SERVICES.find(v=>v.id===d.id); if(!x){ x={id:d.id}; SERVICES.push(x); }
-        // custom: خدمة مخصّصة سعرها حر (يكتبه الفني) · extra: سعر الوحدة الإضافية (مثل الخادم)
-        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price)});
+        // custom: خدمة مخصّصة سعرها حر (يكتبه الفني) · extra: سعر الوحدة الإضافية (مثل الخادم) · img: صورة الخدمة (منتقي الفاتورة والفاتورة المطبوعة)
+        Object.assign(x,{ico:d.icon||x.ico||'🔧', name:d.name, price:d.custom?0:(+d.price||0), cat:d.cat_id, inactive:!d.active, hidden:!!d.hidden, custom:!!d.custom, extra:(d.extra_price==null?null:+d.extra_price), img:d.image_url||''});
         if(d.name_en && !(SVC_I18N[d.id]&&SVC_I18N[d.id].en)) SVC_I18N[d.id]=Object.assign({}, SVC_I18N[d.id]||{}, {en:d.name_en}); });
       // خدمة مكتوبة في التطبيق وانحذفت من الكتالوج: ما تنعرض في الفاتورة والحجز (كانت تنحسب بسعر قديم)
       { const live=new Set(r.data.map(d=>d.id)); SERVICES.forEach(s=>{ if(!live.has(s.id) && !["custom","quick","fee","smallfee"].includes(s.id)) s.inactive=true; }); }
@@ -1751,7 +1842,18 @@ let invDrops=[];
    يحسب الفرق بنفسه من فرق سعر البيع بين قطع الحجز الأصلية وقطع الفاتورة المحجوزة. المعروض هنا تقدير بنفس المعادلة،
    والرقم المعتمد يجي من الخادم بعد الحفظ (loadOrders). حقل adj في الفاتورة تقديري ويتجاهله الخادم. */
 const KH_DROP_MAX=300, KH_DROP_PCT=60;   // سقف الخصم من قيمة الحجز (invoice_drop_max/pct في الإعدادات، غير مقروءة للفني فنستخدم الافتراضي)
-function invSell(stockId, fallback){ const it=(INV||[]).find(x=>String(x.id)===String(stockId)); return it ? (+it.sell_price||0) : (+fallback||0); }
+/* طلب المشترك (khafet_order_is_member): القطع بسعر الجملة من khafet_plan_parts، والخادم يحسبها بنفسه في الفاتورة */
+let MEMBER_ORDERS={}, MEMBER_PRICES=null;
+async function ensureMember(oid){
+  if(!oid||MEMBER_ORDERS[oid]!==undefined||!sb) return; MEMBER_ORDERS[oid]=null;
+  try{ const { data:m }=await sb.rpc('khafet_order_is_member',{ p_order:oid }); MEMBER_ORDERS[oid]=(m===true);
+       if(m===true&&!MEMBER_PRICES){ const { data }=await sb.rpc('khafet_plan_parts'); const mp={}; (data||[]).forEach(x=>{ if(+x.wholesale>0) mp[x.id]=+x.wholesale; }); MEMBER_PRICES=mp; }
+  }catch(e){ MEMBER_ORDERS[oid]=false; }
+  if(invEditing===oid) renderInvoice();
+}
+function invMember(){ return !!(invEditing&&MEMBER_ORDERS[invEditing]); }
+function invPriceOf(it){ const p=+it.sell_price||0; if(invMember()&&MEMBER_PRICES){ const w=MEMBER_PRICES[it.id]; if(w>0&&w<p) return w; } return p; }
+function invSell(stockId, fallback){ const it=(INV||[]).find(x=>String(x.id)===String(stockId)); return it ? invPriceOf(it) : (+fallback||0); }
 function swapDiff(it){ if(!it||!it.booked||!it.swap) return 0; return round2(((+it.swap.price||0)-(+it.swap.fromPrice||0))*(+it.qty||1)*(1-invPct()/100)); }
 function swapLabel(it){ return 'فرق تبديل «'+String((it.swap&&it.swap.from)||'')+'» إلى «'+String(it.name||'')+'»'; }
 /* قيمة قطع الحجز الأصلية وقطع الفاتورة المحجوزة بسعر البيع الحالي (مثل الخادم) */
@@ -1795,7 +1897,7 @@ function invSwap(i,itemId){
   if(it.deducted>0){ const old=INV.find(x=>x.id===it.stockId); if(old){ old.qty=(+old.qty||0)+it.deducted; invSaveQty(old); } it.deducted=0; }
   if(!it.swap) it.swap={ fromId:it.stockId, from:it.name, fromImg:it.img||'', fromPrice:invSell(it.stockId, it.price) };
   if(it.swap.fromId===itemId){ it.stockId=itemId; it.name=it.swap.from; it.img=it.swap.fromImg||''; delete it.swap; renderInvoice(); return; }   // رجع للقطعة الأصلية: لا فرق
-  it.swap.price=+nv.sell_price||0;   // سعر بيع البديل · السعر المدفوع it.price يبقى كما هو والخادم يحسب الفرق
+  it.swap.price=invPriceOf(nv);   // سعر بيع البديل (وللمشترك سعر الجملة) · السعر المدفوع it.price يبقى كما هو والخادم يحسب الفرق
   it.stockId=itemId; it.name=nv.name; it.img=nv.image_url||''; renderInvoice();
 }
 function invRefund(){ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; return Math.max(0, Math.round((paid-invGrand())*100)/100); }
@@ -1854,14 +1956,32 @@ async function uploadPartPhoto(itemId, file){
 }
 
 let stockPickOpen=false, stockPickQ='';
-function toggleStockPick(){ stockPickOpen=!stockPickOpen; stockPickQ=''; renderInvoice(); }
+function toggleStockPick(){ captureInvPrices(); if(!stockPickOpen) svcPickOpen=false; stockPickOpen=!stockPickOpen; stockPickQ=''; renderInvoice(); }
 function stockPickSearch(v){ stockPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('spGrid'); if(g) g.innerHTML=stockPickGrid(); }
 function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ));
   if(!list.length) return `<div class="sl-empty" style="grid-column:1/-1">${A?'ما فيه صنف بهالاسم':'No match'}</div>`;
-  return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(whName(it))}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(+it.sell_price||0)} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
+  return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(whName(it))}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(invPriceOf(it))} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
 async function invPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+(lang==='ar'?'انحفظت الصورة':'Photo saved')); render(); }catch(e){ toast('⚠️ '+(e.message||'')); } }
-function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:+it.sell_price||0,deducted:0,img:it.image_url||''}); } stockPickOpen=false; renderInvoice(); }
-function closeInvoice(){ invEditing=null; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
+function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:invPriceOf(it),deducted:0,img:it.image_url||''}); } stockPickOpen=false; renderInvoice(); }
+/* منتقي الخدمات بالصور (بدل القائمة المنسدلة): بحث + بطاقات بصورة الخدمة وسعرها · كل ضغطة تضيف بندًا جديدًا (addInvItem) ولا تدمج الكمية لأن الخادم يسعّر كل بند بسعر الوحدة الإضافية */
+let svcPickOpen=false, svcPickQ='';
+function toggleSvcPick(){ captureInvPrices(); svcPickOpen=!svcPickOpen; svcPickQ=''; if(svcPickOpen) stockPickOpen=false; renderInvoice(); }
+function svcPickSearch(v){ svcPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('svGrid'); if(g) g.innerHTML=svcPickGrid(); }
+function svcPickGrid(){
+  const q=svcPickQ; const list=SERVICES.filter(s=>!s.inactive&&!s.hidden).filter(s=>!q||[s.name,svcName2(s),(SVC_I18N[s.id]||{}).en].some(x=>String(x||'').toLowerCase().includes(q)));
+  if(!list.length) return `<div class="ke-none">${lg('kiNone')}</div>`;
+  return list.map(s=>{ const n=invItems.filter(x=>x&&x.id===s.id).length; const u=safeUrl(s.img||'','');
+    return `<button type="button" class="ke-sv" data-id="${esc(s.id)}" onclick="pickSvc(this.dataset.id)"><span class="ke-im"><i style="font-style:normal">${esc(s.ico||'🔧')}</i>${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><span class="ke-plus">+</span>${n?`<span class="ke-cnt">×${ar(n)}</span>`:''}<b>${esc(svcName2(s))}</b><small>${s.custom?lg('kiFree'):ar(+s.price||0)+' '+lg('cur')}</small></button>`; }).join(''); }
+function pickSvc(id){ svcPickOpen=false; addInvItem(id); }
+/* صورة بند المحرر: صورة الخدمة من الكتالوج أو صورة قطعة المستودع، وإلا الإيموجي (الصورة تنشال لو فشلت فيبان الإيموجي تحتها) */
+function keMedia(it){ const k=invLineKind(it);
+  if(k==='stock'){ const iv=(INV||[]).find(x=>String(x.id)===String(it.stockId)); return {img:safeUrl(it.img||(iv&&iv.image_url)||'',''), emoji:'📦', part:true}; }
+  if(k==='fee') return {img:'', emoji:it.id==='smallfee'?'🧾':'🚚'};
+  if(it.id==='part') return {img:'', emoji:'🔧', part:true};
+  if(it.id==='custom') return {img:'', emoji:'📝'};
+  const s=svc(it.id); return {img:safeUrl((s&&s.img)||'',''), emoji:(s&&s.ico)||'🔧'}; }
+function kePic(md){ return `<span class="ke-pic${md.part?' part':''}"><i style="font-style:normal">${esc(md.emoji)}</i>${md.img?`<img src="${esc(md.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`; }
+function closeInvoice(){ invEditing=null; svcPickOpen=false; stockPickOpen=false; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
 function captureInvPrices(){
   document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; });
   document.querySelectorAll('.ir-pname').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].name=inp.value; });
@@ -1924,7 +2044,122 @@ function invSaved(o){ return !!(o&&o.invoice&&Array.isArray(o.invoice.items)&&in
 function printInv(){ captureInvPrices(); const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
   if(o.dbId){ if(!invSaved(o)){ toast(lg('saveFirst')); return; } printInvoiceDoc(Object.assign({},o,{_srv:true})); return; }
   const tmp={...o, invoice:{v:2,items:invItems,subtotal:invTotal(),discountPct:invPct(),total:invGrand(),dropped:invDrops.slice(),refund:invRefund()}}; printInvoiceDoc(tmp); }
-/* الفاتورة المطبوعة: أقسام (الشغل، القطع، الرسوم) مع صور القطع، ثم المجموع والمدفوع والمتبقي والضمان (نفس تصميم تطبيق العميل) */
+/* خافت · قالب الفاتورة المطبوعة الموحّد (نفس تصميم فاتورة خلود 2026-09-29)
+   مرجع للتطبيق في الملفات الثلاثة: fanyeen.html و provider.html و khafet-site/index.html.
+   khInvDoc(d) دالة نقية: تاخذ بيانات جاهزة وترجع صفحة HTML كاملة تنكتب في النافذة المنبثقة (w.document.write).
+   كل الحقول نص عادي وتُهرَّب هنا، ما عدا الحقول اللي اسمها ينتهي بـ Html (سطر المنشأة وسطر الضريبة جاهزين من khLegalLine/khVatLine). */
+const KHDOC_FONT = 'https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap';
+const KHDOC_CSS = [
+'@page{size:A5;margin:0}',
+'*{box-sizing:border-box}',
+'html,body{margin:0;background:#fff}',
+'body{font-family:"Tajawal","Cairo","Segoe UI",Tahoma,sans-serif;color:#1d1a16;font-size:13px;-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-text-size-adjust:100%}',
+'.page{--gx:clamp(14px,4.6vw,10mm);width:100%;max-width:148mm;min-height:100vh;margin:0 auto;padding:0 0 7mm;display:flex;flex-direction:column;background:#fff}',
+'.top{background:#1d1a16;color:#fff;padding:9mm var(--gx) 7mm;display:flex;align-items:center;gap:12px}',
+'.top .lg{width:52px;height:52px;border-radius:12px;flex:none;object-fit:cover;background:#F5C518}',
+'.top .n{flex:1;min-width:0}',
+'.top h1{margin:0;font-size:18px;font-weight:900;color:#F5C518;line-height:1.35}',
+'.top p{margin:2px 0 0;font-size:11px;opacity:.85;font-weight:700;line-height:1.6}',
+'.tag{flex:none;background:#F5C518;color:#1d1a16;font-weight:900;font-size:16px;border-radius:10px;padding:6px 14px;white-space:nowrap}',
+'.tag.vat{font-size:12px;line-height:1.35;white-space:normal;max-width:98px;text-align:center;padding:6px 10px}',
+'.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:7mm var(--gx) 0}',
+'.box{border:1.5px solid #EDE6DA;border-radius:12px;padding:9px 12px;min-width:0}',
+'.box h3{margin:0 0 4px;font-size:11px;color:#8a7f72;font-weight:800}',
+'.box div{font-weight:800;font-size:13px;line-height:1.7;overflow-wrap:anywhere}',
+'.box span{color:#8a7f72;font-weight:700;font-size:11.5px}',
+'table.items{width:calc(100% - 2 * var(--gx));margin:6mm var(--gx) 0;border-collapse:collapse}',
+'.items th{background:#FBF3D1;font-size:11.5px;font-weight:900;padding:8px 6px;text-align:center;white-space:nowrap}',
+'.items th:first-child{border-start-start-radius:10px;border-end-start-radius:10px}',
+'.items th:last-child{border-start-end-radius:10px;border-end-end-radius:10px}',
+'.items th.s{text-align:start}',
+'.items td{padding:8px 6px;border-bottom:1px solid #EFE9DF;font-weight:700;font-size:13px;vertical-align:middle}',
+'.items td.c{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}',
+'.items td.s{text-align:start;width:100%}',
+'.items td.b{font-weight:900}',
+'.items tr.grp td{border-bottom:0;padding:11px 6px 3px;font-size:11px;font-weight:800;color:#8a7f72}',
+'.items tr.grp td:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#F5C518;margin-inline-end:6px;vertical-align:middle}',
+'.it{display:flex;align-items:center;gap:9px;min-width:0}',
+'.pic{position:relative;width:40px;height:40px;border-radius:10px;background:#FBF3D1;border:1px solid #EFE9DF;display:grid;place-items:center;font-size:19px;line-height:1;overflow:hidden;flex:none}',
+'.pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
+'.pic.part{background:#fff}',
+'.pic.part img{object-fit:contain;padding:2px}',
+'.nm{min-width:0}',
+'.nm b{display:block;font-weight:800;font-size:13px;line-height:1.45}',
+'.nm small{display:block;color:#8a7f72;font-weight:700;font-size:10.5px;line-height:1.4}',
+'tr.drop .nm b{text-decoration:line-through;color:#8a7f72;font-weight:700}',
+'tr.drop .pic{background:#F4F1EC}',
+'.sums{margin:4mm var(--gx) 0;padding:0 6px}',
+'.after{margin:2.5mm var(--gx) 0;padding:0 6px}',
+'.sr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:3px 0;font-size:12.5px;font-weight:800;color:#5e554b}',
+'.sr b{font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}',
+'.sr.g{color:#2F8F57}',
+'.tot{margin:3mm var(--gx) 0;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#1d1a16;color:#fff;border-radius:14px;padding:12px 16px}',
+'.tot span{font-weight:800;font-size:14px}',
+'.tot b{font-size:22px;color:#F5C518;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}',
+'.due{margin:3mm var(--gx) 0;display:flex;justify-content:space-between;align-items:center;gap:10px;border:1.5px dashed #E4C75A;background:#FFFBEA;border-radius:12px;padding:10px 14px;font-weight:900;font-size:14px}',
+'.due b{font-size:17px;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}',
+'.due.back,.due.ok{border-color:#A9D9B9;background:#EEF8F1;color:#2F8F57}',
+'.qr{margin:5mm auto 0;width:128px}',
+'.qr img,.qr canvas{width:128px!important;height:128px!important}',
+'.note{margin:5mm var(--gx) 0;font-size:11px;color:#6d6358;font-weight:700;line-height:1.8}',
+'.foot{margin-top:auto;padding:6mm var(--gx) 0;text-align:center;font-size:10.5px;color:#8a7f72;font-weight:700;line-height:1.8}',
+'.foot b{display:block;font-size:12px;color:#5e554b;font-weight:800;margin-top:2px}',
+'.noprint{text-align:center;margin:5mm 0 0}',
+'.noprint button{font:inherit;font-weight:800;font-size:14px;border:0;background:#1d1a16;color:#F5C518;border-radius:999px;padding:10px 28px;cursor:pointer}',
+'@media print{.page{width:148mm;min-height:210mm}.noprint{display:none}}',
+'@media (max-width:340px){.meta{grid-template-columns:1fr}}',
+'@media (max-width:430px){.top{padding:20px var(--gx) 16px;gap:10px}.top .lg{width:42px;height:42px;border-radius:10px}.top h1{font-size:15px}.top p{font-size:10.5px}.tag{font-size:13px;padding:5px 10px}.meta{gap:6px;padding-top:14px}.box{padding:8px 10px}.box div{font-size:12px}.box span{font-size:10.5px}table.items{margin-top:16px}.items th,.items td{padding-inline:4px}.items td{font-size:12px}.pic{width:34px;height:34px;font-size:16px}.nm b{font-size:12px}.tot b{font-size:19px}}'
+].join('\n');
+
+function khDocEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* d = {
+     dir:'rtl'|'ltr', lang:'ar'|'en', title,
+     logo,                         // رابط مطلق للشعار (new URL('logo.png', location.href).href)
+     org:{name, sub},              // اسم المنشأة وسطر «سجل تجاري · المدينة · الجوال»
+     tag, tagVat,                  // «فاتورة» أو «فاتورة ضريبية مبسطة» (tagVat=true يصغّر الشارة)
+     boxes:[{h, main, subs:[]}],   // صندوقان: العميل، الفاتورة
+     cols:{no,item,qty,price,total}, prices:true|false,   // prices=false: بلا عمودي السعر والمجموع (معادلة الخادم ما تطابق)
+     groups:[{title, rows:[{kind:'svc'|'part'|'fee'|'free'|'swap', img, emoji, name, sub, qty, price, total}]}],
+     drops:{title, rows:[{name, qty}]} | null,           // أغراض عند العميل ما احتجناها (بلا أسعار)
+     sums:[{label, value, cls}],   // قبل الإجمالي: المجموع، الخصومات، التسوية
+     total:{label, value},
+     after:[{label, value, cls}],  // بعد الإجمالي: منها ضريبة، مدفوع مسبقاً، فرق تبديل يرجع
+     due:{cls:''|'back'|'ok', label, value} | null,       // المتبقي / يرجع للعميل / مدفوعة بالكامل
+     qrHtml,                       // '<div id="qr" class="qr"></div><script ...>' أو ''
+     notesHtml:[],                 // سطر الضريبة (khVatLine) وسطر الضمان
+     legalHtml, thanks, printLbl
+   } */
+function khInvDoc(d){
+  const E=khDocEsc, P=d.prices!==false;
+  const pic=r=>{ const cls='pic'+(r.kind==='part'?' part':''); const em=E(r.emoji||'🔧');
+    return `<span class="${cls}"><i style="font-style:normal">${em}</i>${r.img?`<img src="${E(r.img)}" alt="" loading="eager" onerror="this.remove()">`:''}</span>`; };
+  const row=(r,n)=>`<tr${r.kind==='swap'?' class="swap"':''}><td class="c">${n}</td><td class="s"><div class="it">${pic(r)}<span class="nm"><b>${E(r.name)}</b>${r.sub?`<small>${E(r.sub)}</small>`:''}</span></div></td><td class="c">${E(r.qty)}</td>${P?`<td class="c">${E(r.price)}</td><td class="c b">${E(r.total)}</td>`:''}</tr>`;
+  const span=P?5:3; let n=0;
+  const body=(d.groups||[]).filter(g=>g&&g.rows&&g.rows.length).map(g=>`<tr class="grp"><td colspan="${span}">${E(g.title)}</td></tr>`+g.rows.map(r=>row(r,++n)).join('')).join('')
+    +((d.drops&&d.drops.rows&&d.drops.rows.length)?`<tr class="grp"><td colspan="${span}">${E(d.drops.title)}</td></tr>`+d.drops.rows.map(r=>`<tr class="drop"><td class="c"></td><td class="s"><div class="it"><span class="pic"><i style="font-style:normal">↩️</i></span><span class="nm"><b>${E(r.name)}</b></span></div></td><td class="c">${E(r.qty)}</td>${P?'<td class="c"></td><td class="c"></td>':''}</tr>`).join(''):'');
+  const sr=x=>`<div class="sr${x.cls?' '+x.cls:''}"><span>${E(x.label)}</span>${x.value!=null&&x.value!==''?`<b>${E(x.value)}</b>`:''}</div>`;
+  const c=d.cols||{};
+  return `<!doctype html><html dir="${d.dir||'rtl'}" lang="${d.lang||'ar'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${E(d.title)}</title>
+<link rel="stylesheet" href="${KHDOC_FONT}">
+<style>${KHDOC_CSS}</style></head><body><div class="page">
+<header class="top">${d.logo?`<img class="lg" src="${E(d.logo)}" alt="" onerror="this.remove()">`:''}<div class="n"><h1>${E(d.org.name)}</h1>${d.org.sub?`<p>${E(d.org.sub)}</p>`:''}</div><div class="tag${d.tagVat?' vat':''}">${E(d.tag)}</div></header>
+<section class="meta">${(d.boxes||[]).map(b=>`<div class="box"><h3>${E(b.h)}</h3><div>${E(b.main)}${(b.subs||[]).filter(Boolean).map(s=>`<br><span>${E(s)}</span>`).join('')}</div></div>`).join('')}</section>
+<table class="items"><thead><tr><th>${E(c.no||'#')}</th><th class="s">${E(c.item)}</th><th>${E(c.qty)}</th>${P?`<th>${E(c.price)}</th><th>${E(c.total)}</th>`:''}</tr></thead><tbody>${body}</tbody></table>
+${(d.sums&&d.sums.length)?`<div class="sums">${d.sums.map(sr).join('')}</div>`:''}
+<div class="tot"><span>${E(d.total.label)}</span><b>${E(d.total.value)}</b></div>
+${(d.after&&d.after.length)?`<div class="after">${d.after.map(sr).join('')}</div>`:''}
+${d.due?`<div class="due${d.due.cls?' '+d.due.cls:''}"><span>${E(d.due.label)}</span>${d.due.value?`<b>${E(d.due.value)}</b>`:''}</div>`:''}
+${d.qrHtml||''}
+${(d.notesHtml&&d.notesHtml.length)?`<p class="note">${d.notesHtml.filter(Boolean).join('<br>')}</p>`:''}
+<div class="foot">${d.legalHtml||''}<b>${E(d.thanks)}</b></div>
+<div class="noprint"><button onclick="print()">${E(d.printLbl||'طباعة')}</button></div>
+</div></body></html>`;
+}
+/* تاريخ الفاتورة بالعربي والأرقام الغربية (16 سبتمبر 2026) */
+function khInvDate(v, en){ try{ const d=(v instanceof Date)?v:new Date(String(v).length<=10?String(v)+'T00:00:00':v); if(isNaN(d)) return String(v||'');
+  return d.toLocaleDateString(en?'en-GB':'ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'long',year:'numeric'}).replace(/[\u200e\u200f]/g,''); }catch(e){ return String(v||''); } }
+/* الفاتورة المطبوعة بالتصميم الموحّد (khInvDoc): أقسام الخدمات والقطع والرسوم بصورها، ثم المجموع والمدفوع والمتبقي والضمان (نفس فاتورة تطبيق العميل ولوحة المزوّد) */
 function printInvoiceDoc(o){
   const inv=o.invoice||{items:[],total:0};
   const kind=it=>{ if(!it) return 'svc'; if(it.id==='fee'||it.id==='smallfee') return 'fee'; if(it.id==='stock'||it.stockId||it.part||it.id==='part'||String(it.id||'').startsWith('part:')) return 'part'; return 'svc'; };
@@ -1945,107 +2180,89 @@ function printInvoiceDoc(o){
     if(!lines){ orgDisc=0; adj=0; disc=0; }
   }
   const paid=+o.paidAmount||0, due=srv?Math.max(0,+o.amountDue||0):Math.max(0,total-paid);
-  const ico=it=>{ const s=it&&it.id?svc(it.id):null; return esc((s&&s.ico)||'🔧'); };
-  const row=(it,k)=>{ const q=+it.qty||1,p=+it.price||0; const media=k==='part'?(it.img?`<img src="${esc(it.img)}" alt="">`:'🔩'):(k==='fee'?'🚚':ico(it));
-    return `<div class="r"><span class="im">${media}</span><span class="nm"><b>${esc(itemDisplay(it))}</b><small>${lines?(q>1?arNum(q)+' × '+m(p):m(p)):(q>1?'× '+arNum(q):'')}</small></span>${lines?`<span class="tt">${m(p*q)}</span>`:''}</div>`; };
-  const sumRows=(disc>0||orgDisc>0||Math.abs(adj)>=0.01)
-    ? `<div><span>المجموع</span><span>${m(sub)}</span></div>`
-      +(disc>0?`<div class="g"><span>🎟️ خصم ${arNum(dPct)}٪</span><span>− ${m(disc)}</span></div>`:'')
-      +(orgDisc>0?`<div class="g"><span>🎁 خصم المؤسسة</span><span>− ${m(orgDisc)}</span></div>`:'')
-      +(adj<=-0.01?`<div class="g"><span>🎟️ خصومات وتسويات</span><span>− ${m(-adj)}</span></div>`:'')
-      +(adj>=0.01?`<div><span>فرق القطع والتسويات</span><span>+ ${m(adj)}</span></div>`:'')
-    : '';
-  const sec=(t,rows,k)=>rows.length?`<div class="sec">${t}</div>${rows.map(r=>row(r,k)).join('')}`:'';
   const drops=(inv.dropped||[]).filter(x=>x&&!x.swap), swapBack=srv?[]:(inv.dropped||[]).filter(x=>x&&x.swap); const refund=srv?(o.status!=='cancelled'&&paid>total+0.01?round2(paid-total):0):(+inv.refund||Math.max(0,paid-total));
-  const d=new Date(); const ds=arNum(d.getDate())+'/'+arNum(d.getMonth()+1)+'/'+arNum(d.getFullYear());
   const a=o.address||{}; const addr=[a.city, a.house?'منزل '+a.house:''].filter(Boolean).join(' · ');
-  const html=`<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>فاتورة ${esc(o.id)}</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box}body{font-family:Cairo,system-ui,Arial,sans-serif;margin:0 auto;padding:0 0 22px;color:#1A1712;background:#fff;max-width:560px}
-.top{background:#F5C518;padding:20px 18px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-radius:0 0 22px 22px}
-.brand{display:flex;align-items:center;gap:10px}.brand .lg{width:50px;height:50px;border-radius:14px;background:#1A1712;color:#F5C518;display:grid;place-items:center;font-size:1.5rem}
-.brand b{font-size:1.4rem;font-weight:900;display:block;line-height:1.1}.brand small{color:#3d3a30;font-weight:700;font-size:.78rem}
-.no{text-align:left}.no b{display:block;font-size:1.05rem;font-weight:900}.no small{color:#3d3a30;font-weight:700;font-size:.8rem}
-.wrap{padding:0 18px}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:16px 0 6px;font-size:.88rem;font-weight:700;color:#3d3a30}.meta span{color:#6E685B;font-weight:700;display:block;font-size:.72rem}
-.sec{display:flex;align-items:center;gap:8px;margin:14px 0 2px;font-size:.8rem;font-weight:800;color:#6E685B}.sec::before{content:"";width:9px;height:9px;border-radius:50%;background:#F5C518}
-.r{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px dashed #EFE9D6}
-.r .im{width:62px;height:62px;border-radius:14px;border:1px solid #EFE9D6;background:#FBF7E8;display:grid;place-items:center;font-size:1.7rem;overflow:hidden;flex-shrink:0}
-.r .im img{width:100%;height:100%;object-fit:contain;background:#fff}
-.r .nm{flex:1;min-width:0}.r .nm b{display:block;font-size:.95rem;font-weight:800;line-height:1.3}.r .nm small{color:#6E685B;font-weight:700;font-size:.78rem}
-.r .tt{font-weight:900;white-space:nowrap;font-size:.95rem}
-.sum{margin-top:14px;border-top:2px solid #1A1712;padding-top:8px}.sum div{display:flex;justify-content:space-between;padding:4px 0;font-size:.92rem;font-weight:700;color:#3d3a30}
-.sum .tot{font-size:1.3rem;font-weight:900;color:#1A1712}.sum .g{color:#0b7a3b}.sum .due{color:#0b3d6b;font-weight:900;font-size:1rem;background:#EEF6FF;border-radius:10px;padding:8px 10px;margin-top:6px}.sum .ok{color:#0b7a3b;font-weight:900}
-.wr{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;font-size:.78rem;font-weight:800}.wr span{background:#E6F4EA;color:#166534;border-radius:999px;padding:4px 11px}
-.ft{margin-top:20px;text-align:center;color:#888;font-size:.82rem;font-weight:700}
-.noprint{text-align:center;margin-top:16px}.noprint button{padding:10px 22px;font-weight:800;border:none;background:#141414;color:#fff;border-radius:10px;cursor:pointer;font-family:inherit}
-@media print{.noprint{display:none}.top{border-radius:0}}
-</style></head><body>
-<div class="top"><div class="brand"><span class="lg">🔧</span><div><b>${BRAND}</b><small>${esc(khLegal().name)} · س.ت ${arNum(khLegal().cr)}</small></div></div><div class="no"><b>${(khLegal().vat&&khLegal().vatNo)?'فاتورة ضريبية مبسطة':'فاتورة'} ${esc(o.id)}</b><small>${ds}</small></div></div>
-<div class="wrap">
-<div class="meta"><div><span>العميل</span>${esc((o.customer||{}).name||'')}</div><div><span>الجوال</span>${esc((o.customer||{}).phone||'')}</div>${addr?`<div><span>العنوان</span>${esc(addr)}</div>`:''}${o.date?`<div><span>تاريخ الخدمة</span>${esc(o.date)}</div>`:''}</div>
-${sec('الشغل',g.svc,'svc')}${sec('القطع والأغراض',g.part,'part')}${sec('الرسوم',g.fee,'fee')}
-<div class="sum">${sumRows}<div class="tot"><span>الإجمالي</span><span>${m(total)}</span></div>${khVatOf(total)>0?`<div><span>منها ضريبة القيمة المضافة ${arNum(khLegal().vatPct)}٪</span><span>${m(khVatOf(total))}</span></div>`:''}${paid>0?`<div><span>مدفوع مسبقاً</span><span>${m(paid)}</span></div>`:''}${drops.length?`<div class="g"><span>↩️ أغراض عند العميل: ${esc(drops.map(x=>x.name).join('، '))}</span></div>`:''}${swapBack.length?`<div class="g"><span>↩️ فرق تبديل يرجع للعميل</span><span>${m(swapBack.reduce((a,x)=>a+(+x.amount||0),0))}</span></div>`:''}${due>0?`<div class="due"><span>المتبقي</span><span>${m(due)}</span></div>`:(refund>0?`<div class="g"><span>يرجع للعميل</span><span>${m(refund)}</span></div>`:(paid>0?`<div class="ok"><span>الحالة</span><span>✓ مدفوعة بالكامل</span></div>`:''))}</div>
-
-${khQr(total, khVatOf(total), o.date)?`<div id="qr" style="margin:14px auto 0;width:140px"></div>`:''}
-<div class="ft">${khLegalLine()}<br>${khVatLine()}<br>شكراً لتعاملك مع ${BRAND} · ${PHONE}</div>
-<div class="noprint"><button onclick="print()">🖨️ طباعة</button></div>
-${khQr(total, khVatOf(total), o.date)?`<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"><\/script><script>try{ new QRCode(document.getElementById('qr'),{text:'${khQr(total, khVatOf(total), o.date)}',width:140,height:140}); }catch(e){}<\/script>`:''}
-</div>
-</body></html>`;
+  const L=khLegal(), vatOn=!!(L.vat&&L.vatNo), vat=khVatOf(total), qr=khQr(total, vat, o.date);
+  const N=v=>arNum(Math.round((+v||0)*100)/100), M=v=>N(v)+' ريال';
+  const arName=it=>{ const s=(it&&it.id&&!['custom','part','stock','swap'].includes(it.id))?svc(it.id):null; return String((s&&s.name)||it.name||''); };   // الاسم بالعربي دايمًا: itemDisplay() يترجم للغة الفني، والفاتورة المطبوعة تروح للعميل
+  const media=(it,k)=>{ if(it.id==='swap') return {img:'',emoji:'🔁',kind:'swap'};
+    if(k==='fee') return {img:'',emoji:it.id==='smallfee'?'🧾':'🚚',kind:'fee'};
+    if(k==='part'){ const iv=it.stockId?(INV||[]).find(x=>String(x.id)===String(it.stockId)):null; return {img:safeUrl(it.img||(iv&&iv.image_url)||'',''),emoji:it.id==='part'?'🔧':'🔩',kind:'part'}; }
+    const s=it.id?svc(it.id):null; return {img:safeUrl((s&&s.img)||'',''),emoji:(s&&s.ico)||(it.id==='custom'?'📝':'🔧'),kind:'svc'}; };
+  const toRow=k=>it=>{ const q=+it.qty||1,p=+it.price||0,md=media(it,k); return {kind:md.kind,img:md.img,emoji:md.emoji,name:arName(it),qty:N(q),price:N(p),total:N(p*q)}; };
+  const sums=(disc>0||orgDisc>0||Math.abs(adj)>=0.01)?[{label:'المجموع',value:M(sub)},
+      disc>0&&{label:'🎟️ خصم '+arNum(dPct)+'٪',value:'− '+M(disc),cls:'g'},
+      orgDisc>0&&{label:'🎁 خصم المؤسسة',value:'− '+M(orgDisc),cls:'g'},
+      adj<=-0.01&&{label:'🎟️ خصومات وتسويات',value:'− '+M(-adj),cls:'g'},
+      adj>=0.01&&{label:'فرق القطع والتسويات',value:'+ '+M(adj)}].filter(Boolean):[];
+  const after=[vat>0&&{label:'منها ضريبة القيمة المضافة '+arNum(L.vatPct)+'٪',value:M(vat)}, paid>0&&{label:'مدفوع مسبقاً',value:M(paid)},
+      swapBack.length&&{label:'↩️ فرق تبديل يرجع للعميل',value:M(swapBack.reduce((a,x)=>a+(+x.amount||0),0)),cls:'g'}].filter(Boolean);
+  const wv=KHSET&&KHSET.app_warranty_days; const wd=(wv==null||String(wv).trim()==='')?30:Math.max(0,+wv||0);   // مدة الضمان من الإعدادات (0 = بلا سطر ضمان)
+  const html=khInvDoc({ dir:'rtl', lang:'ar', title:'فاتورة '+o.id, logo:new URL('logo.png', location.href).href,
+    org:{name:L.name, sub:['سجل تجاري '+arNum(L.cr), L.city, PHONE].filter(Boolean).join(' · ')},
+    tag:vatOn?'فاتورة ضريبية مبسطة':'فاتورة', tagVat:vatOn,
+    boxes:[{h:'العميل',main:(o.customer||{}).name||'',subs:[(o.customer||{}).phone,addr]},
+           {h:'الفاتورة',main:String(o.id),subs:[o.date?'تاريخ الخدمة '+khInvDate(o.date):'','تاريخ الإصدار '+khInvDate(new Date())]}],
+    cols:{no:'#',item:'البند',qty:'الكمية',price:'السعر',total:'المجموع'}, prices:lines,
+    groups:[{title:'الخدمات',rows:g.svc.map(toRow('svc'))},{title:'القطع والأغراض',rows:g.part.map(toRow('part'))},{title:'الرسوم',rows:g.fee.map(toRow('fee'))}],
+    drops:drops.length?{title:'أغراض عند العميل ما احتجناها',rows:drops.map(x=>({name:x.name,qty:N(+x.qty||1)}))}:null,
+    sums, total:{label:'الإجمالي',value:M(total)}, after,
+    due: due>0?{cls:'',label:'المتبقي',value:M(due)}:(refund>0?{cls:'back',label:'يرجع للعميل',value:M(refund)}:(paid>0?{cls:'ok',label:'الحالة',value:'✓ مدفوعة بالكامل'}:null)),
+    qrHtml: qr?`<div id="qr" class="qr"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"><\/script><script>try{ new QRCode(document.getElementById('qr'),{text:'${qr}',width:128,height:128}); }catch(e){}<\/script>`:'',
+    notesHtml:[khVatLine(), (wd>0&&o.status!=='cancelled')?('ضمان الشغل والقطع '+arNum(wd)+' يوم من تاريخ الخدمة'):''],
+    legalHtml:khLegalLine(), thanks:'شكرًا لثقتك في خافت · '+PHONE, printLbl:'🖨️ طباعة' });
   const w=window.open('','_blank'); if(!w){ toast(lg('popup')); return; } w.document.write(html); w.document.close();
 }
 function renderInvoice(){
   const m=document.getElementById('invModal');
   if(!invEditing){ m.classList.remove('show'); m.innerHTML=''; return; }
+  ensureMember(invEditing);
   const A=lang==='ar';
-  const opts=SERVICES.filter(s=>!s.inactive && !s.hidden).map(s=>`<option value="${esc(s.id)}">${esc(s.ico)} ${esc(svcName2(s))} · ${ar(+s.price||0)}</option>`).join('');
-  const invOpts=(INV||[]).map(it=>`<option value="${esc(it.id)}">${esc(it.name)} · ${A?'متوفّر':'in'} ${ar(+it.qty||0)} · ${A?'بيع':'sell'} ${ar(+it.sell_price||0)}</option>`).join('');
+  // المحرر بتصميم الفاتورة الموحّدة: شريط أسود بالشعار، منتقي خدمات بالصور، وكل بند بطاقة بصورته
+  const prev=m.querySelector('.inv-card.ke'); const keepTop=(prev&&prev.dataset.inv===String(invEditing))?prev.scrollTop:0;   // إعادة الرسم ما ترجع المحرر لأوله
+  const o0=invOrder(); const cust=(o0&&o0.customer)||{};
   const rows = invItems.length ? invItems.map((it,i)=>{
     if(it.booked){
-      const isPart=it.id==='stock'&&it.stockId; const opts=isPart?partOpts(it.stockId):[];
-      return `<div class="inv-row">
-      ${isPart&&it.img?`<img class="ir-img" src="${esc(it.img)}" alt="">`:''}
-      <div class="ir-bk"><span class="ir-name">${isPart&&!it.img?'📦 ':''}${esc(itemDisplay(it))}<span class="ir-lock">🔒 ${lg('booked')}</span></span>
+      const isPart=it.id==='stock'&&it.stockId; const opts=isPart?partOpts(it.stockId):[]; const d=swapDiff(it);
+      return `<div class="ke-ln bk">${kePic(keMedia(it))}<div class="ke-mid">
+        <div class="ke-hd"><span class="ke-nm">${esc(itemDisplay(it))}</span>${isPart?`<button class="ke-del" title="${A?'العميل عنده الغرض':'Customer has it'}" onclick="invDropBooked(${i})">✕</button>`:''}</div>
+        <div class="ke-tags"><span class="ke-chip lock">🔒 ${lg('booked')}</span><span class="ke-chip">×${ar(it.qty)}</span>${d?`<span class="ke-chip swap ${d<0?'minus':''}">${lg('swapDiff')}: ${d>0?'+':'−'}${ar(Math.abs(d))} ${lg('cur')}</span>`:''}</div>
         ${opts.length>1?`<div class="ir-opts">${opts.map(op=>`<button type="button" class="${op.item_id===it.stockId?'on':''}" data-i="${i}" data-item="${esc(op.item_id)}" onclick="invSwap(+this.dataset.i,this.dataset.item)">${esc(op.label||op.item_name||'')}</button>`).join('')}</div>`:''}
-        ${(()=>{ const d=swapDiff(it); if(!d) return ''; return `<span class="ir-swap ${d<0?'minus':''}">${lg('swapDiff')}: ${d>0?'+':'−'}${ar(Math.abs(d))} ${lg('cur')}</span>`; })()}
-      </div>
-      <span class="ir-static">×${ar(it.qty)}</span>
-      ${isPart?`<button class="ir-del" title="${A?'العميل عنده الغرض':'Customer has it'}" onclick="invDropBooked(${i})">✕</button>`:''}
-    </div>`;
+      </div></div>`;
     }
     const editable=(it.id==='part'||it.id==='custom');
-    const nameCell = editable
-      ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
-      : `<span class="ir-name">${it.id==='stock'&&!it.img?'📦 ':''}${esc(itemDisplay(it))}</span>`;
     // السعر يُكتب فقط للبنود الحرة (custom/part/خدمة مخصّصة) · قطع المستودع وخدمات الكتالوج يسعّرها الخادم من سعر البيع والكتالوج
     const free=invPriceEditable(it); const amt=lineAmount(it); const unit=round2(amt/Math.max(1,+it.qty||1));
+    const nameCell = editable
+      ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
+      : `<span class="ke-nm">${esc(itemDisplay(it))}</span>`;
     const priceCell = free
       ? `<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`
       : `<span class="ir-price-ro" title="${A?'السعر من الخادم':'Server price'}">${ar(unit)}</span>`;
-    return `<div class="inv-row">
-      ${nameCell}
-      <div class="ir-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div>
-      <span class="ir-x">×</span>
-      ${priceCell}
-      <span class="ir-line">= ${ar(amt)}</span>
-      <button class="ir-del" onclick="invRemove(${i})">🗑️</button>
-    </div>`;
-  }).join('') : `<div class="inv-empty">${t('addService')}</div>`;
-  m.innerHTML=`<div class="inv-card">
-    <div class="inv-head"><b>🧾 ${invEditing}</b><button onclick="closeInvoice()">✕</button></div>
-    <div class="inv-add">
-      <select onchange="addInvItem(this.value);this.value=''"><option value="">${t('addService')}</option>${opts}</select>
-      ${(INV||[]).length?`<button class="cust" onclick="toggleStockPick()">📦 ${A?'قطعة من المستودع':'From stock'}</button>`:''}
-      <button class="cust" onclick="addPart()">${t('addPart')}</button>
-      <button class="cust" onclick="addCustomItem()">${t('customItem')}</button>
+    return `<div class="ke-ln">${kePic(keMedia(it))}<div class="ke-mid">
+      <div class="ke-hd">${nameCell}<b class="ke-sum">${ar(amt)} <small>${lg('cur')}</small></b></div>
+      ${invLineKind(it)==='stock'?`<div class="ke-tags"><span class="ke-chip">📦 ${lg('kiStock')}</span></div>`:''}
+      <div class="ke-ctl"><div class="ke-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div><span class="ke-x">×</span>${priceCell}<button class="ke-del" onclick="invRemove(${i})">🗑️</button></div>
+    </div></div>`;
+  }).join('') : `<div class="ke-empty">${t('addService')}</div>`;
+  m.innerHTML=`<div class="inv-card ke" data-inv="${esc(invEditing)}">
+    <div class="ke-top"><img class="ke-lg" src="logo.png" alt="" onerror="this.remove()">
+      <div class="ke-t"><b>${esc(invEditing)}</b><small>${[cust.name,cust.phone].filter(Boolean).map(esc).join(' · ')}</small></div>
+      <span class="ke-tag">${lg('kiInvoice')}</span><button class="ke-close" onclick="closeInvoice()" aria-label="${A?'إغلاق':'Close'}">✕</button></div>
+    <div class="ke-in">
+    ${invMember()?`<div class="inv-member">🏷️ ${A?'مشترك ريّح بالك · القطع من المستودع بسعر الجملة':'Rayyeh Balak member · stock parts at wholesale'}</div>`:''}
+    <div class="ke-adds">
+      <button type="button" class="ke-add main ${svcPickOpen?'on':''}" onclick="toggleSvcPick()"><span class="ke-ai">🧰</span>${esc(t('addService'))}</button>
+      ${(INV||[]).length?`<button type="button" class="ke-add ${stockPickOpen?'on':''}" onclick="toggleStockPick()"><span class="ke-ai">📦</span>${lg('kiStock')}</button>`:''}
+      <button type="button" class="ke-add" onclick="addPart()"><span class="ke-ai">🔧</span>${esc(String(t('addPart')).replace(/^[^\p{L}]+/u,''))}</button>
+      <button type="button" class="ke-add" onclick="addCustomItem()"><span class="ke-ai">✎</span>${esc(t('customItem'))}</button>
     </div>
+    ${svcPickOpen?`<div class="ke-pick"><input class="ke-search" placeholder="🔍 ${lg('kiSearchSvc')}" oninput="svcPickSearch(this.value)" /><div class="ke-grid" id="svGrid">${svcPickGrid()}</div></div>`:''}
     ${stockPickOpen?`<div class="sp-wrap"><input class="sp-search" placeholder="🔍 ${A?'ابحث عن القطعة':'Search part'}" oninput="stockPickSearch(this.value)" /><div class="sp-grid" id="spGrid">${stockPickGrid()}</div></div>`:''}
-    <div class="inv-items">${rows}</div>
+    <div class="ke-lines inv-items">${rows}</div>
     ${invPct()>0&&!invItems.some(it=>it.booked)?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل · ينطبق تلقائياً</div>`:''}
-    <div class="inv-total"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
-    <div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:4px">${lg('estimateNote')}</div>
+    <div class="ke-tot"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
+    <div class="ke-note">${lg('estimateNote')}</div>
     ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=(o&&o.dbId)?(+o.bookedFinal||0):invBookedNet(); if(!bk&&!paid&&!invDelta()) return ''; return `<div class="inv-pay">
       ${bk?`<div><span>${lg('bookedFee')}</span><span>${ar(bk)} ${lg('cur')}</span></div>`:''}
       <div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>
@@ -2058,8 +2275,10 @@ function renderInvoice(){
       <button class="tbtn done" onclick="saveInvoice()">${t('saveSend')}</button>
       <button class="tbtn inv" onclick="printInv()">${t('print')}</button>
     </div>
+    </div>
   </div>`;
   m.classList.add('show');
+  if(keepTop){ const c=m.querySelector('.inv-card.ke'); if(c) c.scrollTop=keepTop; }
 }
 
 /* ---- تسجيل الدخول ---- */
@@ -2107,6 +2326,12 @@ Object.assign(LG.hi,{custInv:'ग्राहक का बिल',ciSvcs:'स�
 Object.assign(LG.ur,{custInv:'گاہک کا بل',ciSvcs:'خدمات',ciParts:'سامان',ciFees:'فیس',ciDisc:'رعایت',ciTotal:'کل',ciPaid:'گاہک نے ادا کیا',ciDue:'باقی ادائیگی',ciRefund:'گاہک کو واپس',ciCancelled:'منسوخ',feeDelivery:'سامان کی ترسیل فیس',feeSmall:'چھوٹے آرڈر کی فیس'});
 Object.assign(LG.ar,{saveFirst:'احفظ الفاتورة أولًا، ثم اطبعها'}); Object.assign(LG.en,{saveFirst:'Save the invoice first, then print it'}); Object.assign(LG.ne,{saveFirst:'पहिले बिल सेभ गर्नुहोस्, अनि प्रिन्ट गर्नुहोस्'}); Object.assign(LG.hi,{saveFirst:'पहले बिल सेव करें, फिर प्रिंट करें'}); Object.assign(LG.ur,{saveFirst:'پہلے بل محفوظ کریں، پھر پرنٹ کریں'});
 Object.assign(LG.ne,{paidLbl:'💳 तिरेको'}); Object.assign(LG.hi,{paidLbl:'💳 भुगतान हुआ'}); Object.assign(LG.ur,{paidLbl:'💳 ادا شدہ'});
+/* محرر الفاتورة بالتصميم الجديد: شارة الفاتورة، زر المستودع، بحث الخدمات، السعر الحر */
+Object.assign(LG.ar,{kiInvoice:'فاتورة',kiStock:'من المستودع',kiSearchSvc:'ابحث عن الخدمة',kiFree:'سعر حر',kiNone:'ما فيه نتيجة'});
+Object.assign(LG.en,{kiInvoice:'Invoice',kiStock:'From stock',kiSearchSvc:'Search services',kiFree:'Open price',kiNone:'No match'});
+Object.assign(LG.ne,{kiInvoice:'बिल',kiStock:'स्टकबाट',kiSearchSvc:'सेवा खोज्नुहोस्',kiFree:'खुला मूल्य',kiNone:'केही भेटिएन'});
+Object.assign(LG.hi,{kiInvoice:'बिल',kiStock:'स्टॉक से',kiSearchSvc:'सेवा खोजें',kiFree:'खुली कीमत',kiNone:'कुछ नहीं मिला'});
+Object.assign(LG.ur,{kiInvoice:'بل',kiStock:'اسٹاک سے',kiSearchSvc:'سروس تلاش کریں',kiFree:'کھلی قیمت',kiNone:'کچھ نہیں ملا'});
 /* اسم القطعة بلغة الفني: الإنجليزي من المستودع لغير العربي */
 function partNameL(i){ if(lang!=='ar'){ const inv=(typeof INV!=='undefined'&&INV||[]).find(x=>x.id===i.stockId); if(inv&&inv.name_en) return inv.name_en; } return i.name||''; }
 /* فاتورة العميل داخل بطاقة الطلب: وش طلب العميل وكم دفع، حتى يجهّز الفني الأغراض ويعرف المتبقي */
@@ -2176,9 +2401,9 @@ function applyChrome(){
   document.documentElement.lang=lang;
 }
 /* روابط اتفاقية المزوّد وسياسة الخصوصية بلغة الفني (2026-09-26)؛ تنفتح بصفحة ثانية فما تضيع الشاشة */
-function khLegal(i){ const d={ar:['اتفاقية المزوّد','سياسة الخصوصية'],en:['Provider Agreement','Privacy Policy'],ne:['सेवा प्रदायक सम्झौता','गोपनीयता नीति'],hi:['सेवा प्रदाता समझौता','गोपनीयता नीति'],ur:['سروس فراہم کنندہ معاہدہ','رازداری کی پالیسی']}; return (d[lang]||d.ar)[i]; }
+function khLegalLbl(i){ const d={ar:['اتفاقية المزوّد','سياسة الخصوصية'],en:['Provider Agreement','Privacy Policy'],ne:['सेवा प्रदायक सम्झौता','गोपनीयता नीति'],hi:['सेवा प्रदाता समझौता','गोपनीयता नीति'],ur:['سروس فراہم کنندہ معاہدہ','رازداری کی پالیسی']}; return (d[lang]||d.ar)[i]; }
 function khTermsHref(){ return 'https://fadiaalzhrani-debug.github.io/khaft-partners/www/terms.html?lang='+(/^(ar|en|ne|hi|ur)$/.test(lang)?lang:'ar'); }
-function khPrivUrl(){ return 'https://fadiaalzhrani-debug.github.io/khaft/www/privacy.html'; }
+function khPrivUrl(){ return 'https://khafet.com/www/privacy.html'; }
 function showLogin(){
   const lo=document.getElementById('logoutBtn'); if(lo) lo.style.display='none';
   const ab0=document.getElementById('acctBtn'); if(ab0) ab0.style.display='none';
@@ -2197,7 +2422,7 @@ function showLogin(){
         <div style="color:var(--muted);font-size:.9rem;margin-bottom:10px;font-weight:700">${lg('newq')}</div>
         <a href="provider.html?techreg=1" class="btn" style="display:block;text-align:center;text-decoration:none;background:transparent;border:2px solid var(--gold);color:var(--ink)">${lg('newbtn')}</a>
       </div>
-      <div class="kh-legal"><a href="${khTermsHref()}" target="_blank" rel="noopener">${khLegal(0)}</a> · <a href="${khPrivUrl()}" target="_blank" rel="noopener">${khLegal(1)}</a></div>
+      <div class="kh-legal"><a href="${khTermsHref()}" target="_blank" rel="noopener">${khLegalLbl(0)}</a> · <a href="${khPrivUrl()}" target="_blank" rel="noopener">${khLegalLbl(1)}</a></div>
     </div>`;
   const wp=document.getElementById('wp'); if(wp) wp.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 }
@@ -2533,8 +2758,8 @@ function renderAccountTab(){
         <button class="tbtn done" style="width:100%;margin-top:10px" onclick="changePass()">💾 ${x.save}</button>
       </div>
       <div class="set-row" id="set_phone_row" onclick="openPhoneChange()"><div class="sr-l"><span class="sr-ic">📱</span> ${t('pcRow')}</div><span class="sr-ar">›</span></div>
-      <a class="set-row" href="${khTermsHref()}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">📜</span> ${khLegal(0)}</div><span class="sr-ar">›</span></a>
-      <a class="set-row" href="${khPrivUrl()}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">🔒</span> ${khLegal(1)}</div><span class="sr-ar">›</span></a>
+      <a class="set-row" href="${khTermsHref()}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">📜</span> ${khLegalLbl(0)}</div><span class="sr-ar">›</span></a>
+      <a class="set-row" href="${khPrivUrl()}" target="_blank" rel="noopener"><div class="sr-l"><span class="sr-ic">🔒</span> ${khLegalLbl(1)}</div><span class="sr-ar">›</span></a>
       <div class="set-row danger" onclick="deleteAccount()"><div class="sr-l"><span class="sr-ic">🗑️</span> ${x.del}</div><span class="sr-ar">›</span></div>
     </div>
     ${docsCardHtml()}
