@@ -715,6 +715,8 @@ a.card:active,.card:active{transform:scale(.97)}
 .ke-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:1.05rem;flex:none;display:grid;place-items:center}
 .ke-in{padding:14px 14px 0}
 .ke .inv-member{margin:0 0 12px}
+.status.member-b{background:var(--gold-tint,#FFF3C4);color:var(--ink,#2A231D)}
+.inv-pay .plan-est span:first-child{color:var(--muted);font-weight:700;font-size:.86rem}
 /* أزرار الإضافة: الخدمة أول وأكبر، ثم المستودع وقطعة الغيار والبند المخصص */
 .ke-adds{display:flex;flex-wrap:wrap;gap:8px}
 .ke-add{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 6px;font-weight:800;font-size:.86rem;line-height:1.3;color:var(--text);text-align:center;min-height:64px;font-family:inherit;cursor:pointer;transition:transform .25s var(--spring,ease)}
@@ -1612,7 +1614,9 @@ function rowToOrder(r){
     cancelReq:r.cancel_req||null,   // null | 'pending' | 'rejected' · حالة طلب الإلغاء (تقرّرها الإدارة)
     price:+r.price||0, finalPrice:+r.final_price||0, bookedFinal:+r.booked_final||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payRequired:!!r.pay_required,
     // إضافة فوق سعر الحجز (الخادم): pending بانتظار العميل · objected اعترض · device وافق ويدفع بالجهاز · paid وافق ودفع
-    extraStatus:r.extra_status||'', extraAmount:+r.extra_amount||0, extraLines:Array.isArray(r.extra_lines)?r.extra_lines:[], extraNote:r.extra_note||'', userId:(r.user_id===undefined?undefined:r.user_id) };
+    extraStatus:r.extra_status||'', extraAmount:+r.extra_amount||0, extraLines:Array.isArray(r.extra_lines)?r.extra_lines:[], extraNote:r.extra_note||'', userId:(r.user_id===undefined?undefined:r.user_id),
+    // عقد «ريّح بالك»: sub_id معرّف الاشتراك · sub_svc نوع الزيارة (visit / season_w / season_s / ac) · plan_cover ما غطّاه العقد من أجرة الفني (يحسبه الخادم بعد حفظ الفاتورة)
+    subId:r.sub_id||null, subSvc:r.sub_svc||'', planCover:+r.plan_cover||0 };
 }
 /* المتبقي على العميل (الخادم يحسبه) */
 /* الدفع بجهاز الفني: موقوف لما device_pay_enabled = 0 (الدفع كله من التطبيق)، والخادم يرفضه لطلبات عملاء التطبيق */
@@ -1842,15 +1846,36 @@ let invDrops=[];
    يحسب الفرق بنفسه من فرق سعر البيع بين قطع الحجز الأصلية وقطع الفاتورة المحجوزة. المعروض هنا تقدير بنفس المعادلة،
    والرقم المعتمد يجي من الخادم بعد الحفظ (loadOrders). حقل adj في الفاتورة تقديري ويتجاهله الخادم. */
 const KH_DROP_MAX=300, KH_DROP_PCT=60;   // سقف الخصم من قيمة الحجز (invoice_drop_max/pct في الإعدادات، غير مقروءة للفني فنستخدم الافتراضي)
-/* طلب المشترك (khafet_order_is_member): القطع بسعر الجملة من khafet_plan_parts، والخادم يحسبها بنفسه في الفاتورة */
-let MEMBER_ORDERS={}, MEMBER_PRICES=null;
+/* طلب المشترك (khafet_order_is_member): القطع بسعر المشترك (10% أقل من سعر التطبيق) من khafet_plan_parts (حقل wholesale صار يحمل سعر المشترك)، والخادم يحسبها بنفسه في الفاتورة.
+   لو رجعت الدالة كائنًا {member, plan, visit_no, visits} نعرض اسم الخطة وعدّاد الزيارات على البطاقة، ولو رجعت true فقط نعرض «مشترك ريّح بالك». */
+let MEMBER_ORDERS={}, MEMBER_PRICES=null, MEMBER_INFO={};
+const PLAN_NAMES={ villa:['بيتك علينا','Your house on us'], villa_ac:['بيتك ومكيفاتك علينا','Your house and ACs on us'], apt:['شقتك علينا','Your apartment on us'], apt_ac:['شقتك ومكيفك علينا','Your apartment and AC on us'], home:['بيت','House'], basic:['شقة','Apartment'] };
+function planName(id){ const p=PLAN_NAMES[String(id||'')]; return p ? (lang==='ar'?p[0]:p[1]) : String(id||''); }
 async function ensureMember(oid){
   if(!oid||MEMBER_ORDERS[oid]!==undefined||!sb) return; MEMBER_ORDERS[oid]=null;
-  try{ const { data:m }=await sb.rpc('khafet_order_is_member',{ p_order:oid }); MEMBER_ORDERS[oid]=(m===true);
-       if(m===true&&!MEMBER_PRICES){ const { data }=await sb.rpc('khafet_plan_parts'); const mp={}; (data||[]).forEach(x=>{ if(+x.wholesale>0) mp[x.id]=+x.wholesale; }); MEMBER_PRICES=mp; }
+  // oid هو معرّف العرض (#رقم الطلب) والدالة تحتاج uuid الصف (dbId)؛ كانت تُرسل رقم العرض فترجع خطأ ويُعتبر العميل غير مشترك (إصلاح 2026-10-02)
+  const ord=ORDERS.find(x=>x.id===oid); const dbId=ord?ord.dbId:null; if(!dbId){ MEMBER_ORDERS[oid]=false; return; }
+  try{ const { data:m }=await sb.rpc('khafet_order_is_member',{ p_order:dbId }); const isM=(m===true)||!!(m&&typeof m==='object'&&(m.member===true||m.is_member===true));
+       MEMBER_ORDERS[oid]=isM;
+       if(isM&&m&&typeof m==='object') MEMBER_INFO[oid]={ plan:m.plan||m.plan_id||'', visitNo:+m.visit_no||0, visits:+m.visits||+m.visits_per_year||0 };
+       if(isM&&!MEMBER_PRICES){ const { data }=await sb.rpc('khafet_plan_parts'); const mp={}; (data||[]).forEach(x=>{ if(+x.wholesale>0) mp[x.id]=+x.wholesale; }); MEMBER_PRICES=mp; }
   }catch(e){ MEMBER_ORDERS[oid]=false; }
-  if(invEditing===oid) renderInvoice();
+  if(invEditing===oid) renderInvoice(); else render();
 }
+/* شارة المشترك على بطاقة الطلب: الطلب يحمل sub_id أو الخادم أكّد أنه مشترك */
+function memberBadge(o){
+  if(!o) return ''; const m=MEMBER_ORDERS[o.id];
+  if(m===undefined&&o.subId) ensureMember(o.id);   // نسأل الخادم فقط لطلبات العقود (sub_id) حتى لا نرسل طلبًا لكل بطاقة
+  if(!(o.subId||m===true)) return '';
+  const A=lang==='ar', inf=MEMBER_INFO[o.id];
+  let txt=A?'مشترك ريّح بالك':'Rayyeh Balak member';
+  if(inf&&inf.plan){ txt=(A?'مشترك':'Member')+' · '+planName(inf.plan); if(inf.visitNo>0&&inf.visits>0&&o.subSvc==='visit') txt+=' · '+(A?'زيارة '+ar(inf.visitNo)+' من '+ar(inf.visits):'visit '+inf.visitNo+' of '+inf.visits); }
+  return `<span class="status member-b">🏷️ ${esc(txt)}</span>`;
+}
+/* سقف تغطية أجرة الفني لكل زيارة (plan_visit_cap_sar) · الافتراضي 100 */
+function planCapSar(){ const v=+(KHSET&&KHSET.plan_visit_cap_sar); return v>0?v:100; }
+/* تقدير أجرة الفني في الفاتورة (بنود الخدمات والبنود الحرة، بدون القطع والرسوم) · الرقم المعتمد يحسبه الخادم ويرجع في plan_cover */
+function invLabourEst(){ return round2(invItems.filter(it=>{ const k=invLineKind(it); return k==='service'||k==='free'; }).reduce((a,it)=>a+lineAmount(it),0)); }
 function invMember(){ return !!(invEditing&&MEMBER_ORDERS[invEditing]); }
 function invPriceOf(it){ const p=+it.sell_price||0; if(invMember()&&MEMBER_PRICES){ const w=MEMBER_PRICES[it.id]; if(w>0&&w<p) return w; } return p; }
 function invSell(stockId, fallback){ const it=(INV||[]).find(x=>String(x.id)===String(stockId)); return it ? invPriceOf(it) : (+fallback||0); }
@@ -1897,7 +1922,7 @@ function invSwap(i,itemId){
   if(it.deducted>0){ const old=INV.find(x=>x.id===it.stockId); if(old){ old.qty=(+old.qty||0)+it.deducted; invSaveQty(old); } it.deducted=0; }
   if(!it.swap) it.swap={ fromId:it.stockId, from:it.name, fromImg:it.img||'', fromPrice:invSell(it.stockId, it.price) };
   if(it.swap.fromId===itemId){ it.stockId=itemId; it.name=it.swap.from; it.img=it.swap.fromImg||''; delete it.swap; renderInvoice(); return; }   // رجع للقطعة الأصلية: لا فرق
-  it.swap.price=invPriceOf(nv);   // سعر بيع البديل (وللمشترك سعر الجملة) · السعر المدفوع it.price يبقى كما هو والخادم يحسب الفرق
+  it.swap.price=invPriceOf(nv);   // سعر بيع البديل (وللمشترك سعر المشترك) · السعر المدفوع it.price يبقى كما هو والخادم يحسب الفرق
   it.stockId=itemId; it.name=nv.name; it.img=nv.image_url||''; renderInvoice();
 }
 function invRefund(){ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; return Math.max(0, Math.round((paid-invGrand())*100)/100); }
@@ -1934,7 +1959,7 @@ function invBookedNet(){
   return Math.round(invItems.filter(it=>it.booked).reduce((a,it)=>a+(+it.price||0)*(+it.qty||1),0)*f);
 }
 function invGrand(){ return Math.max(0, round2(invBookedNet()+invExtras())); }
-function invDueNow(){ const o=invOrder(); return Math.max(0, invGrand()-(o?(+o.paidAmount||0):0)); }
+function invDueNow(){ const o=invOrder(); return Math.max(0, invGrand()-(o?(+o.paidAmount||0):0)-(o?(+o.planCover||0):0)); }
 /* قطعة من المستودع: تدخل الفاتورة بسعر البيع، وتنخصم عند الحفظ */
 
 /* ضغط صورة الصنف قبل الرفع: أقصى بُعد 800px، JPEG 82% */
@@ -2250,7 +2275,7 @@ function renderInvoice(){
       <div class="ke-t"><b>${esc(invEditing)}</b><small>${[cust.name,cust.phone].filter(Boolean).map(esc).join(' · ')}</small></div>
       <span class="ke-tag">${lg('kiInvoice')}</span><button class="ke-close" onclick="closeInvoice()" aria-label="${A?'إغلاق':'Close'}">✕</button></div>
     <div class="ke-in">
-    ${invMember()?`<div class="inv-member">🏷️ ${A?'مشترك ريّح بالك · القطع من المستودع بسعر الجملة':'Rayyeh Balak member · stock parts at wholesale'}</div>`:''}
+    ${invMember()?`<div class="inv-member">🏷️ ${A?'مشترك ريّح بالك · القطع بسعر المشترك':'Rayyeh Balak member · parts at member price'}</div>`:''}
     <div class="ke-adds">
       <button type="button" class="ke-add main ${svcPickOpen?'on':''}" onclick="toggleSvcPick()"><span class="ke-ai">🧰</span>${esc(t('addService'))}</button>
       ${(INV||[]).length?`<button type="button" class="ke-add ${stockPickOpen?'on':''}" onclick="toggleStockPick()"><span class="ke-ai">📦</span>${lg('kiStock')}</button>`:''}
@@ -2263,11 +2288,14 @@ function renderInvoice(){
     ${invPct()>0&&!invItems.some(it=>it.booked)?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل · ينطبق تلقائياً</div>`:''}
     <div class="ke-tot"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
     <div class="ke-note">${lg('estimateNote')}</div>
-    ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=(o&&o.dbId)?(+o.bookedFinal||0):invBookedNet(); if(!bk&&!paid&&!invDelta()) return ''; return `<div class="inv-pay">
+    ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=(o&&o.dbId)?(+o.bookedFinal||0):invBookedNet(); if(!bk&&!paid&&!invDelta()&&!(o&&o.subId&&o.subSvc==='visit')) return ''; return `<div class="inv-pay">
       ${bk?`<div><span>${lg('bookedFee')}</span><span>${ar(bk)} ${lg('cur')}</span></div>`:''}
       <div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>
       ${invDrops.length?`<div><span>↩️ ${A?'أغراض عند العميل':'Customer has'}</span><span>${esc(invDrops.map(d=>d.name).join('، '))}</span></div>`:''}
       ${(()=>{ const d=invDelta(); if(!d) return ''; return d<0?`<div class="refund"><span>${lg('partsBack')}</span><span>${ar(-d)} ${lg('cur')}</span></div>`:`<div><span>${lg('swapDiff')}</span><span>+${ar(d)} ${lg('cur')}</span></div>`; })()}
+      ${(o&&o.subId&&o.subSvc==='visit')?(o.planCover>0
+          ?`<div class="refund"><span>${A?'تغطية العقد':'Contract coverage'}</span><span>−${ar(o.planCover)} ${lg('cur')}</span></div>`
+          :(()=>{ const lab=invLabourEst(), cap=planCapSar(), due=Math.max(0,round2(lab-cap)); return `<div class="plan-est"><span>${A?'أجرة الفني · مشمول من الباقة لين '+ar(cap)+' · يدفع العميل '+ar(due):'Labour · covered by the plan up to '+cap+' · customer pays '+due}</span><span>${ar(lab)} ${lg('cur')}</span></div>`; })()):''}
       ${paid?`<div><span>${lg('paidLbl')}</span><span>${ar(paid)} ${lg('cur')}</span></div>`:''}
       ${invRefund()>0?`<div class="refund"><span>${A?'يرجع للعميل':'Refund to customer'}</span><span>${ar(invRefund())} ${lg('cur')}</span></div>`:`<div class="due"><span>${lg('dueNow')}</span><span>${ar(invDueNow())} ${lg('cur')}</span></div>`}
     </div>`; })()}
@@ -3365,7 +3393,7 @@ function render(){
       ${isNew?`<div class="newband"><span class="dot"></span>${lang==='ar'?'جديد':'NEW'}${agoS?' • '+agoS:''}</div>`:''}
       <div class="tj-head">
         <span class="tj-when">🕐 ${jobTime(o.startMin)} · ${jobDate(o.date)}</span>
-        <span class="tj-badges">${payDue(o)>0&&o.status!=='new'?`<span class="status due-b">💳 ${ar(payDue(o))}</span>`:(o.paidAmount>0&&o.status!=='cancelled'?`<span class="status paid-b">${lg('paidLbl')}</span>`:'')}${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}${cxBadge(o)}<span class="status ${esc(o.status)}">${esc(t('st')[o.status]||o.status)}</span></span>
+        <span class="tj-badges">${payDue(o)>0&&o.status!=='new'?`<span class="status due-b">💳 ${ar(payDue(o))}</span>`:(o.paidAmount>0&&o.status!=='cancelled'?`<span class="status paid-b">${lg('paidLbl')}</span>`:'')}${o.arrived?`<span class="status arrived-b">${t('arrivedBadge')}</span>`:''}${memberBadge(o)}${cxBadge(o)}<span class="status ${esc(o.status)}">${esc(t('st')[o.status]||o.status)}</span></span>
       </div>
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}

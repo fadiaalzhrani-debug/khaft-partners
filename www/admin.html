@@ -1184,7 +1184,8 @@ function rowToOrder(r){ return { id:'#'+arDigits(r.order_no), num:r.order_no, db
   free:!!r.free, status:r.status||'new', rating:r.rating||0, reminded:!!r.reminded, quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, providerPhone:r.provider_phone||'', feedback:r.feedback||'', rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, reviewAnon:!!r.review_anon, reviewHidden:!!r.review_hidden, discountPct:+r.discount_pct||0, promoCode:r.promo_code||'',
   arrived:!!r.arrived, onTheWay:!!r.on_the_way, handledByName:r.handled_by_name||'', delayMin:+r.delay_min||0,
   payRequired:!!r.pay_required, released:r.released!==false, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'',
-  cancelReq:r.cancel_req||'', cancelledBy:r.cancelled_by||'', handledBy:r.handled_by||'' }; }
+  cancelReq:r.cancel_req||'', cancelledBy:r.cancelled_by||'', handledBy:r.handled_by||'',
+  subId:r.sub_id||null, subSvc:r.sub_svc||'', planCover:+r.plan_cover||0 }; }   // عقد ريّح بالك: الاشتراك ونوع الزيارة وتغطية الأجرة
 /* حالة الدفع للمدير */
 function payCell(o){
   const METH={online:LX('إلكتروني','online'),tamara:LX('تمارا','Tamara'),device:LX('جهاز الفني','card machine'),wallet:LX('رصيد عند المؤسسة','balance held by the business')}[o.payMethod]||'';
@@ -1611,13 +1612,28 @@ const ST_GROUPS=[
     ['max_jobs_per_day','أقصى عدد طلبات باليوم لكل فريق','Max jobs per day per team','num'],
     ['off_days','أيام الإجازة (0 الأحد … 5 الجمعة، 6 السبت، افصل بفاصلة)','Off days (0 Sunday … 5 Friday, 6 Saturday, comma separated)','list'],
     ['slot_groups','تجميع الأقسام في السعة (JSON: القسم ثم مجموعته، مثال {"plumb":"core","elec":"core","ac":"ac"})','Capacity grouping of sections (JSON: section then its group, e.g. {"plumb":"core","elec":"core","ac":"ac"})','text'] ] },
-  { id:'plans', t:['🛡️ الباقات السنوية','🛡️ Annual plans'], d:['إظهار الباقات للعملاء، وأسعار «ريّح بالك» وتاريخ إقفال العرض. المشتركون الحاليون يشوفون اشتراكهم دائمًا.','Show plans to customers, Rayyeh Balak prices and offer closing date. Existing subscribers always see their plan.'], f:[
-    ['plans_enabled','الباقات السنوية ظاهرة للعملاء','Annual plans visible to customers','bool'],
-    ['plan_apt_price','سعر باقة الشقة (ريال)','Apartment plan price (SAR)','num'],
-    ['plan_home_price','سعر باقة البيت (ريال)','House plan price (SAR)','num'],
-    ['plan_promo_code','كود خصم الاشتراك','Subscription promo code','text'],
-    ['plan_promo_pct','خصم الكود (%)','Promo discount (%)','num'],
-    ['plans_close','العرض يقفل بتاريخ','Offer closes on','date'] ] },
+  { id:'plans', t:['🛡️ خطط ريّح بالك','🛡️ Rayyeh Balak plans'], d:['خطط ريّح بالك الأربع وأسعارها وحدودها. المالك يعاينها من رابط pv=1 قبل التفعيل. المشتركون الحاليون يشوفون اشتراكهم دائمًا.','The four Rayyeh Balak plans, their prices and limits. The owner previews them with the pv=1 link before enabling. Existing subscribers always see their plan.'], f:[
+    ['plans_enabled','الخطط السنوية ظاهرة للعملاء','Annual plans visible to customers','bool'],
+    ['plan_ac_enabled','خطط المكيفات ظاهرة','AC plans visible','bool'],
+    ['plan_villa_price','بيتك علينا (ريال)','Your house on us (SAR)','num'],
+    ['plan_villa_ac_price','بيتك ومكيفاتك علينا (ريال)','Your house and ACs on us (SAR)','num'],
+    ['plan_apt_price','شقتك علينا (ريال)','Your apartment on us (SAR)','num'],
+    ['plan_apt_ac_price','شقتك ومكيفك علينا (ريال)','Your apartment and AC on us (SAR)','num'],
+    ['plan_ac_tiers','شرائح المكيفات JSON (مثال {"8":1399,"10":1599,"12":1699,"extra":59})','AC tiers JSON (e.g. {"8":1399,"10":1599,"12":1699,"extra":59})','text'],
+    ['plans_cap_villa','أقصى عدد عقود البيوت','Maximum house contracts','num'],
+    ['plans_cap_apt','أقصى عدد عقود الشقق','Maximum apartment contracts','num'],
+    ['plan_visit_cap_sar','تغطية أجرة الفني لكل زيارة (ريال)','Labour coverage per visit (SAR)','num'],
+    ['plan_visits_per_year','عدد الزيارات في السنة','Visits per year','num'],
+    ['plan_season_winter','موسم الشتاء (MM-DD..MM-DD)','Winter season (MM-DD..MM-DD)','text'],
+    ['plan_season_summer','موسم الصيف (MM-DD..MM-DD)','Summer season (MM-DD..MM-DD)','text'],
+    ['plan_monthly_enabled','السداد الشهري ظاهر (بيتك علينا وشقتك علينا فقط، بالبطاقة داخل التطبيق)','Monthly payment visible (house and apartment plans only, in-app card)','bool'],
+    ['plan_villa_monthly','بيتك علينا شهريًا (ريال)','Your house on us monthly (SAR)','num'],
+    ['plan_apt_monthly','شقتك علينا شهريًا (ريال)','Your apartment on us monthly (SAR)','num'],
+    ['plan_monthly_upfront','أشهر الدفعة الأولى في الشهري','Months in the first monthly payment','num'],
+    ['plan_monthly_visit_every','في الشهري: زيارة كل (شهر)','Monthly: a visit every (months)','num'],
+    ['plan_monthly_season_after','في الشهري: الزيارات الموسمية بعد (شهر مسدّد)','Monthly: seasonal visits after (paid months)','num'],
+    ['plan_monthly_retry_days','مهلة إعادة السحب قبل إنهاء العقد (يوم)','Retry window before the contract ends (days)','num'],
+    ['plan_season_value','قيمة الزيارة الموسمية عند حساب الفرق (ريال)','Seasonal visit value when settling (SAR)','num'], ] },
   { id:'capacity', t:['📊 قائمة الانتظار','📊 Waitlist'], d:['متى يقول لك المؤشر إن التخصص هادي أو يحتاج فني جديد.','When the indicator says a trade is quiet or needs a new technician.'], f:[
     ['cap_low','هادي تحت (طلب لكل فني بالشهر)','Quiet below (orders per tech per month)','num'],
     ['cap_high','فعّل فني جديد فوق','Activate a new technician above','num'],
@@ -1704,7 +1720,7 @@ function renderSettings(){
     ${fields.map(([k,ar,en,ty])=>{ const v=SETTINGS[k]==null?'':String(SETTINGS[k]);
       if(ty==='note') return `<p class="st-d" style="margin:2px 0 12px;line-height:1.7">${LX(ar,en)}</p>`;
       if(ty==='bool') return `<label class="st-sw"><input type="checkbox" id="st_${k}" ${v==='1'||v==='true'?'checked':''}> ${LX(ar,en)}</label>`;
-      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello','shade_kinds','slot_groups'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
+      if(ty==='text'&&['coverage_msg','booking_msg','home_banner','rizq_announcement','blocked_phones','wa_bot_hello','shade_kinds','slot_groups','plan_ac_tiers'].includes(k)) return `<label class="st-f">${LX(ar,en)}<textarea id="st_${k}" rows="2">${esc(v)}</textarea></label>`;
       if(ty==='list'){ let lv=v; try{ const a=JSON.parse(v); if(Array.isArray(a)) lv=a.join('، '); }catch(e){} return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" value="${esc(lv)}"></label>`; }
       return `<label class="st-f">${LX(ar,en)}<input id="st_${k}" type="${ty==='num'?'number':(ty==='date'?'date':'text')}" ${ty==='num'?'inputmode="decimal" step="any"':''} value="${esc(v)}"></label>`; }).join('')}
     ${g.id==='wabot'?waStatsBox():''}
@@ -1722,6 +1738,10 @@ async function saveSettingsGroup(gid){
     else v=el.value.trim();
     // تجميع الأقسام لازم يكون JSON كائنًا صالحًا (الخادم يقرأه في حساب السعة)
     if(k==='slot_groups'&&v){ try{ const j=JSON.parse(v); if(!j||typeof j!=='object'||Array.isArray(j)) throw new Error('shape'); v=JSON.stringify(j); }catch(e){ toast('⚠️ '+LX('صيغة تجميع الأقسام غير صحيحة، اكتبها JSON مثل {"plumb":"core"}','Invalid section grouping, write JSON like {"plumb":"core"}')); return; } }
+    // شرائح المكيفات لازم تكون JSON كائنًا صالحًا (التطبيق يقرأها في سعر خطة المكيفات)
+    if(k==='plan_ac_tiers'&&v){ try{ const j=JSON.parse(v); if(!j||typeof j!=='object'||Array.isArray(j)) throw new Error('shape'); v=JSON.stringify(j); }catch(e){ toast('⚠️ '+LX('صيغة شرائح المكيفات غير صحيحة، اكتبها JSON مثل {"8":1399,"10":1599}','Invalid AC tiers, write JSON like {"8":1399,"10":1599}')); return; } }
+    // المواسم بصيغة MM-DD..MM-DD
+    if((k==='plan_season_winter'||k==='plan_season_summer')&&v&&!/^\d{2}-\d{2}\.\.\d{2}-\d{2}$/.test(v)){ toast('⚠️ '+LX('صيغة الموسم: MM-DD..MM-DD مثل 10-01..12-20','Season format: MM-DD..MM-DD e.g. 10-01..12-20')); return; }
     rows.push({ key:k, value:v, updated_at:new Date().toISOString() }); }
   if(!rows.length){ toast(LX('ما فيه تغييرات جديدة','No changes')); return; }
   const r=await sb.from('khafet_settings').upsert(rows,{ onConflict:'key' }).select('key');
@@ -2121,12 +2141,40 @@ function renderStockLog(){
     return `<div class="log-day"><div class="log-day-h">📅 ${dayLabel(key)} <small>(＋${ar(addQ)} · －${ar(subQ)})</small></div>${rows}</div>`;
   }).join('');
 }
-async function subMark(id,status){ if(cloudReady){ try{ await sb.from('khafet_subscriptions').update({status}).eq('id',id); }catch(e){} } const s=SUBS.find(x=>x.id===id); if(s) s.status=status; toast(status==='active'?'✅ فُعّل الاشتراك':'تم التحديث'); render(); }
+/* التفعيل الطبيعي يتم من الخادم (khafet_mark_paid) بعد الدفع؛ التفعيل اليدوي هنا يحتاج تأكيدًا */
+async function subMark(id,status){
+  if(status==='active'&&!confirm(LX('تفعيل بدون دفع مسجّل؟','Activate without a recorded payment?'))) return;
+  if(cloudReady){ try{ await sb.from('khafet_subscriptions').update({status}).eq('id',id); }catch(e){} } const s=SUBS.find(x=>x.id===id); if(s) s.status=status; toast(status==='active'?'✅ فُعّل الاشتراك':'تم التحديث'); render(); }
+/* خطط ريّح بالك الأربع (والمعرّفات القديمة للاشتراكات التجريبية) */
+const PLAN_NAMES={ villa:['بيتك علينا','Your house on us'], villa_ac:['بيتك ومكيفاتك علينا','Your house and ACs on us'], apt:['شقتك علينا','Your apartment on us'], apt_ac:['شقتك ومكيفك علينا','Your apartment and AC on us'], home:['بيت (قديم)','House (legacy)'], basic:['شقة (قديم)','Apartment (legacy)'] };
+function subPlanName(s){ const id=String(s.plan_id||s.plan||''); const p=PLAN_NAMES[id]; let nm=p?LX(p[0],p[1]):(id||LX('بدون خطة','No plan')); if(+s.ac_units>0) nm+=' · '+LX(ar(+s.ac_units)+' مكيفات',(+s.ac_units)+' ACs'); return nm; }
+/* طلبات العقد من ORDERS: الزيارات المستخدمة والزيارتان الموسميتان وغسيل المكيفات */
+function subOrders(s){ return ORDERS.filter(o=>o.subId===s.id&&o.status!=='cancelled'); }
+function subVisits(s){ return subOrders(s).filter(o=>o.subSvc==='visit').length; }
+function subSeason(s,k){ const o=subOrders(s).find(x=>x.subSvc===k); if(!o) return LX('قادم','upcoming'); return o.status==='done'?LX('تم','done'):LX('مجدول','scheduled'); }
+function subStatusLbl(s){
+  if(s.status==='active'){ if(s.ends_at&&parseISO(s.ends_at)<new Date()) return LX('⌛ منتهٍ','⌛ Expired'); return LX('✅ مفعّل','✅ Active'); }
+  if(s.status==='cancelled'||s.status==='refunded') return LX('✖ ملغي','✖ Cancelled');
+  if(s.status==='expired') return LX('⌛ منتهٍ','⌛ Expired')+(s.end_reason==='payment_failed'?' · '+LX('تعثّر السحب','charge failed'):'');
+  return LX('🕐 جديد','🕐 New'); }
+function subPayLbl(s){
+  if(s.pay_plan==='monthly'){ let t=LX('شهري ','Monthly ')+ar(+s.paid_months||0)+'/12'+(s.monthly_price?' · '+money(+s.monthly_price):''); if(+s.charge_fails>0) t+=' · ⚠️ '+LX('تعثّر السحب','charge failed'); if(+s.settle_due>0) t+=' · '+LX('فرق مستحق ','due ')+money(+s.settle_due); return t; }
+  return {paid:LX('مدفوع','paid'),unpaid:LX('غير مدفوع','unpaid'),partial:LX('جزئي','partial'),refunded:LX('مسترجع','refunded')}[s.pay_status||'unpaid']||esc(s.pay_status||''); }
 function renderSubs(){
-  if(!SUBS.length) return `<p style="color:var(--muted)">لا توجد طلبات اشتراك.</p>`;
-  return SUBS.map(s=>`<div class="rline"><span style="font-size:1.3rem">🛡️</span>
-    <div class="rl-t"><b>${esc(s.name||'')}</b> ${LX('—','·')} ${esc(s.plan||'')} (${money(+s.price||0)})<small>📞 ${esc(s.phone||'')} · ${(s.status==='active')?LX('✅ مفعّل','✅ Active'):LX('🕐 جديد','🕐 New')}</small></div>
-    ${s.status==='active'?'':`<button class="sbtn ok" data-id="${esc(s.id)}" onclick="subMark(this.dataset.id,'active')">تفعيل</button>`}</div>`).join('');
+  if(!SUBS.length) return `<p style="color:var(--muted)">${LX('لا يوجد مشتركون بعد.','No subscribers yet.')}</p>`;
+  const visitsPerYear=+(SETTINGS&&SETTINGS.plan_visits_per_year)||6;
+  const rows=SUBS.map(s=>{ const isAc=/_ac$|^ac/.test(String(s.plan_id||s.plan||''))||+s.ac_units>0;
+    return `<tr>
+      <td><b>${esc(s.name||'')}</b><br><small style="color:var(--muted)">📞 ${esc(s.phone||'')}</small></td>
+      <td>${esc(subPlanName(s))}</td>
+      <td class="n">${money(+s.price||0)}</td>
+      <td>${subStatusLbl(s)}<br><small style="color:var(--muted)">${subPayLbl(s)}</small></td>
+      <td>${s.starts_at?dayLabel(s.starts_at):'·'}<br><small style="color:var(--muted)">${s.ends_at?LX('إلى ','to ')+dayLabel(s.ends_at):''}</small></td>
+      <td class="n">${LX('الزيارات ','Visits ')}${ar(subVisits(s))}/${ar(visitsPerYear)}<br><small style="color:var(--muted)">${LX('الشتاء','Winter')}: ${subSeason(s,'season_w')} · ${LX('الصيف','Summer')}: ${subSeason(s,'season_s')}${isAc?' · '+LX('المكيفات','ACs')+': '+subSeason(s,'ac'):''}</small></td>
+      <td>${s.status==='active'?'':`<button class="sbtn ok" data-id="${esc(s.id)}" onclick="subMark(this.dataset.id,'active')">${LX('تفعيل','Activate')}</button>`}</td>
+    </tr>`; }).join('');
+  return `<div class="biz-tw"><table class="biz-t" style="min-width:720px"><thead><tr><th>${LX('المشترك','Subscriber')}</th><th>${LX('الخطة','Plan')}</th><th class="n">${LX('السعر','Price')}</th><th>${LX('الحالة · الدفع','Status · Payment')}</th><th>${LX('من · إلى','From · To')}</th><th class="n">${LX('الزيارات والمواسم','Visits and seasons')}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="st-d" style="margin-top:8px">${LX('الزيارات الموسمية وغسيل المكيفات يحدد موعدها خافت؛ إنشاؤها من الإدارة يأتي لاحقًا.','Seasonal visits and AC washing are scheduled by Khafet; creating them from the admin comes later.')}</p>`;
 }
 /* ═ التحديث الحي للطلبات ═
    قناة Realtime على khafet_orders: أي تغيير (في الطريق، وصلت، بدء العمل...) يعيد تحميل اللوحة.
@@ -2668,7 +2716,7 @@ function render(){
   } else if(adminSection==='cust'){
     body=`${block(LX(`📣 الشكاوى (${ar(openCmp)} مفتوحة)`,`📣 Complaints (${openCmp} open)`), renderComplaintsA())}
       ${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
-      ${block(LX(`🛡️ طلبات الاشتراك (${ar(newSubs)} جديد)`,`🛡️ Subscription requests (${newSubs} new)`), renderSubs())}
+      ${block(LX(`🛡️ المشتركون (${ar(SUBS.length)} · ${ar(newSubs)} جديد)`,`🛡️ Subscribers (${SUBS.length} · ${newSubs} new)`), renderSubs())}
       ${block(LX(`📰 مقالات السلامة (${ar(ARTICLES.length)})`,`📰 Safety articles (${ARTICLES.length})`), renderArticles())}`;
   } else if(adminSection==='store'){
     body=`${block(LX('📦 المستودع','📦 Warehouse'), renderInventory())}
@@ -3161,8 +3209,8 @@ function renderBroadcast(){
           <label class="bc-l" for="bcB">${LX('النص','Message')} <span id="bcCountB">${ar(BC.body.length)} / ${ar(BC_MAX_B)}</span></label>
           <textarea id="bcB" maxlength="${BC_MAX_B}" placeholder="${LX('مثال: فريق خافت في خدمتكم طول أيام الإجازة، احجزوا من التطبيق.','e.g. The Khafet team is here for you all through the holiday. Book in the app.')}" oninput="bcInput('body',this.value)" onblur="bcBlur()">${esc(BC.body)}</textarea>
           <div class="bc-btns">
-            <button type="button" id="bcTest" onclick="bcTest()">${LX('📱 جرّب على جوالي','📱 Test on my phone')}</button>
-            <button type="button" id="bcSend" class="go" onclick="bcConfirm()">${LX('📣 إرسال','📣 Send')}</button>
+            <button type="button" id="bcTest" onclick="bcTest()" ${(BC.title.trim()&&BC.body.trim()&&!BC.busy)?'':'disabled'}>${LX('📱 جرّب على جوالي','📱 Test on my phone')}</button>
+            <button type="button" id="bcSend" class="go" onclick="bcConfirm()" ${(BC.title.trim()&&BC.body.trim()&&!BC.today&&!BC.busy)?'':'disabled'}>${LX('📣 إرسال','📣 Send')}</button>
           </div>
           <p class="bc-note">${LX('مسموح بإشعار واحد فقط لكل يوم. «جرّب على جوالي» يوصل لجوالك أنتِ فقط في تطبيق خافت شركاء، وما يحسب من إشعار اليوم.','Only one notification is allowed per day. "Test on my phone" goes only to your own phone in the Khafet Partner app and does not count as today\'s notification.')}</p>
         </div>
