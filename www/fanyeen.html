@@ -1612,7 +1612,7 @@ function rowToOrder(r){
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, createdAt:r.created_at||null,
     free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0,
     cancelReq:r.cancel_req||null,   // null | 'pending' | 'rejected' · حالة طلب الإلغاء (تقرّرها الإدارة)
-    price:+r.price||0, finalPrice:+r.final_price||0, bookedFinal:+r.booked_final||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payRequired:!!r.pay_required,
+    price:+r.price||0, finalPrice:+r.final_price||0, bookedFinal:+r.booked_final||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'', payRequired:!!r.pay_required,
     // إضافة فوق سعر الحجز (الخادم): pending بانتظار العميل · objected اعترض · device وافق ويدفع بالجهاز · paid وافق ودفع
     extraStatus:r.extra_status||'', extraAmount:+r.extra_amount||0, extraLines:Array.isArray(r.extra_lines)?r.extra_lines:[], extraNote:r.extra_note||'', userId:(r.user_id===undefined?undefined:r.user_id),
     // عقد «ريّح بالك»: sub_id معرّف الاشتراك · sub_svc نوع الزيارة (visit / season_w / season_s / ac) · plan_cover ما غطّاه العقد من أجرة الفني (يحسبه الخادم بعد حفظ الفاتورة)
@@ -1622,6 +1622,16 @@ function rowToOrder(r){
 /* الدفع بجهاز الفني: موقوف لما device_pay_enabled = 0 (الدفع كله من التطبيق)، والخادم يرفضه لطلبات عملاء التطبيق */
 function devicePayOn(){ const v=String((typeof KHSET!=='undefined' && KHSET && KHSET.device_pay_enabled!=null)?KHSET.device_pay_enabled:'1'); return !(v==='0'||v==='false'); }
 function payDue(o){ return (o && o.dbId && o.status!=='cancelled') ? Math.max(0, +o.amountDue||0) : 0; }
+/* سطر الدفع في بطاقة الطلب (بطلب فادية 2026-10-03: «مو واضح كم دفع العميل»): المدفوع وطريقته والمتبقي، من أرقام الخادم */
+function payDetailRow(o){
+  if(!o||!o.dbId||o.status==='cancelled') return '';
+  const paid=Math.max(0,+o.paidAmount||0), due=payDue(o); if(!(paid>0)&&!(due>0)) return '';
+  const A=lang==='ar';
+  const m={online:A?'إلكتروني':'online', card:A?'بطاقة':'card', applepay:'Apple Pay', tamara:A?'تمارا':'Tamara', device:A?'جهاز الفني':'card machine', wallet:A?'رصيد':'credit'}[String(o.payMethod||'')]||'';
+  const paidTxt=paid>0?((A?'دفع العميل ':'Customer paid ')+ar(paid)+' '+lg('cur')+(m?' · '+m:'')):(A?'لم يدفع بعد':'Not paid yet');
+  const dueTxt=due>0?((A?'المتبقي ':'Remaining ')+ar(due)+' '+lg('cur')):(paid>0?(A?'مدفوع بالكامل':'Paid in full'):'');
+  return `<div class="tj-row"><span class="tj-k">💳 ${A?'الدفع':'Payment'}</span><span class="tj-v"><b>${paidTxt}</b>${dueTxt?`<div style="color:${due>0?'#B3261E':'var(--muted)'};font-size:.85rem;font-weight:800;margin-top:2px">${dueTxt}</div>`:''}</span></div>`;
+}
 /* الإضافة بانتظار العميل (موافقة أو بعد اعتراضه): ما ينتهي الطلب وما ينسجّل دفع بالجهاز قبل رده */
 function xPend(o){ return !!(o && o.dbId && o.status!=='cancelled' && (o.extraStatus==='pending'||o.extraStatus==='objected')); }
 /* صندوق حالة الإضافة داخل بطاقة الطلب */
@@ -3398,6 +3408,7 @@ function render(){
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
         ${partsTxt?`<div class="tj-row"><span class="tj-k">🔩 ${lang==='ar'?'قطع محجوزة مع الطلب':lang==='en'?'Parts booked':lang==='ur'?'بک شدہ پارٹس':'बुक पार्ट्स'}</span><span class="tj-v">${partsTxt}<div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:2px">${lang==='ar'?'خذها معك من المستودع، مدفوعة مع الحجز':'Take them from stock, paid with the booking'}</div></span></div>`:''}
+        ${payDetailRow(o)}
         ${custInvoiceHtml(o)}
         ${xBox(o)}
         ${o.note?`<div class="tj-row"><span class="tj-k">🛠️ ${t('problem')}</span><span class="tj-v">${esc(o.note)}${lang!=='ar'?` <a class="ttrans" href="https://translate.google.com/?sl=auto&tl=${lang}&text=${encodeURIComponent(o.note)}&op=translate" target="_blank" rel="noopener">${t('translate')}</a>`:''}</span></div>`:''}
