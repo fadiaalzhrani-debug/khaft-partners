@@ -1612,6 +1612,7 @@ function rowToOrder(r){
     date:r.service_date, startMin:r.start_min, duration:r.duration, endMin:r.end_min, createdAt:r.created_at||null,
     free:!!r.free, status:r.status||'new', quick:!!r.quick, note:r.note||'', videoUrl:r.video_url||'', invoice:r.invoice||null, arrived:!!r.arrived, onTheWay:!!r.on_the_way, delayMin:+r.delay_min||0, rejectReason:r.reject_reason||'', wantsEarlier:!!r.wants_earlier, discountPct:+r.discount_pct||0,
     cancelReq:r.cancel_req||null,   // null | 'pending' | 'rejected' · حالة طلب الإلغاء (تقرّرها الإدارة)
+    changeReq:r.change_req||'', changeText:r.change_text||'',   // طلب شيل من العميل قيد المراجعة (2026-10-03)
     price:+r.price||0, finalPrice:+r.final_price||0, bookedFinal:+r.booked_final||0, paidAmount:+r.paid_amount||0, amountDue:+r.amount_due||0, payStatus:r.pay_status||'unpaid', payMethod:r.pay_method||'', payRequired:!!r.pay_required,
     // إضافة فوق سعر الحجز (الخادم): pending بانتظار العميل · objected اعترض · device وافق ويدفع بالجهاز · paid وافق ودفع
     extraStatus:r.extra_status||'', extraAmount:+r.extra_amount||0, extraLines:Array.isArray(r.extra_lines)?r.extra_lines:[], extraNote:r.extra_note||'', userId:(r.user_id===undefined?undefined:r.user_id),
@@ -3350,7 +3351,7 @@ function render(){
     const a=o.address||{};
     const sep=isRTL()?'، ':', ';
     const isPart=i=>i&&(i.part||String(i.id||'').startsWith('part:'));
-    const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee'&&i.id!=='smallfee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
+    const work=(o.items||[]).filter(i=>!isPart(i)&&i.id!=='fee'&&i.id!=='smallfee').map(i=>esc(i.ico)+' '+esc(svcName(i))+(i.qty>1?' ×'+i.qty:'')+(i.added?' <small style="color:#2E7D32;font-weight:800">('+(lang==='ar'?'أضافها العميل بعد الحجز':'added by customer')+')</small>':'')).join(sep);
     const partsTxt=(o.items||[]).filter(isPart).map(i=>'🔩 '+esc(partNameL(i))+(i.qty>1?' ×'+i.qty:'')).join(sep);
     const addr=[a.city,a.district,a.street].filter(Boolean).map(esc).join(' · ');
     const mapFallback='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent([a.city,a.district,a.street,a.house].filter(Boolean).join(' ')); const mapUrl=safeUrl(a.mapUrl, mapFallback);
@@ -3408,6 +3409,7 @@ function render(){
       <div class="tj-body">
         ${o.quick?`<div class="quick-tag">${t('quickTag')}</div>`:''}${(!o.quick||(o.items||[]).some(i=>i&&i.id&&i.id!=='quick'))?`<div class="tj-row"><span class="tj-k">🔧 ${t('whatNeeded')}</span><span class="tj-v">${work}</span></div>`:''}
         ${partsTxt?`<div class="tj-row"><span class="tj-k">🔩 ${lang==='ar'?'قطع محجوزة مع الطلب':lang==='en'?'Parts booked':lang==='ur'?'بک شدہ پارٹس':'बुक पार्ट्स'}</span><span class="tj-v">${partsTxt}<div style="color:var(--muted);font-size:.8rem;font-weight:700;margin-top:2px">${lang==='ar'?'خذها معك من المستودع، مدفوعة مع الحجز':'Take them from stock, paid with the booking'}</div></span></div>`:''}
+        ${o.changeReq==='pending'&&o.changeText?`<div class="tj-row"><span class="tj-k">✂️ ${lang==='ar'?'العميل يطلب شيل (قيد المراجعة)':'Customer asks to remove (pending)'}</span><span class="tj-v">${esc(o.changeText.replace(/^شيل:\s*/,''))}</span></div>`:''}
         ${payDetailRow(o)}
         ${custInvoiceHtml(o)}
         ${xBox(o)}

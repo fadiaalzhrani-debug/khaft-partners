@@ -1300,6 +1300,7 @@ async function loadAll(){
     Promise.resolve().then(()=>loadJoin()).catch(()=>{}),
     Promise.resolve().then(()=>loadJoinReqs()).catch(()=>{}),
     Promise.resolve().then(()=>loadCancelReqs()).catch(()=>{}),
+    Promise.resolve().then(()=>loadChangeReqs()).catch(()=>{}),
     Promise.resolve().then(()=>adminSection==='team'?loadCommission(true):null).catch(()=>{}),
     Promise.resolve().then(()=>(adminSection==='orders'&&isPanelOpen('devpay'))?loadDevPay():null).catch(()=>{}),
     Promise.resolve().then(()=>loadImgOpts()).catch(()=>{}),
@@ -1412,7 +1413,7 @@ function dashDefs(){
     ['techs','🧑‍🔧',LX('فنيون نشطون','Active technicians'), ar((STAFF||[]).filter(s=>s.role==='tech'&&s.active!==false).length), '', 'team', ''],
     ['provs','🤝',LX('مزوّدون للمراجعة','Providers to review'), ar((PROVIDERS||[]).filter(p=>(p.status||'pending')==='pending').length), '', 'team', ''],
     ['joins','📨',LX('طلبات انضمام','Join requests'), ar((JOINREQ||[]).filter(x=>x.status==='new').length), '', 'joins', ''],
-    ['cancels','❌',LX('طلبات إلغاء بانتظارك','Cancellation requests waiting'), ar(crPending()), '', 'cancels', crPending()?'warn':'']
+    ['cancels','❌',LX('طلبات إلغاء وتعديل بانتظارك','Cancellation and change requests waiting'), ar(crPending()+chPending()), '', 'cancels', crPending()?'warn':'']
   ];
 }
 function dashKeys(){
@@ -2682,7 +2683,7 @@ function render(){
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
-    ['cancels','❌',LX('طلبات الإلغاء','Cancellation requests'), crPending(), LX('طلبات الفنيين والمزوّدين لإلغاء طلب · القبول يرجّع المبلغ للعميل','Technician and provider requests to cancel an order · approval refunds the customer'), false],
+    ['cancels','❌',LX('طلبات الإلغاء والتعديل','Cancellation and change requests'), crPending()+chPending(), LX('طلبات الفنيين والمزوّدين لإلغاء طلب · القبول يرجّع المبلغ للعميل','Technician and provider requests to cancel an order · approval refunds the customer'), false],
     ['team','👥','الفريق', pendingProv+PENDING_TECHS.length, 'الفنيّون · المزوّدون · المستحقات', true],
     ['cust','💬','العملاء', newSugs+newSubs+openCmp, 'الشكاوى · الرسائل · الاشتراكات · المقالات', false],
     ['store','📦','المستودع', INV.filter(it=>['low','out'].includes(invState(it))).length, LX(ar(INV.length)+' صنف · '+ar(INV.filter(it=>['low','out'].includes(invState(it))).length)+' تحتاج طلب · سجل الحركة', INV.length+' items · '+INV.filter(it=>['low','out'].includes(invState(it))).length+' to reorder · Movement log'), true],
@@ -2728,7 +2729,7 @@ function render(){
   } else if(adminSection==='joins'){
     body=renderJoinReqs();
   } else if(adminSection==='cancels'){
-    body=renderCancelReqs();
+    body=renderChangeReqs()+renderCancelReqs();
   } else if(adminSection==='settings'){
     body=renderSettings();
   } else if(adminSection==='biz'){
@@ -3023,10 +3024,40 @@ async function loadCancelReqs(){
   try{ const r=await sb.from('khafet_cancel_requests').select('*').order('created_at',{ascending:false}).limit(300); if(!r.error){ CANCELREQ=(r.data||[]).filter(x=>x&&typeof x==='object'); cancelReqLoaded=true; } }catch(e){}
 }
 function crPending(){ return (CANCELREQ||[]).filter(x=>x&&x.status==='pending').length; }
+/* ═══════ ✂️ طلبات الشيل من العملاء (khafet_order_changes): العميل يطلب شيل بند قبل الموعد، والقبول يطبّق الشيل
+   ويرجّع الفرق رصيدًا في حسابه (refund_mode=credit)، والرفض يترك الطلب كما هو ═══════ */
+let CHANGEREQ=[], changeReqLoaded=false, changeBusy={};
+async function loadChangeReqs(){ if(!cloudReady) return; try{ const r=await sb.from('khafet_order_changes').select('*').order('created_at',{ascending:false}).limit(200); if(!r.error){ CHANGEREQ=(r.data||[]).filter(x=>x&&typeof x==='object'); changeReqLoaded=true; } }catch(e){} }
+function chPending(){ return (CHANGEREQ||[]).filter(x=>x&&x.status==='pending').length; }
+function renderChangeReqs(){
+  const list=(CHANGEREQ||[]).filter(x=>x&&x.status==='pending');
+  if(!changeReqLoaded||!list.length) return '';
+  return `<div class="panel" style="margin-top:0"><h4 style="margin:0 0 8px">✂️ ${LX('طلبات شيل خدمة من العملاء','Removal requests from customers')} (${ar(list.length)})</h4>${list.map(r=>{ try{
+    const o=ORDERS.find(x=>x.dbId===r.order_id)||null; const lines=Array.isArray(r.lines)?r.lines:[];
+    const txt=lines.map(l=>esc(l.name||l.id||'')+(+l.qty>1?' ×'+ar(+l.qty):'')).join('، ');
+    return `<div class="jr new">
+      <div class="jr-top"><h4>${o?esc(o.id):LX('طلب','Order')}${o&&o.customer&&o.customer.name?' · '+esc(o.customer.name):''}<small>${jrWhen(r.created_at)}</small></h4><span class="jr-st new">${LX('بانتظار قرارك','Awaiting your decision')}</span></div>
+      <div class="jr-meta">${o?`<span>${esc(STATUS_AR[o.status]||o.status)}</span><span>${dayLabel(o.date)} · ${fmtTime(o.startMin)}</span>`:''}<span>${LX('قيمة المشال','Amount')}: ${money(+r.amount||0)}</span></div>
+      <div style="margin-top:10px;line-height:1.7"><b>${LX('يطلب شيل','Requests removing')}:</b> ${txt}${r.note?`<br><b>${LX('ملاحظته','Note')}:</b> <span style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(r.note)}</span>`:''}</div>
+      <textarea class="jr-note" id="chn_${esc(r.id)}" rows="2" placeholder="${LX('ملاحظة (اختياري)','Note (optional)')}"></textarea>
+      <div class="jr-acts"><button class="sbtn ok" data-id="${esc(r.id)}" onclick="decideChange(this.dataset.id,true)">${LX('قبول الشيل','Approve removal')}</button><button class="sbtn danger" data-id="${esc(r.id)}" onclick="decideChange(this.dataset.id,false)">${LX('رفض','Reject')}</button></div>
+    </div>`; }catch(e){ return ''; } }).join('')}</div>`;
+}
+async function decideChange(id, approve){
+  const r=CHANGEREQ.find(x=>x&&x.id===id); if(!r||changeBusy[id]) return;
+  const q=approve? LX('قبول الشيل؟ يُحدَّث الطلب ويرجع الفرق رصيدًا للعميل لو كان دافعًا.','Approve? The order is updated and any paid difference is credited to the customer.') : LX('رفض الطلب؟ يبقى الطلب كما هو.','Reject? The order stays as is.');
+  if(!confirm(q)) return;
+  const el=document.getElementById('chn_'+id); const note=((el&&el.value)||'').trim();
+  changeBusy[id]=true;
+  try{ const res=await sb.rpc('khafet_order_change_decide',{ p_req:id, p_approve:!!approve, p_note:note||null }); if(res.error) throw res.error;
+    toast(approve?LX('تم قبول الشيل','Removal approved'):LX('تم رفض الطلب','Request rejected')); await loadChangeReqs(); loadAll();
+  }catch(e){ toast(srvMsgA(e)); render(); } finally{ delete changeBusy[id]; }
+}
 function crOrder(r){ return ORDERS.find(o=>o.dbId===r.order_id)||null; }
 /* اسم الطالب: فني من قائمة الطاقم، أو مزوّد الطلب، وإلا الدور فقط */
 function crRequester(r,o){
-  const role=r.requester_role==='provider'?LX('المزوّد','Provider'):LX('الفني','Technician');
+  const role=r.requester_role==='provider'?LX('المزوّد','Provider'):r.requester_role==='customer'?LX('العميل','Customer'):LX('الفني','Technician');
+  if(r.requester_role==='customer') return role+(o&&o.customer&&o.customer.name?' · '+o.customer.name:'');
   let name='';
   const st=(STAFF||[]).find(x=>x.user_id===r.requested_by); if(st&&st.name) name=st.name;
   if(!name && r.requester_role==='provider' && o && o.providerPhone) name=provName(o.providerPhone);
@@ -3039,8 +3070,8 @@ function renderCancelReqs(){
   const stl=k=>Object.prototype.hasOwnProperty.call(ST,k)?ST[k]:String(k==null?'':k);
   const cnt=k=>CANCELREQ.filter(x=>k==='all'||x.status===k).length;
   const filters=['pending','approved','rejected','all'].map(k=>`<button class="${cancelFilter===k?'on':''}" data-k="${k}" onclick="cancelFilter=this.dataset.k;render()">${k==='all'?LX('الكل','All'):ST[k]} (${ar(cnt(k))})</button>`).join('');
-  const head=`<div class="panel" style="margin-top:0"><p class="sp-hint" style="margin:0">${LX('الفني أو المزوّد ما يقدر يلغي الطلب بنفسه. يرسل طلب إلغاء بالسبب، والإدارة تقبل أو ترفض من هنا. عند القبول يتحوّل الطلب إلى ملغي ويرجع المبلغ المدفوع للعميل تلقائيًا.','Technicians and providers cannot cancel an order themselves. They send a request with a reason and you approve or reject it here. On approval the order is cancelled and any paid amount is refunded automatically.')}</p>
-      <button class="sbtn" style="margin-top:8px" onclick="loadCancelReqs().then(render)">🔄 ${LX('تحديث','Refresh')}</button></div><div class="jr-filters" style="margin-top:14px">${filters}</div>`;
+  const head=`<div class="panel" style="margin-top:0"><p class="sp-hint" style="margin:0">${LX('العميل والفني والمزوّد ما يقدرون يلغون الطلب المؤكد بأنفسهم. يرسل طلب إلغاء بالسبب، والإدارة تقبل أو ترفض من هنا. عند القبول يتحوّل الطلب إلى ملغي ويرجع المبلغ المدفوع للعميل تلقائيًا.','Technicians and providers cannot cancel an order themselves. They send a request with a reason and you approve or reject it here. On approval the order is cancelled and any paid amount is refunded automatically.')}</p>
+      <button class="sbtn" style="margin-top:8px" onclick="Promise.all([loadCancelReqs(),loadChangeReqs()]).then(render)">🔄 ${LX('تحديث','Refresh')}</button></div><div class="jr-filters" style="margin-top:14px">${filters}</div>`;
   const list=CANCELREQ.filter(x=>x&&(cancelFilter==='all'||x.status===cancelFilter));
   if(!list.length) return head+`<p style="color:var(--muted)">${cancelFilter==='pending'?LX('ما فيه طلبات إلغاء بانتظارك.','No cancellation requests waiting.'):LX('ما فيه طلبات هنا.','No requests here.')}</p>`;
   // كل قيمة تمر على esc، والمعرّفات عبر data-attributes
@@ -3069,7 +3100,7 @@ async function decideCancel(id, approve){
     const res=await sb.rpc('khafet_decide_cancel',{ p_req:id, p_approve:!!approve, p_note:note||null });
     if(res.error) throw res.error;
     toast(approve?LX('تم قبول الإلغاء','Cancellation approved'):LX('تم رفض طلب الإلغاء','Cancellation request rejected'));
-    await loadCancelReqs(); loadAll();
+    await loadCancelReqs(); loadChangeReqs(); loadAll();
   }catch(e){ toast(srvMsgA(e)); render(); }
   finally{ delete cancelBusy[id]; }
 }
