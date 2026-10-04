@@ -1386,7 +1386,7 @@ function whCanEdit(){ if(MYROLE==='admin') return true; return MYROLE==='provide
 /* الاطلاع على المستودع: مستودع خافت متاح لفنيّي خافت، ومستودع المؤسسة حسب صلاحية المزوّد */
 function invAllowed(){ if(MYROLE==='admin') return true; if(!/^provider:/.test(MYORG||'')) return true; return !!(MYPERMS&&MYPERMS.stock); }
 /* الأعمدة بدون سعر الشراء (للفني) · المدير يقرأ كل الأعمدة */
-const INV_COLS_NOBUY={ khafet_inventory:'id,name,unit,qty,updated_at,sell_price,min_qty,category,target_qty,code,image_url,name_en', provider_inventory:'id,provider_id,name,unit,qty,sell_price,created_at,category,min_qty,target_qty,image_url,code,name_en' };
+const INV_COLS_NOBUY={ khafet_inventory:'id,name,unit,qty,updated_at,sell_price,min_qty,category,target_qty,code,image_url,name_en,tags', provider_inventory:'id,provider_id,name,unit,qty,sell_price,created_at,category,min_qty,target_qty,image_url,code,name_en' };
 /* المستودع: أي حفظ من الفني يُشال منه buy_price (الحقل مخفي عنه في الواجهة أصلًا) */
 function whSb(){
   if(canSeeBuy()) return sb;
@@ -1994,7 +1994,7 @@ async function uploadPartPhoto(itemId, file){
 let stockPickOpen=false, stockPickQ='';
 function toggleStockPick(){ captureInvPrices(); if(!stockPickOpen) svcPickOpen=false; stockPickOpen=!stockPickOpen; stockPickQ=''; renderInvoice(); }
 function stockPickSearch(v){ stockPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('spGrid'); if(g) g.innerHTML=stockPickGrid(); }
-function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ));
+function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ)||(it.tags||'').toLowerCase().includes(stockPickQ));
   if(!list.length) return `<div class="sl-empty" style="grid-column:1/-1">${A?'ما فيه صنف بهالاسم':'No match'}</div>`;
   return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(whName(it))}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(invPriceOf(it))} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
 async function invPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+(lang==='ar'?'انحفظت الصورة':'Photo saved')); render(); }catch(e){ toast('⚠️ '+(e.message||'')); } }
