@@ -719,6 +719,9 @@ a.card:active,.card:active{transform:scale(.97)}
 .inv-pay .plan-est span:first-child{color:var(--muted);font-weight:700;font-size:.86rem}
 /* أزرار الإضافة: الخدمة أول وأكبر، ثم المستودع وقطعة الغيار والبند المخصص */
 .ke-adds{display:flex;flex-wrap:wrap;gap:8px}
+.ke-find{margin-bottom:8px}.ke-find .ke-search{width:100%;margin:0;font-size:1rem;padding:12px 14px;border-radius:12px}
+.ke-cats{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}.ke-cat{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:7px 13px;font-family:inherit;font-weight:800;font-size:.9rem;cursor:pointer;color:inherit}.ke-cat.on{background:#1d1a16;color:#F5C518;border-color:#1d1a16}
+.ke-sec{font-weight:900;font-size:.9rem;color:var(--muted);margin:10px 2px 6px}.ke-pick .sp-grid{margin-top:0}
 .ke-add{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:10px 6px;font-weight:800;font-size:.86rem;line-height:1.3;color:var(--text);text-align:center;min-height:64px;font-family:inherit;cursor:pointer;transition:transform .25s var(--spring,ease)}
 .ke-add:active{transform:scale(.96)}
 .ke-add .ke-ai{font-size:1.25rem;line-height:1}
@@ -1992,23 +1995,31 @@ async function uploadPartPhoto(itemId, file){
 }
 
 let stockPickOpen=false, stockPickQ='';
-function toggleStockPick(){ captureInvPrices(); if(!stockPickOpen) svcPickOpen=false; stockPickOpen=!stockPickOpen; stockPickQ=''; renderInvoice(); }
+/* بحث واحد فوق + أقسام (سباكة/كهرباء/عام) تطبّق على الخدمات والقطع معًا (بطلب فادية 2026-10-04: «قسّم الأغراض والشغل وخله يبحث فوق») */
+let pickQ='', pickCat='all';
+function pickCatOf(kind,x){ if(kind==='svc'){ return x.cat==='plumb'?'plumb':x.cat==='elec'?'elec':'gen'; } const c=String(x.category||''); return c==='سباكة'?'plumb':c==='كهرباء'?'elec':'gen'; }
+function pickCatOk(kind,x){ return pickCat==='all'||pickCatOf(kind,x)===pickCat; }
+function pickSearch(v){ pickQ=(v||'').trim().toLowerCase(); svcPickQ=pickQ; stockPickQ=pickQ;
+  if(!svcPickOpen&&!stockPickOpen){ captureInvPrices(); svcPickOpen=true; stockPickOpen=true; renderInvoice(); const i=document.getElementById('pkQ'); if(i){ i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} } return; }
+  const g=document.getElementById('svGrid'); if(g) g.innerHTML=svcPickGrid(); const p=document.getElementById('spGrid'); if(p) p.innerHTML=stockPickGrid(); }
+function pickSetCat(c){ captureInvPrices(); pickCat=c||'all'; if(!svcPickOpen&&!stockPickOpen){ svcPickOpen=true; stockPickOpen=true; } renderInvoice(); }
+function toggleStockPick(){ captureInvPrices(); stockPickOpen=!stockPickOpen; if(stockPickOpen) svcPickOpen=false; renderInvoice(); }
 function stockPickSearch(v){ stockPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('spGrid'); if(g) g.innerHTML=stockPickGrid(); }
-function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ)||(it.tags||'').toLowerCase().includes(stockPickQ));
+function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>pickCatOk('inv',it)).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ)||(it.tags||'').toLowerCase().includes(stockPickQ));
   if(!list.length) return `<div class="sl-empty" style="grid-column:1/-1">${A?'ما فيه صنف بهالاسم':'No match'}</div>`;
   return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(whName(it))}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(invPriceOf(it))} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
 async function invPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+(lang==='ar'?'انحفظت الصورة':'Photo saved')); render(); }catch(e){ toast('⚠️ '+(e.message||'')); } }
-function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:invPriceOf(it),deducted:0,img:it.image_url||''}); } stockPickOpen=false; renderInvoice(); }
+function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find(x=>x.id===id); if(it){ invItems.push({id:'stock',stockId:it.id,name:it.name,qty:1,price:invPriceOf(it),deducted:0,img:it.image_url||''}); toast('✅ '+whName(it)); } renderInvoice(); }
 /* منتقي الخدمات بالصور (بدل القائمة المنسدلة): بحث + بطاقات بصورة الخدمة وسعرها · كل ضغطة تضيف بندًا جديدًا (addInvItem) ولا تدمج الكمية لأن الخادم يسعّر كل بند بسعر الوحدة الإضافية */
 let svcPickOpen=false, svcPickQ='';
-function toggleSvcPick(){ captureInvPrices(); svcPickOpen=!svcPickOpen; svcPickQ=''; if(svcPickOpen) stockPickOpen=false; renderInvoice(); }
+function toggleSvcPick(){ captureInvPrices(); svcPickOpen=!svcPickOpen; if(svcPickOpen) stockPickOpen=false; renderInvoice(); }
 function svcPickSearch(v){ svcPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('svGrid'); if(g) g.innerHTML=svcPickGrid(); }
 function svcPickGrid(){
-  const q=svcPickQ; const list=SERVICES.filter(s=>!s.inactive&&!s.hidden).filter(s=>!q||[s.name,svcName2(s),(SVC_I18N[s.id]||{}).en].some(x=>String(x||'').toLowerCase().includes(q)));
+  const q=svcPickQ; const list=SERVICES.filter(s=>!s.inactive&&!s.hidden).filter(s=>pickCatOk('svc',s)).filter(s=>!q||[s.name,svcName2(s),(SVC_I18N[s.id]||{}).en].some(x=>String(x||'').toLowerCase().includes(q)));
   if(!list.length) return `<div class="ke-none">${lg('kiNone')}</div>`;
   return list.map(s=>{ const n=invItems.filter(x=>x&&x.id===s.id).length; const u=safeUrl(s.img||'','');
     return `<button type="button" class="ke-sv" data-id="${esc(s.id)}" onclick="pickSvc(this.dataset.id)"><span class="ke-im"><i style="font-style:normal">${esc(s.ico||'🔧')}</i>${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><span class="ke-plus">+</span>${n?`<span class="ke-cnt">×${ar(n)}</span>`:''}<b>${esc(svcName2(s))}</b><small>${s.custom?lg('kiFree'):ar(+s.price||0)+' '+lg('cur')}</small></button>`; }).join(''); }
-function pickSvc(id){ svcPickOpen=false; addInvItem(id); }
+function pickSvc(id){ const s=svc(id); addInvItem(id); if(s) toast('✅ '+svcName2(s)); }
 /* صورة بند المحرر: صورة الخدمة من الكتالوج أو صورة قطعة المستودع، وإلا الإيموجي (الصورة تنشال لو فشلت فيبان الإيموجي تحتها) */
 function keMedia(it){ const k=invLineKind(it);
   if(k==='stock'){ const iv=(INV||[]).find(x=>String(x.id)===String(it.stockId)); return {img:safeUrl(it.img||(iv&&iv.image_url)||'',''), emoji:'📦', part:true}; }
@@ -2017,7 +2028,7 @@ function keMedia(it){ const k=invLineKind(it);
   if(it.id==='custom') return {img:'', emoji:'📝'};
   const s=svc(it.id); return {img:safeUrl((s&&s.img)||'',''), emoji:(s&&s.ico)||'🔧'}; }
 function kePic(md){ return `<span class="ke-pic${md.part?' part':''}"><i style="font-style:normal">${esc(md.emoji)}</i>${md.img?`<img src="${esc(md.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`; }
-function closeInvoice(){ invEditing=null; svcPickOpen=false; stockPickOpen=false; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
+function closeInvoice(){ invEditing=null; svcPickOpen=false; stockPickOpen=false; pickQ=''; pickCat='all'; svcPickQ=''; stockPickQ=''; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
 function captureInvPrices(){
   document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; });
   document.querySelectorAll('.ir-pname').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].name=inp.value; });
@@ -2287,14 +2298,15 @@ function renderInvoice(){
       <span class="ke-tag">${lg('kiInvoice')}</span><button class="ke-close" onclick="closeInvoice()" aria-label="${A?'إغلاق':'Close'}">✕</button></div>
     <div class="ke-in">
     ${invMember()?`<div class="inv-member">🏷️ ${A?'مشترك ريّح بالك · القطع بسعر المشترك':'Rayyeh Balak member · parts at member price'}</div>`:''}
+    <div class="ke-find"><input class="ke-search" id="pkQ" value="${esc(pickQ)}" placeholder="🔍 ${A?'ابحث عن خدمة أو قطعة…':'Search a service or a part…'}" oninput="pickSearch(this.value)" autocomplete="off" /></div>
+    <div class="ke-cats">${[['all',A?'الكل':'All'],['plumb','🚿 '+(A?'سباكة':'Plumbing')],['elec','💡 '+(A?'كهرباء':'Electrical')],['gen','🧰 '+(A?'عام':'General')]].map(([c,l])=>`<button type="button" class="ke-cat ${pickCat===c?'on':''}" onclick="pickSetCat('${c}')">${l}</button>`).join('')}</div>
     <div class="ke-adds">
       <button type="button" class="ke-add main ${svcPickOpen?'on':''}" onclick="toggleSvcPick()"><span class="ke-ai">🧰</span>${esc(t('addService'))}</button>
       ${(INV||[]).length?`<button type="button" class="ke-add ${stockPickOpen?'on':''}" onclick="toggleStockPick()"><span class="ke-ai">📦</span>${lg('kiStock')}</button>`:''}
       <button type="button" class="ke-add" onclick="addPart()"><span class="ke-ai">🔧</span>${esc(String(t('addPart')).replace(/^[^\p{L}]+/u,''))}</button>
       <button type="button" class="ke-add" onclick="addCustomItem()"><span class="ke-ai">✎</span>${esc(t('customItem'))}</button>
     </div>
-    ${svcPickOpen?`<div class="ke-pick"><input class="ke-search" placeholder="🔍 ${lg('kiSearchSvc')}" oninput="svcPickSearch(this.value)" /><div class="ke-grid" id="svGrid">${svcPickGrid()}</div></div>`:''}
-    ${stockPickOpen?`<div class="sp-wrap"><input class="sp-search" placeholder="🔍 ${A?'ابحث عن القطعة':'Search part'}" oninput="stockPickSearch(this.value)" /><div class="sp-grid" id="spGrid">${stockPickGrid()}</div></div>`:''}
+    ${(svcPickOpen||stockPickOpen)?`<div class="ke-pick">${svcPickOpen?`<div class="ke-sec">${A?'🧰 الخدمات والشغل':'🧰 Services and work'}</div><div class="ke-grid" id="svGrid">${svcPickGrid()}</div>`:''}${stockPickOpen?`<div class="ke-sec">${A?'📦 القطع من المستودع':'📦 Parts from stock'}</div><div class="sp-grid" id="spGrid">${stockPickGrid()}</div>`:''}</div>`:''}
     <div class="ke-lines inv-items">${rows}</div>
     ${invPct()>0&&!invItems.some(it=>it.booked)?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل · ينطبق تلقائياً</div>`:''}
     <div class="ke-tot"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
