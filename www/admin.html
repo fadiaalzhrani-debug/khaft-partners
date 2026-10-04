@@ -183,7 +183,9 @@
   .jr-st.accepted{background:#e3f5ea;color:#15803d} .jr-st.rejected{background:#fde8e8;color:#b91c1c}
   .jr-st.waitlist{background:#f1e9ff;color:#7c3aed}
   /* درجة الجودة وترتيب القائمة */
-  .jr-score{display:inline-flex;align-items:center;gap:6px;background:#f7f4ea;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.76rem;font-weight:800;color:var(--muted);margin-inline-start:6px;white-space:nowrap}
+  .jr-ask{background:var(--gold-tint,#FFF6D6);border-color:var(--gold,#F5C518);font-weight:800}
+.jr-upd{background:#E3F4EA;color:#1C7C4A;font-weight:800}
+.jr-score{display:inline-flex;align-items:center;gap:6px;background:#f7f4ea;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.76rem;font-weight:800;color:var(--muted);margin-inline-start:6px;white-space:nowrap}
   .jr-score b{color:var(--gold-deep)}
   .jr-rank{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:.8rem;font-weight:900;margin-inline-end:6px}
   /* مؤشر الطلبات لكل فني هذا الشهر */
@@ -2881,6 +2883,11 @@ function jrScore(x){
   const e=String(d.exp||''); if(/10/.test(e)) s+=3; else if(/5/.test(e)) s+=2; else if(/3/.test(e)) s+=1;
   return Math.min(15,s);
 }
+/* رسالة واتساب برابط «كمّل خدماتك وأسعارك» الخاص بالطلب (join_svc_get/join_svc_set بالرمز svc_token) */
+function jrSvcMsg(x){ const u='https://partners.khafet.com/join/?svc='+encodeURIComponent(x.svc_token||''); const n=String(x.name||'').trim();
+  return (x.lang&&x.lang!=='ar')
+    ? `Hi ${n}, this is Khafet 👋\nTo complete your application #${x.ref_no}, please pick the services you do and enter your price for each one here:\n${u}`
+    : `هلا ${n}، معك خافت 👋\nعشان نكمّل طلب انضمامك رقم ${x.ref_no}: اختر الخدمات اللي تسويها واكتب سعرك لكل خدمة من هالرابط 👇\n${u}`; }
 function jrStars(n){ const k=Math.max(0,Math.min(5,Math.round(n/3))); return '★'.repeat(k)+'☆'.repeat(5-k); }
 function jrWhen(ts){
   try{ const d=new Date(ts); const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -2955,9 +2962,10 @@ function renderJoinReqs(){
         : `<a class="sbtn ok" href="https://wa.me/${jrPhoneIntl(x.phone)}?text=${encodeURIComponent(x.lang&&x.lang!=='ar'?JR_WELCOME_EN:JR_WELCOME)}" target="_blank" rel="noopener">💬 ${LX('أرسل له طريقة الدخول','Send sign-in steps')}</a>`)
       + (x.status==='accepted'?[]:['contacted','waitlist','rejected']).map(k=>`<button class="sbtn ${x.status===k?'on':''}" data-id="${esc(x.id)}" data-st="${x.status===k?'new':k}" onclick="setJoinStatus(this.dataset.id,this.dataset.st)">${x.status===k?'✓ ':''}${ST[k]}</button>`).join('');
     return `<div class="jr ${x.status==='new'?'new':''}">
-      <div class="jr-top"><h4>${x.status==='waitlist'?`<span class="jr-rank">${ar(idx+1)}</span>`:''}#${ar(esc(x.ref_no))} · ${esc(x.name)}<span class="jr-score" title="${LX('درجة الجودة','Quality score')}">${jrStars(sc)} <b>${ar(sc)}</b>/15</span><small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${esc(x.status)}">${esc(stl(x.status))}</span></div>
-      <div class="jr-meta"><span>📍 ${esc(J(x.cities))}</span><span>🧰 ${ar(esc(x.services_count))} ${LX('خدمة','services')}</span>${A(x.categories).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
+      <div class="jr-top"><h4>${x.status==='waitlist'?`<span class="jr-rank">${ar(idx+1)}</span>`:''}#${ar(esc(x.ref_no))} · ${esc(x.name)}<span class="jr-score" title="${LX('كم تعبّى من بيانات الطلب (الخدمات، الضمان، الخبرة…)','How complete the application is')}">${LX('اكتمال الطلب','Completeness')} <b>${ar(sc)}</b>/15</span><small>${jrWhen(x.created_at)}</small></h4><span class="jr-st ${esc(x.status)}">${esc(stl(x.status))}</span></div>
+      <div class="jr-meta">${d.services_at?`<span class="jr-upd">✏️ ${LX('عبّى خدماته','Updated services')} ${jrWhen(d.services_at)}</span>`:''}<span>📍 ${esc(J(x.cities))}</span><span>🧰 ${ar(esc(x.services_count))} ${LX('خدمة','services')}</span>${A(x.categories).map(c=>`<span>${esc(c)}</span>`).join('')}</div>
       <div class="jr-contact">
+        ${x.svc_token?`<a class="sbtn ${(+x.services_count||0)===0?'jr-ask':''}" href="https://wa.me/${jrPhoneIntl(x.phone)}?text=${encodeURIComponent(jrSvcMsg(x))}" target="_blank" rel="noopener">📝 ${LX('اطلب خدماته وأسعاره','Ask for services & prices')}</a>`:''}
         <a class="sbtn" href="https://wa.me/${jrPhoneIntl(x.phone)}" target="_blank" rel="noopener">💬 ${LX('واتساب','WhatsApp')}</a>
         <a class="sbtn" href="tel:${esc(x.phone)}">📞 ${esc(x.phone)}</a>
       </div>
