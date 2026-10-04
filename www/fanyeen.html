@@ -380,7 +380,8 @@
   .bk-found{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .bk-found span{font-size:.8rem;font-weight:800;padding:2px 10px;border-radius:999px;background:#e3f5ea;color:#15803d}
   .bk-found span.miss{background:#fdefd5;color:#a15c07}
-  .bk-svc{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .bk-svc{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line)}
+.bk-svc .ke-pic{width:46px;height:46px;flex:0 0 46px}
   .bk-svc-n b{display:block;font-weight:800;line-height:1.35}
   .bk-svc-n small{color:var(--muted);font-weight:700;font-size:.8rem}
   .bk-qty{display:flex;align-items:center;gap:4px;background:var(--panel);border-radius:10px;padding:2px}
@@ -2989,6 +2990,16 @@ const BK_WORK_START=8*60, BK_WORK_END=22*60, BK_WINDOW=120;
 function bkWindowLabel(m){ return jobTime(m)+' – '+jobTime(Math.min(m+BK_WINDOW,BK_WORK_END)); }
 /* ═ حجز لعميل: لصق طلب الواتس، رابط الموقع، وقت محدد، صورة الموقع ═ */
 let bkSvcs=[], bkPhoto=null, bkWaOpen=false, bkFound=null, bkExact=false;
+/* منتقي خدمات الحجز بالصور (بدل القائمة النصية، بطلب فادية 2026-10-04): بحث + أقسام + بطاقات بصورة الخدمة وسعرها */
+let bkPickOpen=false, bkPickQ='', bkPickCat='all';
+function bkPickCatOk(x){ if(bkPickCat==='all') return true; const c=x.cat==='plumb'?'plumb':x.cat==='elec'?'elec':'gen'; return c===bkPickCat; }
+function bkPickGrid(){ const q=bkPickQ; const list=SERVICES.filter(x=>!x.inactive&&!x.hidden&&(+x.price||0)>0&&x.id!=='quick').filter(bkPickCatOk).filter(x=>!q||[x.name,svcName2(x),(SVC_I18N[x.id]||{}).en].some(y=>String(y||'').toLowerCase().includes(q)));
+  if(!list.length) return `<div class="ke-none">${lg('kiNone')}</div>`;
+  return list.map(x=>{ const b=bkSvcs.find(z=>z.id===x.id); const n=b?b.qty:0; const u=safeUrl(x.img||'','');
+    return `<button type="button" class="ke-sv" data-id="${esc(x.id)}" onclick="bkAddSvc(this.dataset.id)"><span class="ke-im"><i style="font-style:normal">${esc(x.ico||'🔧')}</i>${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><span class="ke-plus">+</span>${n?`<span class="ke-cnt">×${ar(n)}</span>`:''}<b>${esc(svcName2(x))}</b><small>${ar(+x.price||0)+' '+lg('cur')}</small></button>`; }).join(''); }
+function bkPickSearch(v){ bkPickQ=(v||'').trim().toLowerCase(); if(!bkPickOpen){ bkPickOpen=true; render(); const i=document.getElementById('bkQ'); if(i){ i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} } return; } const g=document.getElementById('bkGrid'); if(g) g.innerHTML=bkPickGrid(); }
+function bkPickCatSet(c){ bkPickCat=c||'all'; bkPickOpen=true; render(); }
+function bkPickToggle(){ bkPickOpen=!bkPickOpen; render(); }
 const BK_KW={
   p1:['شطاف','الشطاف','شطافه'], p2:['تسليك','مسدود','مسدوده','انسداد','بالوعه','البالوعه','مجاري','المجاري','طفح'],
   p3:['خلاط','الخلاط','حنفيه','صنبور','بزبوز'], pleak:['كشف تسريب','كشف تسرب','كشف التسريب','فاتوره الماء'],
@@ -3200,10 +3211,9 @@ function renderBookTab(){
   /* الخدمات من الأقسام مع الكمية */
   let est=0;
   const svcRows=bkSvcs.map(x=>{ const s=svc(x.id); if(!s) return ''; est+=(+s.price||0)*x.qty;
-    return `<div class="bk-svc"><div class="bk-svc-n"><b>${esc(s.ico||'🔧')} ${esc(svcName2(s))}</b><small>${ar(+s.price||0)} ${A?'ريال':'SAR'}${x.qty>1?' × '+ar(x.qty):''}</small></div>
+    return `<div class="bk-svc">${kePic(keMedia({id:s.id}))}<div class="bk-svc-n"><b>${esc(svcName2(s))}</b><small>${ar(+s.price||0)} ${A?'ريال':'SAR'}${x.qty>1?' × '+ar(x.qty):''}</small></div>
       <div class="bk-qty"><button type="button" onclick="bkSvcQty('${x.id}',-1)" aria-label="-">−</button><span>${ar(x.qty)}</span><button type="button" onclick="bkSvcQty('${x.id}',1)" aria-label="+">+</button></div>
       <button type="button" class="bk-x" onclick="bkSvcDel('${x.id}')" aria-label="${A?'حذف':'Remove'}">×</button></div>`; }).join('');
-  const svcOpts=`<option value="">${A?'+ أضف خدمة من الأقسام':'+ Add a service'}</option>`+SERVICES.filter(s=>!s.inactive && !s.hidden && (+s.price||0)>0 && s.id!=='quick').map(s=>`<option value="${s.id}">${esc(svcName2(s))} · ${ar(+s.price||0)}</option>`).join('');
   const waBox=`<div class="bk-wa">
       <div class="bk-wa-h"><b>💬 ${A?'طلب من الواتس':'Order from WhatsApp'}</b>${bkWaOpen?'':`<button type="button" class="bk-wa-go" onclick="bkPasteChat()">📋 ${A?'لصق المحادثة':'Paste chat'}</button>`}</div>
       ${bkWaOpen?`<p class="bk-wa-hint">${A?'انسخ رسائل العميل من الواتس والصقها هنا، وتتعبى البيانات تحت لحالها.':'Copy the customer messages from WhatsApp and paste them here.'}</p>
@@ -3227,7 +3237,10 @@ function renderBookTab(){
   </div>
   <div class="bkpanel"><h3>🧰 ${A?'الخدمات':'Services'}</h3>
     ${svcRows}
-    <select class="bk-add" onchange="bkAddSvc(this.value)">${svcOpts}</select>
+    <div class="ke-find" style="margin-top:10px"><input class="ke-search" id="bkQ" value="${esc(bkPickQ)}" placeholder="🔍 ${A?'ابحث عن خدمة…':'Search a service…'}" oninput="bkPickSearch(this.value)" autocomplete="off" /></div>
+    <div class="ke-cats">${[['all',A?'الكل':'All'],['plumb','🚿 '+(A?'سباكة':'Plumbing')],['elec','💡 '+(A?'كهرباء':'Electrical')],['gen','🧰 '+(A?'عام':'General')]].map(([c,l])=>`<button type="button" class="ke-cat ${bkPickCat===c?'on':''}" onclick="bkPickCatSet('${c}')">${l}</button>`).join('')}</div>
+    <button type="button" class="ke-add main ${bkPickOpen?'on':''}" onclick="bkPickToggle()"><span class="ke-ai">🧰</span>${A?'+ أضف خدمة من الأقسام':'+ Add a service'}</button>
+    ${bkPickOpen?`<div class="ke-pick"><div class="ke-grid" id="bkGrid">${bkPickGrid()}</div></div>`:''}
     <div class="fu-field" style="margin:10px 0 0"><input id="bk_svc" value="${esc(bkVals.svc||'')}" oninput="bkVals.svc=this.value" placeholder="${A?'وصف أو خدمة مو موجودة (اختياري)':'Description or other service (optional)'}" /></div>
     ${est>0?`<div class="bk-est"><span>${A?'المجموع التقريبي':'Estimated total'}</span><b>${ar(est)} ${A?'ريال':'SAR'}</b></div>`:''}
   </div>
