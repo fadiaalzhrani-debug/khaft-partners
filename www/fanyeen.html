@@ -3442,6 +3442,7 @@ function render(){
         ${o.videoUrl?`<div class="tj-row"><span class="tj-k">📷 ${lang==='ne'?'फोटो/भिडियो':lang==='en'?'Photo/Video':lang==='hi'?'फोटो/वीडियो':lang==='ur'?'تصویر/ویڈیو':'صورة/مقطع'}</span><span class="tj-v"><button class="tvideo" data-media="${esc(o.videoUrl)}" onclick="openMedia(this.dataset.media)">${t('watchVideo')}</button></span></div>`:''}
         <div class="tj-row"><span class="tj-k">⏱️ ${t('duration')}</span><span class="tj-v">${jobDur(o.duration)}</span></div>
         <div class="tj-row loc-row"><span class="tj-k">📍 ${t('location')}</span><span class="tj-v">${[addr, a.house?t('house')+' '+esc(a.house):''].filter(Boolean).join(' · ')||(gpsPin?'📍 GPS':'')}
+          ${a.short?`<div style="font-weight:800;margin-top:2px;direction:ltr;text-align:right">🏷️ ${esc(String(a.short).slice(0,10))}</div>`:''}
           ${a.mark?`<div style="color:var(--muted);font-weight:600;margin-top:2px">🚩 ${esc(a.mark)}</div>`:''}
           <a class="tmap" href="${esc(mapUrl)}" target="_blank" rel="noopener">🗺️ ${gpsPin?'📍 ':''}${t('openMap')}</a>
           ${a.photoUrl?`<button class="tmap" style="background:#7c3aed;color:#fff" data-media="${esc(a.photoUrl)}" onclick="openMedia(this.dataset.media)">🏠 ${lang==='ne'?'घरको फोटो':lang==='en'?'House photo':lang==='hi'?'घर की फोटो':lang==='ur'?'گھر کی تصویر':'صورة المنزل'}</button>`:''}</span></div>
