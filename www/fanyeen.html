@@ -788,6 +788,23 @@ a.card:active,.card:active{transform:scale(.97)}
 .ke-tot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;background:#1d1a16;color:#fff;border-radius:16px;padding:13px 16px}
 .ke-tot span{font-weight:800;font-size:1rem}
 .ke-tot b{color:#F5C518;font-weight:900;font-size:1.45rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ke-lsec{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 4px -2px;font-weight:900;font-size:.92rem;color:var(--muted)}
+.ke-lsec b{color:var(--text);font-variant-numeric:tabular-nums}
+.ke-lsec.nw{color:#0B7A3E}
+.ke-ln.nw{box-shadow:0 0 0 2px #2E9E5B}
+.ke-chip.new{background:#E3F6EA;color:#0B7A3E}
+.ke-chip.hand{background:#FFF4D6;color:#8A5A00}
+.ke-empty.sm{padding:14px;font-size:.9rem}
+.ke-pk-hd{display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap;padding:2px 4px 6px;font-weight:900}
+.ke-pk-n{background:#E3F6EA;color:#0B7A3E;border-radius:999px;padding:3px 10px;font-size:.82rem;font-weight:900}
+.ke-pk-done{margin-inline-start:auto;background:#1d1a16;color:#F5C518;border:0;border-radius:999px;padding:8px 14px;font-family:inherit;font-weight:900;cursor:pointer}
+.ke-sec small{background:var(--panel);border-radius:999px;padding:1px 8px;margin-inline-start:6px;font-size:.78rem}
+.ke-free{margin-top:10px;background:#fff;border:1.5px dashed var(--line);border-radius:12px;padding:9px 14px;font-family:inherit;font-weight:800;cursor:pointer;color:var(--text)}
+.ke-sg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.ke-sg:empty{display:none}
+.ke-sgl{font-size:.78rem;font-weight:800;color:var(--muted)}
+.ke-sgb{background:#FFF8DC;border:1px solid #F0D98A;color:#1d1a16;border-radius:999px;padding:5px 11px;font-family:inherit;font-weight:800;font-size:.82rem;cursor:pointer}
+.inv-pay .nw span:last-child{color:#0B7A3E;font-weight:900}
 .ke-note{color:var(--muted);font-size:.8rem;font-weight:700;margin:6px 4px 0}
 .ke .inv-pay{background:var(--card);border:0;border-radius:16px;padding:4px 14px;margin-top:10px;box-shadow:0 0 0 1px var(--line)}
 .ke .inv-pay div{font-size:.95rem}
@@ -1854,7 +1871,10 @@ async function createFollowup(id){
 /* ---- الفاتورة ---- */
 let invEditing=null, invItems=[];
 function svcName2(s){ if(lang==='ar') return s.name; const tr=SVC_I18N[s.id]; return (tr&&(tr[lang]||tr.en))||s.name; }
-function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(s) return svcName2(s); } return it.name; }
+function itemDisplay(it){ if(it.id && it.id!=='custom'){ const s=svc(it.id); if(s) return svcName2(s); }
+  // صنف المستودع باسمه بلغة الواجهة (العربي من name، وغيره من name_en)
+  if((it.id==='stock'||it.stockId) && lang!=='ar'){ const iv=(INV||[]).find(x=>String(x.id)===String(it.stockId)); if(iv&&typeof whName==='function') return whName(iv); }
+  return it.name; }
 /* القطع المحجوزة اللي شالها الفني لأن العميل عنده الغرض (يرجع مبلغها للعميل) */
 let invDrops=[];
 /* تبديل قطعة محجوزة بلون أو نوع ثاني: البند يبقى محجوزًا (booked) ويحمل معرّف البديل stockId، والخادم (khafet_pay_calc)
@@ -1958,6 +1978,9 @@ function openInvoice(id){
       if(String(it.id).startsWith('part:') && it.stockId){ const inv=INV.find(x=>x.id===it.stockId); return {id:'stock',stockId:it.stockId,name:it.name||(inv&&inv.name)||'',qty:+it.qty||1,price:+it.price||0,deducted:0,img:it.img||(inv&&inv.image_url)||'',booked:true}; }
       const s=svc(it.id); return {id:it.id,name:it.name,qty:+it.qty||1,price:s?+s.price:(+it.price||0),booked:true}; });
   }
+  // الموجود وقت الفتح يتعلّم «من قبل» (المحجوز أو اللي بالفاتورة)، وأي شي ينضاف بعدها «جديد». العلامة ما تنحفظ: الحفظ يبني البنود من حقولها
+  invItems.forEach(it=>{ if(it) it._old=true; });
+  pickQ=''; svcPickQ=''; stockPickQ=''; pickCat='all'; svcPickOpen=false; stockPickOpen=false;
   renderInvoice();
 }
 /* حساب الفاتورة: تقدير بنفس معادلة الخادم (khafet_pay_calc للفني والمزوّد) عشان المعروض يطابق المطلوب من العميل:
@@ -1998,15 +2021,63 @@ async function uploadPartPhoto(itemId, file){
 let stockPickOpen=false, stockPickQ='';
 /* بحث واحد فوق + أقسام (سباكة/كهرباء/عام) تطبّق على الخدمات والقطع معًا (بطلب فادية 2026-10-04: «قسّم الأغراض والشغل وخله يبحث فوق») */
 let pickQ='', pickCat='all';
+/* بحث عربي مرن (بطلب فادية 2026-10-06 «ابحث بالاسم ومايطلع»): يوحّد الهمزات والتاء المربوطة والياء ويشيل التشكيل والتطويل،
+   ويقبل الكلمة بـ«ال» أو بدونها، والكلمات بأي ترتيب. يبحث في الاسم العربي والإنجليزي والكود وكتابات الفنيين (tags) */
+function normQ(v){ return String(v||'').toLowerCase().replace(/[ً-ٰٟـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+  .replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\p{L}\p{N}]+/gu,' ').trim(); }
+function qMatch(q, fields){ const qq=normQ(q); if(!qq) return true; const hay=' '+normQ((fields||[]).filter(Boolean).join(' '))+' ';
+  return qq.split(' ').every(w=>hay.includes(w)||(w.length>3&&w.startsWith('ال')&&hay.includes(w.slice(2)))); }
+// الأقرب أول: اللي اسمه يبدأ بالكلمة، ثم اللي اسمه فيه الكلمة، ثم اللي طابق من الإنجليزي أو الكتابات
+function qRank(q, name){ const qq=normQ(q), n=normQ(name); if(!qq) return 0; return n.startsWith(qq)?0:(n.includes(qq)?1:2); }
+function svcPickList(){ const q=svcPickQ; const L=SERVICES.filter(s=>!s.inactive&&!s.hidden).filter(s=>pickCatOk('svc',s)).filter(s=>qMatch(q,[s.name,svcName2(s)].concat(Object.values(SVC_I18N[s.id]||{}))));
+  return q?L.map((x,i)=>({x,i,r:qRank(q,x.name)})).sort((a,b)=>a.r-b.r||a.i-b.i).map(o=>o.x):L; }
+function stockPickList(){ const q=stockPickQ; const L=(INV||[]).filter(it=>pickCatOk('inv',it)).filter(it=>qMatch(q,[it.name,it.name_en,it.code,it.tags,(typeof whName==='function'?whName(it):'')]));
+  return q?L.map((x,i)=>({x,i,r:qRank(q,x.name)})).sort((a,b)=>a.r-b.r||a.i-b.i).map(o=>o.x):L; }
+/* المنتقي كامل (العنوان وعدد الإضافة الجديدة والقسمين): ينعاد رسمه مع كل حرف والمؤشر يبقى في خانة البحث (الخانة برّاه) */
+function pickHtml(){
+  const A=lang==='ar', q=pickQ, hasInv=(INV||[]).length>0;
+  const showSvc=svcPickOpen||!!q, showStock=hasInv&&(stockPickOpen||!!q);
+  if(!showSvc&&!showStock) return '';
+  const sv=showSvc?svcPickList():[], st=showStock?stockPickList():[];
+  const nw=invItems.filter(it=>it&&!it.booked&&!it._old), nwSum=round2(nw.reduce((a,it)=>a+lineAmount(it),0));
+  let h=`<div class="ke-pk-hd"><span>${q?(A?'نتائج «'+esc(q)+'»':'Results for “'+esc(q)+'”'):(A?'اختر وش تضيف':'Pick what to add')}</span>`
+    +(nw.length?`<span class="ke-pk-n">➕ ${ar(nw.length)} · ${ar(nwSum)} ${lg('cur')}</span>`:'')
+    +`<button type="button" class="ke-pk-done" onclick="pickClose()">✓ ${A?'خلصت':'Done'}</button></div>`;
+  if(showSvc&&(sv.length||!q)) h+=`<div class="ke-sec">${A?'🧰 الخدمات والشغل':'🧰 Services and work'}<small>${ar(sv.length)}</small></div><div class="ke-grid" id="svGrid">${svcPickGrid()}</div>`;
+  if(showStock&&(st.length||!q)) h+=`<div class="ke-sec">${A?'📦 الأغراض من المستودع':'📦 Parts from stock'}<small>${ar(st.length)}</small></div><div class="sp-grid" id="spGrid">${stockPickGrid()}</div>`;
+  if(q&&!sv.length&&!st.length) h+=`<div class="ke-none">${A?'ما لقينا شي باسم «'+esc(q)+'»':'Nothing matches “'+esc(q)+'”'}<br><button type="button" class="ke-free" onclick="addFreeFromSearch()">✎ ${A?'أضفه بند بهالاسم وحط سعره':'Add it as a custom line and set its price'}</button></div>`;
+  return `<div class="ke-pick">${h}</div>`;
+}
+function pickClose(){ captureInvPrices(); svcPickOpen=false; stockPickOpen=false; pickQ=''; svcPickQ=''; stockPickQ=''; renderInvoice();
+  const n=document.getElementById('keNew')||document.querySelector('.ke-lines'); if(n) try{ n.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){} }
+function addFreeFromSearch(){ const nm=pickQ; captureInvPrices(); invItems.push({id:'part',name:nm,qty:1,price:0}); pickClose();
+  toast(lang==='ar'?'✎ اكتب سعر «'+nm+'»':'✎ Set the price of "'+nm+'"'); }
+/* اقتراح صنف للبند المكتوب يدويًا (الاسم بأي لغة أو بكتابة الفني): ضغطة تحوّله لصنف المستودع أو الخدمة باسمها العربي الصحيح */
+// قد إيش الاسم المكتوب يطابق الصنف: نسبة كلماته الموجودة (كتابة الفني ما تطابق كل الكلمات، مثل «Wash basin hose 60» و«هوز مغسلة 60»)
+function qScore(q, fields){ const ws=normQ(q).split(' ').filter(w=>w.length>=2); if(!ws.length) return 0; const hay=' '+normQ((fields||[]).filter(Boolean).join(' '))+' ';
+  return ws.filter(w=>hay.includes(w)||(w.length>3&&w.startsWith('ال')&&hay.includes(w.slice(2)))).length/ws.length; }
+function keSuggestions(name){ const q=String(name||'').trim(); if(q.length<2) return [];
+  const best=(L,f)=>L.map(x=>({x,s:qScore(q,f(x))})).filter(o=>o.s>=0.5).sort((a,b)=>b.s-a.s).map(o=>o.x);
+  const st=best(INV||[],it=>[it.name,it.name_en,it.code,it.tags]).slice(0,3).map(it=>({k:'stock',id:String(it.id),label:'📦 '+(typeof whName==='function'?whName(it):it.name)}));
+  const sv=best(SERVICES.filter(x=>!x.inactive&&!x.hidden&&!x.custom),x=>[x.name,svcName2(x)].concat(Object.values(SVC_I18N[x.id]||{}))).slice(0,2).map(x=>({k:'svc',id:String(x.id),label:'🧰 '+svcName2(x)}));
+  return st.concat(sv).slice(0,4); }
+function keSuggestHtml(i,name){ const L=keSuggestions(name); if(!L.length) return ''; const A=lang==='ar';
+  return `<span class="ke-sgl">${A?'تقصد:':'Did you mean:'}</span>`+L.map(x=>`<button type="button" class="ke-sgb" data-i="${i}" data-k="${x.k}" data-id="${esc(x.id)}" onclick="keUseSuggest(+this.dataset.i,this.dataset.k,this.dataset.id)">${esc(x.label)}</button>`).join(''); }
+function keSuggest(i,v){ const el=document.getElementById('sg'+i); if(el) el.innerHTML=keSuggestHtml(i,v); }
+function keUseSuggest(i,k,id){ captureInvPrices(); const cur=invItems[i]; if(!cur||cur.booked) return; const q=Math.max(1,+cur.qty||1); let nw=null, label='';
+  if(k==='stock'){ const it=(INV||[]).find(x=>String(x.id)===String(id)); if(it){ nw={id:'stock',stockId:it.id,name:it.name,qty:q,price:invPriceOf(it),deducted:0,img:it.image_url||''}; label=(typeof whName==='function'?whName(it):it.name); } }
+  else { const x=svc(id); if(x){ nw={id:x.id,name:x.name,qty:q,price:x.price}; label=svcName2(x); } }
+  if(!nw) return; if(cur._old) nw._old=true; invItems[i]=nw; toast('✅ '+label); renderInvoice(); }
 function pickCatOf(kind,x){ if(kind==='svc'){ return x.cat==='plumb'?'plumb':x.cat==='elec'?'elec':'gen'; } const c=String(x.category||''); return c==='سباكة'?'plumb':c==='كهرباء'?'elec':'gen'; }
 function pickCatOk(kind,x){ return pickCat==='all'||pickCatOf(kind,x)===pickCat; }
-function pickSearch(v){ pickQ=(v||'').trim().toLowerCase(); svcPickQ=pickQ; stockPickQ=pickQ;
-  if(!svcPickOpen&&!stockPickOpen){ captureInvPrices(); svcPickOpen=true; stockPickOpen=true; renderInvoice(); const i=document.getElementById('pkQ'); if(i){ i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} } return; }
-  const g=document.getElementById('svGrid'); if(g) g.innerHTML=svcPickGrid(); const p=document.getElementById('spGrid'); if(p) p.innerHTML=stockPickGrid(); }
+function pickSearch(v){ pickQ=(v||'').trim(); svcPickQ=pickQ; stockPickQ=pickQ;
+  // البحث يعرض الخدمات والأغراض مع بعض دايمًا، حتى لو كان المفتوح قسم واحد
+  const box=document.getElementById('kePick'); if(box){ box.innerHTML=pickHtml(); return; }
+  captureInvPrices(); renderInvoice(); const i=document.getElementById('pkQ'); if(i){ i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} } }
 function pickSetCat(c){ captureInvPrices(); pickCat=c||'all'; if(!svcPickOpen&&!stockPickOpen){ svcPickOpen=true; stockPickOpen=true; } renderInvoice(); }
 function toggleStockPick(){ captureInvPrices(); stockPickOpen=!stockPickOpen; if(stockPickOpen) svcPickOpen=false; renderInvoice(); }
-function stockPickSearch(v){ stockPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('spGrid'); if(g) g.innerHTML=stockPickGrid(); }
-function stockPickGrid(){ const A=lang==='ar'; const list=(INV||[]).filter(it=>pickCatOk('inv',it)).filter(it=>!stockPickQ||(it.name||'').toLowerCase().includes(stockPickQ)||(it.name_en||'').toLowerCase().includes(stockPickQ)||(it.code||'').toLowerCase().includes(stockPickQ)||(it.tags||'').toLowerCase().includes(stockPickQ));
+function stockPickSearch(v){ pickSearch(v); }
+function stockPickGrid(){ const A=lang==='ar'; const list=stockPickList();
   if(!list.length) return `<div class="sl-empty" style="grid-column:1/-1">${A?'ما فيه صنف بهالاسم':'No match'}</div>`;
   return list.map(it=>{ const q=+it.qty||0; return `<button class="sp-it ${q<=0?'out':''}" onclick="addStockPart('${it.id}')"><div class="im">${it.image_url?`<img src="${esc(it.image_url)}" loading="lazy" />`:'📦'}</div><b>${esc(whName(it))}</b><small>${A?'متوفّر':'in'} ${ar(q)} · ${ar(invPriceOf(it))} ${A?'ر.س':'SAR'}</small></button>`; }).join(''); }
 async function invPhoto(id,input){ const f=input.files&&input.files[0]; if(!f) return; const it=INV.find(x=>x.id===id); if(!it) return; toast('⏳'); try{ it.image_url=await uploadPartPhoto(id,f); toast('✅ '+(lang==='ar'?'انحفظت الصورة':'Photo saved')); render(); }catch(e){ toast('⚠️ '+(e.message||'')); } }
@@ -2014,9 +2085,9 @@ function addStockPart(id){ if(!id) return; captureInvPrices(); const it=INV.find
 /* منتقي الخدمات بالصور (بدل القائمة المنسدلة): بحث + بطاقات بصورة الخدمة وسعرها · كل ضغطة تضيف بندًا جديدًا (addInvItem) ولا تدمج الكمية لأن الخادم يسعّر كل بند بسعر الوحدة الإضافية */
 let svcPickOpen=false, svcPickQ='';
 function toggleSvcPick(){ captureInvPrices(); svcPickOpen=!svcPickOpen; if(svcPickOpen) stockPickOpen=false; renderInvoice(); }
-function svcPickSearch(v){ svcPickQ=(v||'').trim().toLowerCase(); const g=document.getElementById('svGrid'); if(g) g.innerHTML=svcPickGrid(); }
+function svcPickSearch(v){ pickSearch(v); }
 function svcPickGrid(){
-  const q=svcPickQ; const list=SERVICES.filter(s=>!s.inactive&&!s.hidden).filter(s=>pickCatOk('svc',s)).filter(s=>!q||[s.name,svcName2(s),(SVC_I18N[s.id]||{}).en].some(x=>String(x||'').toLowerCase().includes(q)));
+  const list=svcPickList();
   if(!list.length) return `<div class="ke-none">${lg('kiNone')}</div>`;
   return list.map(s=>{ const n=invItems.filter(x=>x&&x.id===s.id).length; const u=safeUrl(s.img||'','');
     return `<button type="button" class="ke-sv" data-id="${esc(s.id)}" onclick="pickSvc(this.dataset.id)"><span class="ke-im"><i style="font-style:normal">${esc(s.ico||'🔧')}</i>${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><span class="ke-plus">+</span>${n?`<span class="ke-cnt">×${ar(n)}</span>`:''}<b>${esc(svcName2(s))}</b><small>${s.custom?lg('kiFree'):ar(+s.price||0)+' '+lg('cur')}</small></button>`; }).join(''); }
@@ -2269,7 +2340,8 @@ function renderInvoice(){
   // المحرر بتصميم الفاتورة الموحّدة: شريط أسود بالشعار، منتقي خدمات بالصور، وكل بند بطاقة بصورته
   const prev=m.querySelector('.inv-card.ke'); const keepTop=(prev&&prev.dataset.inv===String(invEditing))?prev.scrollTop:0;   // إعادة الرسم ما ترجع المحرر لأوله
   const o0=invOrder(); const cust=(o0&&o0.customer)||{};
-  const rows = invItems.length ? invItems.map((it,i)=>{
+  const anyOld=invItems.some(it=>it&&(it.booked||it._old));
+  const lineRow=(it,i)=>{
     if(it.booked){
       const isPart=it.id==='stock'&&it.stockId; const opts=isPart?partOpts(it.stockId):[]; const d=swapDiff(it);
       return `<div class="ke-ln bk">${kePic(keMedia(it))}<div class="ke-mid">
@@ -2282,17 +2354,34 @@ function renderInvoice(){
     // السعر يُكتب فقط للبنود الحرة (custom/part/خدمة مخصّصة) · قطع المستودع وخدمات الكتالوج يسعّرها الخادم من سعر البيع والكتالوج
     const free=invPriceEditable(it); const amt=lineAmount(it); const unit=round2(amt/Math.max(1,+it.qty||1));
     const nameCell = editable
-      ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" />`
+      ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" oninput="keSuggest(${i},this.value)" />`
       : `<span class="ke-nm">${esc(itemDisplay(it))}</span>`;
     const priceCell = free
       ? `<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`
       : `<span class="ir-price-ro" title="${A?'السعر من الخادم':'Server price'}">${ar(unit)}</span>`;
-    return `<div class="ke-ln">${kePic(keMedia(it))}<div class="ke-mid">
+    const isNew=anyOld&&!it._old;
+    const chips=[isNew?`<span class="ke-chip new">${A?'جديد':'New'}</span>`:'', invLineKind(it)==='stock'?`<span class="ke-chip">📦 ${lg('kiStock')}</span>`:'', editable?`<span class="ke-chip hand">✎ ${A?'مكتوب يدويًا':'Typed by hand'}</span>`:''].filter(Boolean).join('');
+    return `<div class="ke-ln${isNew?' nw':''}">${kePic(keMedia(it))}<div class="ke-mid">
       <div class="ke-hd">${nameCell}<b class="ke-sum">${ar(amt)} <small>${lg('cur')}</small></b></div>
-      ${invLineKind(it)==='stock'?`<div class="ke-tags"><span class="ke-chip">📦 ${lg('kiStock')}</span></div>`:''}
+      ${editable?`<div class="ke-sg" id="sg${i}">${keSuggestHtml(i,it.name)}</div>`:''}
+      ${chips?`<div class="ke-tags">${chips}</div>`:''}
       <div class="ke-ctl"><div class="ke-qty"><button onclick="invQty(${i},1)">+</button><span>${ar(it.qty)}</span><button onclick="invQty(${i},-1)">−</button></div><span class="ke-x">×</span>${priceCell}<button class="ke-del" onclick="invRemove(${i})">🗑️</button></div>
     </div></div>`;
-  }).join('') : `<div class="ke-empty">${t('addService')}</div>`;
+  };
+  // البنود بثلاث مجموعات لما تكون الفاتورة فيها شي من قبل: المحجوز، اللي بالفاتورة، والإضافة الجديدة بمجموعها
+  const all=invItems.map((it,i)=>({it,i}));
+  const bkL=all.filter(x=>x.it.booked), oldL=all.filter(x=>!x.it.booked&&x.it._old), newL=all.filter(x=>!x.it.booked&&!x.it._old);
+  const sumOf=L=>round2(L.reduce((a,x)=>a+lineAmount(x.it),0));
+  const secHd=(txt,sum,cls,id)=>`<div class="ke-lsec${cls?' '+cls:''}"${id?` id="${id}"`:''}><span>${txt}</span>${sum!=null?`<b>${ar(sum)} ${lg('cur')}</b>`:''}</div>`;
+  let rows='';
+  if(!invItems.length) rows=`<div class="ke-empty">${t('addService')}</div>`;
+  else if(!anyOld) rows=all.map(x=>lineRow(x.it,x.i)).join('');
+  else {
+    if(bkL.length) rows+=secHd('🔒 '+(A?'المحجوز مع الطلب':'Booked with the order'))+bkL.map(x=>lineRow(x.it,x.i)).join('');
+    if(oldL.length) rows+=secHd('📄 '+(A?((o0&&o0.invoice)?'في الفاتورة من قبل':'من الطلب'):'Already on the invoice'),sumOf(oldL))+oldL.map(x=>lineRow(x.it,x.i)).join('');
+    rows+=secHd('➕ '+(A?'الإضافة الجديدة':'New additions'),newL.length?sumOf(newL):null,'nw','keNew')
+      +(newL.length?newL.map(x=>lineRow(x.it,x.i)).join(''):`<div class="ke-empty sm">${A?'ابحث فوق واضغط على الخدمة أو الغرض، وينضاف هنا':'Search above and tap a service or part to add it here'}</div>`);
+  }
   m.innerHTML=`<div class="inv-card ke" data-inv="${esc(invEditing)}">
     <div class="ke-top"><img class="ke-lg" src="logo.png" alt="" onerror="this.remove()">
       <div class="ke-t"><b>${esc(invEditing)}</b><small>${[cust.name,cust.phone].filter(Boolean).map(esc).join(' · ')}</small></div>
@@ -2307,14 +2396,16 @@ function renderInvoice(){
       <button type="button" class="ke-add" onclick="addPart()"><span class="ke-ai">🔧</span>${esc(String(t('addPart')).replace(/^[^\p{L}]+/u,''))}</button>
       <button type="button" class="ke-add" onclick="addCustomItem()"><span class="ke-ai">✎</span>${esc(t('customItem'))}</button>
     </div>
-    ${(svcPickOpen||stockPickOpen)?`<div class="ke-pick">${svcPickOpen?`<div class="ke-sec">${A?'🧰 الخدمات والشغل':'🧰 Services and work'}</div><div class="ke-grid" id="svGrid">${svcPickGrid()}</div>`:''}${stockPickOpen?`<div class="ke-sec">${A?'📦 القطع من المستودع':'📦 Parts from stock'}</div><div class="sp-grid" id="spGrid">${stockPickGrid()}</div>`:''}</div>`:''}
+    <div id="kePick">${pickHtml()}</div>
     <div class="ke-lines inv-items">${rows}</div>
     ${invPct()>0&&!invItems.some(it=>it.booked)?`<div class="inv-disc">🎟️ خصم ${ar(invPct())}٪ للعميل · ينطبق تلقائياً</div>`:''}
     <div class="ke-tot"><span>${t('total')}</span><b>${ar(invGrand())} ${lg('cur')}</b></div>
     <div class="ke-note">${lg('estimateNote')}</div>
     ${(()=>{ const o=invOrder(); const paid=o?(+o.paidAmount||0):0; const bk=(o&&o.dbId)?(+o.bookedFinal||0):invBookedNet(); if(!bk&&!paid&&!invDelta()&&!(o&&o.subId&&o.subSvc==='visit')) return ''; return `<div class="inv-pay">
       ${bk?`<div><span>${lg('bookedFee')}</span><span>${ar(bk)} ${lg('cur')}</span></div>`:''}
-      <div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>
+      ${(()=>{ const oldX=round2(invItems.filter(it=>it&&!it.booked&&it._old).reduce((a,it)=>a+lineAmount(it),0)), newX=round2(invItems.filter(it=>it&&!it.booked&&!it._old).reduce((a,it)=>a+lineAmount(it),0));
+        return oldX>0 ? `<div><span>${A?'إضافات سابقة':'Earlier additions'}</span><span>${ar(oldX)} ${lg('cur')}</span></div><div class="nw"><span>${A?'الإضافة الجديدة':'New additions'}</span><span>${ar(newX)} ${lg('cur')}</span></div>`
+          : `<div><span>${lg('extras')}</span><span>${ar(invExtras())} ${lg('cur')}</span></div>`; })()}
       ${invDrops.length?`<div><span>↩️ ${A?'أغراض عند العميل':'Customer has'}</span><span>${esc(invDrops.map(d=>d.name).join('، '))}</span></div>`:''}
       ${(()=>{ const d=invDelta(); if(!d) return ''; return d<0?`<div class="refund"><span>${lg('partsBack')}</span><span>${ar(-d)} ${lg('cur')}</span></div>`:`<div><span>${lg('swapDiff')}</span><span>+${ar(d)} ${lg('cur')}</span></div>`; })()}
       ${(o&&o.subId&&o.subSvc==='visit')?(o.planCover>0
@@ -2993,7 +3084,7 @@ let bkSvcs=[], bkPhoto=null, bkWaOpen=false, bkFound=null, bkExact=false;
 /* منتقي خدمات الحجز بالصور (بدل القائمة النصية، بطلب فادية 2026-10-04): بحث + أقسام + بطاقات بصورة الخدمة وسعرها */
 let bkPickOpen=false, bkPickQ='', bkPickCat='all';
 function bkPickCatOk(x){ if(bkPickCat==='all') return true; const c=x.cat==='plumb'?'plumb':x.cat==='elec'?'elec':'gen'; return c===bkPickCat; }
-function bkPickGrid(){ const q=bkPickQ; const list=SERVICES.filter(x=>!x.inactive&&!x.hidden&&(+x.price||0)>0&&x.id!=='quick').filter(bkPickCatOk).filter(x=>!q||[x.name,svcName2(x),(SVC_I18N[x.id]||{}).en].some(y=>String(y||'').toLowerCase().includes(q)));
+function bkPickGrid(){ const q=bkPickQ; const list=SERVICES.filter(x=>!x.inactive&&!x.hidden&&(+x.price||0)>0&&x.id!=='quick').filter(bkPickCatOk).filter(x=>qMatch(q,[x.name,svcName2(x)].concat(Object.values(SVC_I18N[x.id]||{}))));
   if(!list.length) return `<div class="ke-none">${lg('kiNone')}</div>`;
   return list.map(x=>{ const b=bkSvcs.find(z=>z.id===x.id); const n=b?b.qty:0; const u=safeUrl(x.img||'','');
     return `<button type="button" class="ke-sv" data-id="${esc(x.id)}" onclick="bkAddSvc(this.dataset.id)"><span class="ke-im"><i style="font-style:normal">${esc(x.ico||'🔧')}</i>${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><span class="ke-plus">+</span>${n?`<span class="ke-cnt">×${ar(n)}</span>`:''}<b>${esc(svcName2(x))}</b><small>${ar(+x.price||0)+' '+lg('cur')}</small></button>`; }).join(''); }
