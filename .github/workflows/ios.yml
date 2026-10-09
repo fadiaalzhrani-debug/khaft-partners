@@ -58,6 +58,13 @@ jobs:
       - name: أيقونة التطبيق وشاشة البداية
         run: npx capacitor-assets generate --ios --iconBackgroundColor '#F5C518' --iconBackgroundColorDark '#F5C518' --splashBackgroundColor '#F5C518' --splashBackgroundColorDark '#1a1408'
 
+      - name: صوت الإشعار «تقليب عملات» داخل التطبيق (coins.wav في حزمة التطبيق حتى يشتغل والتطبيق مقفل)
+        run: |
+          set +e
+          afconvert -f WAVE -d LEI16 assets/sounds/coins.mp3 ios/App/App/coins.wav && ls -la ios/App/App/coins.wav
+          ruby -e "require 'xcodeproj'; p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); t = p.targets.find { |x| x.name == 'App' }; g = p.main_group.find_subpath('App', true); f = g.files.find { |x| x.path == 'coins.wav' } || g.new_file('coins.wav'); t.add_resources([f]) unless t.resources_build_phase.files_references.include?(f); p.save; puts 'coins.wav added to App resources'"
+          true
+
       - name: أذونات الجهاز ورقم الإصدار
         env:
           RUN_NUMBER: ${{ github.run_number }}
