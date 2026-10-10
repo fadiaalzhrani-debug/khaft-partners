@@ -918,7 +918,7 @@ async function khFreshInstall(){
 }
 _khFreshP=khFreshInstall();
 /* رقم نسخة المحتوى: يُرسل للخادم في X-Client-Info، ويُقارن بالحد الأدنى في الإعدادات (إجبار التحديث). زِده بواحد مع كل رفع للمتاجر */
-const RIZQ_BUILD=109;
+const RIZQ_BUILD=110;
 const KH_AUTH_OPTS={ auth:{ storage:KH_STORE, persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-rizq/'+RIZQ_BUILD } } };
 try{ const _set=Storage.prototype.setItem, _rm=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){ _set.call(this,k,v); try{ if(this===localStorage&&_khPrefs&&KH_MIRROR.has(k)) _khPrefs.set({key:k,value:String(v)}).catch(()=>{}); if(this===localStorage) _secSet(k,v); }catch(e){} };
@@ -1936,12 +1936,15 @@ function invLineKind(it){
 }
 function lineAmount(it){
   const q=Math.max(1,+it.qty||1), k=invLineKind(it);
-  if(k==='stock') return round2(q*invSell(it.stockId||String(it.id).slice(5), it.price));
+  // قطعة مستودع عدّل الفني سعرها (edited): بسعره، وإلا بسعر البيع الحالي مثل الخادم
+  if(k==='stock') return round2(q*(it.edited?Math.max(0,+it.price||0):invSell(it.stockId||String(it.id).slice(5), it.price)));
   if(k==='fee'){ const s=svc(it.id); return round2(q*(s?(+s.price||0):(+it.price||0))); }
   if(k==='service'){ const s=svc(it.id); const p=+s.price||0, ex=(s.extra!=null)?+s.extra:p; return round2(p+(q-1)*ex); }
   return round2(q*Math.max(0,+it.price||0));
 }
-function invPriceEditable(it){ return !it.booked && invLineKind(it)==='free'; }
+// السعر يُكتب للبنود الحرة ولقطع المستودع غير المحجوزة (طلب فادية 2026-10-10: العامل شرى كرسي حمام بـ350 وما قدر يعدّل الـ300 الثابتة)
+function invPriceEditable(it){ const k=invLineKind(it); return !it.booked && (k==='free'||k==='stock'); }
+function invBasePrice(it){ return invSell(it.stockId||String(it.id||'').slice(5), it.price); }
 function partOpts(stockId){ const row=(PARTSPUB||[]).find(r=>r.item_id===stockId); if(!row) return []; return (PARTSPUB||[]).filter(r=>r.service_id===row.service_id && r.group_key===row.group_key); }
 function invDropBooked(i){
   captureInvPrices(); const it=invItems[i]; if(!it||!it.booked||it.id!=='stock') return; const A=lang==='ar';
@@ -1966,7 +1969,7 @@ function openInvoice(id){
   invEditing=id;
   // بنود «فرق تبديل» وعناصر dropped الخاصة بالتبديل مشتقة، تُعاد حسابها عند الحفظ ولا تُحمَّل كبنود
   invDrops=(o.invoice&&Array.isArray(o.invoice.dropped))?o.invoice.dropped.filter(d=>d&&!d.swap):[];
-  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.filter(it=>it&&it.id!=='swap').map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked, swap:(it.booked&&it.swap&&typeof it.swap==='object')?Object.assign({},it.swap):undefined})) : [];
+  invItems = (o.invoice&&o.invoice.items) ? o.invoice.items.filter(it=>it&&it.id!=='swap').map(it=>({id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:+it.deducted||0,img:it.img||'',booked:!!it.booked, edited:!!it.edited, swap:(it.booked&&it.swap&&typeof it.swap==='object')?Object.assign({},it.swap):undefined})) : [];
   // فاتورة جديدة: خدمات الحجز تنضاف مقفولة (أجرتها محسوبة وقت الحجز)، والفني يضيف الأغراض
   // حجز الطاقم: خدمات الحجز من الأقسام تنضاف للفاتورة جاهزة (غير مقفولة)
   if(!o.invoice && o.dbId && o.quick){
@@ -2102,7 +2105,9 @@ function keMedia(it){ const k=invLineKind(it);
 function kePic(md){ return `<span class="ke-pic${md.part?' part':''}"><i style="font-style:normal">${esc(md.emoji)}</i>${md.img?`<img src="${esc(md.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}</span>`; }
 function closeInvoice(){ invEditing=null; svcPickOpen=false; stockPickOpen=false; pickQ=''; pickCat='all'; svcPickQ=''; stockPickQ=''; document.getElementById('invModal').classList.remove('show'); document.getElementById('invModal').innerHTML=''; }
 function captureInvPrices(){
-  document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].price=+inp.value||0; });
+  document.querySelectorAll('.ir-price').forEach(inp=>{ const i=+inp.dataset.i; const it=invItems[i]; if(!it) return; it.price=+inp.value||0;
+    // قطعة مستودع: تتعلّم «معدّلة» فقط لو كتب الفني غير سعر البيع، والخادم يحسبها بسعره (بحد أدنى سعر الشراء)
+    if(invLineKind(it)==='stock' && !it.booked){ const base=invBasePrice(it); it.edited = it.price>0 && Math.abs(it.price-base)>0.009; if(!it.edited) it.price=base; } });
   document.querySelectorAll('.ir-pname').forEach(inp=>{ const i=+inp.dataset.i; if(invItems[i]) invItems[i].name=inp.value; });
 }
 function addInvItem(id){ if(!id) return; captureInvPrices(); const s=svc(id); if(s){ invItems.push({id:s.id,name:s.name,qty:1,price:s.price}); } renderInvoice(); }
@@ -2129,6 +2134,8 @@ async function saveInvoice(){
   invItems.forEach(it=>{ if(it.id==='stock' && it.stockId){ const inv=INV.find(x=>x.id===it.stockId); if(!inv) return; const want=+it.qty||1, done=+it.deducted||0; if(want!==done) plan.push({it,inv,delta:want-done,want}); } });
   const items=invItems.map(it=>{ const p=plan.find(x=>x.it===it);
     const x={id:it.id||'custom',stockId:it.stockId||null,name:it.name,qty:+it.qty||1,price:+it.price||0,deducted:p?p.want:(+it.deducted||0),img:it.img||'',booked:!!it.booked};
+    // سعر معدّل لقطعة مستودع: العلامة للخادم (khafet_inv_line يحسبها بسعر الفني) وسعر البيع الأصلي للإدارة
+    if(it.id==='stock'&&it.edited&&!it.booked){ x.edited=true; x.base=invBasePrice(it); }
     if(it.booked&&it.swap) x.swap={fromId:it.swap.fromId||null,from:it.swap.from||'',fromImg:it.swap.fromImg||'',fromPrice:+it.swap.fromPrice||0,price:+it.swap.price||0}; return x; });
   // adj تقديري (فرق التبديل) · الخادم يحسبه بنفسه من أسعار البيع ويتجاهل المرسل
   const invoice={ v:2, items, subtotal:invTotal(), discountPct:invPct(), total:invGrand(), dropped:invDrops.slice(), adj:round2(invItems.reduce((a,it)=>a+swapDiff(it),0)), refund:invRefund(), createdAt:Date.now() };
@@ -2353,14 +2360,15 @@ function renderInvoice(){
     const editable=(it.id==='part'||it.id==='custom');
     // السعر يُكتب فقط للبنود الحرة (custom/part/خدمة مخصّصة) · قطع المستودع وخدمات الكتالوج يسعّرها الخادم من سعر البيع والكتالوج
     const free=invPriceEditable(it); const amt=lineAmount(it); const unit=round2(amt/Math.max(1,+it.qty||1));
+    const isStock=invLineKind(it)==='stock'; const base=isStock?invBasePrice(it):0;
     const nameCell = editable
       ? `<input class="ir-pname" data-i="${i}" value="${esc(it.name)}" placeholder="${t('partPh')}" oninput="keSuggest(${i},this.value)" />`
       : `<span class="ke-nm">${esc(itemDisplay(it))}</span>`;
     const priceCell = free
-      ? `<input class="ir-price" type="number" inputmode="numeric" value="${it.price}" data-i="${i}" />`
+      ? `<input class="ir-price" type="number" inputmode="numeric" value="${isStock?(it.edited?it.price:base):it.price}" data-i="${i}" title="${isStock?(A?'سعر البيع '+ar(base)+' · اكتب السعر اللي دفعته لو يختلف':'List price '+base+' · type the price you paid if different'):''}" />`
       : `<span class="ir-price-ro" title="${A?'السعر من الخادم':'Server price'}">${ar(unit)}</span>`;
     const isNew=anyOld&&!it._old;
-    const chips=[isNew?`<span class="ke-chip new">${A?'جديد':'New'}</span>`:'', invLineKind(it)==='stock'?`<span class="ke-chip">📦 ${lg('kiStock')}</span>`:'', editable?`<span class="ke-chip hand">✎ ${A?'مكتوب يدويًا':'Typed by hand'}</span>`:''].filter(Boolean).join('');
+    const chips=[isNew?`<span class="ke-chip new">${A?'جديد':'New'}</span>`:'', isStock?`<span class="ke-chip">📦 ${lg('kiStock')}</span>`:'', isStock&&it.edited?`<span class="ke-chip hand">✎ ${A?'سعر معدّل · الأصل '+ar(base):'Edited price · list '+base}</span>`:'', editable?`<span class="ke-chip hand">✎ ${A?'مكتوب يدويًا':'Typed by hand'}</span>`:''].filter(Boolean).join('');
     return `<div class="ke-ln${isNew?' nw':''}">${kePic(keMedia(it))}<div class="ke-mid">
       <div class="ke-hd">${nameCell}<b class="ke-sum">${ar(amt)} <small>${lg('cur')}</small></b></div>
       ${editable?`<div class="ke-sg" id="sg${i}">${keSuggestHtml(i,it.name)}</div>`:''}
