@@ -218,6 +218,39 @@
   .biz-head b{font-size:1.1rem;font-weight:900;display:block}
   .biz-head small{color:var(--muted,#8b8178);font-size:.82rem}
   .biz-acts{display:flex;gap:8px;flex-wrap:wrap}
+  /* 💰 المالية والفواتير */
+  .fin-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+  .fin-chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;cursor:pointer;color:inherit}
+  .fin-chip.on{background:#161D19;color:#fff;border-color:#161D19}
+  .fin-bar input,.fin-bar select{padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff;max-width:100%}
+  .fin-t td,.fin-t th{white-space:nowrap;font-size:.88rem}
+  .fin-t tr.fin-row{cursor:pointer} .fin-t tr.fin-row:hover td{background:#faf8f3} .fin-t tr.sel td{background:#eef6f1}
+  .fin-t tr.fin-det td{white-space:normal;background:#faf8f3;border-top:1px dashed var(--line);padding:12px 14px}
+  .fin-dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .fin-k{font-size:.78rem;color:var(--muted);font-weight:800;margin-bottom:4px}
+  .fin-ln{display:flex;justify-content:space-between;gap:10px;font-size:.88rem;padding:3px 0;border-bottom:1px dotted var(--line)} .fin-ln:last-child{border-bottom:0} .fin-ln small{color:var(--muted)}
+  .fin-meth{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:.86rem;margin:6px 0 2px}
+  .fin-tot{font-weight:900}
+  .fin-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  /* الجوال (الآيفون أساسًا): بطاقة لكل طلب بدل الجدول العريض، وشرائط الفلاتر تنسحب أفقيًا */
+  .fin-cards{display:grid;gap:10px;margin-top:8px}
+  .fin-card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-sm);cursor:pointer}
+  .fin-card.sel{border-color:#0B7A55}
+  .fin-card.owe{border-inline-start:5px solid #c0392b}
+  .fc-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .fc-top b{font-size:1.02rem} .fc-top .fc-name{flex:1;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fc-sub{color:var(--muted);font-size:.8rem;margin-top:2px}
+  .fc-amts{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:10px;text-align:center;background:#faf8f3;border-radius:12px;padding:8px 4px}
+  .fc-amts small{display:block;color:var(--muted);font-size:.68rem;font-weight:700} .fc-amts b{font-size:.95rem;font-variant-numeric:tabular-nums} .fc-amts .big b{font-size:1.05rem} .fc-amts .red b{color:#c0392b}
+  .fc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center} .fc-chips .paychip{font-size:.78rem}
+  .fc-det{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+  .fin-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#161D19;color:#fff;border-radius:14px;padding:10px 12px;text-align:center;margin-top:4px}
+  .fin-sum small{display:block;opacity:.75;font-size:.7rem} .fin-sum b{font-size:1rem;font-variant-numeric:tabular-nums}
+  @media (max-width:700px){
+    .fin-bar.scroll{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-inline:-4px;padding-inline:4px} .fin-bar.scroll::-webkit-scrollbar{display:none} .fin-bar.scroll .fin-chip{white-space:nowrap;flex:none}
+    .fin-bar.dates{display:grid;grid-template-columns:1fr 1fr auto;gap:8px} .fin-bar.dates input{width:100%;min-width:0;font-size:.85rem;padding:9px 8px}
+    .fin-bar.tools{display:grid;grid-template-columns:1fr auto;gap:8px} .fin-bar.tools select{width:100%} .fin-bar.tools input{grid-column:1/-1;width:100%}
+    .bizgrid .bizc .bz-v{font-size:1.25rem}
+  }
   .bizgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
   .bizgrid.sm{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
   .bizc{background:var(--card,#fff);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;border:1.5px solid var(--line,#e5e0d8)}
@@ -1365,6 +1398,156 @@ function bizPct(n){ return (n==null||isNaN(+n))?'—':ar((+n).toFixed(1))+'٪'; 
 function bizMonthName(m){ const p=String(m||'').split('-'); if(_enUI()){ const E=['January','February','March','April','May','June','July','August','September','October','November','December']; return (E[(+p[1]||1)-1]||m)+' '+(p[0]||''); } const M=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   return (M[(+p[1]||1)-1]||m)+' '+ar(p[0]||''); }
 function bizCard(t,v,s,cls){ return '<div class="bizc '+(cls||'')+'"><span class="bz-t">'+t+'</span><b class="bz-v">'+v+'</b>'+(s?'<small class="bz-s">'+s+'</small>':'')+'</div>'; }
+/* ═══════ 💰 المالية والفواتير (طلب فادية 2026-10-10: «كم الدخل من الخدمات والأغراض، مين دفع ومين انرسل له فاتورة ودفعها أو ما دفع») ═══════
+   كل الأرقام من دالة khafet_admin_finance في الخادم: لكل طلب في الفترة الإجمالي مقسّمًا خدمات/أغراض/رسوم، المدفوع والمتبقي، دفعاته،
+   هل فيه فاتورة ومتى، وهل أُرسلت للعميل بالواتساب وحالتها. الفترة حسب موعد الخدمة. */
+let FIN=null, finBusy=false, finRange='month', finFrom='', finTo='', finFilter='all', finQ='', finTech='', finOpen='';
+const FIN_STATE={paid:['✓ مدفوع','✓ Paid','ok'],partial:['دفع جزئي','Partly paid','wait'],unpaid:['غير مدفوع','Unpaid','bad'],free:['ما فيه مبلغ بعد','No amount yet',''],refunded:['ملغي · رجع المبلغ','Cancelled · refunded','ok'],cancelled_paid:['ملغي ومدفوع!','Cancelled, still paid!','bad'],cancelled:['ملغي','Cancelled','']};
+const FIN_METH={online:['إلكتروني','Online'],tamara:['تمارا','Tamara'],device:['جهاز الفني','Card machine'],wallet:['رصيد المؤسسة','Business balance'],cash:['نقد','Cash'],transfer:['تحويل','Transfer'],other:['أخرى','Other']};
+function finDates(){
+  const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const t=new Date(); let a=null,b=null;
+  if(finRange==='today'){ a=b=iso(t); }
+  else if(finRange==='7d'){ const s=new Date(t); s.setDate(s.getDate()-6); a=iso(s); b=iso(t); }
+  else if(finRange==='month'){ a=iso(new Date(t.getFullYear(),t.getMonth(),1)); b=iso(new Date(t.getFullYear(),t.getMonth()+1,0)); }
+  else if(finRange==='last'){ a=iso(new Date(t.getFullYear(),t.getMonth()-1,1)); b=iso(new Date(t.getFullYear(),t.getMonth(),0)); }
+  else if(finRange==='custom'){ a=finFrom||null; b=finTo||null; }
+  return {a,b};
+}
+async function loadFinance(){
+  if(finBusy||!cloudReady) return; finBusy=true; const {a,b}=finDates();
+  try{ const r=await sb.rpc('khafet_admin_finance',{p_from:a,p_to:b}); if(r.error) throw r.error; FIN=r.data||{summary:{},rows:[]}; }
+  catch(e){ FIN={error:String((e&&e.message)||e)}; }
+  finBusy=false; if(adminSection==='fin') render();
+}
+function finSet(k,v){
+  if(k==='range'){ finRange=v; FIN=null; loadFinance(); }
+  else if(k==='from'){ finFrom=v; finRange='custom'; FIN=null; loadFinance(); }
+  else if(k==='to'){ finTo=v; finRange='custom'; FIN=null; loadFinance(); }
+  else if(k==='filter'){ finFilter=v; finOpen=''; }
+  else if(k==='tech'){ finTech=v; }
+  else if(k==='q'){ finQ=String(v||'').trim().toLowerCase(); }
+  render();
+  if(k==='q'){ const i=document.getElementById('finQ'); if(i){ i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} } }
+}
+function finToggle(id){ finOpen=(finOpen===id?'':id); render(); }
+function finWhen(ts){ if(!ts) return ''; const d=new Date(isNaN(+ts)?ts:+ts); if(isNaN(d.getTime())) return ''; const dd=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); return ar(dd)+' '+fmtTime(d.getHours()*60+d.getMinutes()); }
+function finStateChip(r){ const s=FIN_STATE[r.pay_state]||FIN_STATE.unpaid; return '<span class="paychip '+s[2]+'">'+LX(s[0],s[1])+'</span>'; }
+function finMeth(m){ const x=FIN_METH[m]||FIN_METH.other; return m?LX(x[0],x[1]):''; }
+function finInvChip(r){
+  if(r.status==='cancelled') return '<span class="paychip">—</span>';
+  if(!r.invoiced) return r.status==='done' ? '<span class="paychip bad">'+LX('مكتمل بدون فاتورة','Done, no invoice')+'</span>' : '<span class="paychip">'+LX('لسا ما فيه فاتورة','No invoice yet')+'</span>';
+  let s='<span class="paychip ok">'+LX('فاتورة ✓','Invoice ✓')+(r.invoice_at?' <small>'+finWhen(r.invoice_at)+'</small>':'')+'</span>';
+  if(r.wa_at){ const st=r.wa_status; s+=' <span class="paychip '+(st==='failed'?'bad':'ok')+'">'+LX('واتساب: ','WhatsApp: ')+(st==='read'?LX('قُرئت','read'):st==='delivered'?LX('وصلت','delivered'):st==='failed'?LX('فشلت','failed'):LX('أُرسلت','sent'))+'</span>'; }
+  else if(r.total>0) s+=' <span class="paychip wait">'+LX('ما أُرسلت بالواتساب','Not sent on WhatsApp')+'</span>';
+  return s;
+}
+function finRows(){
+  const rows=(FIN&&FIN.rows)||[];
+  return rows.filter(r=>{
+    if(finFilter==='paid') { if(r.pay_state!=='paid') return false; }
+    else if(finFilter==='unpaid') { if(!['unpaid','partial'].includes(r.pay_state)) return false; }
+    else if(finFilter==='invsent') { if(!(r.wa_at&&['unpaid','partial'].includes(r.pay_state))) return false; }
+    else if(finFilter==='noinv') { if(!(r.status==='done'&&!r.invoiced)) return false; }
+    else if(finFilter==='cancelled') { if(r.status!=='cancelled') return false; }
+    else if(r.status==='cancelled') return false;   // «الكل» بدون الملغي
+    if(finTech && (r.tech||'')!==finTech) return false;
+    if(finQ){ const hay=(String(r.no)+' '+(r.name||'')+' '+(r.phone||'')+' '+(r.tech||'')).toLowerCase(); if(!hay.includes(finQ)) return false; }
+    return true;
+  });
+}
+function finDetail(r){
+  const A=!_enUI();
+  const lines=(r.lines||[]).map(l=>'<div class="fin-ln"><span>'+(l.kind==='part'?'📦 ':l.kind==='fee'?'🧾 ':'🧰 ')+esc(l.name)+(l.qty>1?' ×'+ar(l.qty):'')+(l.booked?' <small>'+LX('(من الحجز)','(booked)')+'</small>':'')+(l.edited?' <small>✎ '+LX('سعر معدّل','edited price')+(l.base!=null?' · '+LX('الأصل ','list ')+ar(l.base):'')+'</small>':'')+'</span><b>'+money(Math.round(l.price*l.qty*100)/100)+'</b></div>').join('')||'<div class="fin-ln"><small>'+LX('ما فيه بنود','No items')+'</small></div>';
+  const pays=(r.payments||[]).map(p=>'<div class="fin-ln"><span>'+(p.status==='paid'?'✓ ':p.status==='refunded'?'↩ ':'… ')+finMeth(p.method)+(p.purpose&&p.purpose!=='order'?' <small>'+esc(p.purpose)+'</small>':'')+' <small>'+finWhen(p.paid_at||p.created_at)+'</small>'+(p.refunded_at?' <small>'+LX('رجع ','refunded ')+finWhen(p.refunded_at)+'</small>':'')+'</span><b>'+money(+p.amount||0)+(p.status!=='paid'?' <small>'+esc(p.status)+'</small>':'')+'</b></div>').join('')||'<div class="fin-ln"><small>'+LX('ما فيه دفعات مسجّلة','No recorded payments')+'</small></div>';
+  const ph=String(r.phone||'').replace(/\D/g,''); const wa=ph?('https://wa.me/'+(ph.startsWith('966')?ph:'966'+ph.replace(/^0/,''))):'';
+  const WST={read:LX('قرأها العميل','read by customer'),delivered:LX('وصلت لجواله','delivered'),sent:LX('أُرسلت','sent'),failed:LX('فشل الإرسال','failed')};
+  const wal=r.wa_at?LX('أُرسلت بالواتساب ','Sent on WhatsApp ')+finWhen(r.wa_at)+(r.wa_status?' · '+(WST[r.wa_status]||esc(r.wa_status)):'')+(r.wa_err?' · <span style="color:var(--danger)">'+esc(r.wa_err)+'</span>':''):LX('ما أُرسلت للعميل بالواتساب','Not sent to the customer on WhatsApp');
+  return '<div class="fin-dg">'
+    +'<div><div class="fin-k">'+LX('بنود الفاتورة','Invoice lines')+(r.invoiced?'':' <small>'+LX('(من الحجز، ما فيه فاتورة بعد)','(from booking, no invoice yet)')+'</small>')+'</div>'+lines
+      +'<div class="fin-ln fin-tot"><span>'+LX('الخدمات','Services')+'</span><b>'+money(r.services)+'</b></div><div class="fin-ln fin-tot"><span>'+LX('الأغراض','Parts')+'</span><b>'+money(r.parts)+'</b></div>'+(r.fees>0?'<div class="fin-ln fin-tot"><span>'+LX('الرسوم','Fees')+'</span><b>'+money(r.fees)+'</b></div>':'')
+      +(r.credit>0?'<div class="fin-ln"><span>'+LX('مخصوم من رصيد العميل','Paid from customer credit')+'</span><b>'+money(r.credit)+'</b></div>':'')+(r.plan_cover>0?'<div class="fin-ln"><span>'+LX('غطّتها الباقة','Covered by plan')+'</span><b>'+money(r.plan_cover)+'</b></div>':'')
+      +'<div class="fin-ln fin-tot"><span>'+LX('الإجمالي','Total')+'</span><b>'+money(r.total)+'</b></div></div>'
+    +'<div><div class="fin-k">'+LX('الدفعات','Payments')+'</div>'+pays
+      +'<div class="fin-ln fin-tot"><span>'+LX('المدفوع','Paid')+'</span><b>'+money(r.paid)+'</b></div><div class="fin-ln fin-tot"><span>'+LX('المتبقي على العميل','Still owed')+'</span><b style="color:'+(r.due>0?'var(--danger)':'inherit')+'">'+money(r.due)+'</b></div>'
+      +'<div class="fin-k">'+LX('الفاتورة','Invoice')+'</div><div style="font-size:.88rem">'+(r.invoiced?LX('محفوظة ','Saved ')+finWhen(r.invoice_at)+'<br>':'')+wal+'</div>'
+      +'<div class="fin-acts">'+(wa?'<a class="sbtn" href="'+wa+'" target="_blank" rel="noopener">💬 '+LX('واتساب العميل','WhatsApp customer')+'</a>':'')+'<button class="sbtn" onclick="calFilter=\''+esc(r.date||'')+'\';setAdminSection(\'orders\')">📥 '+LX('افتح يومه في الطلبات','Open its day in orders')+'</button></div></div>'
+    +'</div>';
+}
+/* بطاقة طلب للجوال: الرقم والعميل والحالة، ثم خمسة أرقام (خدمات، أغراض، الإجمالي، المدفوع، المتبقي)، ثم حالة الفاتورة، وبالضغط التفاصيل */
+function finCard(r){
+  const open=finOpen===r.id;
+  const when=(r.date?dayLabel(r.date):'')+(r.start!=null?' · '+fmtTime(r.start):'');
+  const amt=(l,v,cls)=>'<div class="'+(cls||'')+'"><small>'+l+'</small><b>'+ar(Math.round(v*100)/100)+'</b></div>';
+  return '<div class="fin-card'+(open?' sel':'')+(r.due>0&&r.status!=='cancelled'?' owe':'')+'" onclick="finToggle(\''+r.id+'\')">'
+    +'<div class="fc-top"><b>'+ar(r.no)+'</b><span class="fc-name">'+esc(r.name||LX('بدون اسم','No name'))+'</span>'+finStateChip(r)+'</div>'
+    +'<div class="fc-sub">'+when+(r.tech?' · 👷 '+esc(r.tech):'')+' · '+esc(STATUS_AR[r.status]||r.status)+(r.source==='wa'?' · واتساب':'')+' · <span dir="ltr">'+esc(r.phone)+'</span></div>'
+    +'<div class="fc-amts">'+amt(LX('خدمات','Services'),r.services)+amt(LX('أغراض','Parts'),r.parts)+amt(LX('الإجمالي','Total'),r.total,'big')+amt(LX('المدفوع','Paid'),r.paid)+amt(LX('المتبقي','Owed'),r.due,r.due>0?'red big':'')+'</div>'
+    +'<div class="fc-chips">'+finInvChip(r)+((r.paid>0&&r.pay_method)?'<span class="paychip">'+finMeth(r.pay_method)+'</span>':'')+'<span style="margin-inline-start:auto;color:var(--muted)">'+(open?'▴':'▾')+'</span></div>'
+    +(open?'<div class="fc-det" onclick="event.stopPropagation()">'+finDetail(r)+'</div>':'')
+    +'</div>';
+}
+function renderFinance(){
+  const A=!_enUI(), narrow=window.innerWidth<=700;
+  const chip=(k,t,cur,set)=>'<button type="button" class="fin-chip'+(cur===k?' on':'')+'" onclick="finSet(\''+set+'\',\''+k+'\')">'+t+'</button>';
+  const ranges=[['month',LX('هذا الشهر','This month')],['last',LX('الشهر الماضي','Last month')],['7d',LX('آخر 7 أيام','Last 7 days')],['today',LX('اليوم','Today')],['all',LX('الكل','All time')]];
+  const bar='<div class="fin-bar scroll">'+ranges.map(x=>chip(x[0],x[1],finRange,'range')).join('')+'</div>'
+    +'<div class="fin-bar dates"><input type="date" value="'+esc(finFrom)+'" onchange="finSet(\'from\',this.value)" title="'+LX('من','From')+'"><input type="date" value="'+esc(finTo)+'" onchange="finSet(\'to\',this.value)" title="'+LX('إلى','To')+'">'
+    +'<button class="sbtn" onclick="FIN=null;loadFinance();render()" title="'+LX('تحديث','Refresh')+'">↻</button></div>';
+  if(!FIN) return bar+'<p style="color:var(--muted)">'+LX('جارٍ جمع الأرقام من الخادم…','Loading…')+'</p>';
+  if(FIN.error) return bar+'<p style="color:var(--danger)">'+LX('تعذّر التحميل: ','Could not load: ')+esc(FIN.error)+'</p>';
+  const S=FIN.summary||{}, M=S.methods||{};
+  const kpis='<div class="bizgrid">'
+    +bizCard(LX('المحصّل فعليًا','Collected'), money(S.collected||0), LX(ar(S.paid||0)+' طلب مدفوع بالكامل',(S.paid||0)+' fully paid orders'),'green')
+    +bizCard(LX('المتبقي على العملاء','Owed by customers'), money(S.outstanding||0), LX(ar((S.unpaid||0)+(S.partial||0))+' طلب غير مدفوع أو جزئي',((S.unpaid||0)+(S.partial||0))+' unpaid or partly paid'),(S.outstanding>0?'gold':''))
+    +bizCard(LX('الدخل من الخدمات','From services'), money(S.services||0), LX('أجرة الشغل والزيارات','Labour and visits'),'')
+    +bizCard(LX('الدخل من الأغراض','From parts'), money(S.parts||0), (S.fees>0?LX('ورسوم '+money(S.fees),'and fees '+money(S.fees)):LX('القطع والمواد','Parts and materials')),'')
+    +bizCard(LX('قيمة الطلبات','Order value'), money(S.gmv||0), LX(ar(S.orders||0)+' طلب غير ملغي',(S.orders||0)+' live orders'),'')
+    +bizCard(LX('فاتورة أُرسلت وما اندفعت','Invoiced, not paid'), bizNum(S.invoiced_unpaid||0), LX('تحتاج متابعة','Need follow-up'),(S.invoiced_unpaid>0?'gold':''))
+    +bizCard(LX('مكتملة بدون فاتورة','Done without invoice'), bizNum(S.done_no_invoice||0), LX('الفني ما حفظ فاتورة','Technician saved no invoice'),(S.done_no_invoice>0?'gold':''))
+    +bizCard(LX('ملغاة','Cancelled'), bizNum(S.cancelled||0), LX('رجع للعملاء '+money(S.refunded||0),'refunded '+money(S.refunded||0)),'')
+    +'</div>';
+  const meth=Object.keys(M).length?'<div class="fin-meth"><b>'+LX('المحصّل حسب طريقة الدفع:','Collected by method:')+'</b>'+Object.keys(M).map(k=>'<span>'+finMeth(k)+' <b>'+money(M[k])+'</b></span>').join('')+'</div>':'';
+  const techs=[...new Set(((FIN.rows)||[]).map(r=>r.tech).filter(Boolean))].sort();
+  const filters=[['all',LX('الكل','All')],['unpaid',LX('غير مدفوع','Unpaid')],['paid',LX('مدفوع','Paid')],['invsent',LX('فاتورة أُرسلت وما اندفعت','Invoiced, unpaid')],['noinv',LX('بدون فاتورة','No invoice')],['cancelled',LX('ملغي','Cancelled')]];
+  const fbar='<div class="fin-bar scroll">'+filters.map(x=>chip(x[0],x[1],finFilter,'filter')).join('')+'</div>'
+    +'<div class="fin-bar tools">'+(techs.length?'<select onchange="finSet(\'tech\',this.value)"><option value="">'+LX('كل الفنيين','All technicians')+'</option>'+techs.map(t=>'<option value="'+esc(t)+'"'+(finTech===t?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select>':'<span></span>')
+    +'<button class="sbtn" onclick="finExport()">⤓ Excel</button>'
+    +'<input id="finQ" placeholder="'+LX('بحث: رقم الطلب، الاسم، الجوال','Search: order no, name, phone')+'" value="'+esc(finQ)+'" oninput="finSet(\'q\',this.value)"></div>';
+  const rows=finRows();
+  const tsum=k=>Math.round(rows.reduce((a,r)=>a+(+r[k]||0),0)*100)/100;
+  if(narrow){
+    const cards=rows.length?rows.map(finCard).join(''):'<p style="color:var(--muted)">'+LX('ما فيه طلبات بهذا الفلتر في هذه الفترة.','No orders match this filter in this period.')+'</p>';
+    const sum=rows.length?'<div class="fin-sum"><div><small>'+LX('إجمالي '+ar(rows.length)+' طلب','Total of '+rows.length+' orders')+'</small><b>'+money(tsum('total'))+'</b></div><div><small>'+LX('المدفوع','Paid')+'</small><b>'+money(tsum('paid'))+'</b></div><div><small>'+LX('المتبقي','Owed')+'</small><b>'+money(tsum('due'))+'</b></div></div>':'';
+    const hintM='<p class="sp-hint" style="margin-top:10px">'+LX('اضغط أي بطاقة تشوف بنودها ودفعاتها وحالة فاتورتها. الخدمات = الإجمالي ناقص الأغراض والرسوم.','Tap a card for its lines, payments and invoice status.')+'</p>';
+    return bar+kpis+meth+fbar+'<div class="fin-cards">'+cards+'</div>'+sum+hintM;
+  }
+  const tr=rows.map(r=>{
+    const open=finOpen===r.id;
+    const when=(r.date?dayLabel(r.date):'')+(r.start!=null?' · '+fmtTime(r.start):'');
+    return '<tr class="fin-row'+(open?' sel':'')+'" onclick="finToggle(\''+r.id+'\')">'
+      +'<td><b>'+ar(r.no)+'</b><br><small style="color:var(--muted)">'+esc(STATUS_AR[r.status]||r.status)+(r.source==='wa'?' · واتساب':'')+'</small></td>'
+      +'<td>'+esc(r.name||LX('بدون اسم','No name'))+'<br><small style="color:var(--muted)" dir="ltr">'+esc(r.phone)+'</small></td>'
+      +'<td>'+when+'</td><td>'+esc(r.tech||'—')+'</td>'
+      +'<td class="n">'+money(r.services)+'</td><td class="n">'+money(r.parts)+(r.fees>0?'<br><small>+'+money(r.fees)+' '+LX('رسوم','fees')+'</small>':'')+'</td>'
+      +'<td class="n fin-tot">'+money(r.total)+'</td><td class="n">'+money(r.paid)+((r.paid>0&&r.pay_method)?'<br><small style="color:var(--muted)">'+finMeth(r.pay_method)+'</small>':'')+'</td>'
+      +'<td class="n" style="color:'+(r.due>0?'var(--danger)':'inherit')+'">'+money(r.due)+'</td>'
+      +'<td>'+finStateChip(r)+'</td><td>'+finInvChip(r)+'</td><td>'+(open?'▴':'▾')+'</td></tr>'
+      +(open?'<tr class="fin-det"><td colspan="12">'+finDetail(r)+'</td></tr>':'');
+  }).join('');
+  const table='<div class="biz-tw" style="margin-top:8px"><table class="biz-t fin-t"><thead><tr><th>#</th><th>'+LX('العميل','Customer')+'</th><th>'+LX('الموعد','When')+'</th><th>'+LX('الفني','Technician')+'</th><th class="n">'+LX('خدمات','Services')+'</th><th class="n">'+LX('أغراض','Parts')+'</th><th class="n">'+LX('الإجمالي','Total')+'</th><th class="n">'+LX('المدفوع','Paid')+'</th><th class="n">'+LX('المتبقي','Owed')+'</th><th>'+LX('الدفع','Payment')+'</th><th>'+LX('الفاتورة','Invoice')+'</th><th></th></tr></thead>'
+    +'<tbody>'+(tr||'<tr><td colspan="12" style="color:var(--muted)">'+LX('ما فيه طلبات بهذا الفلتر في هذه الفترة.','No orders match this filter in this period.')+'</td></tr>')+'</tbody>'
+    +(rows.length?'<tfoot><tr class="fin-tot"><td colspan="4">'+LX('المجموع ('+ar(rows.length)+' طلب)','Total ('+rows.length+' orders)')+'</td><td class="n">'+money(tsum('services'))+'</td><td class="n">'+money(tsum('parts'))+'</td><td class="n">'+money(tsum('total'))+'</td><td class="n">'+money(tsum('paid'))+'</td><td class="n">'+money(tsum('due'))+'</td><td colspan="3"></td></tr></tfoot>':'')+'</table></div>';
+  const hint='<p class="sp-hint" style="margin-top:10px">'+LX('الفترة حسب موعد الخدمة. «الخدمات» = الإجمالي ناقص الأغراض والرسوم، فالخصومات تطلع على الخدمات ويبقى المجموع صحيحًا. اضغط أي سطر تشوف بنوده ودفعاته وحالة فاتورته.','Period by service date. Services = total minus parts and fees. Tap a row for its lines, payments and invoice status.')+'</p>';
+  return bar+kpis+meth+fbar+table+hint;
+}
+function finExport(){
+  const rows=finRows(); if(!rows.length){ toast(LX('ما فيه سطور','Nothing to export')); return; }
+  const H=['رقم الطلب','الحالة','العميل','الجوال','الموعد','الفني','خدمات','أغراض','رسوم','الإجمالي','المدفوع','المتبقي','حالة الدفع','طريقة الدفع','فاتورة','أُرسلت بالواتساب','المصدر'];
+  const esc2=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const L=[H.map(esc2).join(',')].concat(rows.map(r=>[r.no,STATUS_AR[r.status]||r.status,r.name,r.phone,(r.date||'')+(r.start!=null?' '+fmtTime(r.start):''),r.tech,r.services,r.parts,r.fees,r.total,r.paid,r.due,(FIN_STATE[r.pay_state]||[r.pay_state])[0],finMeth(r.pay_method),r.invoiced?'نعم':'لا',r.wa_at?finWhen(r.wa_at):'',r.source].map(esc2).join(',')));
+  const blob=new Blob(['﻿'+L.join('\n')],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); const {a:f,b:t}=finDates(); a.download='khafet-finance-'+(f||'all')+'_'+(t||'')+'.csv'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
 function renderBiz(){
   if(!BIZ){ loadBiz(); return '<p style="color:var(--muted)">'+LX('جارٍ حساب الأرقام من الخادم…','Loading…')+'</p>'; }
   const T=BIZ.totals||{}, M=BIZ.mix||{}, PY=BIZ.payments||{}, C=BIZ.company||{};
@@ -2756,6 +2939,7 @@ function render(){
   ];
   const CARDS=[
     ['orders','📥','الطلبات', cnt('new'), 'الجديدة · التقويم · التذكيرات', true],
+    ['fin','💰',LX('المالية والفواتير','Finance & invoices'), ORDERS.filter(o=>o.status!=='cancelled'&&+o.amountDue>0).length, LX('مين دفع ومين عليه فاتورة · الدخل من الخدمات والأغراض · كل طلب بسطر','Who paid and who owes · income from services and parts · one line per order'), false],
     ['cancels','❌',LX('طلبات الإلغاء والتعديل','Cancellation and change requests'), crPending()+chPending(), LX('طلبات الفنيين والمزوّدين لإلغاء طلب · القبول يرجّع المبلغ للعميل','Technician and provider requests to cancel an order · approval refunds the customer'), false],
     ['team','👥','الفريق', pendingProv+PENDING_TECHS.length, 'الفنيّون · المزوّدون · المستحقات', true],
     ['cust','💬','العملاء', newSugs+newSubs+openCmp, 'الشكاوى · الرسائل · الاشتراكات · المقالات', false],
@@ -2767,7 +2951,7 @@ function render(){
     ['biz','📈',LX('أرقام المستثمر','Investor numbers'), 0, LX('كل الأرقام اللي يطلبها مشترٍ أو ممول · جاهزة للطباعة','Everything a buyer or investor asks for'), false],
     ['settings','⚙️',LX('الإعدادات','Settings'), 0, LX('العمولة، الإلغاء، الضمان، التغطية، المواعيد، الباقات، التواصل','Commission, cancellation, warranty, coverage, hours, plans, contact'), false],
   ];
-  const _ADMIC={orders:['inbox','#27B9B5'],cancels:['cancel','#E45C86'],team:['team','#3796D3'],cust:['chat','#8E6BD8'],store:['box','#F0B21A'],prices:['grid','#EC8434'],notify:['megaphone','#D9534F'],joins:['doc','#27B9B5'],solutions:['home','#3EAD5E'],biz:['chart','#3796D3'],settings:['sliders','#7A6A5C']};
+  const _ADMIC={orders:['inbox','#27B9B5'],fin:['chart','#0B7A55'],cancels:['cancel','#E45C86'],team:['team','#3796D3'],cust:['chat','#8E6BD8'],store:['box','#F0B21A'],prices:['grid','#EC8434'],notify:['megaphone','#D9534F'],joins:['doc','#27B9B5'],solutions:['home','#3EAD5E'],biz:['chart','#3796D3'],settings:['sliders','#7A6A5C']};
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
     <div class="hcard" onclick="setAdminSection('${k}')">
       <div class="hc-top"><span class="hc-ic" style="--c:${(_ADMIC[k]||[])[1]||'#8E8175'}">${pic((_ADMIC[k]||[])[0]||'grid',26)}</span>${n>0?`<span class="hc-badge">${ar(n)}</span>`:''}</div>
@@ -2807,10 +2991,12 @@ function render(){
     body=renderSettings();
   } else if(adminSection==='biz'){
     body=renderBiz();
+  } else if(adminSection==='fin'){
+    body=renderFinance();
   } else if(adminSection==='solutions'){
     body=block(LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'), renderSolutionsAdmin());
   }
-  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),cancels:LX('❌ طلبات الإلغاء','❌ Cancellation requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers')})[adminSection]||'';
+  const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),cancels:LX('❌ طلبات الإلغاء','❌ Cancellation requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers'),fin:LX('💰 المالية والفواتير','💰 Finance & invoices')})[adminSection]||'';
   const _sy=window.scrollY, _keep=(window._lastSec===adminSection); window._lastSec=adminSection;
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico kp-abico">${pic('building',26)}</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
@@ -2933,7 +3119,7 @@ function audiencePanelHtml(){
   </div>`;
 }
 function adminHomeTap(){ try{ if(typeof loggedIn!=='undefined' && loggedIn){ if(typeof adminSection!=='undefined' && adminSection) setAdminSection(''); window.scrollTo(0,0); return; } }catch(e){} location.href='index.html#stay'; }
-function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='cancels') loadCancelReqs().then(render); if(s==='team') loadCommission().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
+function setAdminSection(s){ adminSection=s; window.scrollTo(0,0); render(); if(s==='fin'&&!FIN) loadFinance(); if(s==='notify') loadBroadcast(); if(s==='joins') loadJoinReqs().then(render); if(s==='cancels') loadCancelReqs().then(render); if(s==='team') loadCommission().then(render); if(s==='settings') loadSettings().then(render); if(s==='solutions') loadSolutionsAdmin().then(render); }
 
 /* ═══════ 📨 طلبات الانضمام: من نموذج الانضمام مباشرة إلى جدول khafet_join_requests ═══════ */
 async function loadJoinReqs(){
