@@ -1202,6 +1202,16 @@ async function khPushOff(){
   if(!tk||!sb||!cloudReady) return;
   try{ await Promise.race([ sb.rpc('unregister_staff_device', { p_token:tk }), new Promise(r=>setTimeout(r,3000)) ]); }catch(e){}
 }
+/* الإشعار وصل والتطبيق مفتوح على الشاشة: شريط بنصه وصوت قصير وتحميل الطلبات (آيفون يعرض النظام البانر بصوته من presentationOptions) */
+function khPushShow(n){
+  try{ const t=String((n&&n.title)||''), b=String((n&&n.body)||''); if(t||b) toast((t?t+' · ':'')+b); }catch(e){}
+  try{
+    const plat=(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'';
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(plat!=='ios'&&AC){ const ac=new AC(), t0=ac.currentTime; [0,0.18,0.36].forEach((at,i)=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=880+i*220; g.gain.setValueAtTime(0.0001,t0+at); g.gain.exponentialRampToValueAtTime(0.3,t0+at+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+at+0.17); o.connect(g); g.connect(ac.destination); o.start(t0+at); o.stop(t0+at+0.19); }); }
+  }catch(e){}
+  try{ if(typeof loadOrders==='function') loadOrders(); }catch(e){}
+}
 async function initPush(){
   if(!inApp() || !cloudReady) return;          // التطبيق فقط، وبعد جاهزية السحابة
   try{
@@ -1214,6 +1224,8 @@ async function initPush(){
         catch(e){ console.warn('حفظ جهاز الفني:', e); }
       });
       await PN.addListener('registrationError', e=> console.warn('خطأ تسجيل الإشعارات', e));
+      // الإشعار والتطبيق مفتوح على الشاشة: النظام ما يعرضه (2026-10-15: طلب 19327 الساعة 8 م ما وصل جايا)، فنعرضه هنا بصوت ونحمّل الطلبات
+      await PN.addListener('pushNotificationReceived', (n)=>{ khPushShow(n); });
       _pnReady=true;
     }
     let perm=await PN.checkPermissions();
@@ -1695,6 +1707,7 @@ function loadLocal(){
   try{ const s=JSON.parse(localStorage.getItem(SAVE_KEY)); ORDERS=(s&&s.orders)||[]; }catch(e){ ORDERS=[]; }
   usingCloud=false;
 }
+let _ordLoadAt=0;
 async function loadOrders(){
   if(!loggedIn){ render(); return; }
   if(!cloudReady){ loadLocal(); render(); return; }
@@ -1702,13 +1715,43 @@ async function loadOrders(){
     const { data, error } = await sb.from('khafet_orders').select('*').order('service_date').order('start_min');
     if(error) throw error;
     const prevX=new Map(ORDERS.filter(o=>o&&o.dbId).map(o=>[o.dbId,o.extraStatus||'']));
-    ORDERS=(data||[]).map(rowToOrder); usingCloud=true; render(); xNotify(prevX);
-  }catch(e){ loadLocal(); render(); }
+    ORDERS=(data||[]).map(rowToOrder); usingCloud=true; _ordLoadAt=Date.now(); render(); xNotify(prevX);
+    clearTimeout(window._ordRetryT); window._ordRetryT=null;
+  }catch(e){
+    // تعذّر التحميل (نت أو جلسة): النسخة المحفوظة تظهر مؤقتًا، ونعيد المحاولة بعد 15 ثانية بدل ما تبقى قديمة بصمت
+    loadLocal(); render();
+    clearTimeout(window._ordRetryT); window._ordRetryT=setTimeout(()=>{ window._ordRetryT=null; if(loggedIn&&cloudReady&&!document.hidden) loadOrders(); },15000);
+  }
 }
+/* القناة الحية (2026-10-11 «وصل طلب ولا وصل لجايا»: التطبيق كان مفتوحًا بالخلفية، القناة انقطعت وما أعاد التحميل عند الرجوع فما ظهر الطلب):
+   نحتفظ بالقناة ونعيد الاشتراك لو ماتت، ونعيد تحميل الطلبات كل رجوع للتطبيق أو رجوع للنت (مرة كل 10 ثوانٍ بالكثير) */
+let _rtCh=null, _rtSeq=0, _rtRetryT=null, _rtWait=0;
+function rtAlive(){ const s=_rtCh&&_rtCh.state; return s==='joined'||s==='joining'; }
+function rtRetry(){ if(_rtRetryT||!loggedIn) return; _rtWait=Math.min(60000,_rtWait?_rtWait*2:3000); _rtRetryT=setTimeout(()=>{ _rtRetryT=null; if(!loggedIn) return; if(rtAlive()){ _rtWait=0; return; } subscribe(); },_rtWait); }
 function subscribe(){
-  if(!cloudReady) return;
-  try{ sb.channel('khafet_fanyeen').on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>loadOrders()).subscribe(); }catch(e){}
+  if(!cloudReady||!sb||!loggedIn) return;
+  if(rtAlive()) return;
+  const old=_rtCh; _rtCh=null; if(old){ try{ sb.removeChannel(old).catch(()=>{}); }catch(e){} }
+  try{
+    const ch=sb.channel('khafet_fanyeen_'+(++_rtSeq)); _rtCh=ch;
+    ch.on('postgres_changes',{event:'*',schema:'public',table:'khafet_orders'},()=>loadOrders())
+      .subscribe(st=>{ if(_rtCh!==ch) return; if(st==='SUBSCRIBED'){ const again=_rtWait>0; _rtWait=0; clearTimeout(_rtRetryT); _rtRetryT=null; if(again) loadOrders(); } else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED') rtRetry(); });
+  }catch(e){ rtRetry(); }
 }
+function ordersWake(force){
+  if(!loggedIn||!cloudReady) return;
+  if(document.visibilityState==='hidden') return;
+  if(!rtAlive()){ clearTimeout(_rtRetryT); _rtRetryT=null; subscribe(); }
+  if(force||Date.now()-_ordLoadAt>10000) loadOrders();
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') ordersWake(false); });
+// التطبيق مفتوح على الشاشة ساعات بدون أي حدث (2026-10-15: طلب 19327 الساعة 8 م ما ظهر لجايا وجدوله يقول «فاضي»): تحديث كل دقيقة
+// مع إعادة الاشتراك في القناة الحية لو ماتت، ولو تعذّر التحميل ما يعتمد على النسخة المحفوظة بصمت بل يعيد المحاولة
+setInterval(()=>ordersWake(false), 60000);
+window.addEventListener('focus',()=>ordersWake(false));
+window.addEventListener('pageshow',e=>{ if(e&&e.persisted) ordersWake(true); });
+window.addEventListener('online',()=>ordersWake(true));
+try{ const C=window.Capacitor; const AppP=C&&C.isNativePlatform&&C.isNativePlatform()?(typeof C.registerPlugin==='function'?C.registerPlugin('App'):(C.Plugins&&C.Plugins.App)):null; if(AppP&&AppP.addListener) AppP.addListener('resume',()=>ordersWake(true)); }catch(e){}
 async function setJobStatus(id, st){
   const o=ORDERS.find(x=>x.id===id); if(!o) return;
   if(st==='done' && xPend(o)){ toast(lg('xNoDone')); render(); return; }   // الإضافة بانتظار موافقة العميل

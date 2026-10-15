@@ -1287,6 +1287,16 @@ function inApp(){ return !!(window.Capacitor && window.Capacitor.isNativePlatfor
 function getPushPlugin(){ const C=window.Capacitor; if(!C) return null; try{ if(typeof C.registerPlugin==='function') return C.registerPlugin('PushNotifications'); }catch(e){} return (C.Plugins && C.Plugins.PushNotifications) || null; }
 let _pn=null, _pnReady=false;
 async function khPushOff(){ let tk=''; try{ tk=localStorage.getItem('kh_push_tok')||''; }catch(e){} if(!tk||!sb||!cloudReady) return; try{ await Promise.race([ sb.rpc('unregister_staff_device', { p_token:tk }), new Promise(r=>setTimeout(r,3000)) ]); }catch(e){} }
+/* الإشعار وصل والتطبيق مفتوح على الشاشة: شريط بنصه وصوت قصير وتحميل الطلبات (آيفون يعرض النظام البانر بصوته من presentationOptions) */
+function khPushShow(n){
+  try{ const t=String((n&&n.title)||''), b=String((n&&n.body)||''); if(t||b) toast((t?t+' · ':'')+b); }catch(e){}
+  try{
+    const plat=(window.Capacitor&&window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'';
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(plat!=='ios'&&AC){ const ac=new AC(), t0=ac.currentTime; [0,0.18,0.36].forEach((at,i)=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='sine'; o.frequency.value=880+i*220; g.gain.setValueAtTime(0.0001,t0+at); g.gain.exponentialRampToValueAtTime(0.3,t0+at+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+at+0.17); o.connect(g); g.connect(ac.destination); o.start(t0+at); o.stop(t0+at+0.19); }); }
+  }catch(e){}
+  try{ if(typeof loadOrders==='function') loadOrders(); }catch(e){}
+}
 async function initPush(){
   if(!inApp() || !cloudReady || !loggedIn) return;
   try{
@@ -1298,6 +1308,8 @@ async function initPush(){
         catch(e){ console.warn('حفظ جهاز الأدمن:', e); }
       });
       await PN.addListener('registrationError', e=> console.warn('خطأ تسجيل الإشعارات', e));
+      // الإشعار والتطبيق مفتوح على الشاشة: النظام ما يعرضه، فنعرضه هنا بصوت ونحمّل الطلبات (2026-10-15)
+      await PN.addListener('pushNotificationReceived', (n)=>{ khPushShow(n); });
       _pnReady=true;
     }
     let perm=await PN.checkPermissions();

@@ -4,5 +4,10 @@
   "webDir": "www",
   "server": {
     "iosScheme": "https"
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
   }
 }
