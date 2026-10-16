@@ -2164,9 +2164,11 @@ function invNet(){ const p=invPct(); return Math.round(invTotal()*(1-p/100)); }
 async function saveInvoice(){
   if(window._invSaving) return;   // يمنع الضغط مرتين وخصم القطع مرتين
   captureInvPrices();
-  if(Array.isArray(invItems)) invItems=invItems.filter(it=>!(it && it.id==='custom' && !String(it.name||'').trim()));   // بند مخصص بلا اسم ما يطلع للعميل «بند إضافي»
   const o=ORDERS.find(x=>x.id===invEditing); if(!o) return;
   const A=lang==='ar';
+  // بند مخصص بلا اسم: ما ينحذف بصمت (كان ينشال من الفاتورة ويضيع سعره على خافت) ولا يطلع للعميل «بند إضافي»؛ الفني يكتب اسمه أول (2026-10-16)
+  const noNameI=(invItems||[]).findIndex(it=>it && it.id==='custom' && !String(it.name||'').trim());
+  if(noNameI>=0){ toast(A?'اكتب اسم البند المخصص عشان يطلع للعميل بالفاتورة':'Name the custom item so it shows on the invoice'); renderInvoice(); try{ const inp=document.querySelector('.ir-pname[data-i="'+noNameI+'"]'); if(inp){ inp.focus(); inp.scrollIntoView({block:'center'}); } }catch(e){} return; }
   invItems.forEach(it=>{ if(!(+it.price>=0)) it.price=0; if(!(+it.qty>=1)) it.qty=1; });
   if(!invItems.length){ toast(A?'أضف بندًا واحدًا على الأقل':'Add at least one item'); return; }
   const big=invItems.some(it=>(+it.price||0)*(+it.qty||1)>2000)||invTotal()>5000;
