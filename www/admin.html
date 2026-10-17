@@ -3399,7 +3399,7 @@ function renderJoinReqs(){
       ${A(c.services).map((s,si)=>{ if(!s||typeof s!=='object') return ''; const inApp=jrFindSvc(c.id,s); return `<div class="jr-svc"><div>${esc((_uiEN()&&s.name_en)?s.name_en:(s.name||''))}${inApp?`<span class="jr-in">${LX('في التطبيق','In app')}</span>`:`<button class="sbtn jr-add" data-req="${esc(x.id)}" data-cat="${esc(c.id)}" data-si="${si}" onclick="jrAddService(this.dataset.req,this.dataset.cat,+this.dataset.si)">➕ ${LX('أضفها للتطبيق','Add to app')}</button>`}<em>${esc(s.inspect?'':TV(s.unit||''))}</em></div><div class="pr">${esc(jrPrice(s))}</div></div>`; }).join('')}</div>`).join('');
     const visit=(d.visit&&typeof d.visit==='object')?d.visit:null;
     const kv=[
-      [LX('الطلبات على الواتساب','Jobs on WhatsApp'), d.wa_orders===true?(d.wa_phone?d.wa_phone:LX('نعم','Yes')):(d.wa_orders===false?LX('لا، بالجوال','No, by phone'):'')],
+      [LX('توصله الطلبات','Jobs reach him'), d.wa_orders===true?(LX('واتساب','WhatsApp')+(d.wa_phone?' · '+d.wa_phone:'')):(d.wa_orders===false?LX('على التطبيق','In the app'):'')],
       [LX('المواد','Materials'), d.materials], [LX('الضمان','Warranty'), d.warranty],
       [LX('المعاينة','Inspection'), visit? (visit.type==='بسعر' ? (ar(String(visit.price==null?'':visit.price))+' '+LX('ريال','SAR')+(visit.deduct?LX('، تنخصم إذا تم الشغل','، deducted if the job goes ahead'):'')) : visit.type) : ''],
       [LX('السجل التجاري','CR number'), d.cr_number], [LX('النوع','Type'), d.type], [LX('الفريق','Team'), d.team], [LX('الخبرة','Experience'), d.exp], [LX('المؤسسة','Company'), d.company], [LX('الوثيقة','Document'), d.doc],
