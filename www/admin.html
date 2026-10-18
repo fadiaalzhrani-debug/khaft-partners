@@ -1453,6 +1453,7 @@ async function loadAll(){
     Q(sb.from('khafet_prices').select('*'), pr=>{ PRICES={}; (pr.data||[]).forEach(r=>{ PRICES[r.sid]=Number(r.price); }); }),
     Promise.resolve().then(()=>loadCatalog()).catch(()=>{}),
     Q(sb.from('khafet_subscriptions').select('*').order('created_at',{ascending:false}), x=>{ SUBS=x.data||[]; }),
+    Q(sb.from('khafet_plan_requests').select('*').order('created_at',{ascending:false}).limit(300), x=>{ PLANREQS=x.data||[]; }),
     Q(sb.from('khafet_inventory').select('*').order('name'), iv=>{ invLoaded=true; if(!iv.error && loggedIn){ const d=iv.data||[]; if(d.length||!INV.length){ INV=d; try{ localStorage.setItem('kh_inv_cache',JSON.stringify(INV)); }catch(e){} } } }),
     Q(sb.from('khafet_stock_log').select('*').order('created_at',{ascending:false}).limit(2000), lg=>{ LOG=lg.data||[]; }),
     Q(sb.from('khafet_staff').select('*'), st=>{ STAFF=st.data||[]; }),
@@ -2477,6 +2478,27 @@ function subStatusLbl(s){
 function subPayLbl(s){
   if(s.pay_plan==='monthly'){ let t=LX('شهري ','Monthly ')+ar(+s.paid_months||0)+'/12'+(s.monthly_price?' · '+money(+s.monthly_price):''); if(+s.charge_fails>0) t+=' · ⚠️ '+LX('تعثّر السحب','charge failed'); if(+s.settle_due>0) t+=' · '+LX('فرق مستحق ','due ')+money(+s.settle_due); return t; }
   return {paid:LX('مدفوع','paid'),unpaid:LX('غير مدفوع','unpaid'),partial:LX('جزئي','partial'),refunded:LX('مسترجع','refunded')}[s.pay_status||'unpaid']||esc(s.pay_status||''); }
+/* طلبات الباقات: العميل يرسل ما يفضّله من «باقات الصيانة» بدون دفع، والإدارة تدرسه وتتواصل معه (2026-10-18) */
+let PLANREQS=[];
+const PB_NAMES={visit:['زيارة إصلاح','repair visit'],fan:['تبديل مروحة شفط','fan replacement'],panel:['فحص لوحة الكهرباء','panel check'],heater:['تنظيف سخان عادي','heater descaling'],cheater:['تنظيف سخان مركزي','central heater descaling'],exh:['تنظيف شفاط','fan cleaning'],tank:['فحص الخزان','tank check'],sock:['فحص الفيش','sockets check'],emerg:['طلب طوارئ','emergency'],check:['كشف مجاني','free inspection'],remind:['تذكير','reminders'],report:['تقرير','report'],move:['نقل العقد','transfer'],parts:['خصم قطع','parts off'],chat:['استشارة','advice'],prio:['أولوية','priority']};
+function pbItemsTxt(items){ if(!items||typeof items!=='object') return ''; return Object.keys(items).map(k=>LX((PB_NAMES[k]||[k,k])[0],(PB_NAMES[k]||[k,k])[1])+(+items[k]>1?' ×'+ar(+items[k]):'')).join(LX('، ',', ')); }
+async function planReqMark(id, st){
+  if(!cloudReady) return;
+  try{ const r=await sb.from('khafet_plan_requests').update({status:st, reviewed_at:new Date().toISOString()}).eq('id',id); if(r.error){ toast(LX('ما انحفظ','Not saved')); return; } }catch(e){ toast(LX('ما انحفظ','Not saved')); return; }
+  const x=PLANREQS.find(r=>r.id===id); if(x) x.status=st; toast(LX('تم','Done')); render();
+}
+function renderPlanReqs(){
+  if(!PLANREQS.length) return `<p style="color:var(--muted)">${LX('ما وصلت طلبات باقات بعد.','No plan requests yet.')}</p>`;
+  const rows=PLANREQS.map(r=>{ const ph=String(r.phone||'').replace(/\D/g,''); const wa=ph?('https://wa.me/'+(ph.startsWith('966')?ph:'966'+ph.replace(/^0/,''))):'';
+    return `<tr${r.status==='new'?' style="background:#FFFBEA"':''}>
+      <td><b>${esc(r.name||'')}</b><br><small style="color:var(--muted)" dir="ltr">${esc(r.phone||'')}</small>${r.home_no?`<br><small style="color:var(--muted)">🏠 ${esc(r.home_no)}</small>`:''}</td>
+      <td style="white-space:normal;min-width:220px">${esc(pbItemsTxt(r.items))}${r.note?`<br><small style="color:var(--muted)">📝 ${esc(r.note)}</small>`:''}</td>
+      <td class="n"><b>${money(+r.price||0)}</b></td>
+      <td>${dayLabel(String(r.created_at||'').slice(0,10))}<br><small style="color:var(--muted)">${r.status==='new'?LX('جديد','New'):r.status==='reviewed'?LX('تمت المراجعة','Reviewed'):esc(r.status||'')}</small></td>
+      <td style="white-space:nowrap">${wa?`<a class="sbtn" href="${wa}" target="_blank" rel="noopener">💬</a> `:''}${r.status==='new'?`<button class="sbtn ok" data-id="${esc(r.id)}" onclick="planReqMark(this.dataset.id,'reviewed')">${LX('تمت المراجعة','Reviewed')}</button>`:''}</td>
+    </tr>`; }).join('');
+  return `<div class="biz-tw"><table class="biz-t" style="min-width:720px"><thead><tr><th>${LX('العميل','Customer')}</th><th>${LX('اللي يفضّله','Preferences')}</th><th class="n">${LX('السعر التقريبي','Est. price')}</th><th>${LX('التاريخ · الحالة','Date · Status')}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
 function renderSubs(){
   if(!SUBS.length) return `<p style="color:var(--muted)">${LX('لا يوجد مشتركون بعد.','No subscribers yet.')}</p>`;
   const visitsPerYear=+(SETTINGS&&SETTINGS.plan_visits_per_year)||6;
@@ -3170,6 +3192,7 @@ function render(){
   } else if(adminSection==='cust'){
     body=`${block(LX(`📣 الشكاوى (${ar(openCmp)} مفتوحة)`,`📣 Complaints (${openCmp} open)`), renderComplaintsA())}
       ${block(LX(`💡 رسائل العملاء (${ar(newSugs)} جديدة)`,`💡 Customer messages (${newSugs} new)`), renderSuggestions())}
+      ${block(LX(`🧰 طلبات الباقات (${ar(PLANREQS.filter(r=>r.status==='new').length)} جديد)`,`🧰 Plan requests (${PLANREQS.filter(r=>r.status==='new').length} new)`), renderPlanReqs())}
       ${block(LX(`🛡️ المشتركون (${ar(SUBS.length)} · ${ar(newSubs)} جديد)`,`🛡️ Subscribers (${SUBS.length} · ${newSubs} new)`), renderSubs())}
       ${block(LX(`📰 مقالات السلامة (${ar(ARTICLES.length)})`,`📰 Safety articles (${ARTICLES.length})`), renderArticles())}`;
   } else if(adminSection==='store'){
