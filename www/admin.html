@@ -223,7 +223,10 @@
   .fin-chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;cursor:pointer;color:inherit}
   .fin-chip.on{background:#161D19;color:#fff;border-color:#161D19}
   .fin-bar input,.fin-bar select{padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff;max-width:100%}
-  .fin-t td,.fin-t th{white-space:nowrap;font-size:.88rem}
+  .fin-t td,.fin-t th{white-space:nowrap;font-size:.88rem;padding:9px 8px}
+  .fin-t td.fin-wr{white-space:normal;min-width:96px}
+  .fin-st{display:flex;flex-direction:column;align-items:flex-start;gap:4px} .fin-st .paychip{white-space:nowrap}
+  body.fin-wide .wrap{max-width:1280px}
   .fin-t tr.fin-row{cursor:pointer} .fin-t tr.fin-row:hover td{background:#faf8f3} .fin-t tr.sel td{background:#eef6f1}
   .fin-t tr.fin-det td{white-space:normal;background:#faf8f3;border-top:1px dashed var(--line);padding:12px 14px}
   .fin-dg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
@@ -1573,7 +1576,7 @@ function finCard(r){
     +'</div>';
 }
 function renderFinance(){
-  const A=!_enUI(), narrow=window.innerWidth<=700;
+  const A=!_enUI(), narrow=window.innerWidth<=900;   // تحت 900 الجدول ما يتسع: بطاقات
   const chip=(k,t,cur,set)=>'<button type="button" class="fin-chip'+(cur===k?' on':'')+'" onclick="finSet(\''+set+'\',\''+k+'\')">'+t+'</button>';
   const ranges=[['month',LX('هذا الشهر','This month')],['last',LX('الشهر الماضي','Last month')],['7d',LX('آخر 7 أيام','Last 7 days')],['today',LX('اليوم','Today')],['all',LX('الكل','All time')]];
   const bar='<div class="fin-bar scroll">'+ranges.map(x=>chip(x[0],x[1],finRange,'range')).join('')+'</div>'
@@ -1612,17 +1615,17 @@ function renderFinance(){
     const when=(r.date?dayLabel(r.date):'')+(r.start!=null?' · '+fmtTime(r.start):'');
     return '<tr class="fin-row'+(open?' sel':'')+'" onclick="finToggle(\''+r.id+'\')">'
       +'<td><b>'+ar(r.no)+'</b><br><small style="color:var(--muted)">'+esc(STATUS_AR[r.status]||r.status)+(r.source==='wa'?' · واتساب':'')+'</small></td>'
-      +'<td>'+esc(r.name||LX('بدون اسم','No name'))+'<br><small style="color:var(--muted)" dir="ltr">'+esc(r.phone)+'</small></td>'
-      +'<td>'+when+'</td><td>'+esc(r.tech||'—')+'</td>'
+      +'<td class="fin-wr">'+esc(r.name||LX('بدون اسم','No name'))+'<br><small style="color:var(--muted)" dir="ltr">'+esc(r.phone)+'</small></td>'
+      +'<td class="fin-wr">'+(r.date?dayLabel(r.date):'')+(r.start!=null?'<br><small style="color:var(--muted)">'+fmtTime(r.start)+'</small>':'')+'</td><td>'+esc(r.tech||'—')+'</td>'
       +'<td class="n">'+money(r.services)+'</td><td class="n">'+money(r.parts)+(r.fees>0?'<br><small>+'+money(r.fees)+' '+LX('رسوم','fees')+'</small>':'')+'</td>'
       +'<td class="n fin-tot">'+money(r.total)+'</td><td class="n">'+money(r.paid)+((r.paid>0&&r.pay_method)?'<br><small style="color:var(--muted)">'+finMeth(r.pay_method)+'</small>':'')+'</td>'
       +'<td class="n" style="color:'+(r.due>0?'var(--danger)':'inherit')+'">'+money(r.due)+'</td>'
-      +'<td>'+finStateChip(r)+'</td><td>'+finInvChip(r)+'</td><td>'+(open?'▴':'▾')+'</td></tr>'
-      +(open?'<tr class="fin-det"><td colspan="12">'+finDetail(r)+'</td></tr>':'');
+      +'<td><div class="fin-st">'+finStateChip(r)+finInvChip(r)+'</div></td><td>'+(open?'▴':'▾')+'</td></tr>'
+      +(open?'<tr class="fin-det"><td colspan="11">'+finDetail(r)+'</td></tr>':'');
   }).join('');
-  const table='<div class="biz-tw" style="margin-top:8px"><table class="biz-t fin-t"><thead><tr><th>#</th><th>'+LX('العميل','Customer')+'</th><th>'+LX('الموعد','When')+'</th><th>'+LX('الفني','Technician')+'</th><th class="n">'+LX('خدمات','Services')+'</th><th class="n">'+LX('أغراض','Parts')+'</th><th class="n">'+LX('الإجمالي','Total')+'</th><th class="n">'+LX('المدفوع','Paid')+'</th><th class="n">'+LX('المتبقي','Owed')+'</th><th>'+LX('الدفع','Payment')+'</th><th>'+LX('الفاتورة','Invoice')+'</th><th></th></tr></thead>'
-    +'<tbody>'+(tr||'<tr><td colspan="12" style="color:var(--muted)">'+LX('ما فيه طلبات بهذا الفلتر في هذه الفترة.','No orders match this filter in this period.')+'</td></tr>')+'</tbody>'
-    +(rows.length?'<tfoot><tr class="fin-tot"><td colspan="4">'+LX('المجموع ('+ar(rows.length)+' طلب)','Total ('+rows.length+' orders)')+'</td><td class="n">'+money(tsum('services'))+'</td><td class="n">'+money(tsum('parts'))+'</td><td class="n">'+money(tsum('total'))+'</td><td class="n">'+money(tsum('paid'))+'</td><td class="n">'+money(tsum('due'))+'</td><td colspan="3"></td></tr></tfoot>':'')+'</table></div>';
+  const table='<div class="biz-tw" style="margin-top:8px"><table class="biz-t fin-t"><thead><tr><th>#</th><th>'+LX('العميل','Customer')+'</th><th>'+LX('الموعد','When')+'</th><th>'+LX('الفني','Technician')+'</th><th class="n">'+LX('خدمات','Services')+'</th><th class="n">'+LX('أغراض','Parts')+'</th><th class="n">'+LX('الإجمالي','Total')+'</th><th class="n">'+LX('المدفوع','Paid')+'</th><th class="n">'+LX('المتبقي','Owed')+'</th><th>'+LX('الحالة','Status')+'</th><th></th></tr></thead>'
+    +'<tbody>'+(tr||'<tr><td colspan="11" style="color:var(--muted)">'+LX('ما فيه طلبات بهذا الفلتر في هذه الفترة.','No orders match this filter in this period.')+'</td></tr>')+'</tbody>'
+    +(rows.length?'<tfoot><tr class="fin-tot"><td colspan="4">'+LX('المجموع ('+ar(rows.length)+' طلب)','Total ('+rows.length+' orders)')+'</td><td class="n">'+money(tsum('services'))+'</td><td class="n">'+money(tsum('parts'))+'</td><td class="n">'+money(tsum('total'))+'</td><td class="n">'+money(tsum('paid'))+'</td><td class="n">'+money(tsum('due'))+'</td><td colspan="2"></td></tr></tfoot>':'')+'</table></div>';
   const hint='<p class="sp-hint" style="margin-top:10px">'+LX('الفترة حسب موعد الخدمة. «الخدمات» = الإجمالي ناقص الأغراض والرسوم، فالخصومات تطلع على الخدمات ويبقى المجموع صحيحًا. اضغط أي سطر تشوف بنوده ودفعاته وحالة فاتورته.','Period by service date. Services = total minus parts and fees. Tap a row for its lines, payments and invoice status.')+'</p>';
   return bar+kpis+meth+fbar+table+hint;
 }
@@ -1924,7 +1927,8 @@ const ST_GROUPS=[
     ['off_days','أيام الإجازة (0 الأحد … 5 الجمعة، 6 السبت، افصل بفاصلة)','Off days (0 Sunday … 5 Friday, 6 Saturday, comma separated)','list'],
     ['slot_groups','تجميع الأقسام في السعة (JSON: القسم ثم مجموعته، مثال {"plumb":"core","elec":"core","ac":"ac"})','Capacity grouping of sections (JSON: section then its group, e.g. {"plumb":"core","elec":"core","ac":"ac"})','text'] ] },
   { id:'plans', t:['🛡️ خطط ريّح بالك','🛡️ Rayyeh Balak plans'], d:['خطط ريّح بالك الأربع وأسعارها وحدودها. المالك يعاينها من رابط pv=1 قبل التفعيل. المشتركون الحاليون يشوفون اشتراكهم دائمًا.','The four Rayyeh Balak plans, their prices and limits. The owner previews them with the pv=1 link before enabling. Existing subscribers always see their plan.'], f:[
-    ['plans4_enabled','خطط ريّح بالك ظاهرة للعملاء (الموقع والتطبيق الجديد)','Rayyeh Balak plans visible to customers (website and new app)','bool'],
+    ['plans5_enabled','باقات الصيانة «ركّب باقتك» ظاهرة للعملاء (الموقع والتطبيق الجديد)','Maintenance plans (plan builder) visible to customers (website and new app)','bool'],
+    ['plans4_enabled','خطط ريّح بالك القديمة ظاهرة في النسخ القديمة من التطبيق','Old Rayyeh Balak plans visible in old app versions','bool'],
     ['plan_ac_enabled','خطط المكيفات ظاهرة','AC plans visible','bool'],
     ['plan_villa_price','بيتك علينا (ريال)','Your house on us (SAR)','num'],
     ['plan_villa_ac_price','بيتك ومكيفاتك علينا (ريال)','Your house and ACs on us (SAR)','num'],
@@ -2457,8 +2461,10 @@ async function subMark(id,status){
   if(status==='active'&&!confirm(LX('تفعيل بدون دفع مسجّل؟','Activate without a recorded payment?'))) return;
   if(cloudReady){ try{ await sb.from('khafet_subscriptions').update({status}).eq('id',id); }catch(e){} } const s=SUBS.find(x=>x.id===id); if(s) s.status=status; toast(status==='active'?'✅ فُعّل الاشتراك':'تم التحديث'); render(); }
 /* خطط ريّح بالك الأربع (والمعرّفات القديمة للاشتراكات التجريبية) */
-const PLAN_NAMES={ villa:['بيتك علينا','Your house on us'], villa_ac:['بيتك ومكيفاتك علينا','Your house and ACs on us'], apt:['شقتك علينا','Your apartment on us'], apt_ac:['شقتك ومكيفك علينا','Your apartment and AC on us'], home:['بيت (قديم)','House (legacy)'], basic:['شقة (قديم)','Apartment (legacy)'] };
-function subPlanName(s){ const id=String(s.plan_id||s.plan||''); const p=PLAN_NAMES[id]; let nm=p?LX(p[0],p[1]):(id||LX('بدون خطة','No plan')); if(+s.ac_units>0) nm+=' · '+LX(ar(+s.ac_units)+' مكيفات',(+s.ac_units)+' ACs'); return nm; }
+const PLAN_NAMES={ custom:['باقتي','My plan'], villa:['بيتك علينا','Your house on us'], villa_ac:['بيتك ومكيفاتك علينا','Your house and ACs on us'], apt:['شقتك علينا','Your apartment on us'], apt_ac:['شقتك ومكيفك علينا','Your apartment and AC on us'], home:['بيت (قديم)','House (legacy)'], basic:['شقة (قديم)','Apartment (legacy)'] };
+function subPlanName(s){ const id=String(s.plan_id||s.plan||''); const p=PLAN_NAMES[id]; let nm=p?LX(p[0],p[1]):(id||LX('بدون خطة','No plan')); if(+s.ac_units>0) nm+=' · '+LX(ar(+s.ac_units)+' مكيفات',(+s.ac_units)+' ACs');
+  if(s.items&&typeof s.items==='object'){ const PBN={visit:['زيارة','visit'],fan:['مروحة','fan'],panel:['لوحة','panel'],heater:['سخان عادي','heater'],cheater:['سخان مركزي','central heater'],exh:['شفاط','exhaust'],tank:['خزان','tank'],sock:['فيش','sockets'],prio:['أولوية','priority'],parts:['خصم قطع','parts off'],check:['كشف','inspection'],remind:['تذكير','reminders'],report:['تقرير','report'],chat:['استشارة','advice'],move:['نقل','transfer']}; nm+=' · '+Object.keys(s.items).map(k=>LX((PBN[k]||[k,k])[0],(PBN[k]||[k,k])[1])+(+s.items[k]>1?' ×'+s.items[k]:'')).join(LX('، ',', ')); }
+  return nm; }
 /* طلبات العقد من ORDERS: الزيارات المستخدمة والزيارتان الموسميتان وغسيل المكيفات */
 function subOrders(s){ return ORDERS.filter(o=>o.subId===s.id&&o.status!=='cancelled'); }
 function subVisits(s){ return subOrders(s).filter(o=>o.subSvc==='visit').length; }
@@ -3188,6 +3194,7 @@ function render(){
   }
   const secTitle=({orders:'📥 الطلبات',team:'👥 الفريق',cust:'💬 العملاء',store:'📦 المستودع',prices:LX('🗂️ الأقسام والخدمات','🗂️ Sections & services'),notify:'📣 إشعار للكل',joins:LX('📨 طلبات الانضمام','📨 Join requests'),cancels:LX('❌ طلبات الإلغاء','❌ Cancellation requests'),settings:LX('⚙️ الإعدادات','⚙️ Settings'),solutions:LX('🏘️ الحلول الجاهزة','🏘️ Ready solutions'),biz:LX('📈 أرقام المستثمر','📈 Investor numbers'),fin:LX('💰 المالية والفواتير','💰 Finance & invoices')})[adminSection]||'';
   const _sy=window.scrollY, _keep=(window._lastSec===adminSection); window._lastSec=adminSection;
+  document.body.classList.toggle('fin-wide', adminSection==='fin');   // جدول المالية عريض: الصفحة أعرض له بس
   document.getElementById('app').innerHTML=`<div class="screen">
     <div class="admin-bar"><span class="ico kp-abico">${pic('building',26)}</span><div style="flex:1"><b>${BRAND}</b><small>لوحة الإدارة</small></div></div>
     ${dashHtml()}
