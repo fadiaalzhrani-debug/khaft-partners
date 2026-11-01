@@ -3169,12 +3169,11 @@ function render(){
     ['joins','📨',LX('طلبات الانضمام','Join requests'), JOINREQ.filter(x=>x.status==='new').length, LX('فنيين ومقدمي خدمات · خدماتهم وأسعارهم','Technicians and providers · their services and prices'), false],
     ['solutions','🏘️',LX('الحلول الجاهزة','Ready solutions'), 0, LX('مشاكل معروفة في بيوت أجيال وحلّها بسعر ثابت · تظهر للعميل كصفحة','Known Ajyal home problems with a fixed-price fix · shown to customers as a page'), false],
     ['biz','📈',LX('أرقام المستثمر','Investor numbers'), 0, LX('كل الأرقام اللي يطلبها مشترٍ أو ممول · جاهزة للطباعة','Everything a buyer or investor asks for'), false],
-    ['claude','🤖',LX('كلود','Claude'), 0, LX('اكتب أي طلب أو سؤال عن خافت وينفّذه فورًا · الرد يوصلك في نفس الصفحة','Write any request or question about Khafet and it gets done right away · the reply comes back on the same page'), false],
     ['settings','⚙️',LX('الإعدادات','Settings'), 0, LX('العمولة، الإلغاء، الضمان، التغطية، المواعيد، الباقات، التواصل','Commission, cancellation, warranty, coverage, hours, plans, contact'), false],
   ];
-  const _ADMIC={orders:['inbox','#27B9B5'],fin:['chart','#0B7A55'],cancels:['cancel','#E45C86'],team:['team','#3796D3'],cust:['chat','#8E6BD8'],store:['box','#F0B21A'],prices:['grid','#EC8434'],notify:['megaphone','#D9534F'],joins:['doc','#27B9B5'],solutions:['home','#3EAD5E'],biz:['chart','#3796D3'],settings:['sliders','#7A6A5C'],claude:['chat','#0F766E']};
+  const _ADMIC={orders:['inbox','#27B9B5'],fin:['chart','#0B7A55'],cancels:['cancel','#E45C86'],team:['team','#3796D3'],cust:['chat','#8E6BD8'],store:['box','#F0B21A'],prices:['grid','#EC8434'],notify:['megaphone','#D9534F'],joins:['doc','#27B9B5'],solutions:['home','#3EAD5E'],biz:['chart','#3796D3'],settings:['sliders','#7A6A5C']};
   const homeCards=`<div class="hgrid">${CARDS.map(([k,ic,t,n,desc,exp])=>`
-    <div class="hcard" onclick="${k==='claude'?"location.href='claude.html'":`setAdminSection('${k}')`}">
+    <div class="hcard" onclick="setAdminSection('${k}')">
       <div class="hc-top"><span class="hc-ic" style="--c:${(_ADMIC[k]||[])[1]||'#8E8175'}">${pic((_ADMIC[k]||[])[0]||'grid',26)}</span>${n>0?`<span class="hc-badge">${ar(n)}</span>`:''}</div>
       <h3>${t}</h3>
       <p>${desc}</p>
