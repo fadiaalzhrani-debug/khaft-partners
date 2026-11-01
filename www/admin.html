@@ -3296,8 +3296,8 @@ function renderComplaintsA(){
           ${[['open',LX('مفتوحة','Open')],['progress',LX('جارٍ المعالجة','In progress')],['closed',LX('مغلقة','Closed')]].map(o=>`<option value="${o[0]}" ${c.status===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
       <small style="color:var(--muted);font-weight:700;display:block;margin-top:4px">${esc(c.customer_name||'')} · <a href="tel:${esc(c.customer_phone||'')}" dir="ltr">${esc(c.customer_phone||'')}</a>${c.order_no?' · '+LX('طلب','Order')+' #'+ar(c.order_no):''} · ${esc(String(c.created_at||'').slice(0,10))}</small>
       <p style="margin-top:8px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere">${esc(c.body)}</p>
-      <textarea id="cmpr_${esc(c.id)}" rows="2" placeholder="${LX('ردّك على العميل (يظهر له في التطبيق)','Your reply (shown to the customer in the app)')}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:inherit">${esc(c.reply||'')}</textarea>
-      <button class="sbtn ok" style="margin-top:6px" data-id="${esc(c.id)}" onclick="cmpSaveReplyA(this.dataset.id)">💬 ${LX('حفظ الرد','Save reply')}</button>
+      <textarea id="cmpr_${esc(c.id)}" rows="2" placeholder="${LX('ردّك على العميل (يظهر له في التطبيق ويوصله بالواتساب)','Your reply (shown in the app and sent on WhatsApp)')}" style="width:100%;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:inherit">${esc(c.reply||'')}</textarea>
+      <button class="sbtn ok" style="margin-top:6px" data-id="${esc(c.id)}" onclick="cmpSaveReplyA(this.dataset.id)">💬 ${LX('حفظ وإرسال','Save & send')}</button>
     </div>`; }).join('');
 }
 async function cmpSetStatusA(id, st){
@@ -3307,8 +3307,26 @@ async function cmpSetStatusA(id, st){
 async function cmpSaveReplyA(id){
   const el=document.getElementById('cmpr_'+id); const reply=((el&&el.value)||'').trim(); if(!reply){ toast(LX('اكتب الرد أول','Write the reply first')); return; }
   const c=COMPLAINTS_A.find(x=>x.id===id); const st=(c&&c.status==='open')?'progress':(c?c.status:'progress');
-  try{ const r=await sb.from('khafet_complaints').update({reply, status:st}).eq('id',id).select('id'); if(r.error) throw r.error; if(c){ c.reply=reply; c.status=st; } toast(LX('💬 انحفظ الرد ويظهر للعميل','💬 Reply saved')); render(); }
-  catch(e){ toast(LX('ما انحفظ','Not saved')); }
+  try{ const r=await sb.from('khafet_complaints').update({reply, status:st}).eq('id',id).select('id'); if(r.error) throw r.error; if(c){ c.reply=reply; c.status=st; } render(); }
+  catch(e){ toast(LX('ما انحفظ','Not saved')); return; }
+  // الإرسال بالواتساب (طلب فادية 2026-11-01 «الرد اللي ينكتب في الشكوى ينرسل واتس لهم إذا حطيت حفظ وإرسال»):
+  // wa-bot/complaint-reply يقرأ الرد من القاعدة ويرسله نصًا لو نافذة العميل مفتوحة، وإلا بالقالب المعتمد، وإلا يبقى ظاهرًا في التطبيق فقط
+  toast(LX('💬 انحفظ الرد · جارٍ الإرسال بالواتساب','💬 Saved · sending on WhatsApp'));
+  const w=await cmpSendWaA(id);
+  if(w&&w.ok&&w.dup) toast(LX('✅ الرد محفوظ وكان مرسلًا بالواتساب من قبل','✅ Saved · already sent on WhatsApp'));
+  else if(w&&w.ok) toast(LX('✅ انحفظ الرد ووصل العميل بالواتساب','✅ Saved and sent on WhatsApp'));
+  else if(w&&w.reason==='closed') toast(LX('💬 انحفظ الرد ويظهر للعميل في التطبيق · ما انرسل واتساب لأن نافذته مقفلة','💬 Saved · shown in the app · WhatsApp window closed'));
+  else if(w&&w.reason==='phone') toast(LX('💬 انحفظ الرد · ما فيه رقم جوال صالح للواتساب','💬 Saved · no valid phone for WhatsApp'));
+  else toast(LX('💬 انحفظ الرد ويظهر للعميل · تعذّر الإرسال بالواتساب','💬 Saved · WhatsApp send failed'));
+}
+async function cmpSendWaA(id){
+  try{
+    const { data:{ session } }=await sb.auth.getSession(); if(!session) return { ok:false, reason:'session' };
+    const r=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/complaint-reply',{ method:'POST',
+      headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' },
+      body:JSON.stringify({ id }) });
+    return await r.json();
+  }catch(e){ return { ok:false, reason:String(e.message||e) }; }
 }
 /* ═══════ 📲 مستخدمو التطبيق: أرقام بدون تكرار. الأشخاص بأرقام الجوال المختلفة، والأجهزة بمعرّف التثبيت، والحسابات المجهولة معزولة لأنها تتكرر ═══════ */
 function audiencePanelHtml(){
