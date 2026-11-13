@@ -144,8 +144,20 @@ main{min-width:0;padding:18px 18px 90px}
 .ml.ack{opacity:.6}
 .ml>span{flex:1;min-width:0;overflow-wrap:anywhere}
 .ml small{color:var(--muted-fg);white-space:nowrap;font-variant-numeric:tabular-nums}
-.ml .act{display:flex;gap:4px}
-.ml .act button{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:#fff;display:grid;place-items:center}
+/* المحادثة: مربع واحد، فقاعات العميل يمين وردودك يسار، وأحداث الطلب كأسطر وسط (فادية 2026-11-13) */
+.thread{display:grid;gap:6px;padding:10px;border-radius:10px;background:var(--muted)}
+.thh{display:flex;align-items:center;gap:8px;font:800 12.5px/1.3 var(--fh);color:var(--muted-fg);margin-bottom:2px}
+.stsel{appearance:none;-webkit-appearance:none;border:1px solid var(--border);border-radius:999px;padding:6px 12px;font:700 12px/1 var(--fb);background:#fff;color:#1f1b16;cursor:pointer}
+.stsel.open{background:#fdf1ee;border-color:#f3c7bd;color:#b3412a} .stsel.done{background:#e6f4f1;border-color:#bfe3dc;color:#1d7a6c}
+.bb{justify-self:start;max-width:88%;padding:7px 10px;border-radius:12px 12px 12px 3px;background:#fff;font-size:12.5px;color:#27272a;overflow-wrap:anywhere;white-space:pre-wrap;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.bb.me{justify-self:end;background:#dcefe9;color:#0f5a50;border-radius:12px 12px 3px 12px}
+.bb.ack{opacity:.6}
+.bb small{display:block;font-size:10.5px;color:var(--muted-fg);margin-top:3px;white-space:normal;font-variant-numeric:tabular-nums}
+.bb b{font-weight:800}
+.ev{justify-self:center;display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted-fg);padding:3px 10px;border:1px dashed #cfd4d9;border-radius:999px;background:#fff;font-variant-numeric:tabular-nums}
+.ev svg{color:var(--c-green)}
+.trl{font-size:12.5px;padding:7px 10px;border-radius:9px;border:1px solid var(--border);background:var(--muted)}
+.trl.r{background:#fdf1ee;border-color:#f3c7bd;color:#b3412a} .trl.g{background:#e6f4f1;border-color:#bfe3dc;color:#1d7a6c} .trl.n{color:var(--muted-fg)}
 .rb{display:grid;gap:8px;padding:10px;border:1px dashed #cfd4d9;border-radius:9px;background:#fafafa}
 .rh{font:700 12px/1.3 var(--fh);color:var(--muted-fg)}
 .rbtn{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -162,6 +174,7 @@ main{min-width:0;padding:18px 18px 90px}
 textarea.ta{width:100%;min-height:96px;padding:10px 12px;border:1px solid var(--input);border-radius:9px;resize:vertical;background:var(--card);line-height:1.7}
 textarea.ta:focus,input.in:focus{outline:2px solid var(--ring);outline-offset:1px}
 input.in{width:100%;height:40px;padding:0 12px;border:1px solid var(--input);border-radius:9px;background:var(--card)}
+.audr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted-fg)} .audr input.in.n{width:72px;height:34px;padding:0 8px;text-align:center;font:700 14px var(--fh);color:#1f1b16}
 .hint{color:var(--muted-fg);font-size:12px}
 .chbtn{width:100%;text-align:start;cursor:pointer} .chbtn .chev{color:var(--muted-fg);font-size:14px}
 .card .chbtn:hover{background:var(--muted)} .card>.chbtn:only-child{border-bottom:0}
@@ -191,6 +204,19 @@ input.in{width:100%;height:40px;padding:0 12px;border:1px solid var(--input);bor
 .dates button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)} .dates button.on small,.dates button.on span{color:#d4d4d8}
 .dates button i{position:absolute;top:-6px;inset-inline-end:-4px;min-width:18px;height:18px;border-radius:999px;background:var(--blue);color:#fff;font:700 10.5px/18px var(--fh);padding:0 5px;font-style:normal}
 .dates button i.red{background:var(--red)}
+/* التقويم: خريطة ألوان، كل يوم مربع ولونه حسب عدد الحجوزات (فادية 2026-11-13) */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.cal .wd{text-align:center;font:700 11px/1.2 var(--fb);color:var(--muted-fg);padding:2px 0 4px}
+.cal .dc{min-height:62px;border:1px solid var(--border);border-radius:9px;background:var(--card);padding:5px 6px;display:grid;align-content:space-between;justify-items:center;position:relative;color:#1f1b16;min-width:0}
+.cal .dc small{font:700 11px/1 var(--fb);color:var(--muted-fg);justify-self:start}
+.cal .dc b{font:800 20px/1 var(--fh);font-variant-numeric:tabular-nums}
+.cal .dc em{font:600 10px/1 var(--fb);font-style:normal;color:var(--muted-fg)}
+.cal .dc.today{box-shadow:inset 0 0 0 2px var(--primary)}
+.cal .dc.l1{background:#d7efea;border-color:#c3e6df} .cal .dc.l2{background:#9fd6cb;border-color:#9fd6cb} .cal .dc.l3{background:#2A9D8F;border-color:#2A9D8F;color:#fff} .cal .dc.l4{background:#264653;border-color:#264653;color:#fff}
+.cal .dc.l3 small,.cal .dc.l3 em,.cal .dc.l4 small,.cal .dc.l4 em{color:rgba(255,255,255,.85)}
+.cal .dc.past{opacity:.72}
+.callg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted-fg);justify-content:flex-end;margin-top:8px}
+.callg i{width:14px;height:14px;border-radius:3px;display:inline-block;border:1px solid var(--border)}
 .sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .sum div{padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card)}
 .sum small{display:block;color:var(--muted-fg);font-size:12px} .sum b{font:800 18px/1.2 var(--fh);font-variant-numeric:tabular-nums}
@@ -320,7 +346,7 @@ const PIC={
   logout:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/>',
   phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
   chat:'<path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4A8 8 0 1 1 20 12Z"/>',
-  x:'<path d="M6 6l12 12M18 6 6 18"/>', ext:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>', x:'<path d="M6 6l12 12M18 6 6 18"/>', ext:'<path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
   spark:'<path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z"/>',
   send:'<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/>', trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   check:'<path d="m5 12 5 5L20 7"/>', map:'<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
@@ -405,12 +431,12 @@ function stripMoney(o){
 /* ── الرسائل والشكاوى: تحت طلب صاحبها (نفس الرقم وأقرب موعد خلال 3 أيام) وإلا مستقلة ── */
 function msgItems(){
   const out=[];
-  CMP.forEach(c=>{ const key='cmp:'+c.id; if(MSTATE[key]==='hidden') return; const replied=!!(c.reply&&String(c.reply).trim())||c.status==='closed'; out.push({key, kind:'cmp', id:c.id, p9:phone9(c.customer_phone), phone:c.customer_phone||'', ts:new Date(c.created_at).getTime(), text:c.body||'', name:c.customer_name||'', orderNo:c.order_no||null, open:!replied, c}); });
+  CMP.forEach(c=>{ const key='cmp:'+c.id; if(MSTATE[key]==='hidden') return; const replied=!!(c.reply&&String(c.reply).trim())||c.status==='closed'; out.push({key, kind:'cmp', id:c.id, p9:phone9(c.customer_phone), phone:c.customer_phone||'', ts:new Date(c.created_at).getTime(), text:c.body||'', name:c.customer_name||'', orderNo:c.order_no||null, open:MSTATE[key]==='open'||(!replied&&MSTATE[key]!=='done'), c}); });
   WA.forEach(m=>{ const key='wa:'+m.msg_id; if(MSTATE[key]==='hidden') return; const kindTx={image:'📷 '+LX('صورة','Photo'),video:'🎥 '+LX('فيديو','Video'),audio:'🎤 '+LX('صوت','Voice'),document:'📎 '+LX('ملف','File'),location:'📍 '+LX('موقع','Location'),sticker:'🙂',unsupported:LX('رسالة غير مدعومة','Unsupported message')};
     const ts=new Date(m.created_at).getTime(), text=(m.body&&String(m.body).trim())||kindTx[m.kind]||m.kind;
     // يحتاج رد؟ لا لو هي شكر/تأكيد فقط، ولا لو رددنا عليه بعدها (فادية 2026-11-13)
     const repliedAfter=OUT.some(o=>o.phone9===m.phone9&&new Date(o.created_at).getTime()>ts);
-    const open=MSTATE[key]!=='done' && !repliedAfter && needsReply(m);
+    const open=MSTATE[key]==='open' || (MSTATE[key]!=='done' && !repliedAfter && needsReply(m));
     out.push({key, kind:'wa', id:m.id, p9:m.phone9, phone:m.phone9?'966'+m.phone9:'', ts, text, name:m.wa_name||'', open, ack:!needsReply(m), m}); });
   // ردودنا الصادرة من اللوحة أو على الشكاوى: تظهر داخل المربع بعلامة «ردّك»
   OUT.forEach(o=>{ if(!o.reply) return; out.push({key:'out:'+o.id, kind:'out', id:o.id, p9:o.phone9, phone:'966'+o.phone9, ts:new Date(o.created_at).getTime(), text:String(o.reply), name:'', open:false}); });
@@ -448,13 +474,14 @@ function render(){
   const app=document.getElementById('app');
   if(!loggedIn){ app.innerHTML=loginHTML(); document.getElementById('side').innerHTML=''; document.getElementById('bottom').innerHTML=''; afterLogin(); return; }
   finIndex(); ATT=attachMsgs();
-  app.innerHTML=(DEMO?'<div class="demo">'+LX('عرض تجريبي ببيانات وهمية (للمعاينة فقط)','Demo view with sample data')+'</div>':'')+(VIEW==='orders'?ordersHTML():VIEW==='bc'?bcHTML():homeHTML());
+  app.innerHTML=(DEMO?'<div class="demo">'+LX('عرض تجريبي ببيانات وهمية (للمعاينة فقط)','Demo view with sample data')+'</div>':'')+(VIEW==='orders'?ordersHTML():VIEW==='bc'?bcHTML():VIEW==='cal'?calHTML():homeHTML());
   setTimeout(queueTriage,0);
   renderOverlay();
 }
 const NAV=[
   {k:'home', ic:'home', l:['الرئيسية','Home']},
   {k:'orders', ic:'orders', l:['الطلبات','Orders'], badge:()=>kpis().news},
+  {k:'cal', ic:'calendar', l:['التقويم','Calendar']},
   {k:'fin', ic:'money', l:['المالية والفواتير','Finance'], legacy:'fin'},
   {k:'team', ic:'team', l:['الفريق','Team'], legacy:'team'},
   {k:'cancels', ic:'cancel', l:['طلبات الإلغاء والتعديل','Cancel & change requests'], legacy:'cancels'},
@@ -471,24 +498,34 @@ function renderNav(){
   const B=[NAV[0],NAV[1],NAV[2],NAV[3],{k:'more',ic:'grid',l:['المزيد','More']}];
   bot.innerHTML=B.map(n=>{ const b=n.badge?n.badge():0; return '<button class="'+(VIEW===n.k?'on':'')+'" onclick="'+(n.k==='more'?'goMore()':'nav(\''+n.k+'\')')+'">'+pic(n.ic,20)+'<span>'+LX(n.l[0],n.l[1])+'</span>'+(b?'<span class="bd">'+b+'</span>':'')+'</button>'; }).join('');
 }
-function nav(k){ const n=NAV.find(x=>x.k===k); if(n&&n.legacy){ legacy(n.legacy); return; } VIEW=k; FILTER=''; OPEN=null; if(k==='orders') ORD_DAY=todayISO(); window.scrollTo(0,0); render(); if(k==='orders') setTimeout(centerDay,50); if(k==='bc') bcList(); }
+function nav(k){ const n=NAV.find(x=>x.k===k); if(n&&n.legacy){ legacy(n.legacy); return; } VIEW=k; FILTER=''; OPEN=null; if(k==='orders') ORD_DAY=todayISO(); window.scrollTo(0,0); render(); if(k==='orders') setTimeout(centerDay,50); if(k==='bc') bcList(); if(k==='cal') calLoad(); }
 
 /* ── الرسالة الجماعية (2026-11-13): تكتب النص، تشوف العدد، «جهّز» ينشئ قالبًا عند واتساب، وبعد اعتماده «أرسل للكل» ── */
 let BC={text:'', prev:null, cur:null, busy:false, rows:[], prog:null, pollT:null, prevT:null};
 async function bcApi(body){
   if(DEMO){ await new Promise(r=>setTimeout(r,500)); const m=body.mode;
-    if(m==='preview') return {ok:true,total:119,open:9,tpl_needed:110}; if(m==='prepare') return {ok:true,id:7,tpl_name:'khafet_bc_7',tpl_status:'PENDING',total:119};
-    if(m==='status') return {ok:true,id:7,tpl_status:(BC.cur&&BC.cur._n>1)?'APPROVED':'PENDING',status:'draft',total:119,sent:0,failed:0,text:BC.text}; if(m==='send'){ const s=Math.min(119,((BC.prog&&BC.prog.sent)||0)+40); return {ok:true,done:s>=119,sent:s,failed:0,total:119,remaining:119-s}; } return {ok:true,rows:[]}; }
+    if(m==='preview'){ const a=body.aud||{}; const n=a.kind==='recent'?Math.min(119,a.n||20):a.kind==='days'?Math.max(0,Math.min(119,Math.round(((a.to||0)-(a.from||0))*2.3))):119; return {ok:true,total:n,open:Math.min(9,n),tpl_needed:Math.max(0,n-9),audience:a.kind==='recent'?'recent:'+a.n:a.kind==='days'?'days:'+a.from+'-'+a.to:'orders'}; } if(m==='prepare') return {ok:true,id:7,tpl_name:'khafet_bc_7',tpl_status:'PENDING',total:(BC.prev&&BC.prev.total)||119,audience:(BC.prev&&BC.prev.audience)||'orders'};
+    if(m==='cancel') return {ok:true,status:'cancelled'}; if(m==='status') return {ok:true,id:7,tpl_status:(BC.cur&&BC.cur._n>1)?'APPROVED':'PENDING',status:'draft',total:119,sent:0,failed:0,text:BC.text}; if(m==='send'){ const s=Math.min(119,((BC.prog&&BC.prog.sent)||0)+40); return {ok:true,done:s>=119,sent:s,failed:0,total:119,remaining:119-s}; } return {ok:true,rows:[]}; }
   const { data:{ session } }=await sb.auth.getSession(); if(!session) return {ok:false,reason:'auth'};
   const r=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/broadcast',{ method:'POST', headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
   return await r.json().catch(()=>({ok:false}));
 }
-function bcInput(v){ BC.text=v; clearTimeout(BC.prevT); BC.prevT=setTimeout(async()=>{ if(!BC.text.trim()){ BC.prev=null; render(); return; } BC.prev=await bcApi({mode:'preview',text:BC.text}); render(); },600); }
-async function bcList(){ const r=await bcApi({mode:'list'}); if(r&&r.ok){ BC.rows=r.rows||[]; render(); } }
+/* الجمهور (فادية 2026-11-13): كل العملاء · آخر N عميل طلبوا · من آخر حجزهم قبل A إلى B يوم */
+function bcAud(){ const a=BC.aud||{kind:'all'}; return a.kind==='recent'?{kind:'recent',n:Math.max(1,+a.n||20)}:a.kind==='days'?{kind:'days',from:Math.max(0,+a.from||0),to:Math.max(+a.from||0,+a.to||0)}:{kind:'all'}; }
+function bcAudSet(k,v){ BC.aud=Object.assign({kind:'all',n:20,from:7,to:20},BC.aud||{}); if(k==='kind') BC.aud.kind=v; else BC.aud[k]=+v||0; BC.prev=null; render(); bcInput(BC.text); }
+function bcInput(v){ BC.text=v; clearTimeout(BC.prevT); BC.prevT=setTimeout(async()=>{ if(!BC.text.trim()){ BC.prev=null; render(); return; } BC.prev=await bcApi({mode:'preview',text:BC.text,aud:bcAud()}); render(); },600); }
+async function bcList(){ const r=await bcApi({mode:'list'}); if(r&&r.ok){ BC.rows=r.rows||[]; const cur=!BC.cur&&BC.rows.find(x=>x.status==='draft'||x.status==='sending'); if(cur){ BC.cur=Object.assign({_n:0},cur); BC.text=cur.text||BC.text; bcPoll(); } render(); } }
+/* إلغاء الحملة بأي مرحلة قبل الاكتمال (فادية 2026-11-13 «خل عندي خيار ألغي الرسالة»): يحذف القالب ويوقف الباقي، واللي انرسل ما يرجع */
+async function bcCancel(){
+  if(!BC.cur) return; const sent=(BC.prog&&BC.prog.sent)||BC.cur.sent||0;
+  if(!confirm(sent?LX('إلغاء الحملة؟ انرسلت لـ'+sent+' رقم وما ينرسل للباقي.','Cancel? Already sent to '+sent+'. The rest will not be sent.'):LX('إلغاء هذه الرسالة؟ ما ينرسل شي.','Cancel this message? Nothing will be sent.'))) return;
+  BC.stop=true; const r=await bcApi({mode:'cancel',id:BC.cur.id}); clearTimeout(BC.pollT);
+  BC.cur=null; BC.prog=null; BC.busy=false; render(); toast(r&&r.ok?LX('أُلغيت الرسالة','Message cancelled'):LX('تعذّر الإلغاء','Could not cancel')); bcList();
+}
 async function bcPrepare(){
   const t=BC.text.trim(); if(t.length<10){ toast(LX('اكتب الرسالة أول','Write the message first')); return; }
   if(!confirm(LX('تجهيز القالب عند واتساب بهذا النص؟ ما ينرسل شي الحين، الإرسال بعد الاعتماد وبزر منك.','Prepare the WhatsApp template with this text?'))) return;
-  BC.busy=true; render(); const r=await bcApi({mode:'prepare',text:t}); BC.busy=false;
+  BC.busy=true; render(); const r=await bcApi({mode:'prepare',text:t,aud:bcAud()}); BC.busy=false;
   if(!r.ok){ toast(LX('تعذّر إنشاء القالب: ','Template failed: ')+(r.tpl_reason||r.reason||'')); render(); return; }
   BC.cur=Object.assign({_n:0,text:t},r); render(); bcPoll();
 }
@@ -501,23 +538,27 @@ async function bcSend(){
   if(!BC.cur||BC.cur.tpl_status!=='APPROVED') return;
   const n=BC.cur.total||(BC.prev&&BC.prev.total)||0;
   if(!confirm(LX('إرسال الرسالة الآن إلى '+n+' رقم؟ ما ينفع التراجع بعدها.','Send now to '+n+' numbers? This cannot be undone.'))) return;
-  BC.busy=true; BC.prog={sent:0,failed:0,total:n,remaining:n}; render();
-  for(let i=0;i<60;i++){ const r=await bcApi({mode:'send',id:BC.cur.id}); if(!r.ok){ toast(LX('توقف الإرسال: ','Stopped: ')+(r.reason||'')); break; } BC.prog=r; render(); if(r.done) break; }
-  BC.busy=false; render(); if(BC.prog&&BC.prog.done){ toast(LX('✅ انرسلت لـ'+BC.prog.sent+' رقم','✅ Sent to '+BC.prog.sent)); BC.cur=null; BC.text=''; BC.prev=null; bcList(); }
+  BC.busy=true; BC.stop=false; BC.prog={sent:0,failed:0,total:n,remaining:n}; render();
+  for(let i=0;i<60&&!BC.stop;i++){ const r=await bcApi({mode:'send',id:BC.cur.id}); if(BC.stop||!BC.cur) break; if(!r.ok){ toast(LX('توقف الإرسال: ','Stopped: ')+(r.reason||'')); break; } BC.prog=r; render(); if(r.done) break; }
+  BC.busy=false; render(); if(BC.stop) return; if(BC.prog&&BC.prog.done){ toast(LX('✅ انرسلت لـ'+BC.prog.sent+' رقم','✅ Sent to '+BC.prog.sent)); BC.cur=null; BC.text=''; BC.prev=null; bcList(); }
 }
 function bcHTML(){
-  const p=BC.prev, c=BC.cur, pr=BC.prog;
+  const p=BC.prev, c=BC.cur, pr=BC.prog, a=Object.assign({kind:'all',n:20,from:7,to:20},BC.aud||{});
+  const audLb=s=>{ const m1=/^recent:(\d+)$/.exec(s||''), m2=/^days:(\d+)-(\d+)$/.exec(s||''); return m1?LX('آخر '+m1[1]+' عميل طلبوا','Last '+m1[1]+' customers'):m2?LX('آخر حجزهم قبل '+m2[1]+' إلى '+m2[2]+' يوم','Last booking '+m2[1]+'–'+m2[2]+' days ago'):LX('كل العملاء','All customers'); };
   const st=c? (c.tpl_status==='APPROVED'?'<span class="badge g">'+LX('القالب معتمد','Template approved')+'</span>':c.tpl_status==='REJECTED'?'<span class="badge r">'+LX('رُفض القالب','Rejected')+'</span>'+(c.tpl_reason?' <small class="hint">'+esc(c.tpl_reason)+'</small>':''):'<span class="badge y">'+LX('بانتظار اعتماد واتساب (دقائق إلى ساعة)','Awaiting WhatsApp approval')+'</span>') : '';
   return '<div class="ph"><h1>'+LX('رسالة للكل','Message to all')+'</h1><span class="sub">'+LX('لكل الأرقام اللي سبق وتعاملنا معها','All previous customers')+'</span></div>'
     +'<div class="card"><div class="cb" style="display:grid;gap:10px">'
+    +(c?'':'<div class="chips">'+[['all','كل العملاء','All customers'],['recent','آخر من طلبوا','Most recent'],['days','حسب آخر حجز','By last booking']].map(x=>'<button class="chip '+(a.kind===x[0]?'on':'')+'" onclick="bcAudSet(\'kind\',\''+x[0]+'\')">'+LX(x[1],x[2])+'</button>').join('')+'</div>'
+      +(a.kind==='recent'?'<div class="audr">'+LX('آخر','Last')+' <input class="in n" type="number" min="1" max="2000" value="'+(a.n||20)+'" onchange="bcAudSet(\'n\',this.value)"> '+LX('عميل طلبوا','customers who ordered')+'</div>':'')
+      +(a.kind==='days'?'<div class="audr">'+LX('آخر حجزهم قبل','Last booking between')+' <input class="in n" type="number" min="0" max="3650" value="'+(a.from||0)+'" onchange="bcAudSet(\'from\',this.value)"> '+LX('إلى','and')+' <input class="in n" type="number" min="0" max="3650" value="'+(a.to||0)+'" onchange="bcAudSet(\'to\',this.value)"> '+LX('يوم','days ago')+'</div>':''))
     +'<textarea class="ta" style="min-height:140px" placeholder="'+LX('اكتب الرسالة هنا…','Write the message…')+'" oninput="bcInput(this.value)" '+(c||BC.busy?'disabled':'')+'>'+esc(BC.text)+'</textarea>'
     +(p&&p.ok?'<div class="sum"><div><small>'+LX('المستلمون','Recipients')+'</small><b>'+p.total+'</b></div><div><small>'+LX('نص مباشر (مجاني)','Direct text (free)')+'</small><b>'+p.open+'</b></div><div><small>'+LX('بقالب واتساب','Via template')+'</small><b>'+p.tpl_needed+'</b></div></div>':'')
-    +(c?'<div class="tri '+(c.tpl_status==='APPROVED'?'g':c.tpl_status==='REJECTED'?'r':'n')+'"><div class="th">'+st+'</div><div>'+esc(c.text||BC.text)+'</div><small>'+LX('التذييل يُضاف تلقائيًا: للإيقاف أرسل: إيقاف','Footer added automatically')+'</small></div>':'')
+    +(c?'<div class="tri '+(c.tpl_status==='APPROVED'?'g':c.tpl_status==='REJECTED'?'r':'n')+'"><div class="th">'+st+'<span class="badge n">'+audLb(c.audience)+(c.total?' · '+c.total:'')+'</span></div><div>'+esc(c.text||BC.text)+'</div><small>'+LX('التذييل يُضاف تلقائيًا: للإيقاف أرسل: إيقاف','Footer added automatically')+'</small></div>':'')
     +(pr?'<div class="tri n"><b>'+LX('جارٍ الإرسال','Sending')+'</b> '+pr.sent+' / '+pr.total+(pr.failed?' · '+LX('فشل','failed')+' '+pr.failed:'')+'</div>':'')
-    +'<div class="acts">'+(c?(c.tpl_status==='APPROVED'?'<button class="btn pri" onclick="bcSend()" '+(BC.busy?'disabled':'')+'>'+pic('send')+' '+LX('أرسل للكل','Send to all')+' ('+(c.total||'')+')</button>':'<button class="btn" onclick="bcPoll()">'+LX('تحديث الحالة','Refresh status')+'</button>')+'<button class="btn ghost" onclick="BC.cur=null;BC.prog=null;render()">'+LX('إلغاء','Cancel')+'</button>'
+    +'<div class="acts">'+(c?(c.tpl_status==='APPROVED'?'<button class="btn pri" onclick="bcSend()" '+(BC.busy?'disabled':'')+'>'+pic('send')+' '+LX('أرسل للكل','Send to all')+' ('+(c.total||'')+')</button>':'<button class="btn" onclick="bcPoll()">'+LX('تحديث الحالة','Refresh status')+'</button>')+'<button class="btn ghost" onclick="bcCancel()">'+pic('x')+' '+(BC.busy&&pr?LX('أوقف الإرسال','Stop sending'):LX('إلغاء الرسالة','Cancel message'))+'</button>'
       :'<button class="btn pri" onclick="bcPrepare()" '+(BC.busy||!BC.text.trim()?'disabled':'')+'>'+pic('spark')+' '+LX('جهّز للإرسال','Prepare')+'</button>')+'</div>'
     +'</div></div>'
-    +(BC.rows.length?'<div class="card"><div class="ch"><h2>'+LX('حملات سابقة','Previous campaigns')+'</h2></div><div class="cb" style="display:grid;gap:6px">'+BC.rows.map(r=>'<div class="ml"><span>'+esc(String(r.text||'').slice(0,80))+'</span><small>'+dayLabel(isoOf(r.created_at))+' · '+(r.status==='done'?LX('انرسلت','sent')+' '+r.sent:r.tpl_status)+'</small></div>').join('')+'</div></div>':'');
+    +(BC.rows.length?'<div class="card"><div class="ch"><h2>'+LX('حملات سابقة','Previous campaigns')+'</h2></div><div class="cb" style="display:grid;gap:6px">'+BC.rows.map(r=>'<div class="ml"><span>'+esc(String(r.text||'').slice(0,80))+'</span><small>'+dayLabel(isoOf(r.created_at))+' · '+(r.status==='done'?LX('انرسلت','sent')+' '+r.sent:r.status==='cancelled'?LX('أُلغيت','cancelled')+(r.sent?' · '+LX('انرسلت','sent')+' '+r.sent:''):r.tpl_status)+'</small></div>').join('')+'</div></div>':'');
 }
 function goHome(){ if(!loggedIn){ location.href='index.html#stay'; return; } nav('home'); }
 function goMore(){ VIEW='home'; render(); setTimeout(()=>{ const el=document.getElementById('more'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); },30); }
@@ -534,27 +575,76 @@ function kpiHTML(){
   +'</div>';
 }
 function openOrders(day,filter){ VIEW='orders'; FILTER=filter||''; ORD_DAY=day||todayISO(); OPEN=null; window.scrollTo(0,0); render(); setTimeout(centerDay,50); }
-function toggleChart(){ CHART=!CHART; render(); }
+function toggleChart(){ CHART=!CHART; render(); if(CHART&&CH.range>14&&!CH.rows) chartLoad(); }
+/* مدى الرسم (فادية 2026-11-13): أسبوع، أسبوعان باليوم · شهر بالأسابيع · 3 أشهر بالأشهر. الأطول من أسبوعين يحمّل 92 يومًا مرة واحدة */
+let CH={range:14, rows:null, busy:false};
+const CH_RANGES=[[7,'أسبوع','Week'],[14,'أسبوعان','2 weeks'],[30,'شهر بالأسابيع','Month by weeks'],[90,'3 أشهر','3 months']];
+function chartRange(r){ CH.range=+r; CHART=true; render(); if(CH.range>14&&!CH.rows) chartLoad(); }
+async function chartLoad(){
+  if(DEMO){ CH.rows=FINROWS.slice(); render(); return; }
+  if(!sb||!loggedIn||CH.busy) return; CH.busy=true; render();
+  try{ const t=todayISO(); const r=await sb.rpc('khafet_admin_finance',{p_from:addDays(t,-92),p_to:t}); CH.rows=(r.data&&r.data.rows)||[]; }catch(e){ CH.rows=[]; }
+  CH.busy=false; render();
+}
+function chartSeries(){
+  const t=todayISO(), R=CH.range, src=R>14?(CH.rows||[]):null, out=[];
+  const cntOf=(a,b)=> src? src.filter(r=>r.date>=a&&r.date<=b&&r.status!=='cancelled').length : ORDERS.filter(o=>o.date>=a&&o.date<=b&&o.status!=='cancelled').length;
+  const profOf=(a,b)=> (src||FINROWS).filter(r=>r.date>=a&&r.date<=b&&r.status!=='cancelled').reduce((s,r)=>s+(+r.profit||0),0);
+  if(R<=14){ for(let i=R-1;i>=0;i--){ const d=addDays(t,-i); out.push({a:d,b:d,lb:String(parseISO(d).getDate())}); } }
+  else if(R===30){ for(let w=3;w>=0;w--){ const b=addDays(t,-7*w), a=addDays(b,-6); out.push({a,b,lb:parseISO(a).getDate()+'–'+parseISO(b).getDate()}); } }
+  else { const d=parseISO(t); for(let k=2;k>=0;k--){ const f=new Date(d.getFullYear(),d.getMonth()-k,1), l=new Date(d.getFullYear(),d.getMonth()-k+1,0); out.push({a:isoOf(f.getTime()),b:isoOf(Math.min(l.getTime(),d.getTime())),lb:EN()?EN_MON[f.getMonth()]:AR_MON[f.getMonth()]}); } }
+  out.forEach(s=>{ s.cnt=cntOf(s.a,s.b); s.prof=profOf(s.a,s.b); });
+  return out;
+}
 function chartHTML(){
-  const t=todayISO(), days=[]; for(let i=13;i>=0;i--) days.push(addDays(t,-i));
-  const cnt=days.map(d=>ORDERS.filter(o=>o.date===d&&o.status!=='cancelled').length);
-  const prof=days.map(d=>FINROWS.filter(r=>r.date===d&&r.status!=='cancelled').reduce((s,r)=>s+(+r.profit||0),0));
+  const R=CH.range, ser=chartSeries(), cnt=ser.map(s=>s.cnt), prof=ser.map(s=>s.prof);
   const total14=prof.reduce((a,b)=>a+b,0), orders14=cnt.reduce((a,b)=>a+b,0);
-  const head='<button class="ch chbtn" onclick="toggleChart()"><h2>'+LX('الربح مقابل الطلبات','Profit vs orders')+'</h2><span class="sub">'+LX('آخر 14 يوم','Last 14 days')+'</span><span class="sp"></span><span class="chev">'+(CHART?'▴':'▾')+'</span></button>';
+  const rl=CH_RANGES.find(x=>x[0]===R)||CH_RANGES[1], unit=R<=14?LX('اليوم','day'):R===30?LX('الأسبوع','week'):LX('الشهر','month');
+  const head='<button class="ch chbtn" onclick="toggleChart()"><h2>'+LX('الربح مقابل الطلبات','Profit vs orders')+'</h2><span class="sub">'+LX(rl[1],rl[2])+'</span><span class="sp"></span><span class="chev">'+(CHART?'▴':'▾')+'</span></button>';
   if(!CHART) return '<div class="card">'+head+'</div>';
-  const W=720,H=170,L=34,R=30,T=12,B=28, iw=W-L-R, ih=H-T-B, n=days.length, bw=iw/n;
+  const chips='<div class="chips" style="margin-bottom:10px">'+CH_RANGES.map(x=>'<button class="chip '+(R===x[0]?'on':'')+'" onclick="chartRange('+x[0]+')">'+LX(x[1],x[2])+'</button>').join('')+'</div>';
+  if(R>14&&(CH.busy||!CH.rows)) return '<div class="card">'+head+'<div class="cb">'+chips+'<div class="empty">'+LX('جارٍ التحميل…','Loading…')+'</div></div></div>';
+  const days=ser.map(s=>s.lb);
+  const W=720,H=170,L=34,R_=30,T=12,B=28, iw=W-L-R_, ih=H-T-B, n=ser.length, bw=iw/n;
   const maxC=Math.max(1,...cnt), maxP=Math.max(1,...prof);
   const x=i=>L+i*bw+bw/2, yC=v=>T+ih-(v/maxC)*ih, yP=v=>T+ih-(v/maxP)*ih;
   const bars=cnt.map((v,i)=>'<rect x="'+(x(i)-bw*0.28)+'" y="'+yC(v)+'" width="'+(bw*0.56)+'" height="'+(T+ih-yC(v))+'" rx="3" fill="#e4e4e7"/>'+(v?'<text x="'+x(i)+'" y="'+(yC(v)-4)+'" text-anchor="middle">'+v+'</text>':'')).join('');
   const line=prof.map((v,i)=>(i?'L':'M')+x(i)+' '+yP(v)).join(' ');
   const dots=prof.map((v,i)=>'<circle cx="'+x(i)+'" cy="'+yP(v)+'" r="3" fill="#fff" stroke="#2A9D8F" stroke-width="2"/>').join('');
-  const labels=days.map((d,i)=>'<text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle">'+parseISO(d).getDate()+'</text>').join('');
-  const grid=[0,.5,1].map(f=>'<line x1="'+L+'" x2="'+(W-R)+'" y1="'+(T+ih*f)+'" y2="'+(T+ih*f)+'" stroke="#f4f4f5"/>').join('');
-  const pmax='<text x="'+(W-R+4)+'" y="'+(T+4)+'">'+n0(maxP)+'</text><text x="'+(W-R+4)+'" y="'+(T+ih)+'">0</text>';
+  const labels=days.map((d,i)=>'<text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle" direction="ltr" unicode-bidi="embed">'+esc(d)+'</text>').join('');
+  const grid=[0,.5,1].map(f=>'<line x1="'+L+'" x2="'+(W-R_)+'" y1="'+(T+ih*f)+'" y2="'+(T+ih*f)+'" stroke="#f4f4f5"/>').join('');
+  const pmax='<text x="'+(W-R_+4)+'" y="'+(T+4)+'">'+n0(maxP)+'</text><text x="'+(W-R_+4)+'" y="'+(T+ih)+'">0</text>';
   return '<div class="card">'+head
-    +'<div class="cb"><div class="sum" style="margin-bottom:10px"><div><small>'+LX('الطلبات','Orders')+'</small><b>'+orders14+'</b></div><div><small>'+LX('الربح قبل الرواتب','Profit before wages')+'</small><b>'+n0(total14)+'</b></div><div><small>'+LX('متوسط اليوم','Daily average')+'</small><b>'+n0(total14/14)+'</b></div></div>'
+    +'<div class="cb">'+chips+'<div class="sum" style="margin-bottom:10px"><div><small>'+LX('الطلبات','Orders')+'</small><b>'+orders14+'</b></div><div><small>'+LX('الربح قبل الرواتب','Profit before wages')+'</small><b>'+n0(total14)+'</b></div><div><small>'+LX('متوسط','Average')+' '+unit+'</small><b>'+n0(total14/n)+'</b></div></div>'
     +'<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+grid+bars+'<path d="'+line+'" fill="none" stroke="#2A9D8F" stroke-width="2.2" stroke-linejoin="round"/>'+dots+labels+pmax+'</svg>'
     +'<div class="legend"><span><i style="background:#e4e4e7"></i>'+LX('عدد الطلبات','Orders per day')+'</span><span><i style="background:#2A9D8F"></i>'+LX('الربح قبل الرواتب','Profit before wages')+'</span></div></div></div>';
+}
+/* التقويم (فادية 2026-11-13 «كلندر يوريني خانات الأيام وكم منها انحجز» بألوان كتشارت): شهر كامل، كل يوم مربع وعدد حجوزاته ولونه حسب العدد، الضغط يفتح طلبات اليوم */
+let CAL={ym:todayISO().slice(0,7), rows:null, busy:false};
+function calShift(n){ const p=CAL.ym.split('-').map(Number); const d=new Date(p[0],p[1]-1+n,1); CAL.ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); CAL.rows=null; render(); calLoad(); }
+function calToday(){ CAL.ym=todayISO().slice(0,7); CAL.rows=null; render(); calLoad(); }
+function calRange(){ const p=CAL.ym.split('-').map(Number); const last=new Date(p[0],p[1],0).getDate(); return {y:p[0],m:p[1],from:CAL.ym+'-01',to:CAL.ym+'-'+String(last).padStart(2,'0'),last}; }
+async function calLoad(){
+  const r=calRange();
+  if(DEMO){ CAL.rows=ORDERS.filter(o=>o.date>=r.from&&o.date<=r.to).map(o=>({service_date:o.date,status:o.status})); render(); return; }
+  if(!sb||!loggedIn) return; CAL.busy=true; render();
+  try{ const q=await sb.from('khafet_orders').select('service_date,status').gte('service_date',r.from).lte('service_date',r.to).neq('status','cancelled').limit(5000); CAL.rows=q.data||[]; }catch(e){ CAL.rows=[]; }
+  CAL.busy=false; render();
+}
+function calLevel(n){ return n<=0?0:n===1?1:n===2?2:n<=4?3:4; }
+function calHTML(){
+  const r=calRange(), t=todayISO(), first=new Date(r.y,r.m-1,1).getDay();
+  const cnt={}; (CAL.rows||[]).forEach(x=>{ if(x.status==='cancelled') return; cnt[x.service_date]=(cnt[x.service_date]||0)+1; });
+  const bookedDays=Object.keys(cnt).length, total=Object.values(cnt).reduce((a,b)=>a+b,0), busiest=Math.max(0,...Object.values(cnt));
+  let cells=''; for(let i=0;i<first;i++) cells+='<div></div>';
+  for(let d=1;d<=r.last;d++){ const iso=CAL.ym+'-'+String(d).padStart(2,'0'), n=cnt[iso]||0;
+    cells+='<button class="dc l'+calLevel(n)+(iso===t?' today':'')+(iso<t?' past':'')+'" onclick="openOrders(\''+iso+'\')" aria-label="'+dayLabel(iso)+'"><small>'+d+'</small>'+(n?'<b>'+n+'</b><em>'+LX('محجوز','booked')+'</em>':'<b style="opacity:.25">0</b><em>'+LX('فاضي','free')+'</em>')+'</button>'; }
+  const wd=(EN()?EN_DAYS:AR_DAYS).map(x=>'<div class="wd">'+(EN()?x:x.replace(/^ال/,''))+'</div>').join('');
+  const lg='<div class="callg"><span>'+LX('أقل','Less')+'</span><i style="background:var(--card)"></i><i style="background:#d7efea"></i><i style="background:#9fd6cb"></i><i style="background:#2A9D8F"></i><i style="background:#264653"></i><span>'+LX('أكثر','More')+'</span></div>';
+  return '<div class="ph"><h1>'+LX('التقويم','Calendar')+'</h1><span class="sub">'+(EN()?EN_MON[r.m-1]:AR_MON[r.m-1])+' '+r.y+'</span><span class="sp"></span>'
+    +'<button class="btn sm" onclick="calShift(-1)">'+LX('الشهر السابق','Previous')+'</button>'+(CAL.ym!==t.slice(0,7)?'<button class="btn sm" onclick="calToday()">'+LX('هذا الشهر','This month')+'</button>':'')+'<button class="btn sm" onclick="calShift(1)">'+LX('الشهر التالي','Next')+'</button></div>'
+    +'<div class="sum"><div><small>'+LX('طلبات الشهر','Orders this month')+'</small><b>'+total+'</b></div><div><small>'+LX('أيام فيها حجز','Days with bookings')+'</small><b>'+bookedDays+' <span style="font-weight:600;color:var(--muted-fg);font-size:13px">/ '+r.last+'</span></b></div><div><small>'+LX('أكثر يوم','Busiest day')+'</small><b>'+busiest+'</b></div></div>'
+    +'<div class="card"><div class="cb">'+(CAL.busy?'<div class="empty">'+LX('جارٍ التحميل…','Loading…')+'</div>':'<div class="cal">'+wd+cells+'</div>'+lg)+'</div></div>';
 }
 /* الشريط: الوقت · الحالة · الإجمالي والربح · (يسار) دائرة الرسالة واختصار الرد. الضغط يمدّه بنعومة: الرد فوق ثم التفاصيل */
 /* تقييم كلود لكل رسالة مفتوحة (wa-bot/triage، يُحسب مرة ويُحفظ بالخادم): تحتاجك أو لا + الرد الجاهز */
@@ -616,22 +706,43 @@ function loneHTML(g){
     +'<div class="ex"><div class="exi">'+(isOpen?expandLone(g):'')+'</div></div></div>';
 }
 function toggleOpen(id){ OPEN=(OPEN===id?null:id); render(); if(OPEN) prepDraft(OPEN); }
-/* لوحة الرد: مقترح جاهز غير مرسل (ستاند باي) ← مسح | تحسين | إرسال */
-function replyBox(key, msgs){
+/* المحادثة: مربع واحد بالترتيب الزمني (رسائل العميل، ردودك، وأحداث الطلب مثل «تم الحجز») + زر حالة واحد بدل الصح والإكس (فادية 2026-11-13) */
+function threadEvents(msgs, o){
+  const ev=[], add=(ts,text)=>{ if(ts&&!isNaN(ts)) ev.push({kind:'ev',ts,text}); };
+  let os=o?[o]:[];
+  if(!o&&msgs.length){ const p9=(msgs.find(m=>m.p9)||{}).p9, t0=msgs[0].ts, t1=msgs[msgs.length-1].ts; if(p9) os=ORDERS.filter(x=>x.p9===p9&&x.createdAt>=t0-864e5&&x.createdAt<=t1+3*864e5); }
+  os.forEach(x=>{
+    add(x.createdAt, LX('تم الحجز','Booked')+' #'+x.num+' · '+relDay(x.date)+' '+hourLbl(x.startMin));
+    const dt=x.doneAt?new Date(x.doneAt).getTime():0, f=FIN.get(x.dbId);
+    if(dt) add(dt, LX('اكتمل الشغل','Work completed')+(x.finalPrice?' · '+n0(x.finalPrice):''));
+    if(f&&f.wa_at&&dt){ const w=Date.parse(f.wa_at); add(isNaN(w)?dt+1:w, LX('أُرسلت الفاتورة بالواتساب','Invoice sent on WhatsApp')); }
+    if((f&&f.pay_state==='paid')||x.payStatus==='paid') add((dt||x.createdAt)+2, LX('تم الدفع','Paid')+(x.paid?' · '+n0(x.paid):''));
+    if(x.status==='cancelled') add(Math.max(x.createdAt, msgs.length?msgs[msgs.length-1].ts:0)+3, LX('أُلغي الطلب','Order cancelled'));
+  });
+  return ev;
+}
+async function setThread(key, state){
+  const list=msgsOf(key).filter(m=>m.kind!=='out'); if(state==='hidden') OPEN=null;
+  if(state==='open') DRAFT[key]=Object.assign(DRAFT[key]||{text:'',busy:false},{force:true});
+  for(const m of list) await setMsg(m.key, state);
+  render(); if(state==='open') prepDraft(key);
+}
+function replyBox(key, msgs, o){
   const d=DRAFT[key]||{text:'',busy:false};
   const inbound=msgs.filter(m=>m.kind!=='out'), lastIn=inbound[inbound.length-1];
   const target=inbound.filter(m=>m.open).slice(-1)[0]||(d.force?lastIn:null);
-  const list=msgs.map(m=>m.kind==='out'
-    ? '<div class="ml me">'+pic('check',13)+'<span><b>'+LX('ردّك','You')+'</b> · '+esc(m.text)+'</span><small>'+clock(m.ts)+'</small></div>'
-    : '<div class="ml'+(m.ack?' ack':'')+'"><i class="dot '+(m.open?'r':'g')+'"></i><span>'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> · ':'')+esc(m.text)+'</span><small>'+clock(m.ts)+'</small>'
-    +(m.kind==='wa'?'<span class="act">'+(m.open?'<button title="'+LX('تمت','Done')+'" onclick="event.stopPropagation();setMsg(\''+m.key+'\',\'done\')">'+pic('check',12)+'</button>':'')+'<button title="'+LX('إخفاء','Hide')+'" onclick="event.stopPropagation();setMsg(\''+m.key+'\',\'hidden\')">'+pic('x',12)+'</button></span>':'')+'</div>').join('');
-  const cmpSent=lastIn&&lastIn.kind==='cmp'&&!lastIn.open? '<div class="note g">'+esc(lastIn.c.reply||'')+'</div>' : '';
+  const all=msgs.concat(threadEvents(msgs,o)).sort((a,b)=>a.ts-b.ts);
+  const list=all.map(m=>m.kind==='ev'? '<div class="ev">'+pic('check',11)+esc(m.text)+' · '+clock(m.ts)+'</div>'
+    : m.kind==='out'? '<div class="bb me">'+esc(m.text)+'<small>'+LX('ردّك','You')+' · '+clock(m.ts)+'</small></div>'
+    : '<div class="bb'+(m.ack?' ack':'')+'">'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> ':'')+esc(m.text)+'<small>'+clock(m.ts)+'</small></div>').join('');
+  const cmpSent=lastIn&&lastIn.kind==='cmp'&&!lastIn.open&&lastIn.c.reply&&!msgs.some(m=>m.kind==='out'&&m.ts>lastIn.ts)? '<div class="bb me">'+esc(lastIn.c.reply)+'<small>'+LX('ردّك','You')+'</small></div>' : '';
+  const st=inbound.some(m=>m.open)?'open':'done';
+  const sel=inbound.length?'<select class="stsel '+st+'" onchange="setThread(\''+key+'\',this.value)" aria-label="'+LX('الحالة','Status')+'"><option value="open"'+(st==='open'?' selected':'')+'>'+LX('تحتاج رد','Needs reply')+'</option><option value="done"'+(st==='done'?' selected':'')+'>'+LX('تم الرد','Replied')+'</option><option value="hidden">'+LX('إخفاء','Hide')+'</option></select>':'';
   const tri=triOf(key);
-  const triBox=target? (tri&&tri.ok? '<div class="tri '+(tri.needs_you?'r':'g')+'"><div class="th"><b>'+(tri.needs_you?LX('تحتاجك','Needs you'):LX('ما تحتاجك، الرد جاهز','Handled, reply ready'))+'</b><span class="badge n">'+esc(tri.category||'')+'</span>'+(tri.urgency==='high'?'<span class="badge r">'+LX('عاجل','Urgent')+'</span>':'')+'</div><div>'+esc(tri.summary||'')+'</div>'+(tri.why?'<small>'+esc(tri.why)+'</small>':'')+'</div>'
-    : tri&&tri.busy? '<div class="tri n">'+LX('كلود يقرأ الرسالة ويقيّمها…','Claude is reading the message…')+'</div>' : '') : '';
-  const more=(!target&&lastIn&&lastIn.kind==='wa')?'<div><button class="btn sm" onclick="forceReply(\''+key+'\')">'+pic('send')+' '+LX('رسالة جديدة','New message')+'</button></div>':'';
-  return '<div class="rp"><div class="ml-list">'+list+'</div>'+cmpSent+more+triBox
-    +(target?'<div class="rb"><div class="rh">'+LX('رد مقترح (غير مرسل)','Suggested reply (not sent)')+(d.busy?' · '+LX('جارٍ التجهيز…','Preparing…'):d.via==='ai'?' · '+LX('من كلود','by Claude'):d.via==='rules'?' · '+LX('من قائمة خدماتنا','from our services'):'')+'</div>'
+  const triLine=target&&tri? (tri.ok? '<div class="trl '+(tri.needs_you?'r':'g')+'"><b>'+(tri.needs_you?LX('تحتاجك','Needs you'):LX('الرد جاهز','Reply ready'))+'</b>'+(tri.urgency==='high'?' · '+LX('عاجل','Urgent'):'')+(tri.summary?' · '+esc(tri.summary):'')+'</div>' : tri.busy? '<div class="trl n">'+LX('كلود يقرأ الرسالة…','Claude is reading the message…')+'</div>' : '') : '';
+  const more=(!target&&lastIn&&lastIn.kind==='wa')?'<button class="btn sm" onclick="forceReply(\''+key+'\')">'+pic('send')+' '+LX('رسالة جديدة','New message')+'</button>':'';
+  return '<div class="rp"><div class="thread"><div class="thh"><b>'+LX('المحادثة','Conversation')+'</b><span class="sp"></span>'+more+sel+'</div>'+list+cmpSent+'</div>'+triLine
+    +(target?'<div class="rb"><div class="rh">'+LX('رد مقترح (غير مرسل)','Suggested reply (not sent)')+(d.busy?' · '+LX('جارٍ التجهيز…','Preparing…'):'')+'</div>'
       +'<textarea class="ta" id="ta-'+cssId(key)+'" oninput="draftEdit(\''+key+'\',this.value)" '+(d.busy?'disabled':'')+'>'+esc(d.text)+'</textarea>'
       +'<div class="rbtn"><button class="btn sm" onclick="clearDraft(\''+key+'\')">'+pic('trash')+' '+LX('مسح','Clear')+'</button><button class="btn sm" onclick="polish(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('spark')+' '+LX('تحسين','Polish')+'</button><span class="sp"></span><button class="btn sm pri" onclick="sendDraft(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('send')+' '+LX('إرسال','Send')+'</button></div></div>':'')
     +'</div>';
@@ -644,7 +755,7 @@ function expandOrder(o,msgs){
   const map=a.mapUrl||(a.lat&&a.lng?'https://maps.google.com/?q='+a.lat+','+a.lng:'');
   const pay=f? (f.pay_state==='paid'?LX('مدفوع','Paid')+' '+n0(f.paid):+f.due>0?LX('باقي','Due')+' '+n0(f.due)+(+f.paid>0?' · '+LX('مدفوع','Paid')+' '+n0(f.paid):''):LX('بدون مبلغ','No amount')) : (o.paid>0?LX('مدفوع','Paid')+' '+n0(o.paid):LX('السعر بعد الزيارة','Priced after visit'));
   const inv=f? (f.wa_at?(f.wa_status==='read'?LX('الفاتورة وصلت وقرأها','Invoice read'):LX('الفاتورة أُرسلت بالواتساب','Invoice sent on WhatsApp')):f.invoiced?LX('فاتورة بالتطبيق','Invoice in app'):o.status==='done'?LX('بلا فاتورة','No invoice'):'') : '';
-  return (msgs&&msgs.length?replyBox(o.dbId,msgs):'')
+  return (msgs&&msgs.length?replyBox(o.dbId,msgs,o):'')
     +'<div class="kv">'
     +'<small>'+LX('الطلب','Order')+'</small><div>#'+o.num+' · '+dayLabel(o.date)+' · '+hourLbl(o.startMin)+(o.source?' · '+(o.source==='wa'?LX('واتساب','WhatsApp'):o.source==='app'?LX('التطبيق','App'):esc(o.source)):'')+'</div>'
     +'<small>'+LX('العميل','Customer')+'</small><div>'+esc(o.name||'')+(o.phone?' · <a dir="ltr" href="tel:'+esc(tel(o.phone))+'">'+esc(o.phone)+'</a>':'')+'</div>'
@@ -667,9 +778,8 @@ function expandLone(g){
     +'<small>'+LX('العميل','Customer')+'</small><div>'+esc(name)+(phone?' · <a dir="ltr" href="tel:'+esc(tel(phone))+'">'+esc(it.kind==='wa'?'0'+it.p9:phone)+'</a>':'')+'</div>'
     +(c&&c.order_no?'<small>'+LX('الطلب','Order')+'</small><div><a href="#" onclick="event.preventDefault();'+(o?'toggleOpen(\''+o.dbId+'\')':'')+'">#'+c.order_no+'</a>'+(o?' · '+dayLabel(o.date):'')+'</div>':'')
     +'</div>'
-    +'<div class="acts">'+(phone?'<a class="btn sm" href="'+waLink(phone)+'" target="_blank" rel="noopener">'+pic('chat')+' '+LX('واتساب','WhatsApp')+'</a>':'')+'<span class="sp"></span>'+(wa.length?'<button class="btn sm" onclick="hideGroup(\''+g.key+'\')">'+pic('x')+' '+LX('إخفاء','Hide')+'</button>':'')+'</div>';
+    +(phone?'<div class="acts"><a class="btn sm" href="'+waLink(phone)+'" target="_blank" rel="noopener">'+pic('chat')+' '+LX('واتساب','WhatsApp')+'</a></div>':'');
 }
-async function hideGroup(key){ const list=GROUPS[key]||[]; OPEN=null; for(const i of list.filter(x=>x.kind==='wa')) await setMsg(i.key,'hidden'); }
 function dayHead(iso,label,list){
   const f=list.map(o=>FIN.get(o.dbId)).filter(Boolean), tot=f.reduce((s,r)=>s+(+r.total||0),0), pr=f.reduce((s,r)=>s+(+r.profit||0),0);
   const ttl=label||relDay(iso); return '<div class="dh"><h3>'+ttl+'</h3>'+(ttl===dayLabel(iso)?'':'<span>'+dayLabel(iso)+'</span>')+(list.length?'<b class="n">'+list.length+' '+LX('طلب','orders')+'</b>'+(tot?'<b class="n">'+LX('الإجمالي','Total')+' '+n0(tot)+'</b><b class="n g">'+LX('الربح','Profit')+' '+n0(pr)+'</b>':''):'')+'</div>';
@@ -720,7 +830,7 @@ function ordersHTML(){
   } else {
     body=dayBlock(ORD_DAY,ORDERS,ATT.lone);
   }
-  return '<div class="ph"><h1>'+LX('الطلبات','Orders')+'</h1><span class="sub">'+(FILTER?LX(FILTERS.find(f=>f[0]===FILTER)[1],FILTERS.find(f=>f[0]===FILTER)[2]):dayLabel(ORD_DAY))+'</span><span class="sp"></span>'+(ORD_DAY!==t||FILTER?'<button class="btn sm" onclick="openOrders(\''+t+'\',\'\')">'+LX('اليوم','Today')+'</button>':'')+'</div>'
+  return '<div class="ph"><h1>'+LX('الطلبات','Orders')+'</h1><span class="sub">'+(FILTER?LX(FILTERS.find(f=>f[0]===FILTER)[1],FILTERS.find(f=>f[0]===FILTER)[2]):dayLabel(ORD_DAY))+'</span><span class="sp"></span>'+(ORD_DAY!==t||FILTER?'<button class="btn sm" onclick="openOrders(\''+t+'\',\'\')">'+LX('اليوم','Today')+'</button>':'')+'<button class="btn sm" onclick="nav(\'cal\')">'+pic('calendar',15)+' '+LX('التقويم','Calendar')+'</button></div>'
     +'<div class="dates">'+chips.join('')+'</div>'+fchips+'<div style="display:grid;gap:18px">'+body+'</div>';
 }
 function pickDay(iso){ ORD_DAY=iso; FILTER=''; OPEN=null; render(); setTimeout(centerDay,30); }
@@ -896,7 +1006,7 @@ async function initCloud(){
 function demoData(){
   const t=todayISO(), y=addDays(t,-1), b=addDays(t,-2), now=Date.now();
   const mk=(n,date,start,status,extra)=>Object.assign({ dbId:'d'+n, num:19300+n, createdAt:now-3e6, items:[{id:'g3',name:'زيارة فني سباكة وكهرباء',qty:1,price:0}], name:['سلمان البراهيم','خالد عبدالله','أم فهد','Moath Alharbi','أبو ناصر','نورة','Osama'][n%7], phone:'05000000'+(10+n), p9:'5000000'+(10+n), address:{city:['الخبر','الدمام','الظهران'][n%3],district:'الراكة'}, date, startMin:start, duration:120, price:0, finalPrice:0, status, note:'', invoice:null, providerPhone:'', arrived:false, onTheWay:false, tech:'Jaya', payRequired:false, released:true, paid:0, due:0, payStatus:'unpaid', payMethod:'', source:n%2?'wa':'app', doneAt:null, invoicedAt:null, invoicedApp:false },extra||{});
-  ORDERS=[ mk(1,t,480,'done',{paid:195,due:0,payStatus:'paid',finalPrice:195,doneAt:new Date(now-5e6).toISOString(),invoicedApp:true}), mk(2,t,600,'progress',{onTheWay:true}), mk(3,t,840,'confirmed'), mk(4,t,1080,'new'),
+  ORDERS=[ mk(1,t,480,'done',{paid:195,due:0,payStatus:'paid',finalPrice:195,doneAt:new Date(now-5e6).toISOString(),invoicedApp:true}), mk(2,t,600,'progress',{onTheWay:true,createdAt:now-6.5e6}), mk(3,t,840,'confirmed'), mk(4,t,1080,'new'),
     mk(5,y,480,'done',{paid:0,due:162,finalPrice:162,doneAt:new Date(now-9e7).toISOString()}), mk(6,y,720,'done',{paid:99,due:0,payStatus:'paid',finalPrice:99,doneAt:new Date(now-8e7).toISOString()}), mk(7,y,960,'cancelled'),
     mk(8,b,600,'done',{paid:0,due:405,finalPrice:405,doneAt:new Date(now-2.2e8).toISOString()}), mk(9,b,1200,'done',{paid:30,due:0,payStatus:'paid',finalPrice:30,doneAt:new Date(now-2e8).toISOString()}) ];
   FINROWS=ORDERS.filter(o=>o.status==='done').map(o=>({id:o.dbId,no:o.num,date:o.date,status:o.status,total:o.finalPrice,paid:o.paid,due:o.due,profit:Math.round(o.finalPrice*0.62),pay_state:o.due>0?'unpaid':'paid',invoiced:true,wa_at:o.source==='wa'?'x':null,wa_status:'read',lines:[{name:'زيارة فني',qty:1,price:o.finalPrice}]}));
@@ -908,9 +1018,12 @@ function demoData(){
        {id:4,msg_id:'wamid.4',phone9:'566666666',wa_name:'ضيف',kind:'text',body:'وكم سعرها تقريبًا؟',created_at:new Date(now-5.5e6).toISOString()},
        {id:6,msg_id:'wamid.6',phone9:'500000011',wa_name:'سلمان',kind:'text',body:'يعطيكم العافية 🙏',created_at:new Date(now-3e6).toISOString()},
        {id:5,msg_id:'wamid.5',phone9:'566666666',wa_name:'ضيف',kind:'image',body:null,created_at:new Date(now-5.4e6).toISOString()},
-       {id:3,msg_id:'wamid.3',phone9:'577777777',wa_name:'',kind:'image',body:null,created_at:new Date(now-9.5e7).toISOString()} ];
+       {id:3,msg_id:'wamid.3',phone9:'577777777',wa_name:'',kind:'image',body:null,created_at:new Date(now-9.5e7).toISOString()},
+       {id:7,msg_id:'wamid.7',phone9:'500000012',wa_name:'خالد',kind:'text',body:'السلام عليكم، عندكم فني كهرباء اليوم؟ عندي قاطع يفصل',created_at:new Date(now-7e6).toISOString()},
+       {id:8,msg_id:'wamid.8',phone9:'500000012',wa_name:'خالد',kind:'text',body:'تمام حجزت',created_at:new Date(now-6.3e6).toISOString()} ];
   MSTATE={'wa:wamid.1':'done'};
-  OUT=[ {id:901,phone9:'566666666',intent:'admin_msg',reply:'نعم، نوفر هذه الخدمة. تركيب ستارة بسعر 65 ريال.',created_at:new Date(now-5.8e6).toISOString()} ];
+  OUT=[ {id:901,phone9:'566666666',intent:'admin_msg',reply:'نعم، نوفر هذه الخدمة. تركيب ستارة بسعر 65 ريال.',created_at:new Date(now-5.8e6).toISOString()},
+        {id:902,phone9:'500000012',intent:'admin_msg',reply:'نعم، عندنا فني كهرباء اليوم. الكشف 30 ريال وينخصم من الفاتورة.\nhttps://khafet.com/book.html',created_at:new Date(now-6.9e6).toISOString()} ];
 }
 (function boot(){
   document.documentElement.lang=EN()?'en':'ar'; document.documentElement.dir=EN()?'ltr':'rtl';
