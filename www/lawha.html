@@ -100,13 +100,16 @@ main{min-width:0;padding:18px 18px 90px}
 /* الشرائط: ارتفاع واحد 60px، لون كامل، الوقت ثم الحالة ثم الإجمالي والربح، ويسار: دائرة الرسالة واختصار الرد */
 .row{border-radius:var(--radius);box-shadow:var(--sh);transition:box-shadow .2s}
 .row.open{box-shadow:var(--sh-md)}
-.strip{display:grid;grid-template-columns:72px auto auto 1fr;align-items:center;gap:10px;width:100%;height:60px;padding:0 12px;border:1px solid transparent;border-radius:var(--radius);background:var(--card);text-align:start;color:var(--fg);cursor:pointer;transition:filter .15s}
+.row{position:relative}
+.hx{position:absolute;inset-inline-end:8px;top:16px;width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.9);color:#1f1b16;display:grid;place-items:center;cursor:pointer;z-index:1}
+.hx:hover{background:#fff}
+.strip{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;height:60px;padding:0 44px 0 12px;padding-inline-start:12px;padding-inline-end:44px;border:1px solid transparent;border-radius:var(--radius);background:var(--card);text-align:start;color:var(--fg);cursor:pointer;transition:filter .15s}
 .strip:hover{filter:brightness(.97)}
 .row.open .strip{border-end-start-radius:0;border-end-end-radius:0}
 .strip .t{font:800 14px/1.15 var(--fh);font-variant-numeric:tabular-nums;white-space:nowrap}
 .strip .t small{display:block;font:600 10.5px/1.3 var(--fb);opacity:.75}
-.strip .lb{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
-.strip .lb b{font:700 13.5px/1.3 var(--fb)}
+.strip .lb{display:flex;align-items:center;gap:8px;min-width:0;white-space:nowrap;overflow:hidden}
+.strip .lb b{font:800 14px/1.3 var(--fh);overflow:hidden;text-overflow:ellipsis;min-width:0}
 .strip .lb em{font:600 11.5px/1 var(--fb);font-style:normal;opacity:.85;padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.12)}
 .strip .mn{display:flex;gap:10px;font:600 12px/1 var(--fb);opacity:.85;font-variant-numeric:tabular-nums;white-space:nowrap}
 .strip .mn b{font-weight:800;opacity:1}
@@ -179,9 +182,8 @@ input.in{width:100%;height:40px;padding:0 12px;border:1px solid var(--input);bor
 .chbtn{width:100%;text-align:start;cursor:pointer} .chbtn .chev{color:var(--muted-fg);font-size:14px}
 .card .chbtn:hover{background:var(--muted)} .card>.chbtn:only-child{border-bottom:0}
 @media (max-width:900px){
-  .strip{grid-template-columns:60px 1fr auto;grid-template-rows:auto auto;row-gap:1px;column-gap:8px;padding:0 10px;align-content:center}
-  .strip .t{grid-row:1/3;grid-column:1} .strip .lb{grid-row:1;grid-column:2;align-self:end} .strip .mn{grid-row:2;grid-column:2;align-self:start;font-size:11px;gap:8px} .strip .mi{grid-row:1/3;grid-column:3}
-  .strip .mn:empty{display:none} .strip .lb:has(+.mn:empty){grid-row:1/3;align-self:center}
+  .strip{grid-template-columns:minmax(0,1fr) auto;column-gap:8px;padding-inline-start:10px;padding-inline-end:42px}
+  .strip .lb{gap:6px} .strip .lb em{font-size:11px}
   .strip .mi .snip{display:none}
   .strip .lb b{font-size:13px}
   .day .dh span{display:none} .day .dh .n{font-size:14px}
@@ -414,12 +416,12 @@ function stripState(o){
     if(!invoiced && !(total>0)) return {c:'yellow', lb:LX('مكتمل بدون فاتورة','Done, no invoice')};
     if(due>0||!paidAll){
       const since=o.doneAt?Math.floor((Date.now()-new Date(o.doneAt).getTime())/864e5):daysBetween(o.date,todayISO());
-      return since>2 ? {c:'red', lb:LX('متأخر بالدفع','Payment overdue'), since} : {c:'yellow', lb:LX('مكتمل وما دفع','Done, unpaid')};
+      return since>2 ? {c:'red', lb:LX('متأخر بالسداد','Payment overdue'), since} : {c:'yellow', lb:LX('لم يتم السداد','Unpaid')};
     }
     return {c:'green', lb:LX('مكتمل','Done')};
   }
-  if(o.status==='progress'||o.arrived||o.onTheWay) return {c:'yellow', lb:LX('قيد التنفيذ','In progress')};
-  if(invoiced && due>0) return {c:'yellow', lb:LX('فاتورة بانتظار الدفع','Invoice awaiting payment')};
+  if(o.status==='progress'||o.arrived||o.onTheWay) return {c:'yellow', lb:LX('الفني يشتغل','Technician working')};
+  if(invoiced && due>0) return {c:'yellow', lb:LX('لم يتم السداد','Unpaid')};
   if(o.status==='new') return {c:'orange', lb:LX('بانتظار التأكيد','Awaiting confirmation')};
   return {c:'dark', lb:LX('محجوز','Booked')};
 }
@@ -435,7 +437,7 @@ function msgItems(){
   WA.forEach(m=>{ const key='wa:'+m.msg_id; if(MSTATE[key]==='hidden') return; const kindTx={image:'📷 '+LX('صورة','Photo'),video:'🎥 '+LX('فيديو','Video'),audio:'🎤 '+LX('صوت','Voice'),document:'📎 '+LX('ملف','File'),location:'📍 '+LX('موقع','Location'),sticker:'🙂',unsupported:LX('رسالة غير مدعومة','Unsupported message')};
     const ts=new Date(m.created_at).getTime(), text=(m.body&&String(m.body).trim())||kindTx[m.kind]||m.kind;
     // يحتاج رد؟ لا لو هي شكر/تأكيد فقط، ولا لو رددنا عليه بعدها (فادية 2026-11-13)
-    const repliedAfter=OUT.some(o=>o.phone9===m.phone9&&new Date(o.created_at).getTime()>ts);
+    const repliedAfter=OUT.some(o=>o.phone9===m.phone9&&new Date(o.created_at).getTime()>ts) || lastOrderEvent(m.phone9)>ts;
     const open=MSTATE[key]==='open' || (MSTATE[key]!=='done' && !repliedAfter && needsReply(m));
     out.push({key, kind:'wa', id:m.id, p9:m.phone9, phone:m.phone9?'966'+m.phone9:'', ts, text, name:m.wa_name||'', open, ack:!needsReply(m), m}); });
   // ردودنا الصادرة من اللوحة أو على الشكاوى: تظهر داخل المربع بعلامة «ردّك»
@@ -443,6 +445,8 @@ function msgItems(){
   return out.sort((a,b)=>a.ts-b.ts);
 }
 const ACK_RE=/^(?:[\s\p{P}\p{S}]*(?:شكرا|شكرًا|مشكور|مشكورين|تسلم|تسلمون|يعطيك|يعطيكم|العافيه|العافية|الله يعطيك|جزاك|جزاكم|ماقصرت|ماقصرتوا|تمام|تم|اوك|اوكي|اوكيه|ok|okay|ماشي|طيب|حسنا|حسنًا|ان شاء الله|إن شاء الله|الله يسلمك|ابشر|أبشر|يعطيكم العافيه|thanks|thank you|👍|🙏|❤️|♥️|👌)[\s\p{P}\p{S}]*)+$/iu;
+/* آخر حدث طلب لرقم: الحجز، وصول الفني أو موعد الزيارة، الإنهاء. أي رسالة قبله تعتبر مقفلة */
+function lastOrderEvent(p9){ let mx=0; if(!p9) return 0; ORDERS.forEach(o=>{ if(o.p9!==p9) return; mx=Math.max(mx, o.createdAt||0); if(o.status==='cancelled') return; if(o.doneAt) mx=Math.max(mx,new Date(o.doneAt).getTime()); if(o.arrived||o.onTheWay||o.status==='progress'||o.status==='done') mx=Math.max(mx, parseISO(o.date).getTime()+(o.startMin||0)*6e4); }); return mx; }
 function needsReply(m){
   if(m.kind==='text'){ const t=String(m.body||'').trim(); if(!t) return false; if(t.length<=40&&ACK_RE.test(t)) return false; if(/^(thanks|ok)$/i.test(t)) return false; return true; }
   if(['sticker','reaction'].includes(m.kind)) return false;
@@ -683,11 +687,10 @@ function dotHTML(msgs,key){
   return '<span class="mi"><i class="dot '+cls+'"></i><span class="snip">'+esc(snip)+'</span><span class="rd">'+lb+'</span></span>';
 }
 function stripHTML(o, msgs, multiDay){
-  const s=stripState(o), mn=stripMoney(o), isOpen=OPEN===o.dbId;
-  const tag=multiDay?'<small>'+relDay(o.date)+'</small>':'';
+  const s=stripState(o), isOpen=OPEN===o.dbId, who=o.name||(o.phone?'0'+(o.p9||o.phone):'')||('#'+o.num);
   return '<div class="row'+(isOpen?' open':'')+'"><button class="strip s-'+s.c+'" onclick="toggleOpen(\''+o.dbId+'\')" aria-expanded="'+isOpen+'">'
-    +'<span class="t">'+hourLbl(o.startMin)+tag+'</span><span class="lb"><b>'+s.lb+'</b>'+(s.since?'<em>'+s.since+' '+LX('أيام','days')+'</em>':'')+'</span>'
-    +'<span class="mn">'+mn.map(x=>'<span>'+x[0]+' <b>'+x[1]+'</b></span>').join('')+'</span>'+dotHTML(msgs,o.dbId)+'</button>'
+    +'<span class="lb"><b>'+esc(who)+'</b><em>'+s.lb+(s.since?' · '+s.since+' '+LX('أيام','days'):'')+'</em></span>'
+    +dotHTML(msgs,o.dbId)+'</button><button class="hx" title="'+LX('إخفاء','Hide')+'" onclick="hideOrder(\''+o.dbId+'\')">'+pic('x',13)+'</button>'
     +'<div class="ex"><div class="exi">'+(isOpen?expandOrder(o,msgs):'')+'</div></div></div>';
 }
 /* الرسائل المستقلة: نفس الرقم في نفس اليوم = مربع واحد ورسائله كلها داخله بالوقت (فادية 2026-11-13) */
@@ -699,12 +702,16 @@ function groupLone(items){
 }
 function loneHTML(g){
   const list=g.list, key=g.key, isOpen=OPEN===key, cmp=list.some(i=>i.kind==='cmp'), last=list[list.length-1], name=(list.find(i=>i.name)||{}).name||'';
-  const title=cmp?LX('شكوى','Complaint')+(list.length===1&&last.c&&last.c.ticket_no?' '+last.c.ticket_no:''):LX('رسالة واتساب','WhatsApp');
+  const title=cmp?LX('شكوى','Complaint')+(list.length===1&&last.c&&last.c.ticket_no?' '+last.c.ticket_no:''):LX('رسالة','Message');
+  const who=name||(last.p9?'0'+last.p9:'')||title;
   return '<div class="row'+(isOpen?' open':'')+'"><button class="strip s-lone'+(cmp?' s-cmp':'')+'" onclick="toggleOpen(\''+key+'\')" aria-expanded="'+isOpen+'">'
-    +'<span class="t">'+clock(last.ts)+'<small>'+relDay(isoOf(last.ts))+'</small></span><span class="lb"><b>'+title+'</b>'+(name?'<em>'+esc(name)+'</em>':'')+(list.length>1?'<em>'+list.length+' '+LX('رسائل','messages')+'</em>':'')+'</span>'
-    +'<span class="mn"></span>'+dotHTML(list,key)+'</button>'
+    +'<span class="lb"><b>'+esc(who)+'</b><em>'+title+(list.length>1?' · '+list.length:'')+'</em></span>'
+    +dotHTML(list,key)+'</button><button class="hx" title="'+LX('إخفاء','Hide')+'" onclick="hideGroup(\''+key+'\')">'+pic('x',13)+'</button>'
     +'<div class="ex"><div class="exi">'+(isOpen?expandLone(g):'')+'</div></div></div>';
 }
+function hiddenOrder(o){ return MSTATE['ord:'+o.dbId]==='hidden'; }
+async function hideOrder(id){ if(OPEN===id) OPEN=null; await setMsg('ord:'+id,'hidden'); }
+async function hideGroup(key){ const list=GROUPS[key]||[]; OPEN=null; for(const i of list.filter(x=>x.kind!=='out')) await setMsg(i.key,'hidden'); }
 function toggleOpen(id){ OPEN=(OPEN===id?null:id); render(); if(OPEN) prepDraft(OPEN); }
 /* المحادثة: مربع واحد بالترتيب الزمني (رسائل العميل، ردودك، وأحداث الطلب مثل «تم الحجز») + زر حالة واحد بدل الصح والإكس (فادية 2026-11-13) */
 function threadEvents(msgs, o){
@@ -762,7 +769,6 @@ function expandOrder(o,msgs){
     +(addr||map?'<small>'+LX('الموقع','Location')+'</small><div>'+esc(addr)+(map?' <a href="'+esc(map)+'" target="_blank" rel="noopener">'+LX('الخريطة','Map')+' ↗</a>':'')+'</div>':'')
     +(o.tech?'<small>'+LX('الفني','Technician')+'</small><div>'+esc(o.tech)+(o.arrived?' · '+LX('وصل','Arrived'):o.onTheWay?' · '+LX('في الطريق','On the way'):'')+'</div>':'')
     +'<small>'+LX('الدفع','Payment')+'</small><div>'+pay+(inv?' · '+inv:'')+'</div>'
-    +(f&&f.profit!=null?'<small>'+LX('الربح','Profit')+'</small><div><b>'+n0(f.profit)+'</b> '+LX('قبل الرواتب','before wages')+(f.parts?' · '+LX('قطع','Parts')+' '+n0(f.parts):'')+'</div>':'')
     +'</div>'
     +(items?'<div class="items">'+items+'</div>':'')
     +(o.note?'<div class="note">📝 '+esc(o.note)+'</div>':'')
@@ -775,17 +781,17 @@ function expandLone(g){
   const wa=list.filter(i=>i.kind==='wa');
   return replyBox(g.key,list)
     +'<div class="kv">'+(c?'<small>'+LX('النوع','Type')+'</small><div>'+esc(LX((KINDS[c.kind]||[c.kind,c.kind])[0],(KINDS[c.kind]||[c.kind,c.kind])[1]))+'</div>':'')
+    +'<small>'+LX('الوقت','Time')+'</small><div>'+relDay(isoOf(it.ts))+' · '+clock(it.ts)+'</div>'
     +'<small>'+LX('العميل','Customer')+'</small><div>'+esc(name)+(phone?' · <a dir="ltr" href="tel:'+esc(tel(phone))+'">'+esc(it.kind==='wa'?'0'+it.p9:phone)+'</a>':'')+'</div>'
     +(c&&c.order_no?'<small>'+LX('الطلب','Order')+'</small><div><a href="#" onclick="event.preventDefault();'+(o?'toggleOpen(\''+o.dbId+'\')':'')+'">#'+c.order_no+'</a>'+(o?' · '+dayLabel(o.date):'')+'</div>':'')
     +'</div>'
     +(phone?'<div class="acts"><a class="btn sm" href="'+waLink(phone)+'" target="_blank" rel="noopener">'+pic('chat')+' '+LX('واتساب','WhatsApp')+'</a></div>':'');
 }
 function dayHead(iso,label,list){
-  const f=list.map(o=>FIN.get(o.dbId)).filter(Boolean), tot=f.reduce((s,r)=>s+(+r.total||0),0), pr=f.reduce((s,r)=>s+(+r.profit||0),0);
-  const ttl=label||relDay(iso); return '<div class="dh"><h3>'+ttl+'</h3>'+(ttl===dayLabel(iso)?'':'<span>'+dayLabel(iso)+'</span>')+(list.length?'<b class="n">'+list.length+' '+LX('طلب','orders')+'</b>'+(tot?'<b class="n">'+LX('الإجمالي','Total')+' '+n0(tot)+'</b><b class="n g">'+LX('الربح','Profit')+' '+n0(pr)+'</b>':''):'')+'</div>';
+  const ttl=label||relDay(iso); return '<div class="dh"><h3>'+ttl+'</h3>'+(ttl===dayLabel(iso)?'':'<span>'+dayLabel(iso)+'</span>')+(list.length?'<b class="n">'+list.length+' '+LX('طلب','orders')+'</b>':'')+'</div>';
 }
 function dayBlock(iso, orders, lone, label, filterFn){
-  const list=orders.filter(o=>o.date===iso&&(filterFn?filterFn(o):o.status!=='cancelled')).sort((a,b)=>a.startMin-b.startMin);
+  const list=orders.filter(o=>o.date===iso&&!hiddenOrder(o)&&(filterFn?filterFn(o):o.status!=='cancelled')).sort((a,b)=>a.startMin-b.startMin);
   const loneDay=lone.filter(it=>isoOf(it.ts)===iso);
   const body=list.map(o=>stripHTML(o, ATT.byOrder.get(o.dbId)||[])).join('')+groupLone(loneDay).map(loneHTML).join('');
   return '<section class="day">'+dayHead(iso,label,list)+(body||'<div class="empty">'+LX('ما فيه طلبات ولا رسائل','No orders or messages')+'</div>')+'</section>';
@@ -796,14 +802,20 @@ function homeHTML(){
   const future=[...new Set(ORDERS.filter(o=>o.date>t&&o.status!=='cancelled').map(o=>o.date))].sort().reverse();
   const days=[...future.map(d=>[d,null]),[t,null],[addDays(t,-1),null],[addDays(t,-2),null]];
   return kpiHTML()+chartHTML()
-    +'<div class="card"><div class="ch"><h2>'+LX('الطلبات','Orders')+'</h2><span class="sub">'+LX('القادم ثم اليوم ثم الماضي','Upcoming, today, then past')+'</span><span class="sp"></span><button class="btn sm" onclick="nav(\'orders\')">'+LX('كل الطلبات','All orders')+' ›</button></div><div class="cb" style="display:grid;gap:18px">'
+    +'<div class="card"><div class="ch"><h2>'+LX('الطلبات','Orders')+'</h2><span class="sub">'+LX('القادم ثم اليوم ثم الماضي','Upcoming, today, then past')+'</span><span class="sp"></span><button class="btn sm" onclick="nav(\'orders\')">'+LX('كل الطلبات','All orders')+' ›</button></div><div class="cb" style="display:grid;gap:18px">'+filterChips(true)
     +days.map(([d,l])=>dayBlock(d,ORDERS,ATT.lone,l)).join('')
     +'</div></div>'
     +'<div class="card" id="more"><div class="ch"><h2>'+LX('المزيد','More')+'</h2><span class="sub">'+LX('الأقسام التفصيلية','Detailed sections')+'</span></div><div class="cb more">'
     +NAV.filter(n=>n.legacy).map(n=>'<button onclick="legacy(\''+n.legacy+'\')">'+pic(n.ic)+'<span>'+LX(n.l[0],n.l[1])+'</span></button>').join('')
     +MORE.map(m=>'<button onclick="legacy(\''+m[0]+'\')">'+pic(m[1])+'<span>'+LX(m[2],m[3])+'</span></button>').join('')+'</div></div>';
 }
-const FILTERS=[['', 'الكل','All'],['work','قيد التنفيذ','In progress'],['unpaid','مكتمل وما دفع','Done, unpaid'],['late','متأخر بالدفع','Overdue'],['book','محجوز','Booked'],['new','بانتظار التأكيد','Awaiting confirmation'],['complaints','الشكاوى','Complaints'],['msgs','الرسائل','Messages'],['cancelled','ملغي','Cancelled']];
+const FILTERS=[['', 'الكل','All'],['reply','يحتاج ردك','Needs your reply'],['unpaid','غير مدفوع','Unpaid'],['late','متأخر بالسداد','Overdue'],['work','الفني يشتغل','Technician working'],['book','محجوز','Booked'],['new','بانتظار التأكيد','Awaiting confirmation'],['complaints','الشكاوى','Complaints'],['msgs','الرسائل','Messages'],['cancelled','ملغي','Cancelled']];
+function openCount(){ const a=msgItems().filter(i=>i.open); return {all:a.length, cmp:a.filter(i=>i.kind==='cmp').length, wa:a.filter(i=>i.kind==='wa').length}; }
+function filterChips(home){
+  const oc=openCount(), unpaid=ORDERS.filter(o=>!hiddenOrder(o)&&filterFn('unpaid')(o)).length, late=ORDERS.filter(o=>!hiddenOrder(o)&&filterFn('late')(o)).length;
+  const N={reply:oc.all, complaints:oc.cmp, msgs:oc.wa, unpaid, late};
+  return '<div class="chips">'+FILTERS.filter(f=>!home||['reply','unpaid','late','complaints','new'].includes(f[0])).map(f=>{ const n=N[f[0]]||0; return '<button class="chip '+(!home&&FILTER===f[0]?'on':'')+'" onclick="'+(home?'openOrders(todayISO(),\''+f[0]+'\')':'setFilter(\''+f[0]+'\')')+'">'+LX(f[1],f[2])+(n?'<i>'+n+'</i>':'')+'</button>'; }).join('')+'</div>';
+}
 function filterFn(k){
   if(!k) return o=>o.status!=='cancelled';
   if(k==='cancelled') return o=>o.status==='cancelled';
@@ -815,9 +827,13 @@ function ordersHTML(){
   for(let i=-7;i<=14;i++){ const iso=addDays(t,i), d=parseISO(iso); const n=ORDERS.filter(o=>o.date===iso&&o.status!=='cancelled'), bad=n.some(o=>stripState(o).c==='red'||stripState(o).c==='yellow'&&o.status==='done');
     chips.push('<button class="'+(ORD_DAY===iso?'on':'')+'" data-iso="'+iso+'" onclick="pickDay(\''+iso+'\')">'+(n.length?'<i class="'+(bad?'red':'')+'">'+n.length+'</i>':'')+'<small>'+(i===0?LX('اليوم','Today'):(EN()?EN_DAYS[d.getDay()]:AR_DAYS[d.getDay()]))+'</small><b>'+d.getDate()+'</b><span>'+(EN()?EN_MON[d.getMonth()]:AR_MON[d.getMonth()])+'</span></button>'); }
   const all=msgItems();
-  const fchips='<div class="chips">'+FILTERS.map(f=>{ const n=f[0]==='complaints'?all.filter(i=>i.kind==='cmp'&&i.open).length:f[0]==='msgs'?all.filter(i=>i.kind==='wa'&&i.open).length:0; return '<button class="chip '+(FILTER===f[0]?'on':'')+'" onclick="setFilter(\''+f[0]+'\')">'+LX(f[1],f[2])+(n?'<i>'+n+'</i>':'')+'</button>'; }).join('')+'</div>';
+  const fchips=filterChips(false);
   let body='';
-  if(FILTER==='complaints'||FILTER==='msgs'){
+  if(FILTER==='reply'){
+    const fn=o=>o.status!=='cancelled'&&(ATT.byOrder.get(o.dbId)||[]).some(m=>m.open), list=ORDERS.filter(o=>!hiddenOrder(o)&&fn(o)), lone=ATT.lone.filter(i=>i.open);
+    const days=[...new Set(list.map(o=>o.date).concat(lone.map(i=>isoOf(i.ts))))].sort().reverse();
+    body=days.length? days.map(d=>dayBlock(d,list,lone,null,fn)).join('') : '<div class="empty">'+LX('ما فيه شي يحتاج ردك','Nothing needs your reply')+'</div>';
+  } else if(FILTER==='complaints'||FILTER==='msgs'){
     const items=all.filter(it=>it.kind===(FILTER==='complaints'?'cmp':'wa')).sort((a,b)=>b.ts-a.ts);
     const open=items.filter(i=>i.open), done=items.filter(i=>!i.open);
     const gOpen=groupLone(open).reverse(), gDone=groupLone(done).reverse();
@@ -831,7 +847,7 @@ function ordersHTML(){
     body=dayBlock(ORD_DAY,ORDERS,ATT.lone);
   }
   return '<div class="ph"><h1>'+LX('الطلبات','Orders')+'</h1><span class="sub">'+(FILTER?LX(FILTERS.find(f=>f[0]===FILTER)[1],FILTERS.find(f=>f[0]===FILTER)[2]):dayLabel(ORD_DAY))+'</span><span class="sp"></span>'+(ORD_DAY!==t||FILTER?'<button class="btn sm" onclick="openOrders(\''+t+'\',\'\')">'+LX('اليوم','Today')+'</button>':'')+'<button class="btn sm" onclick="nav(\'cal\')">'+pic('calendar',15)+' '+LX('التقويم','Calendar')+'</button></div>'
-    +'<div class="dates">'+chips.join('')+'</div>'+fchips+'<div style="display:grid;gap:18px">'+body+'</div>';
+    +fchips+'<div class="dates">'+chips.join('')+'</div>'+'<div style="display:grid;gap:18px">'+body+'</div>';
 }
 function pickDay(iso){ ORD_DAY=iso; FILTER=''; OPEN=null; render(); setTimeout(centerDay,30); }
 function setFilter(k){ FILTER=(FILTER===k?'':k); OPEN=null; render(); }
@@ -1006,7 +1022,7 @@ async function initCloud(){
 function demoData(){
   const t=todayISO(), y=addDays(t,-1), b=addDays(t,-2), now=Date.now();
   const mk=(n,date,start,status,extra)=>Object.assign({ dbId:'d'+n, num:19300+n, createdAt:now-3e6, items:[{id:'g3',name:'زيارة فني سباكة وكهرباء',qty:1,price:0}], name:['سلمان البراهيم','خالد عبدالله','أم فهد','Moath Alharbi','أبو ناصر','نورة','Osama'][n%7], phone:'05000000'+(10+n), p9:'5000000'+(10+n), address:{city:['الخبر','الدمام','الظهران'][n%3],district:'الراكة'}, date, startMin:start, duration:120, price:0, finalPrice:0, status, note:'', invoice:null, providerPhone:'', arrived:false, onTheWay:false, tech:'Jaya', payRequired:false, released:true, paid:0, due:0, payStatus:'unpaid', payMethod:'', source:n%2?'wa':'app', doneAt:null, invoicedAt:null, invoicedApp:false },extra||{});
-  ORDERS=[ mk(1,t,480,'done',{paid:195,due:0,payStatus:'paid',finalPrice:195,doneAt:new Date(now-5e6).toISOString(),invoicedApp:true}), mk(2,t,600,'progress',{onTheWay:true,createdAt:now-6.5e6}), mk(3,t,840,'confirmed'), mk(4,t,1080,'new'),
+  ORDERS=[ mk(1,t,480,'done',{paid:195,due:0,payStatus:'paid',finalPrice:195,doneAt:new Date(now-5e6).toISOString(),invoicedApp:true}), mk(2,t,600,'progress',{onTheWay:true,createdAt:now-6e6}), mk(3,t,840,'confirmed'), mk(4,t,1080,'new'),
     mk(5,y,480,'done',{paid:0,due:162,finalPrice:162,doneAt:new Date(now-9e7).toISOString()}), mk(6,y,720,'done',{paid:99,due:0,payStatus:'paid',finalPrice:99,doneAt:new Date(now-8e7).toISOString()}), mk(7,y,960,'cancelled'),
     mk(8,b,600,'done',{paid:0,due:405,finalPrice:405,doneAt:new Date(now-2.2e8).toISOString()}), mk(9,b,1200,'done',{paid:30,due:0,payStatus:'paid',finalPrice:30,doneAt:new Date(now-2e8).toISOString()}) ];
   FINROWS=ORDERS.filter(o=>o.status==='done').map(o=>({id:o.dbId,no:o.num,date:o.date,status:o.status,total:o.finalPrice,paid:o.paid,due:o.due,profit:Math.round(o.finalPrice*0.62),pay_state:o.due>0?'unpaid':'paid',invoiced:true,wa_at:o.source==='wa'?'x':null,wa_status:'read',lines:[{name:'زيارة فني',qty:1,price:o.finalPrice}]}));
