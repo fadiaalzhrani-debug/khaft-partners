@@ -136,6 +136,8 @@ main{min-width:0;padding:18px 18px 90px}
 .rp{display:grid;gap:8px}
 .ml-list{display:grid;gap:4px}
 .ml{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--muted);font-size:12.5px;color:#3f3f46}
+.ml.me{background:#e6f4f1;color:#0f5a50;margin-inline-start:28px} .ml.me svg{flex:0 0 auto;color:var(--c-green)}
+.ml.ack{opacity:.6}
 .ml>span{flex:1;min-width:0;overflow-wrap:anywhere}
 .ml small{color:var(--muted-fg);white-space:nowrap;font-variant-numeric:tabular-nums}
 .ml .act{display:flex;gap:4px}
@@ -242,7 +244,7 @@ input.in{width:100%;height:40px;padding:0 12px;border:1px solid var(--input);bor
    ════════════════════════════════════════════════════════════════════════ */
 const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
 const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
-const DEMO=/[?&]demo=1/.test(location.search) && /^(localhost|127.0.0.1|10.|192.168.)/.test(location.hostname);   // المعاينة بلا دخول على الشبكة المحلية فقط
+const DEMO=/[?&]demo=1/.test(location.search) && (!location.hostname || /^(localhost|127[.]0[.]0[.]1|10[.]|192[.]168[.])/.test(location.hostname));   // المعاينة بلا دخول على الجهاز والشبكة المحلية فقط
 // من تطبيق الفني للمستودع مباشرة: الأقسام التفصيلية
 if(/^#(store|po)$/.test(location.hash)) location.replace('admin-legacy.html'+location.hash);
 
@@ -327,7 +329,7 @@ let sb=null, cloudReady=false;
 let loggedIn=(()=>{ try{ return localStorage.getItem('khafet_admin_ok')==='1' && localStorage.getItem('khafet_remember')!=='0'; }catch(e){ return false; } })();
 let otpSent=false, otpPhone='', remChoice=true, lgErr='';
 let VIEW='home', ORD_DAY=todayISO(), FILTER='';          // FILTER: '' | work | unpaid | late | book | new | complaints
-let ORDERS=[], FINROWS=[], FINAT=0, CMP=[], WA=[], MSTATE={}, SETTINGS={work_start:'8',work_end:'22',arrival_window:'120'};
+let ORDERS=[], FINROWS=[], FINAT=0, CMP=[], WA=[], OUT=[], MSTATE={}, SETTINGS={work_start:'8',work_end:'22',arrival_window:'120'};
 let MENU=false;
 let loading=false;
 
@@ -342,16 +344,18 @@ async function loadCore(){
   if(!cloudReady||!loggedIn||loading) return; loading=true;
   const t=todayISO(), from=addDays(t,-21), to=addDays(t,21);
   try{
-    const [o,c,w,ms,st]=await Promise.all([
+    const [o,c,w,wo,ms,st]=await Promise.all([
       sb.from('khafet_orders').select(O_COLS).gte('service_date',from).lte('service_date',to).order('service_date',{ascending:false}).limit(1500),
       sb.from('khafet_complaints').select('*').gte('created_at',new Date(Date.now()-30*864e5).toISOString()).order('created_at',{ascending:false}).limit(300),
       sb.from('khafet_wa_log').select('id,msg_id,phone9,wa_name,kind,body,intent,created_at').gte('created_at',new Date(Date.now()-3*864e5).toISOString()).not('kind','in','("notify","interactive","reaction","revoke","edit")').order('created_at',{ascending:false}).limit(400),
+      sb.from('khafet_wa_log').select('id,phone9,reply,intent,created_at').gte('created_at',new Date(Date.now()-3*864e5).toISOString()).in('intent',['admin_msg','complaint_reply']).not('reply','is',null).not('out_id','is',null).order('created_at',{ascending:false}).limit(200),
       sb.from('khafet_admin_msg_state').select('msg_key,state'),
       sb.from('khafet_settings').select('key,value').in('key',['work_start','work_end','arrival_window']),
     ]);
     if(!o.error) ORDERS=(o.data||[]).map(rowToOrder);
     if(!c.error) CMP=c.data||[];
-    if(!w.error) WA=(w.data||[]).filter(m=>m.msg_id&&!/^(say|notify|team|complaint|nudge|invite):/.test(m.msg_id));
+    if(!w.error) WA=(w.data||[]).filter(m=>m.msg_id&&!/^(say|notify|team|complaint|nudge|invite|booklink|pdf):/.test(m.msg_id));
+    if(!wo.error) OUT=wo.data||[];
     if(!ms.error){ MSTATE={}; (ms.data||[]).forEach(x=>MSTATE[x.msg_key]=x.state); }
     if(!st.error) (st.data||[]).forEach(x=>SETTINGS[x.key]=x.value);
   }catch(e){ console.warn('loadCore',e); }
@@ -399,8 +403,20 @@ function msgItems(){
   const out=[];
   CMP.forEach(c=>{ const key='cmp:'+c.id; if(MSTATE[key]==='hidden') return; const replied=!!(c.reply&&String(c.reply).trim())||c.status==='closed'; out.push({key, kind:'cmp', id:c.id, p9:phone9(c.customer_phone), phone:c.customer_phone||'', ts:new Date(c.created_at).getTime(), text:c.body||'', name:c.customer_name||'', orderNo:c.order_no||null, open:!replied, c}); });
   WA.forEach(m=>{ const key='wa:'+m.msg_id; if(MSTATE[key]==='hidden') return; const kindTx={image:'📷 '+LX('صورة','Photo'),video:'🎥 '+LX('فيديو','Video'),audio:'🎤 '+LX('صوت','Voice'),document:'📎 '+LX('ملف','File'),location:'📍 '+LX('موقع','Location'),sticker:'🙂',unsupported:LX('رسالة غير مدعومة','Unsupported message')};
-    out.push({key, kind:'wa', id:m.id, p9:m.phone9, phone:m.phone9?'966'+m.phone9:'', ts:new Date(m.created_at).getTime(), text:(m.body&&String(m.body).trim())||kindTx[m.kind]||m.kind, name:m.wa_name||'', open:MSTATE[key]!=='done', m}); });
+    const ts=new Date(m.created_at).getTime(), text=(m.body&&String(m.body).trim())||kindTx[m.kind]||m.kind;
+    // يحتاج رد؟ لا لو هي شكر/تأكيد فقط، ولا لو رددنا عليه بعدها (فادية 2026-11-13)
+    const repliedAfter=OUT.some(o=>o.phone9===m.phone9&&new Date(o.created_at).getTime()>ts);
+    const open=MSTATE[key]!=='done' && !repliedAfter && needsReply(m);
+    out.push({key, kind:'wa', id:m.id, p9:m.phone9, phone:m.phone9?'966'+m.phone9:'', ts, text, name:m.wa_name||'', open, ack:!needsReply(m), m}); });
+  // ردودنا الصادرة من اللوحة أو على الشكاوى: تظهر داخل المربع بعلامة «ردّك»
+  OUT.forEach(o=>{ if(!o.reply) return; out.push({key:'out:'+o.id, kind:'out', id:o.id, p9:o.phone9, phone:'966'+o.phone9, ts:new Date(o.created_at).getTime(), text:String(o.reply), name:'', open:false}); });
   return out.sort((a,b)=>a.ts-b.ts);
+}
+const ACK_RE=/^(?:[\s\p{P}\p{S}]*(?:شكرا|شكرًا|مشكور|مشكورين|تسلم|تسلمون|يعطيك|يعطيكم|العافيه|العافية|الله يعطيك|جزاك|جزاكم|ماقصرت|ماقصرتوا|تمام|تم|اوك|اوكي|اوكيه|ok|okay|ماشي|طيب|حسنا|حسنًا|ان شاء الله|إن شاء الله|الله يسلمك|ابشر|أبشر|يعطيكم العافيه|thanks|thank you|👍|🙏|❤️|♥️|👌)[\s\p{P}\p{S}]*)+$/iu;
+function needsReply(m){
+  if(m.kind==='text'){ const t=String(m.body||'').trim(); if(!t) return false; if(t.length<=40&&ACK_RE.test(t)) return false; if(/^(thanks|ok)$/i.test(t)) return false; return true; }
+  if(['sticker','reaction'].includes(m.kind)) return false;
+  return true;   // صورة أو موقع أو صوت: نعرضها
 }
 function attachMsgs(){
   const byOrder=new Map(), lone=[];
@@ -490,8 +506,9 @@ function chartHTML(){
 /* الشريط: الوقت · الحالة · الإجمالي والربح · (يسار) دائرة الرسالة واختصار الرد. الضغط يمدّه بنعومة: الرد فوق ثم التفاصيل */
 function dotHTML(msgs){
   if(!msgs||!msgs.length) return '';
-  const open=msgs.filter(m=>m.open).length, last=msgs[msgs.length-1];
-  return '<span class="mi"><i class="dot '+(open?'r':'g')+'"></i><span class="snip">'+esc(last.text)+'</span><span class="rd">'+(open?LX('رد','Reply'):LX('تم','Done'))+'</span></span>';
+  const open=msgs.filter(m=>m.open).length, last=msgs[msgs.length-1], mine=last.kind==='out';
+  const snip=mine?LX('ردّك: ','You: ')+last.text:last.text;
+  return '<span class="mi"><i class="dot '+(open?'r':'g')+'"></i><span class="snip">'+esc(snip)+'</span><span class="rd">'+(open?LX('رد','Reply'):LX('تم الرد','Replied'))+'</span></span>';
 }
 function stripHTML(o, msgs, multiDay){
   const s=stripState(o), mn=stripMoney(o), isOpen=OPEN===o.dbId;
@@ -501,23 +518,35 @@ function stripHTML(o, msgs, multiDay){
     +'<span class="mn">'+mn.map(x=>'<span>'+x[0]+' <b>'+x[1]+'</b></span>').join('')+'</span>'+dotHTML(msgs)+'</button>'
     +'<div class="ex"><div class="exi">'+(isOpen?expandOrder(o,msgs):'')+'</div></div></div>';
 }
-function loneHTML(it){
-  const isOpen=OPEN===it.key, cmp=it.kind==='cmp';
-  return '<div class="row'+(isOpen?' open':'')+'"><button class="strip s-lone'+(cmp?' s-cmp':'')+'" onclick="toggleOpen(\''+it.key+'\')" aria-expanded="'+isOpen+'">'
-    +'<span class="t">'+clock(it.ts)+'<small>'+relDay(isoOf(it.ts))+'</small></span><span class="lb"><b>'+(cmp?LX('شكوى','Complaint')+(it.c.ticket_no?' '+it.c.ticket_no:''):LX('رسالة واتساب','WhatsApp'))+'</b>'+(it.name?'<em>'+esc(it.name)+'</em>':'')+'</span>'
-    +'<span class="mn"></span>'+dotHTML([it])+'</button>'
-    +'<div class="ex"><div class="exi">'+(isOpen?expandLone(it):'')+'</div></div></div>';
+/* الرسائل المستقلة: نفس الرقم في نفس اليوم = مربع واحد ورسائله كلها داخله بالوقت (فادية 2026-11-13) */
+let GROUPS={};
+function groupLone(items){
+  const m=new Map();
+  items.slice().sort((a,b)=>a.ts-b.ts).forEach(it=>{ const k='grp:'+(it.p9||it.key)+':'+isoOf(it.ts); if(!m.has(k)) m.set(k,[]); m.get(k).push(it); });
+  const out=[...m.entries()].map(([key,list])=>({key,list})); out.forEach(g=>GROUPS[g.key]=g.list); return out;
+}
+function loneHTML(g){
+  const list=g.list, key=g.key, isOpen=OPEN===key, cmp=list.some(i=>i.kind==='cmp'), last=list[list.length-1], name=(list.find(i=>i.name)||{}).name||'';
+  const title=cmp?LX('شكوى','Complaint')+(list.length===1&&last.c&&last.c.ticket_no?' '+last.c.ticket_no:''):LX('رسالة واتساب','WhatsApp');
+  return '<div class="row'+(isOpen?' open':'')+'"><button class="strip s-lone'+(cmp?' s-cmp':'')+'" onclick="toggleOpen(\''+key+'\')" aria-expanded="'+isOpen+'">'
+    +'<span class="t">'+clock(last.ts)+'<small>'+relDay(isoOf(last.ts))+'</small></span><span class="lb"><b>'+title+'</b>'+(name?'<em>'+esc(name)+'</em>':'')+(list.length>1?'<em>'+list.length+' '+LX('رسائل','messages')+'</em>':'')+'</span>'
+    +'<span class="mn"></span>'+dotHTML(list)+'</button>'
+    +'<div class="ex"><div class="exi">'+(isOpen?expandLone(g):'')+'</div></div></div>';
 }
 function toggleOpen(id){ OPEN=(OPEN===id?null:id); render(); if(OPEN) prepDraft(OPEN); }
 /* لوحة الرد: مقترح جاهز غير مرسل (ستاند باي) ← مسح | تحسين | إرسال */
 function replyBox(key, msgs){
   const d=DRAFT[key]||{text:'',busy:false};
-  const target=msgs.filter(m=>m.open).slice(-1)[0]||msgs[msgs.length-1];
-  const list=msgs.map(m=>'<div class="ml"><i class="dot '+(m.open?'r':'g')+'"></i><span>'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> · ':'')+esc(m.text)+'</span><small>'+clock(m.ts)+'</small>'
+  const inbound=msgs.filter(m=>m.kind!=='out'), lastIn=inbound[inbound.length-1];
+  const target=inbound.filter(m=>m.open).slice(-1)[0]||(d.force?lastIn:null);
+  const list=msgs.map(m=>m.kind==='out'
+    ? '<div class="ml me">'+pic('check',13)+'<span><b>'+LX('ردّك','You')+'</b> · '+esc(m.text)+'</span><small>'+clock(m.ts)+'</small></div>'
+    : '<div class="ml'+(m.ack?' ack':'')+'"><i class="dot '+(m.open?'r':'g')+'"></i><span>'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> · ':'')+esc(m.text)+'</span><small>'+clock(m.ts)+'</small>'
     +(m.kind==='wa'?'<span class="act">'+(m.open?'<button title="'+LX('تمت','Done')+'" onclick="event.stopPropagation();setMsg(\''+m.key+'\',\'done\')">'+pic('check',12)+'</button>':'')+'<button title="'+LX('إخفاء','Hide')+'" onclick="event.stopPropagation();setMsg(\''+m.key+'\',\'hidden\')">'+pic('x',12)+'</button></span>':'')+'</div>').join('');
-  const sent=target&&target.kind==='cmp'&&!target.open? '<div class="note g">'+esc(target.c.reply||'')+'</div>' : '';
-  return '<div class="rp"><div class="ml-list">'+list+'</div>'+sent
-    +(target&&target.open?'<div class="rb"><div class="rh">'+LX('رد مقترح (غير مرسل)','Suggested reply (not sent)')+(d.busy?' · '+LX('جارٍ التجهيز…','Preparing…'):d.via==='ai'?' · '+LX('من كلود','by Claude'):d.via==='rules'?' · '+LX('من قائمة خدماتنا','from our services'):'')+'</div>'
+  const cmpSent=lastIn&&lastIn.kind==='cmp'&&!lastIn.open? '<div class="note g">'+esc(lastIn.c.reply||'')+'</div>' : '';
+  const more=(!target&&lastIn&&lastIn.kind==='wa')?'<div><button class="btn sm" onclick="forceReply(\''+key+'\')">'+pic('send')+' '+LX('رسالة جديدة','New message')+'</button></div>':'';
+  return '<div class="rp"><div class="ml-list">'+list+'</div>'+cmpSent+more
+    +(target?'<div class="rb"><div class="rh">'+LX('رد مقترح (غير مرسل)','Suggested reply (not sent)')+(d.busy?' · '+LX('جارٍ التجهيز…','Preparing…'):d.via==='ai'?' · '+LX('من كلود','by Claude'):d.via==='rules'?' · '+LX('من قائمة خدماتنا','from our services'):'')+'</div>'
       +'<textarea class="ta" id="ta-'+cssId(key)+'" oninput="draftEdit(\''+key+'\',this.value)" '+(d.busy?'disabled':'')+'>'+esc(d.text)+'</textarea>'
       +'<div class="rbtn"><button class="btn sm" onclick="clearDraft(\''+key+'\')">'+pic('trash')+' '+LX('مسح','Clear')+'</button><button class="btn sm" onclick="polish(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('spark')+' '+LX('تحسين','Polish')+'</button><span class="sp"></span><button class="btn sm pri" onclick="sendDraft(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('send')+' '+LX('إرسال','Send')+'</button></div></div>':'')
     +'</div>';
@@ -544,16 +573,18 @@ function expandOrder(o,msgs){
     +'<div class="acts">'+(o.phone?'<a class="btn sm" href="tel:'+esc(tel(o.phone))+'">'+pic('phone')+' '+LX('اتصال','Call')+'</a><a class="btn sm" href="'+waLink(o.phone)+'" target="_blank" rel="noopener">'+pic('chat')+' '+LX('واتساب','WhatsApp')+'</a>':'')
     +'<span class="sp"></span><button class="btn sm pri" onclick="legacy(\'orders\',\'&o='+o.dbId+'\')">'+LX('كل الإجراءات','All actions')+' ↗</button></div>';
 }
-function expandLone(it){
-  const c=it.c, KINDS={quality:['جودة الشغل','Work quality'],late:['تأخر أو عدم حضور','Late or no show'],price:['السعر أو الفاتورة','Price or invoice'],tech:['تعامل الفني','Technician conduct'],app:['التطبيق أو الدفع','App or payment'],other:['أخرى','Other']};
-  const o=c&&c.order_no?ORDERS.find(x=>x.num===c.order_no):null;
-  return replyBox(it.key,[it])
+function expandLone(g){
+  const list=g.list, it=list[list.length-1], cm=list.find(i=>i.kind==='cmp'), c=cm?cm.c:null, KINDS={quality:['جودة الشغل','Work quality'],late:['تأخر أو عدم حضور','Late or no show'],price:['السعر أو الفاتورة','Price or invoice'],tech:['تعامل الفني','Technician conduct'],app:['التطبيق أو الدفع','App or payment'],other:['أخرى','Other']};
+  const o=c&&c.order_no?ORDERS.find(x=>x.num===c.order_no):null, name=(list.find(i=>i.name)||{}).name||'', phone=(list.find(i=>i.phone)||{}).phone||'';
+  const wa=list.filter(i=>i.kind==='wa');
+  return replyBox(g.key,list)
     +'<div class="kv">'+(c?'<small>'+LX('النوع','Type')+'</small><div>'+esc(LX((KINDS[c.kind]||[c.kind,c.kind])[0],(KINDS[c.kind]||[c.kind,c.kind])[1]))+'</div>':'')
-    +'<small>'+LX('العميل','Customer')+'</small><div>'+esc(it.name||'')+(it.phone?' · <a dir="ltr" href="tel:'+esc(tel(it.phone))+'">'+esc(it.kind==='wa'?'0'+it.p9:it.phone)+'</a>':'')+'</div>'
+    +'<small>'+LX('العميل','Customer')+'</small><div>'+esc(name)+(phone?' · <a dir="ltr" href="tel:'+esc(tel(phone))+'">'+esc(it.kind==='wa'?'0'+it.p9:phone)+'</a>':'')+'</div>'
     +(c&&c.order_no?'<small>'+LX('الطلب','Order')+'</small><div><a href="#" onclick="event.preventDefault();'+(o?'toggleOpen(\''+o.dbId+'\')':'')+'">#'+c.order_no+'</a>'+(o?' · '+dayLabel(o.date):'')+'</div>':'')
     +'</div>'
-    +'<div class="acts">'+(it.phone?'<a class="btn sm" href="'+waLink(it.phone)+'" target="_blank" rel="noopener">'+pic('chat')+' '+LX('واتساب','WhatsApp')+'</a>':'')+'<span class="sp"></span>'+(it.kind==='wa'?'<button class="btn sm" onclick="setMsg(\''+it.key+'\',\'hidden\')">'+pic('x')+' '+LX('إخفاء','Hide')+'</button>':'')+'</div>';
+    +'<div class="acts">'+(phone?'<a class="btn sm" href="'+waLink(phone)+'" target="_blank" rel="noopener">'+pic('chat')+' '+LX('واتساب','WhatsApp')+'</a>':'')+'<span class="sp"></span>'+(wa.length?'<button class="btn sm" onclick="hideGroup(\''+g.key+'\')">'+pic('x')+' '+LX('إخفاء','Hide')+'</button>':'')+'</div>';
 }
+async function hideGroup(key){ const list=GROUPS[key]||[]; OPEN=null; for(const i of list.filter(x=>x.kind==='wa')) await setMsg(i.key,'hidden'); }
 function dayHead(iso,label,list){
   const f=list.map(o=>FIN.get(o.dbId)).filter(Boolean), tot=f.reduce((s,r)=>s+(+r.total||0),0), pr=f.reduce((s,r)=>s+(+r.profit||0),0);
   const ttl=label||relDay(iso); return '<div class="dh"><h3>'+ttl+'</h3>'+(ttl===dayLabel(iso)?'':'<span>'+dayLabel(iso)+'</span>')+(list.length?'<b class="n">'+list.length+' '+LX('طلب','orders')+'</b>'+(tot?'<b class="n">'+LX('الإجمالي','Total')+' '+n0(tot)+'</b><b class="n g">'+LX('الربح','Profit')+' '+n0(pr)+'</b>':''):'')+'</div>';
@@ -561,7 +592,7 @@ function dayHead(iso,label,list){
 function dayBlock(iso, orders, lone, label, filterFn){
   const list=orders.filter(o=>o.date===iso&&(filterFn?filterFn(o):o.status!=='cancelled')).sort((a,b)=>a.startMin-b.startMin);
   const loneDay=lone.filter(it=>isoOf(it.ts)===iso);
-  const body=list.map(o=>stripHTML(o, ATT.byOrder.get(o.dbId)||[])).join('')+loneDay.map(loneHTML).join('');
+  const body=list.map(o=>stripHTML(o, ATT.byOrder.get(o.dbId)||[])).join('')+groupLone(loneDay).map(loneHTML).join('');
   return '<section class="day">'+dayHead(iso,label,list)+(body||'<div class="empty">'+LX('ما فيه طلبات ولا رسائل','No orders or messages')+'</div>')+'</section>';
 }
 function homeHTML(){
@@ -594,8 +625,9 @@ function ordersHTML(){
   if(FILTER==='complaints'||FILTER==='msgs'){
     const items=all.filter(it=>it.kind===(FILTER==='complaints'?'cmp':'wa')).sort((a,b)=>b.ts-a.ts);
     const open=items.filter(i=>i.open), done=items.filter(i=>!i.open);
-    body='<section class="day"><div class="dh"><h3>'+LX('بانتظار ردك','Awaiting your reply')+'</h3><b class="n">'+open.length+'</b></div>'+(open.length?open.map(loneHTML).join(''):'<div class="empty">'+LX('لا شيء بانتظار الرد','Nothing awaiting reply')+'</div>')+'</section>'
-      +'<section class="day"><div class="dh"><h3>'+LX('تم الرد عليها','Replied')+'</h3><b class="n">'+done.length+'</b></div>'+(done.length?done.map(loneHTML).join(''):'<div class="empty">'+LX('لا شيء بعد','Nothing yet')+'</div>')+'</section>';
+    const gOpen=groupLone(open).reverse(), gDone=groupLone(done).reverse();
+    body='<section class="day"><div class="dh"><h3>'+LX('بانتظار ردك','Awaiting your reply')+'</h3><b class="n">'+open.length+'</b></div>'+(gOpen.length?gOpen.map(loneHTML).join(''):'<div class="empty">'+LX('لا شيء بانتظار الرد','Nothing awaiting reply')+'</div>')+'</section>'
+      +'<section class="day"><div class="dh"><h3>'+LX('تم الرد عليها','Replied')+'</h3><b class="n">'+done.length+'</b></div>'+(gDone.length?gDone.map(loneHTML).join(''):'<div class="empty">'+LX('لا شيء بعد','Nothing yet')+'</div>')+'</section>';
   } else if(FILTER){
     const fn=filterFn(FILTER), list=ORDERS.filter(fn).sort((a,b)=>a.date===b.date?a.startMin-b.startMin:(a.date<b.date?-1:1));
     const days=[...new Set(list.map(o=>o.date))];
@@ -629,8 +661,11 @@ function menuHTML(){
 }
 
 /* ── المسودات: مقترح فوري من القالب ثم تحسين من الخادم (كلود لو مفتاحه موجود) ── */
-function msgsOf(key){ if(ATT.byOrder.has(key)) return ATT.byOrder.get(key); const it=msgItems().find(i=>i.key===key); return it?[it]:[]; }
-function targetOf(key){ const ms=msgsOf(key); return ms.filter(m=>m.open).slice(-1)[0]||null; }
+function msgsOf(key){ if(ATT.byOrder.has(key)) return ATT.byOrder.get(key); if(GROUPS[key]) return GROUPS[key]; const it=msgItems().find(i=>i.key===key); return it?[it]:[]; }
+function targetOf(key){ const ms=msgsOf(key).filter(m=>m.kind!=='out'); return ms.filter(m=>m.open).slice(-1)[0]||((DRAFT[key]||{}).force?ms[ms.length-1]:null)||null; }
+function ctxText(key){ const ms=msgsOf(key); let i=ms.length; while(i>0&&ms[i-1].kind!=='out') i--; const part=ms.slice(i).filter(m=>m.kind!=='out'&&m.text&&!/^(📷|🎥|🎤|📎|📍)/.test(m.text)); return part.map(m=>m.text).join('
+')||(ms.filter(m=>m.kind!=='out').slice(-1)[0]||{}).text||''; }
+function forceReply(key){ DRAFT[key]=Object.assign(DRAFT[key]||{text:'',busy:false},{force:true,touched:true}); render(); }
 function localDraft(t, draft){
   const d=(draft||'').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,'').replace(/\s+/g,' ').trim();
   if(t.kind==='cmp'){ const K={quality:'نعتذر إن الشغل ما كان بالمستوى المطلوب. بنرسل لك الفني يراجع الشغل ويعدّله بدون أي تكلفة إضافية، وقول لنا الوقت اللي يناسبك.',late:'نعتذر عن التأخير، وهذا شي ما نرضاه. راجعنا الموضوع مع الفريق، وبنحرص إن الموعد الجاي يكون أدق.',price:'نقدّر ملاحظتك على السعر. بنراجع الفاتورة بند بند ونوضّح لك كل بند، ولو فيه أي خطأ نصحّحه على طول.',tech:'نعتذر عن أسلوب التعامل، وهذا ما يمثّل خافت. وصلت ملاحظتك للإدارة وتعاملنا معها.',app:'نعتذر عن المشكلة في التطبيق أو الدفع. فريقنا يراجعها الحين، ولو تحتاج تكمّل طلبك نقدر نكمّله لك من هنا.'};
@@ -638,7 +673,7 @@ function localDraft(t, draft){
   return d? d.replace(/[.،,]*$/,'.')+' وشكرًا لتواصلك معنا.' : 'وصلتنا رسالتك، وبنرد عليك بالتفصيل خلال وقت قصير.';
 }
 async function prepDraft(key){
-  const t=targetOf(key); if(!t) return;
+  const t=targetOf(key); if(!t) return; t.text=ctxText(key)||t.text;
   if(DRAFT[key]&&(DRAFT[key].text||DRAFT[key].touched)) return;
   DRAFT[key]={text:localDraft(t,''), busy:false, via:'tpl', touched:false}; syncTa(key);
   const out=await askSuggest(t,''); if(out&&out.ok&&out.text&&DRAFT[key]&&!DRAFT[key].touched){ DRAFT[key]={text:out.text,busy:false,via:out.via,touched:false}; syncTa(key); }
@@ -654,7 +689,7 @@ function syncTa(key){ const ta=document.getElementById('ta-'+cssId(key)); const 
 function draftEdit(key,v){ DRAFT[key]=Object.assign(DRAFT[key]||{},{text:v,touched:true}); }
 function clearDraft(key){ DRAFT[key]={text:'',busy:false,touched:true}; const ta=document.getElementById('ta-'+cssId(key)); if(ta){ ta.value=''; ta.focus(); } }
 async function polish(key){
-  const t=targetOf(key); if(!t) return; const raw=((DRAFT[key]||{}).text||'').trim();
+  const t=targetOf(key); if(!t) return; t.text=ctxText(key)||t.text; const raw=((DRAFT[key]||{}).text||'').trim();
   DRAFT[key]=Object.assign(DRAFT[key]||{},{busy:true}); render();
   const out=await askSuggest(t, raw);
   const text=out&&out.ok&&out.text? out.text : localDraft(t, raw.replace(/\s*(ونعتذر عن أي إزعاج[^\n]*|وشكرًا لتواصلك معنا\.?|وحنا بالخدمة دايم.*)$/,'').trim());
@@ -674,7 +709,7 @@ async function sendDraft(key){
       w=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/complaint-reply',{ method:'POST', headers:H, body:JSON.stringify({ id:t.id }) }).then(r=>r.json());
     } else {
       w=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/admin-say',{ method:'POST', headers:H, body:JSON.stringify({ phone:t.phone, text, reply_to:t.key }) }).then(r=>r.json());
-      if(w&&w.ok){ MSTATE[t.key]='done'; sb.from('khafet_admin_msg_state').upsert({msg_key:t.key, state:'done', at:new Date().toISOString()}).then(()=>{}); }
+      if(w&&w.ok){ const all=msgsOf(key).filter(m=>m.kind==='wa'&&m.open); (all.length?all:[t]).forEach(m=>{ MSTATE[m.key]='done'; sb.from('khafet_admin_msg_state').upsert({msg_key:m.key, state:'done', at:new Date().toISOString()}).then(()=>{}); }); }
     }
   }catch(e){ w={ok:false}; }
   DRAFT[key]={text:(w&&w.ok)?'':text, busy:false, touched:true}; render();
@@ -783,8 +818,12 @@ function demoData(){
         {id:'c2',ticket_no:247,kind:'price',status:'progress',customer_name:'أم فهد',customer_phone:'0500000013',order_no:19303,body:'الفاتورة فيها بند ما فهمته',reply:'هلا أم فهد 🌟\nراجعنا الفاتورة وبنوضّح لك كل بند، ولو فيه خطأ نصحّحه على طول.\nونعتذر عن أي إزعاج 🙏',created_at:new Date(now-9e7).toISOString()} ];
   WA=[ {id:1,msg_id:'wamid.1',phone9:'500000011',wa_name:'سلمان',kind:'text',body:'تم الدفع شكرًا لكم',created_at:new Date(now-4e6).toISOString()},
        {id:2,msg_id:'wamid.2',phone9:'566666666',wa_name:'ضيف',kind:'text',body:'السلام عليكم عندكم تركيب ستائر؟',created_at:new Date(now-6e6).toISOString()},
+       {id:4,msg_id:'wamid.4',phone9:'566666666',wa_name:'ضيف',kind:'text',body:'وكم سعرها تقريبًا؟',created_at:new Date(now-5.5e6).toISOString()},
+       {id:6,msg_id:'wamid.6',phone9:'500000011',wa_name:'سلمان',kind:'text',body:'يعطيكم العافية 🙏',created_at:new Date(now-3e6).toISOString()},
+       {id:5,msg_id:'wamid.5',phone9:'566666666',wa_name:'ضيف',kind:'image',body:null,created_at:new Date(now-5.4e6).toISOString()},
        {id:3,msg_id:'wamid.3',phone9:'577777777',wa_name:'',kind:'image',body:null,created_at:new Date(now-9.5e7).toISOString()} ];
   MSTATE={'wa:wamid.1':'done'};
+  OUT=[ {id:901,phone9:'566666666',intent:'admin_msg',reply:'نعم، نوفر هذه الخدمة. تركيب ستارة بسعر 65 ريال.',created_at:new Date(now-5.8e6).toISOString()} ];
 }
 (function boot(){
   document.documentElement.lang=EN()?'en':'ar'; document.documentElement.dir=EN()?'ltr':'rtl';
