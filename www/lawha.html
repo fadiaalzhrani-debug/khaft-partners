@@ -177,6 +177,13 @@ main{min-width:0;padding:18px 18px 90px}
 textarea.ta{width:100%;min-height:96px;padding:10px 12px;border:1px solid var(--input);border-radius:9px;resize:vertical;background:var(--card);line-height:1.7}
 textarea.ta:focus,input.in:focus{outline:2px solid var(--ring);outline-offset:1px}
 input.in{width:100%;height:40px;padding:0 12px;border:1px solid var(--input);border-radius:9px;background:var(--card)}
+.bcbtn{margin-top:-4px;padding:10px;border:1px solid var(--border);border-top:0;border-radius:0 0 9px 9px;text-align:center;font:700 13px var(--fb);color:#0b57d0;background:#fff}
+.bcl{border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.bclh{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--muted);font-size:13px} .bclh input.in{height:32px;flex:1;min-width:0;font-size:13px}
+.bcrows{max-height:320px;overflow:auto;display:grid}
+.bcr{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid var(--border);font-size:12.5px;cursor:pointer}
+.bcr b{font:700 13px var(--fb);overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .bcr span{font-variant-numeric:tabular-nums;color:var(--muted-fg)} .bcr small{color:var(--muted-fg);white-space:nowrap} .bcr em{font-style:normal;font-size:10.5px;padding:2px 7px;border-radius:999px;background:#e6f4f1;color:#1d7a6c}
+.bcr.off{opacity:.45} .bcr input{width:16px;height:16px}
 .audr{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--muted-fg)} .audr input.in.n{width:72px;height:34px;padding:0 8px;text-align:center;font:700 14px var(--fh);color:#1f1b16}
 .hint{color:var(--muted-fg);font-size:12px}
 .chbtn{width:100%;text-align:start;cursor:pointer} .chbtn .chev{color:var(--muted-fg);font-size:14px}
@@ -520,19 +527,30 @@ function renderNav(){
 function nav(k){ const n=NAV.find(x=>x.k===k); if(n&&n.legacy){ legacy(n.legacy); return; } VIEW=k; FILTER=''; OPEN=null; if(k==='orders') ORD_DAY=todayISO(); window.scrollTo(0,0); render(); if(k==='orders') setTimeout(centerDay,50); if(k==='bc') bcList(); if(k==='cal') calLoad(); }
 
 /* ── الرسالة الجماعية (2026-11-13): تكتب النص، تشوف العدد، «جهّز» ينشئ قالبًا عند واتساب، وبعد اعتماده «أرسل للكل» ── */
-let BC={text:'', prev:null, cur:null, busy:false, rows:[], prog:null, pollT:null, prevT:null};
+let BC={text:'', prev:null, cur:null, busy:false, rows:[], prog:null, pollT:null, prevT:null, ex:{}, btn:'', q:''};
 async function bcApi(body){
   if(DEMO){ await new Promise(r=>setTimeout(r,500)); const m=body.mode;
-    if(m==='preview'){ const a=body.aud||{}; const n=a.kind==='recent'?Math.min(119,a.n||20):a.kind==='days'?Math.max(0,Math.min(119,Math.round(((a.to||0)-(a.from||0))*2.3))):119; return {ok:true,total:n,open:Math.min(9,n),tpl_needed:Math.max(0,n-9),audience:a.kind==='recent'?'recent:'+a.n:a.kind==='days'?'days:'+a.from+'-'+a.to:'orders'}; } if(m==='prepare') return {ok:true,id:7,tpl_name:'khafet_bc_7',tpl_status:'PENDING',total:(BC.prev&&BC.prev.total)||119,audience:(BC.prev&&BC.prev.audience)||'orders'};
+    if(m==='preview'){ const a=body.aud||{}; const n=a.kind==='recent'?Math.min(119,a.n||20):a.kind==='days'?Math.max(0,Math.min(119,Math.round(((a.to||0)-(a.from||0))*2.3))):119; const NM=['سلمان البراهيم','خالد عبدالله','أم فهد','Moath Alharbi','أبو ناصر','نورة','Osama','','M.Qudsi','تهاني']; const rows=[]; for(let i=0;i<n;i++) rows.push({phone9:'5'+String(10000000+i*7919).slice(-8),name:NM[i%10],last_date:addDays(todayISO(),-i*2),orders:1+(i%3),open:i<9,excluded:false}); const ex=bcExList(); const live=rows.filter(r=>!ex.includes(r.phone9)); return {ok:true,total:live.length,open:live.filter(r=>r.open).length,tpl_needed:live.length-live.filter(r=>r.open).length,audience:a.kind==='recent'?'recent:'+a.n:a.kind==='days'?'days:'+a.from+'-'+a.to:'orders',rows}; } if(m==='prepare') return {ok:true,id:7,tpl_name:'khafet_bc_7',tpl_status:'PENDING',total:(BC.prev&&BC.prev.total)||119,audience:(BC.prev&&BC.prev.audience)||'orders'};
     if(m==='cancel') return {ok:true,status:'cancelled'}; if(m==='status') return {ok:true,id:7,tpl_status:(BC.cur&&BC.cur._n>1)?'APPROVED':'PENDING',status:'draft',total:119,sent:0,failed:0,text:BC.text}; if(m==='send'){ const s=Math.min(119,((BC.prog&&BC.prog.sent)||0)+40); return {ok:true,done:s>=119,sent:s,failed:0,total:119,remaining:119-s}; } return {ok:true,rows:[]}; }
   const { data:{ session } }=await sb.auth.getSession(); if(!session) return {ok:false,reason:'auth'};
   const r=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/broadcast',{ method:'POST', headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
   return await r.json().catch(()=>({ok:false}));
 }
 /* الجمهور (فادية 2026-11-13): كل العملاء · آخر N عميل طلبوا · من آخر حجزهم قبل A إلى B يوم */
+/* اختصارات الرسالة (رابط الحجز) وزر «احجز من هنا» وقائمة الأرقام مع استبعاد يدوي (فادية 2026-11-13) */
+function bcIns(t){ const ta=document.getElementById('bcta'); if(!ta) return; const a=ta.selectionStart||ta.value.length, b=ta.selectionEnd||a; const v=ta.value; const sep=(a>0&&!/\s$/.test(v.slice(0,a)))?' ':''; ta.value=v.slice(0,a)+sep+t+v.slice(b); ta.focus(); const pos=a+sep.length+t.length; ta.setSelectionRange(pos,pos); bcInput(ta.value); }
+function bcBtn(v){ BC.btn=v?'book':''; render(); }
+function bcEx(p9,on){ BC.ex=BC.ex||{}; if(on) delete BC.ex[p9]; else BC.ex[p9]=1; bcRecount(); }
+function bcExAll(on){ BC.ex={}; if(!on) ((BC.prev&&BC.prev.rows)||[]).forEach(r=>{ BC.ex[r.phone9]=1; }); bcRecount(); }
+function bcRecount(){ const p=BC.prev; if(p&&p.rows){ const rows=p.rows.filter(r=>!BC.ex[r.phone9]); p.total=rows.length; p.open=rows.filter(r=>r.open).length; p.tpl_needed=p.total-p.open; } render(); }
+function bcExList(){ return Object.keys(BC.ex||{}); }
+function bcRows(){ const p=BC.prev; if(!p||!p.rows||!p.rows.length) return ''; const q=(BC.q||'').trim(); const rows=p.rows.filter(r=>!q||(r.name||'').includes(q)||r.phone9.includes(q.replace(/\D/g,'').replace(/^0/,'')));
+  const ex=bcExList().length;
+  return '<div class="bcl"><div class="bclh"><b>'+LX('الأرقام','Numbers')+' ('+p.total+(ex?' '+LX('من','of')+' '+p.rows.length:'')+')</b><input class="in" placeholder="'+LX('بحث بالاسم أو الرقم','Search')+'" value="'+esc(BC.q||'')+'" oninput="BC.q=this.value;render()"><button class="btn sm" onclick="bcExAll(true)">'+LX('الكل','All')+'</button><button class="btn sm" onclick="bcExAll(false)">'+LX('لا أحد','None')+'</button></div>'
+    +'<div class="bcrows">'+rows.slice(0,400).map(r=>'<label class="bcr'+(BC.ex[r.phone9]?' off':'')+'"><input type="checkbox" '+(BC.ex[r.phone9]?'':'checked')+' onchange="bcEx(\''+r.phone9+'\',this.checked)"><b>'+esc(r.name||('0'+r.phone9))+'</b><span dir="ltr">0'+r.phone9+'</span><small>'+(r.last_date?relDay(String(r.last_date).slice(0,10)):'')+(r.orders?' · '+r.orders+' '+LX('طلب','orders'):'')+'</small>'+(r.open?'<em>'+LX('مباشر','direct')+'</em>':'')+'</label>').join('')+(rows.length>400?'<div class="empty">+'+(rows.length-400)+'</div>':'')+'</div></div>'; }
 function bcAud(){ const a=BC.aud||{kind:'all'}; return a.kind==='recent'?{kind:'recent',n:Math.max(1,+a.n||20)}:a.kind==='days'?{kind:'days',from:Math.max(0,+a.from||0),to:Math.max(+a.from||0,+a.to||0)}:{kind:'all'}; }
 function bcAudSet(k,v){ BC.aud=Object.assign({kind:'all',n:20,from:7,to:20},BC.aud||{}); if(k==='kind') BC.aud.kind=v; else BC.aud[k]=+v||0; BC.prev=null; render(); bcInput(BC.text); }
-function bcInput(v){ BC.text=v; clearTimeout(BC.prevT); BC.prevT=setTimeout(async()=>{ if(!BC.text.trim()){ BC.prev=null; render(); return; } BC.prev=await bcApi({mode:'preview',text:BC.text,aud:bcAud()}); render(); },600); }
+function bcInput(v){ BC.text=v; clearTimeout(BC.prevT); BC.prevT=setTimeout(async()=>{ if(!BC.text.trim()){ BC.prev=null; render(); return; } BC.prev=await bcApi({mode:'preview',text:BC.text,aud:bcAud(),exclude:bcExList()}); render(); },600); }
 async function bcList(){ const r=await bcApi({mode:'list'}); if(r&&r.ok){ BC.rows=r.rows||[]; const cur=!BC.cur&&BC.rows.find(x=>x.status==='draft'||x.status==='sending'); if(cur){ BC.cur=Object.assign({_n:0},cur); BC.text=cur.text||BC.text; bcPoll(); } render(); } }
 /* إلغاء الحملة بأي مرحلة قبل الاكتمال (فادية 2026-11-13 «خل عندي خيار ألغي الرسالة»): يحذف القالب ويوقف الباقي، واللي انرسل ما يرجع */
 async function bcCancel(){
@@ -544,7 +562,7 @@ async function bcCancel(){
 async function bcPrepare(){
   const t=BC.text.trim(); if(t.length<10){ toast(LX('اكتب الرسالة أول','Write the message first')); return; }
   if(!confirm(LX('تجهيز القالب عند واتساب بهذا النص؟ ما ينرسل شي الحين، الإرسال بعد الاعتماد وبزر منك.','Prepare the WhatsApp template with this text?'))) return;
-  BC.busy=true; render(); const r=await bcApi({mode:'prepare',text:t,aud:bcAud()}); BC.busy=false;
+  BC.busy=true; render(); const r=await bcApi({mode:'prepare',text:t,aud:bcAud(),exclude:bcExList(),btn:BC.btn||''}); BC.busy=false;
   if(!r.ok){ toast(LX('تعذّر إنشاء القالب: ','Template failed: ')+(r.tpl_reason||r.reason||'')); render(); return; }
   BC.cur=Object.assign({_n:0,text:t},r); render(); bcPoll();
 }
@@ -570,9 +588,11 @@ function bcHTML(){
     +(c?'':'<div class="chips">'+[['all','كل العملاء','All customers'],['recent','آخر من طلبوا','Most recent'],['days','حسب آخر حجز','By last booking']].map(x=>'<button class="chip '+(a.kind===x[0]?'on':'')+'" onclick="bcAudSet(\'kind\',\''+x[0]+'\')">'+LX(x[1],x[2])+'</button>').join('')+'</div>'
       +(a.kind==='recent'?'<div class="audr">'+LX('آخر','Last')+' <input class="in n" type="number" min="1" max="2000" value="'+(a.n||20)+'" onchange="bcAudSet(\'n\',this.value)"> '+LX('عميل طلبوا','customers who ordered')+'</div>':'')
       +(a.kind==='days'?'<div class="audr">'+LX('آخر حجزهم قبل','Last booking between')+' <input class="in n" type="number" min="0" max="3650" value="'+(a.from||0)+'" onchange="bcAudSet(\'from\',this.value)"> '+LX('إلى','and')+' <input class="in n" type="number" min="0" max="3650" value="'+(a.to||0)+'" onchange="bcAudSet(\'to\',this.value)"> '+LX('يوم','days ago')+'</div>':''))
-    +'<textarea class="ta" style="min-height:140px" placeholder="'+LX('اكتب الرسالة هنا…','Write the message…')+'" oninput="bcInput(this.value)" '+(c||BC.busy?'disabled':'')+'>'+esc(BC.text)+'</textarea>'
-    +(p&&p.ok?'<div class="sum"><div><small>'+LX('المستلمون','Recipients')+'</small><b>'+p.total+'</b></div><div><small>'+LX('نص مباشر (مجاني)','Direct text (free)')+'</small><b>'+p.open+'</b></div><div><small>'+LX('بقالب واتساب','Via template')+'</small><b>'+p.tpl_needed+'</b></div></div>':'')
-    +(c?'<div class="tri '+(c.tpl_status==='APPROVED'?'g':c.tpl_status==='REJECTED'?'r':'n')+'"><div class="th">'+st+'<span class="badge n">'+audLb(c.audience)+(c.total?' · '+c.total:'')+'</span></div><div>'+esc(c.text||BC.text)+'</div><small>'+LX('التذييل يُضاف تلقائيًا: للإيقاف أرسل: إيقاف','Footer added automatically')+'</small></div>':'')
+    +(c?'':'<div class="chips"><span class="hint" style="align-self:center">'+LX('اختصارات:','Insert:')+'</span><button class="chip" onclick="bcIns(\'https://khafet.com\')">'+LX('رابط الحجز','Booking link')+'</button><button class="chip '+(BC.btn==='book'?'on':'')+'" onclick="bcBtn('+(BC.btn==='book'?'false':'true')+')">'+LX('زر «احجز من هنا» تحت الرسالة','Book button under message')+'</button></div>')
+    +'<textarea id="bcta" class="ta" style="min-height:140px" placeholder="'+LX('اكتب الرسالة هنا…','Write the message…')+'" oninput="bcInput(this.value)" '+(c||BC.busy?'disabled':'')+'>'+esc(BC.text)+'</textarea>'
+    +(!c&&BC.btn==='book'?'<div class="bcbtn">🗓️ احجز من هنا</div>':'')
+    +(p&&p.ok?'<div class="sum"><div><small>'+LX('المستلمون','Recipients')+'</small><b>'+p.total+'</b></div><div><small>'+LX('نص مباشر (مجاني)','Direct text (free)')+'</small><b>'+p.open+'</b></div><div><small>'+LX('بقالب واتساب','Via template')+'</small><b>'+p.tpl_needed+'</b></div></div>'+(c?'':bcRows()):'')
+    +(c?'<div class="tri '+(c.tpl_status==='APPROVED'?'g':c.tpl_status==='REJECTED'?'r':'n')+'"><div class="th">'+st+'<span class="badge n">'+audLb(c.audience)+(c.total?' · '+c.total:'')+'</span>'+(c.btn==='book'?'<span class="badge n">'+LX('مع زر الحجز','With book button')+'</span>':'')+'</div><div>'+esc(c.text||BC.text)+'</div><small>'+LX('التذييل يُضاف تلقائيًا: للإيقاف أرسل: إيقاف','Footer added automatically')+'</small></div>':'')
     +(pr?'<div class="tri n"><b>'+LX('جارٍ الإرسال','Sending')+'</b> '+pr.sent+' / '+pr.total+(pr.failed?' · '+LX('فشل','failed')+' '+pr.failed:'')+'</div>':'')
     +'<div class="acts">'+(c?(c.tpl_status==='APPROVED'?'<button class="btn pri" onclick="bcSend()" '+(BC.busy?'disabled':'')+'>'+pic('send')+' '+LX('أرسل للكل','Send to all')+' ('+(c.total||'')+')</button>':'<button class="btn" onclick="bcPoll()">'+LX('تحديث الحالة','Refresh status')+'</button>')+'<button class="btn ghost" onclick="bcCancel()">'+pic('x')+' '+(BC.busy&&pr?LX('أوقف الإرسال','Stop sending'):LX('إلغاء الرسالة','Cancel message'))+'</button>'
       :'<button class="btn pri" onclick="bcPrepare()" '+(BC.busy||!BC.text.trim()?'disabled':'')+'>'+pic('spark')+' '+LX('جهّز للإرسال','Prepare')+'</button>')+'</div>'
