@@ -219,6 +219,20 @@ input.in{width:100%;height:40px;padding:0 12px;border:1px solid var(--input);bor
 .cal .dc.past{opacity:.72}
 .callg{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted-fg);justify-content:flex-end;margin-top:8px}
 .callg i{width:14px;height:14px;border-radius:3px;display:inline-block;border:1px solid var(--border)}
+/* اسأل كلود (فادية 2026-11-13): زر عائم يسار تحت، ولوحة سؤال عن أي شي في البيانات */
+.askfab{position:fixed;inset-inline-start:16px;bottom:84px;width:52px;height:52px;border-radius:50%;background:#1f1b16;color:#fff;border:0;box-shadow:var(--sh-md);display:grid;place-items:center;z-index:60;cursor:pointer}
+.askp{position:fixed;inset-inline-start:16px;bottom:146px;width:min(440px,calc(100vw - 32px));height:min(72vh,600px);background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--sh-md);display:grid;grid-template-rows:auto 1fr auto;z-index:60;overflow:hidden}
+@media (min-width:901px){ .askfab{bottom:22px} .askp{bottom:84px} }
+.askh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font:800 15px/1.3 var(--fh)}
+.askl{overflow:auto;padding:12px;display:grid;gap:8px;align-content:start;background:var(--muted)}
+.askl .bb{max-width:92%;font-size:13px;line-height:1.75}
+.aski{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);align-items:flex-end} .aski textarea{min-height:44px;max-height:130px;flex:1;line-height:1.6} .aski .btn{height:44px;width:48px;padding:0;flex:0 0 auto}
+.thm{display:block;max-width:220px;max-height:220px;border-radius:9px;cursor:zoom-in;background:#eee;min-width:120px;min-height:80px;object-fit:cover}
+.thm.wait{display:grid;place-items:center;color:var(--muted-fg);font-size:12px}
+.lbx{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:90;display:grid;place-items:center;padding:14px}
+.lbx img,.lbx video{max-width:100%;max-height:88vh;border-radius:8px;object-fit:contain;touch-action:pinch-zoom}
+.lbx a.btn{position:absolute;top:14px;inset-inline-start:14px}
+.lbx .x{position:absolute;top:14px;inset-inline-end:14px;width:40px;height:40px;border-radius:50%;background:#fff;border:0;display:grid;place-items:center;cursor:pointer}
 .sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .sum div{padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card)}
 .sum small{display:block;color:var(--muted-fg);font-size:12px} .sum b{font:800 18px/1.2 var(--fh);font-variant-numeric:tabular-nums}
@@ -379,7 +393,7 @@ async function loadCore(){
     const [o,c,w,wo,ms,st]=await Promise.all([
       sb.from('khafet_orders').select(O_COLS).gte('service_date',from).lte('service_date',to).order('service_date',{ascending:false}).limit(1500),
       sb.from('khafet_complaints').select('*').gte('created_at',new Date(Date.now()-30*864e5).toISOString()).order('created_at',{ascending:false}).limit(300),
-      sb.from('khafet_wa_log').select('id,msg_id,phone9,wa_name,kind,body,intent,created_at').gte('created_at',new Date(Date.now()-3*864e5).toISOString()).not('kind','in','("notify","interactive","reaction","revoke","edit")').order('created_at',{ascending:false}).limit(400),
+      sb.from('khafet_wa_log').select('id,msg_id,phone9,wa_name,kind,body,intent,created_at,media_path').gte('created_at',new Date(Date.now()-3*864e5).toISOString()).not('kind','in','("notify","interactive","reaction","revoke","edit")').order('created_at',{ascending:false}).limit(400),
       sb.from('khafet_wa_log').select('id,phone9,reply,intent,created_at').gte('created_at',new Date(Date.now()-3*864e5).toISOString()).in('intent',['admin_msg','complaint_reply']).not('reply','is',null).not('out_id','is',null).order('created_at',{ascending:false}).limit(200),
       sb.from('khafet_admin_msg_state').select('msg_key,state'),
       sb.from('khafet_settings').select('key,value').in('key',['work_start','work_end','arrival_window']),
@@ -439,7 +453,7 @@ function msgItems(){
     // يحتاج رد؟ لا لو هي شكر/تأكيد فقط، ولا لو رددنا عليه بعدها (فادية 2026-11-13)
     const repliedAfter=OUT.some(o=>o.phone9===m.phone9&&new Date(o.created_at).getTime()>ts) || lastOrderEvent(m.phone9)>ts;
     const open=MSTATE[key]==='open' || (MSTATE[key]!=='done' && !repliedAfter && needsReply(m));
-    out.push({key, kind:'wa', id:m.id, p9:m.phone9, phone:m.phone9?'966'+m.phone9:'', ts, text, name:m.wa_name||'', open, ack:!needsReply(m), m}); });
+    out.push({key, kind:'wa', id:m.id, p9:m.phone9, phone:m.phone9?'966'+m.phone9:'', ts, text, name:m.wa_name||'', open, ack:!needsReply(m), media:m.media_path||'', mkind:m.kind, m}); });
   // ردودنا الصادرة من اللوحة أو على الشكاوى: تظهر داخل المربع بعلامة «ردّك»
   OUT.forEach(o=>{ if(!o.reply) return; out.push({key:'out:'+o.id, kind:'out', id:o.id, p9:o.phone9, phone:'966'+o.phone9, ts:new Date(o.created_at).getTime(), text:String(o.reply), name:'', open:false}); });
   return out.sort((a,b)=>a.ts-b.ts);
@@ -478,6 +492,7 @@ function render(){
   const app=document.getElementById('app');
   if(!loggedIn){ app.innerHTML=loginHTML(); document.getElementById('side').innerHTML=''; document.getElementById('bottom').innerHTML=''; afterLogin(); return; }
   finIndex(); ATT=attachMsgs();
+  if(!document.getElementById('ask')||!loggedIn) setTimeout(renderAsk,0);
   app.innerHTML=(DEMO?'<div class="demo">'+LX('عرض تجريبي ببيانات وهمية (للمعاينة فقط)','Demo view with sample data')+'</div>':'')+(VIEW==='orders'?ordersHTML():VIEW==='bc'?bcHTML():VIEW==='cal'?calHTML():homeHTML());
   setTimeout(queueTriage,0);
   renderOverlay();
@@ -741,7 +756,8 @@ function replyBox(key, msgs, o){
   const all=msgs.concat(threadEvents(msgs,o)).sort((a,b)=>a.ts-b.ts);
   const list=all.map(m=>m.kind==='ev'? '<div class="ev">'+pic('check',11)+esc(m.text)+' · '+clock(m.ts)+'</div>'
     : m.kind==='out'? '<div class="bb me">'+esc(m.text)+'<small>'+LX('ردّك','You')+' · '+clock(m.ts)+'</small></div>'
-    : '<div class="bb'+(m.ack?' ack':'')+'">'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> ':'')+esc(m.text)+'<small>'+clock(m.ts)+'</small></div>').join('');
+    : '<div class="bb'+(m.ack?' ack':'')+'">'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> ':'')+(m.media?mediaHTML(m):'')+esc(m.media&&/^(📷|🎥|🎤|📎)/.test(m.text)?(m.m&&m.m.body?m.m.body:''):m.text)+'<small>'+clock(m.ts)+'</small></div>').join('');
+  setTimeout(loadMedia,0);
   const cmpSent=lastIn&&lastIn.kind==='cmp'&&!lastIn.open&&lastIn.c.reply&&!msgs.some(m=>m.kind==='out'&&m.ts>lastIn.ts)? '<div class="bb me">'+esc(lastIn.c.reply)+'<small>'+LX('ردّك','You')+'</small></div>' : '';
   const st=inbound.some(m=>m.open)?'open':'done';
   const sel=inbound.length?'<select class="stsel '+st+'" onchange="setThread(\''+key+'\',this.value)" aria-label="'+LX('الحالة','Status')+'"><option value="open"'+(st==='open'?' selected':'')+'>'+LX('تحتاج رد','Needs reply')+'</option><option value="done"'+(st==='done'?' selected':'')+'>'+LX('تم الرد','Replied')+'</option><option value="hidden">'+LX('إخفاء','Hide')+'</option></select>':'';
@@ -754,6 +770,19 @@ function replyBox(key, msgs, o){
       +'<div class="rbtn"><button class="btn sm" onclick="clearDraft(\''+key+'\')">'+pic('trash')+' '+LX('مسح','Clear')+'</button><button class="btn sm" onclick="polish(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('spark')+' '+LX('تحسين','Polish')+'</button><span class="sp"></span><button class="btn sm pri" onclick="sendDraft(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('send')+' '+LX('إرسال','Send')+'</button></div></div>':'')
     +'</div>';
 }
+/* وسائط الواتساب: رابط موقّع من الدلو الخاص wa-media (للمدير)، صورة مصغّرة تكبر بالضغط */
+let MEDIA={};
+function mediaHTML(m){ const p=m.media, u=MEDIA[p]; const k=m.mkind||'image';
+  if(k==='image'||k==='sticker') return u?'<img class="thm" src="'+esc(u)+'" alt="" onclick="lightbox(\''+esc(u)+'\',\'img\')">':'<div class="thm wait" data-media="'+esc(p)+'">'+LX('جارٍ تحميل الصورة…','Loading…')+'</div>';
+  if(k==='video') return u?'<video class="thm" src="'+esc(u)+'" controls playsinline></video>':'<div class="thm wait" data-media="'+esc(p)+'">'+LX('جارٍ تحميل الفيديو…','Loading…')+'</div>';
+  if(k==='audio') return u?'<audio src="'+esc(u)+'" controls style="max-width:240px"></audio>':'<span data-media="'+esc(p)+'">'+LX('جارٍ التحميل…','Loading…')+'</span>';
+  return u?'<a class="btn sm" href="'+esc(u)+'" target="_blank" rel="noopener">'+pic('ext',14)+' '+LX('فتح الملف','Open file')+'</a>':'<span data-media="'+esc(p)+'">'+LX('جارٍ التحميل…','Loading…')+'</span>'; }
+async function loadMedia(){ const els=[...document.querySelectorAll('[data-media]')]; const paths=[...new Set(els.map(e=>e.getAttribute('data-media')).filter(p=>p&&!MEDIA[p]))]; if(!paths.length) return;
+  for(const p of paths){ if(DEMO){ MEDIA[p]='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="#dfe7ea"/><text x="200" y="160" font-size="26" text-anchor="middle" fill="#264653">صورة من العميل</text></svg>'); continue; }
+    try{ const r=await sb.storage.from('wa-media').createSignedUrl(p,3600); MEDIA[p]=(r&&r.data&&r.data.signedUrl)||'x'; }catch(e){ MEDIA[p]='x'; } }
+  render(); }
+function lightbox(u,kind){ let el=document.getElementById('lbx'); if(!el){ el=document.createElement('div'); el.id='lbx'; document.body.appendChild(el); }
+  el.innerHTML=u?'<div class="lbx" onclick="if(event.target===this) lightbox(\'\')"><button class="x" onclick="lightbox(\'\')">'+pic('x',18)+'</button><a class="btn sm" href="'+esc(u)+'" target="_blank" rel="noopener">'+pic('ext',14)+' '+LX('فتح بالحجم الكامل','Open full size')+'</a>'+(kind==='video'?'<video src="'+esc(u)+'" controls autoplay playsinline></video>':'<img src="'+esc(u)+'" alt="">')+'</div>':''; }
 function cssId(k){ return String(k).replace(/[^a-zA-Z0-9_-]/g,'_'); }
 function expandOrder(o,msgs){
   const f=FIN.get(o.dbId), a=o.address||{};
@@ -941,6 +970,27 @@ async function waInvite(){
   try{ const r=await sb.rpc('khafet_wa_invite',{ p_phone:p }); if(r.error) throw r.error; if(!r.data||!r.data.ok) throw new Error('x'); toast(LX('📲 انرسلت له رسالة الحجز','📲 Booking message sent')); }
   catch(e){ toast(LX('⚠️ تعذّر الإرسال','⚠️ Could not send')); }
 }
+/* اسأل كلود (فادية 2026-11-13 «حط لي AI بالصفحة مرات أبي أسألك عن شي»): wa-bot/ask، كلود يستعلم القاعدة بنفسه ويجاوب */
+let ASK={open:false,msgs:[],busy:false};
+function askToggle(){ ASK.open=!ASK.open; renderAsk(); if(ASK.open) setTimeout(()=>{ const i=document.getElementById('askin'); if(i) i.focus(); },60); }
+function renderAsk(){ let el=document.getElementById('ask'); if(!loggedIn){ if(el) el.innerHTML=''; return; } if(!el){ el=document.createElement('div'); el.id='ask'; document.body.appendChild(el); }
+  const keep=document.getElementById('askin'), v=keep?keep.value:''; el.innerHTML=askHTML(); const i=document.getElementById('askin'); if(i&&v) i.value=v; const l=el.querySelector('.askl'); if(l) l.scrollTop=l.scrollHeight; }
+function askHTML(){
+  return '<button class="askfab" onclick="askToggle()" aria-label="'+LX('اسأل','Ask')+'">'+pic(ASK.open?'x':'spark',22)+'</button>'
+    +(ASK.open?'<div class="askp"><div class="askh"><b>'+LX('اسأل كلود','Ask Claude')+'</b><span class="sp"></span>'+(ASK.msgs.length?'<button class="btn sm ghost" onclick="ASK.msgs=[];renderAsk()">'+LX('محادثة جديدة','New chat')+'</button>':'')+'</div>'
+    +'<div class="askl">'+(ASK.msgs.length?'':'<div class="empty">'+LX('اسأل عن أي طلب أو عميل أو فاتورة أو سعر أو قطعة بالمستودع. مثال: كم دفع العميل 0550855385 وعلى وش؟','Ask about any order, customer, invoice, price or stock item.')+'</div>')
+    +ASK.msgs.map(m=>'<div class="bb'+(m.role==='user'?' me':'')+'">'+esc(m.content)+'</div>').join('')+(ASK.busy?'<div class="bb">'+LX('يبحث في البيانات…','Searching the data…')+'</div>':'')+'</div>'
+    +'<div class="aski"><textarea id="askin" class="ta" rows="1" placeholder="'+LX('اكتب سؤالك…','Your question…')+'" onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();askSend();}"></textarea><button class="btn pri" onclick="askSend()" '+(ASK.busy?'disabled':'')+' aria-label="'+LX('إرسال','Send')+'">'+pic('send')+'</button></div></div>':'');
+}
+async function askSend(){
+  const i=document.getElementById('askin'); const q=((i&&i.value)||'').trim(); if(!q||ASK.busy) return; if(i) i.value='';
+  ASK.msgs.push({role:'user',content:q}); ASK.busy=true; renderAsk(); let text='';
+  try{
+    if(DEMO){ await new Promise(r=>setTimeout(r,900)); text='(تجريبي) تغيير اللمبة في قائمتنا 7 ريال أجرة يد للمبة الواحدة، واللمبة نفسها تُحسب بسعرها لو كانت من عندنا.'; }
+    else { const { data:{ session } }=await sb.auth.getSession(); const r=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/ask',{ method:'POST', headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' }, body:JSON.stringify({ messages:ASK.msgs.slice(-12) }) }); const j=await r.json().catch(()=>({})); text=j.ok?j.text:(j.reason==='no_key'?LX('مفتاح كلود غير مضبوط بالخادم','Claude key missing'):LX('تعذّر الجواب، حاول مرة ثانية','Could not answer, try again')); }
+  }catch(e){ text=LX('تعذّر الاتصال','Connection failed'); }
+  ASK.busy=false; ASK.msgs.push({role:'assistant',content:text}); renderAsk();
+}
 function toggleLang(){ UILANG=EN()?'ar':'en'; try{ localStorage.setItem('khafet_uilang',UILANG); }catch(e){} document.documentElement.lang=EN()?'en':'ar'; document.documentElement.dir=EN()?'ltr':'rtl'; render(); }
 
 /* ── الدخول ── */
@@ -1033,7 +1083,7 @@ function demoData(){
        {id:2,msg_id:'wamid.2',phone9:'566666666',wa_name:'ضيف',kind:'text',body:'السلام عليكم عندكم تركيب ستائر؟',created_at:new Date(now-6e6).toISOString()},
        {id:4,msg_id:'wamid.4',phone9:'566666666',wa_name:'ضيف',kind:'text',body:'وكم سعرها تقريبًا؟',created_at:new Date(now-5.5e6).toISOString()},
        {id:6,msg_id:'wamid.6',phone9:'500000011',wa_name:'سلمان',kind:'text',body:'يعطيكم العافية 🙏',created_at:new Date(now-3e6).toISOString()},
-       {id:5,msg_id:'wamid.5',phone9:'566666666',wa_name:'ضيف',kind:'image',body:null,created_at:new Date(now-5.4e6).toISOString()},
+       {id:5,msg_id:'wamid.5',phone9:'566666666',wa_name:'ضيف',kind:'image',body:null,media_path:'566666666/wamid.5.jpg',created_at:new Date(now-5.4e6).toISOString()},
        {id:3,msg_id:'wamid.3',phone9:'577777777',wa_name:'',kind:'image',body:null,created_at:new Date(now-9.5e7).toISOString()},
        {id:7,msg_id:'wamid.7',phone9:'500000012',wa_name:'خالد',kind:'text',body:'السلام عليكم، عندكم فني كهرباء اليوم؟ عندي قاطع يفصل',created_at:new Date(now-7e6).toISOString()},
        {id:8,msg_id:'wamid.8',phone9:'500000012',wa_name:'خالد',kind:'text',body:'تمام حجزت',created_at:new Date(now-6.3e6).toISOString()} ];
