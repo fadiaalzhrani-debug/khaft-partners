@@ -448,7 +448,7 @@ function render(){
   const app=document.getElementById('app');
   if(!loggedIn){ app.innerHTML=loginHTML(); document.getElementById('side').innerHTML=''; document.getElementById('bottom').innerHTML=''; afterLogin(); return; }
   finIndex(); ATT=attachMsgs();
-  app.innerHTML=(DEMO?'<div class="demo">'+LX('عرض تجريبي ببيانات وهمية (للمعاينة فقط)','Demo view with sample data')+'</div>':'')+(VIEW==='orders'?ordersHTML():homeHTML());
+  app.innerHTML=(DEMO?'<div class="demo">'+LX('عرض تجريبي ببيانات وهمية (للمعاينة فقط)','Demo view with sample data')+'</div>':'')+(VIEW==='orders'?ordersHTML():VIEW==='bc'?bcHTML():homeHTML());
   setTimeout(queueTriage,0);
   renderOverlay();
 }
@@ -460,6 +460,7 @@ const NAV=[
   {k:'cancels', ic:'cancel', l:['طلبات الإلغاء والتعديل','Cancel & change requests'], legacy:'cancels'},
   {k:'cust', ic:'customers', l:['العملاء','Customers'], legacy:'cust'},
   {k:'store', ic:'box', l:['المستودع','Warehouse'], legacy:'store'},
+  {k:'bc', ic:'megaphone', l:['رسالة للكل','Message to all']},
 ];
 const MORE=[['settings','sliders','الإعدادات','Settings'],['biz','chart','أرقام المستثمر','Investor numbers'],['joins','inbox','طلبات الانضمام','Join requests'],['notify','megaphone','إشعار للكل','Broadcast'],['prices','wrench','الأقسام والخدمات','Services & prices'],['solutions','building','الحلول الجاهزة','Solutions']];
 function renderNav(){
@@ -470,7 +471,54 @@ function renderNav(){
   const B=[NAV[0],NAV[1],NAV[2],NAV[3],{k:'more',ic:'grid',l:['المزيد','More']}];
   bot.innerHTML=B.map(n=>{ const b=n.badge?n.badge():0; return '<button class="'+(VIEW===n.k?'on':'')+'" onclick="'+(n.k==='more'?'goMore()':'nav(\''+n.k+'\')')+'">'+pic(n.ic,20)+'<span>'+LX(n.l[0],n.l[1])+'</span>'+(b?'<span class="bd">'+b+'</span>':'')+'</button>'; }).join('');
 }
-function nav(k){ const n=NAV.find(x=>x.k===k); if(n&&n.legacy){ legacy(n.legacy); return; } VIEW=k; FILTER=''; OPEN=null; if(k==='orders') ORD_DAY=todayISO(); window.scrollTo(0,0); render(); if(k==='orders') setTimeout(centerDay,50); }
+function nav(k){ const n=NAV.find(x=>x.k===k); if(n&&n.legacy){ legacy(n.legacy); return; } VIEW=k; FILTER=''; OPEN=null; if(k==='orders') ORD_DAY=todayISO(); window.scrollTo(0,0); render(); if(k==='orders') setTimeout(centerDay,50); if(k==='bc') bcList(); }
+
+/* ── الرسالة الجماعية (2026-11-13): تكتب النص، تشوف العدد، «جهّز» ينشئ قالبًا عند واتساب، وبعد اعتماده «أرسل للكل» ── */
+let BC={text:'', prev:null, cur:null, busy:false, rows:[], prog:null, pollT:null, prevT:null};
+async function bcApi(body){
+  if(DEMO){ await new Promise(r=>setTimeout(r,500)); const m=body.mode;
+    if(m==='preview') return {ok:true,total:119,open:9,tpl_needed:110}; if(m==='prepare') return {ok:true,id:7,tpl_name:'khafet_bc_7',tpl_status:'PENDING',total:119};
+    if(m==='status') return {ok:true,id:7,tpl_status:(BC.cur&&BC.cur._n>1)?'APPROVED':'PENDING',status:'draft',total:119,sent:0,failed:0,text:BC.text}; if(m==='send'){ const s=Math.min(119,((BC.prog&&BC.prog.sent)||0)+40); return {ok:true,done:s>=119,sent:s,failed:0,total:119,remaining:119-s}; } return {ok:true,rows:[]}; }
+  const { data:{ session } }=await sb.auth.getSession(); if(!session) return {ok:false,reason:'auth'};
+  const r=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/broadcast',{ method:'POST', headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+  return await r.json().catch(()=>({ok:false}));
+}
+function bcInput(v){ BC.text=v; clearTimeout(BC.prevT); BC.prevT=setTimeout(async()=>{ if(!BC.text.trim()){ BC.prev=null; render(); return; } BC.prev=await bcApi({mode:'preview',text:BC.text}); render(); },600); }
+async function bcList(){ const r=await bcApi({mode:'list'}); if(r&&r.ok){ BC.rows=r.rows||[]; render(); } }
+async function bcPrepare(){
+  const t=BC.text.trim(); if(t.length<10){ toast(LX('اكتب الرسالة أول','Write the message first')); return; }
+  if(!confirm(LX('تجهيز القالب عند واتساب بهذا النص؟ ما ينرسل شي الحين، الإرسال بعد الاعتماد وبزر منك.','Prepare the WhatsApp template with this text?'))) return;
+  BC.busy=true; render(); const r=await bcApi({mode:'prepare',text:t}); BC.busy=false;
+  if(!r.ok){ toast(LX('تعذّر إنشاء القالب: ','Template failed: ')+(r.tpl_reason||r.reason||'')); render(); return; }
+  BC.cur=Object.assign({_n:0,text:t},r); render(); bcPoll();
+}
+async function bcPoll(){
+  clearTimeout(BC.pollT); if(!BC.cur||BC.cur.tpl_status==='APPROVED'||BC.cur.tpl_status==='REJECTED') return;
+  const r=await bcApi({mode:'status',id:BC.cur.id}); if(r&&r.ok){ BC.cur=Object.assign(BC.cur,r,{_n:(BC.cur._n||0)+1}); render(); }
+  if(BC.cur.tpl_status==='PENDING') BC.pollT=setTimeout(bcPoll,20000);
+}
+async function bcSend(){
+  if(!BC.cur||BC.cur.tpl_status!=='APPROVED') return;
+  const n=BC.cur.total||(BC.prev&&BC.prev.total)||0;
+  if(!confirm(LX('إرسال الرسالة الآن إلى '+n+' رقم؟ ما ينفع التراجع بعدها.','Send now to '+n+' numbers? This cannot be undone.'))) return;
+  BC.busy=true; BC.prog={sent:0,failed:0,total:n,remaining:n}; render();
+  for(let i=0;i<60;i++){ const r=await bcApi({mode:'send',id:BC.cur.id}); if(!r.ok){ toast(LX('توقف الإرسال: ','Stopped: ')+(r.reason||'')); break; } BC.prog=r; render(); if(r.done) break; }
+  BC.busy=false; render(); if(BC.prog&&BC.prog.done){ toast(LX('✅ انرسلت لـ'+BC.prog.sent+' رقم','✅ Sent to '+BC.prog.sent)); BC.cur=null; BC.text=''; BC.prev=null; bcList(); }
+}
+function bcHTML(){
+  const p=BC.prev, c=BC.cur, pr=BC.prog;
+  const st=c? (c.tpl_status==='APPROVED'?'<span class="badge g">'+LX('القالب معتمد','Template approved')+'</span>':c.tpl_status==='REJECTED'?'<span class="badge r">'+LX('رُفض القالب','Rejected')+'</span>'+(c.tpl_reason?' <small class="hint">'+esc(c.tpl_reason)+'</small>':''):'<span class="badge y">'+LX('بانتظار اعتماد واتساب (دقائق إلى ساعة)','Awaiting WhatsApp approval')+'</span>') : '';
+  return '<div class="ph"><h1>'+LX('رسالة للكل','Message to all')+'</h1><span class="sub">'+LX('لكل الأرقام اللي سبق وتعاملنا معها','All previous customers')+'</span></div>'
+    +'<div class="card"><div class="cb" style="display:grid;gap:10px">'
+    +'<textarea class="ta" style="min-height:140px" placeholder="'+LX('اكتب الرسالة هنا…','Write the message…')+'" oninput="bcInput(this.value)" '+(c||BC.busy?'disabled':'')+'>'+esc(BC.text)+'</textarea>'
+    +(p&&p.ok?'<div class="sum"><div><small>'+LX('المستلمون','Recipients')+'</small><b>'+p.total+'</b></div><div><small>'+LX('نص مباشر (مجاني)','Direct text (free)')+'</small><b>'+p.open+'</b></div><div><small>'+LX('بقالب واتساب','Via template')+'</small><b>'+p.tpl_needed+'</b></div></div>':'')
+    +(c?'<div class="tri '+(c.tpl_status==='APPROVED'?'g':c.tpl_status==='REJECTED'?'r':'n')+'"><div class="th">'+st+'</div><div>'+esc(c.text||BC.text)+'</div><small>'+LX('التذييل يُضاف تلقائيًا: للإيقاف أرسل: إيقاف','Footer added automatically')+'</small></div>':'')
+    +(pr?'<div class="tri n"><b>'+LX('جارٍ الإرسال','Sending')+'</b> '+pr.sent+' / '+pr.total+(pr.failed?' · '+LX('فشل','failed')+' '+pr.failed:'')+'</div>':'')
+    +'<div class="acts">'+(c?(c.tpl_status==='APPROVED'?'<button class="btn pri" onclick="bcSend()" '+(BC.busy?'disabled':'')+'>'+pic('send')+' '+LX('أرسل للكل','Send to all')+' ('+(c.total||'')+')</button>':'<button class="btn" onclick="bcPoll()">'+LX('تحديث الحالة','Refresh status')+'</button>')+'<button class="btn ghost" onclick="BC.cur=null;BC.prog=null;render()">'+LX('إلغاء','Cancel')+'</button>'
+      :'<button class="btn pri" onclick="bcPrepare()" '+(BC.busy||!BC.text.trim()?'disabled':'')+'>'+pic('spark')+' '+LX('جهّز للإرسال','Prepare')+'</button>')+'</div>'
+    +'</div></div>'
+    +(BC.rows.length?'<div class="card"><div class="ch"><h2>'+LX('حملات سابقة','Previous campaigns')+'</h2></div><div class="cb" style="display:grid;gap:6px">'+BC.rows.map(r=>'<div class="ml"><span>'+esc(String(r.text||'').slice(0,80))+'</span><small>'+dayLabel(isoOf(r.created_at))+' · '+(r.status==='done'?LX('انرسلت','sent')+' '+r.sent:r.tpl_status)+'</small></div>').join('')+'</div></div>':'');
+}
 function goHome(){ if(!loggedIn){ location.href='index.html#stay'; return; } nav('home'); }
 function goMore(){ VIEW='home'; render(); setTimeout(()=>{ const el=document.getElementById('more'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); },30); }
 function legacy(sec,extra){ try{ sessionStorage.setItem('kh_home', location.pathname.split('/').pop()||'admin.html'); }catch(e){} location.href='admin-legacy.html#sec='+sec+(extra||''); }
@@ -689,6 +737,7 @@ function menuHTML(){
   const on=(()=>{ try{ return localStorage.getItem('kh_alerts')!=='0'; }catch(e){ return true; } })();
   return '<div class="menu" role="menu">'
     +'<button onclick="toggleMenu();waInvite()">'+pic('phone')+'<span>'+LX('رسالة حجز لعميل اتصل','Booking message to a caller')+'</span></button>'
+    +'<button onclick="toggleMenu();nav(\'bc\')">'+pic('megaphone')+'<span>'+LX('رسالة للكل','Message to all')+'</span></button>'
     +'<button onclick="toggleMenu();alertsToggle()">'+pic('bell')+'<span>'+(on?LX('التنبيهات شغّالة','Alerts on'):LX('التنبيهات موقفة','Alerts off'))+'</span></button>'
     +'<button onclick="toggleMenu();toggleLang()">'+pic('globe')+'<span>'+(EN()?'العربية':'English')+'</span></button>'
     +'<button onclick="toggleMenu();loadCore();loadFin(true);toast(\''+LX('جارٍ التحديث','Refreshing')+'\')">'+pic('chart')+'<span>'+LX('تحديث الأرقام','Refresh')+'</span></button>'
