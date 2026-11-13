@@ -114,7 +114,11 @@ main{min-width:0;padding:18px 18px 90px}
 .strip .mi .snip{font-size:12px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
 .strip .mi .rd{font:700 12px/1 var(--fb);padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.9);color:#1f1b16;border:1px solid rgba(0,0,0,.08);white-space:nowrap}
 .dot{display:inline-block;width:11px;height:11px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 2px rgba(255,255,255,.85)}
-.dot.r{background:var(--c-red)} .dot.g{background:var(--c-green)}
+.dot.r{background:var(--c-red)} .dot.g{background:var(--c-green)} .dot.y{background:var(--c-yellow)} .dot.n{background:#d4d4d8}
+.tri{border-radius:9px;padding:9px 11px;font-size:12.5px;display:grid;gap:3px;border:1px solid var(--border);background:var(--muted)}
+.tri.r{background:#fdf1ee;border-color:#f3c7bd} .tri.g{background:#e6f4f1;border-color:#bfe3dc} .tri.n{color:var(--muted-fg)}
+.tri .th{display:flex;align-items:center;gap:6px;flex-wrap:wrap} .tri .th b{font:800 13px/1.3 var(--fh)} .tri.r .th b{color:#b3412a} .tri.g .th b{color:#1d7a6c}
+.tri small{color:var(--muted-fg)}
 .strip.s-green .dot.g,.strip.s-red .dot.r{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35)}
 /* لوحة فادية: #264653 #2A9D8F #E9C46A #F4A261 #E76F51 */
 .strip.s-green{background:var(--c-green);color:#fff}
@@ -445,6 +449,7 @@ function render(){
   if(!loggedIn){ app.innerHTML=loginHTML(); document.getElementById('side').innerHTML=''; document.getElementById('bottom').innerHTML=''; afterLogin(); return; }
   finIndex(); ATT=attachMsgs();
   app.innerHTML=(DEMO?'<div class="demo">'+LX('عرض تجريبي ببيانات وهمية (للمعاينة فقط)','Demo view with sample data')+'</div>':'')+(VIEW==='orders'?ordersHTML():homeHTML());
+  setTimeout(queueTriage,0);
   renderOverlay();
 }
 const NAV=[
@@ -504,18 +509,47 @@ function chartHTML(){
     +'<div class="legend"><span><i style="background:#e4e4e7"></i>'+LX('عدد الطلبات','Orders per day')+'</span><span><i style="background:#2A9D8F"></i>'+LX('الربح قبل الرواتب','Profit before wages')+'</span></div></div></div>';
 }
 /* الشريط: الوقت · الحالة · الإجمالي والربح · (يسار) دائرة الرسالة واختصار الرد. الضغط يمدّه بنعومة: الرد فوق ثم التفاصيل */
-function dotHTML(msgs){
+/* تقييم كلود لكل رسالة مفتوحة (wa-bot/triage، يُحسب مرة ويُحفظ بالخادم): تحتاجك أو لا + الرد الجاهز */
+let TRI={}, TRI_Q=0;
+function triKey(key){ const ms=msgsOf(key); const lo=ms.filter(m=>m.kind!=='out'&&m.open).slice(-1)[0]; return lo? key+'|'+lo.key : null; }
+function triOf(key){ const tk=triKey(key); return tk?TRI[tk]:null; }
+async function fetchTriage(key){
+  const tk=triKey(key); if(!tk||TRI[tk]) return TRI[tk]||null;
+  const ms=msgsOf(key), inbound=ms.filter(m=>m.kind!=='out'), t=inbound.filter(m=>m.open).slice(-1)[0]; if(!t) return null;
+  TRI[tk]={busy:true}; renderDotsOnly(key);
+  let out=null;
+  if(DEMO){ await new Promise(r=>setTimeout(r,900)); const txt=ctxText(key); const cmp=t.kind==='cmp'||/تأخر|شكوى|غلط|فاتورة/.test(txt);
+    out=cmp? {ok:true,category:t.kind==='cmp'?'شكوى':'شكوى',needs_you:true,urgency:'high',summary:'العميل يشتكي من تأخر الفني ويبي حلًا الحين.',why:'شكوى تأخر والعميل ينتظر، تحتاج قرارك.',reply:'نعتذر لك عن التأخير، وهذا مو المستوى اللي نبيه لك. الإدارة بتتواصل معك خلال وقت قصير.'}
+      : {ok:true,category:'استفسار',needs_you:false,urgency:'low',summary:'يسأل إن كانت خدمة تركيب الستائر متوفرة وسعرها.',why:'استفسار عادي وجوابه في القائمة.',reply:'نعم متوفرة، تركيب الستارة بسعر 65 ريال.\nhttps://khafet.com/book.html?t=demo'}; }
+  else { try{ const { data:{ session } }=await sb.auth.getSession(); if(session){ const hist=inbound.filter(m=>m.open&&m!==t).map(m=>m.text).join('\n');
+      const r=await fetch(SUPABASE_URL+'/functions/v1/wa-bot/triage',{ method:'POST', headers:{ apikey:SUPABASE_ANON, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json' }, body:JSON.stringify({ key:tk, phone:t.phone||'', text:ctxText(key)||t.text, kind:t.kind==='cmp'?'cmp':'msg', name:t.name||'', history:hist }) });
+      out=await r.json(); } }catch(e){ out=null; } }
+  TRI[tk]=out&&out.ok? out : {ok:false};
+  if(out&&out.ok&&out.reply&&!(DRAFT[key]&&DRAFT[key].touched)){ DRAFT[key]={text:out.reply,busy:false,via:'tri',touched:false}; }
+  render(); return TRI[tk];
+}
+function renderDotsOnly(key){ /* تحديث خفيف: نعيد الرسم كاملًا (رخيص) */ render(); }
+function queueTriage(){
+  const keys=[];
+  ATT.byOrder.forEach((ms,id)=>{ if(ms.some(m=>m.open)) keys.push(id); });
+  Object.keys(GROUPS).forEach(k=>{ if(GROUPS[k].some(m=>m.open)) keys.push(k); });
+  const todo=keys.filter(k=>{ const tk=triKey(k); return tk&&!TRI[tk]; }).slice(0,6-TRI_Q);
+  todo.forEach(k=>{ TRI_Q++; fetchTriage(k).finally(()=>{ TRI_Q--; }); });
+}
+function dotHTML(msgs,key){
   if(!msgs||!msgs.length) return '';
   const open=msgs.filter(m=>m.open).length, last=msgs[msgs.length-1], mine=last.kind==='out';
-  const snip=mine?LX('ردّك: ','You: ')+last.text:last.text;
-  return '<span class="mi"><i class="dot '+(open?'r':'g')+'"></i><span class="snip">'+esc(snip)+'</span><span class="rd">'+(open?LX('رد','Reply'):LX('تم الرد','Replied'))+'</span></span>';
+  const tri=key?triOf(key):null;
+  let cls='g', lb=LX('تم الرد','Replied'), snip=mine?LX('ردّك: ','You: ')+last.text:last.text;
+  if(open){ if(tri&&tri.ok){ cls=tri.needs_you?'r':'y'; lb=tri.needs_you?LX('تحتاجك','Needs you'):LX('رد جاهز','Reply ready'); snip=tri.summary||snip; } else if(tri&&tri.busy){ cls='n'; lb='…'; } else { cls='r'; lb=LX('رد','Reply'); } }
+  return '<span class="mi"><i class="dot '+cls+'"></i><span class="snip">'+esc(snip)+'</span><span class="rd">'+lb+'</span></span>';
 }
 function stripHTML(o, msgs, multiDay){
   const s=stripState(o), mn=stripMoney(o), isOpen=OPEN===o.dbId;
   const tag=multiDay?'<small>'+relDay(o.date)+'</small>':'';
   return '<div class="row'+(isOpen?' open':'')+'"><button class="strip s-'+s.c+'" onclick="toggleOpen(\''+o.dbId+'\')" aria-expanded="'+isOpen+'">'
     +'<span class="t">'+hourLbl(o.startMin)+tag+'</span><span class="lb"><b>'+s.lb+'</b>'+(s.since?'<em>'+s.since+' '+LX('أيام','days')+'</em>':'')+'</span>'
-    +'<span class="mn">'+mn.map(x=>'<span>'+x[0]+' <b>'+x[1]+'</b></span>').join('')+'</span>'+dotHTML(msgs)+'</button>'
+    +'<span class="mn">'+mn.map(x=>'<span>'+x[0]+' <b>'+x[1]+'</b></span>').join('')+'</span>'+dotHTML(msgs,o.dbId)+'</button>'
     +'<div class="ex"><div class="exi">'+(isOpen?expandOrder(o,msgs):'')+'</div></div></div>';
 }
 /* الرسائل المستقلة: نفس الرقم في نفس اليوم = مربع واحد ورسائله كلها داخله بالوقت (فادية 2026-11-13) */
@@ -530,7 +564,7 @@ function loneHTML(g){
   const title=cmp?LX('شكوى','Complaint')+(list.length===1&&last.c&&last.c.ticket_no?' '+last.c.ticket_no:''):LX('رسالة واتساب','WhatsApp');
   return '<div class="row'+(isOpen?' open':'')+'"><button class="strip s-lone'+(cmp?' s-cmp':'')+'" onclick="toggleOpen(\''+key+'\')" aria-expanded="'+isOpen+'">'
     +'<span class="t">'+clock(last.ts)+'<small>'+relDay(isoOf(last.ts))+'</small></span><span class="lb"><b>'+title+'</b>'+(name?'<em>'+esc(name)+'</em>':'')+(list.length>1?'<em>'+list.length+' '+LX('رسائل','messages')+'</em>':'')+'</span>'
-    +'<span class="mn"></span>'+dotHTML(list)+'</button>'
+    +'<span class="mn"></span>'+dotHTML(list,key)+'</button>'
     +'<div class="ex"><div class="exi">'+(isOpen?expandLone(g):'')+'</div></div></div>';
 }
 function toggleOpen(id){ OPEN=(OPEN===id?null:id); render(); if(OPEN) prepDraft(OPEN); }
@@ -544,8 +578,11 @@ function replyBox(key, msgs){
     : '<div class="ml'+(m.ack?' ack':'')+'"><i class="dot '+(m.open?'r':'g')+'"></i><span>'+(m.kind==='cmp'?'<b>'+LX('شكوى','Complaint')+(m.c.ticket_no?' '+m.c.ticket_no:'')+'</b> · ':'')+esc(m.text)+'</span><small>'+clock(m.ts)+'</small>'
     +(m.kind==='wa'?'<span class="act">'+(m.open?'<button title="'+LX('تمت','Done')+'" onclick="event.stopPropagation();setMsg(\''+m.key+'\',\'done\')">'+pic('check',12)+'</button>':'')+'<button title="'+LX('إخفاء','Hide')+'" onclick="event.stopPropagation();setMsg(\''+m.key+'\',\'hidden\')">'+pic('x',12)+'</button></span>':'')+'</div>').join('');
   const cmpSent=lastIn&&lastIn.kind==='cmp'&&!lastIn.open? '<div class="note g">'+esc(lastIn.c.reply||'')+'</div>' : '';
+  const tri=triOf(key);
+  const triBox=target? (tri&&tri.ok? '<div class="tri '+(tri.needs_you?'r':'g')+'"><div class="th"><b>'+(tri.needs_you?LX('تحتاجك','Needs you'):LX('ما تحتاجك، الرد جاهز','Handled, reply ready'))+'</b><span class="badge n">'+esc(tri.category||'')+'</span>'+(tri.urgency==='high'?'<span class="badge r">'+LX('عاجل','Urgent')+'</span>':'')+'</div><div>'+esc(tri.summary||'')+'</div>'+(tri.why?'<small>'+esc(tri.why)+'</small>':'')+'</div>'
+    : tri&&tri.busy? '<div class="tri n">'+LX('كلود يقرأ الرسالة ويقيّمها…','Claude is reading the message…')+'</div>' : '') : '';
   const more=(!target&&lastIn&&lastIn.kind==='wa')?'<div><button class="btn sm" onclick="forceReply(\''+key+'\')">'+pic('send')+' '+LX('رسالة جديدة','New message')+'</button></div>':'';
-  return '<div class="rp"><div class="ml-list">'+list+'</div>'+cmpSent+more
+  return '<div class="rp"><div class="ml-list">'+list+'</div>'+cmpSent+more+triBox
     +(target?'<div class="rb"><div class="rh">'+LX('رد مقترح (غير مرسل)','Suggested reply (not sent)')+(d.busy?' · '+LX('جارٍ التجهيز…','Preparing…'):d.via==='ai'?' · '+LX('من كلود','by Claude'):d.via==='rules'?' · '+LX('من قائمة خدماتنا','from our services'):'')+'</div>'
       +'<textarea class="ta" id="ta-'+cssId(key)+'" oninput="draftEdit(\''+key+'\',this.value)" '+(d.busy?'disabled':'')+'>'+esc(d.text)+'</textarea>'
       +'<div class="rbtn"><button class="btn sm" onclick="clearDraft(\''+key+'\')">'+pic('trash')+' '+LX('مسح','Clear')+'</button><button class="btn sm" onclick="polish(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('spark')+' '+LX('تحسين','Polish')+'</button><span class="sp"></span><button class="btn sm pri" onclick="sendDraft(\''+key+'\')" '+(d.busy?'disabled':'')+'>'+pic('send')+' '+LX('إرسال','Send')+'</button></div></div>':'')
@@ -674,6 +711,8 @@ function localDraft(t, draft){
 async function prepDraft(key){
   const t=targetOf(key); if(!t) return; t.text=ctxText(key)||t.text;
   if(DRAFT[key]&&(DRAFT[key].text||DRAFT[key].touched)) return;
+  // أولًا تقييم كلود (يرجّع الرد الجاهز)، ولو ما فيه مفتاح نرجع للمقترح العادي
+  const tri=await fetchTriage(key); if(tri&&tri.ok&&tri.reply) return;
   DRAFT[key]={text:localDraft(t,''), busy:false, via:'tpl', touched:false}; syncTa(key);
   const out=await askSuggest(t,''); if(out&&out.ok&&out.text&&DRAFT[key]&&!DRAFT[key].touched){ DRAFT[key]={text:out.text,busy:false,via:out.via,touched:false}; syncTa(key); }
 }
