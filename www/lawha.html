@@ -663,8 +663,7 @@ function menuHTML(){
 /* ── المسودات: مقترح فوري من القالب ثم تحسين من الخادم (كلود لو مفتاحه موجود) ── */
 function msgsOf(key){ if(ATT.byOrder.has(key)) return ATT.byOrder.get(key); if(GROUPS[key]) return GROUPS[key]; const it=msgItems().find(i=>i.key===key); return it?[it]:[]; }
 function targetOf(key){ const ms=msgsOf(key).filter(m=>m.kind!=='out'); return ms.filter(m=>m.open).slice(-1)[0]||((DRAFT[key]||{}).force?ms[ms.length-1]:null)||null; }
-function ctxText(key){ const ms=msgsOf(key); let i=ms.length; while(i>0&&ms[i-1].kind!=='out') i--; const part=ms.slice(i).filter(m=>m.kind!=='out'&&m.text&&!/^(📷|🎥|🎤|📎|📍)/.test(m.text)); return part.map(m=>m.text).join('
-')||(ms.filter(m=>m.kind!=='out').slice(-1)[0]||{}).text||''; }
+function ctxText(key){ const ms=msgsOf(key); let i=ms.length; while(i>0&&ms[i-1].kind!=='out') i--; const part=ms.slice(i).filter(m=>m.kind!=='out'&&m.text&&!/^(📷|🎥|🎤|📎|📍)/.test(m.text)); return part.map(m=>m.text).join(String.fromCharCode(10))||(ms.filter(m=>m.kind!=='out').slice(-1)[0]||{}).text||''; }
 function forceReply(key){ DRAFT[key]=Object.assign(DRAFT[key]||{text:'',busy:false},{force:true,touched:true}); render(); }
 function localDraft(t, draft){
   const d=(draft||'').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,'').replace(/\s+/g,' ').trim();
