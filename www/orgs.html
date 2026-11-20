@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<meta name="robots" content="noindex,nofollow" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://zulogtqxbuqxmdmjpzqj.supabase.co; connect-src 'self' https://zulogtqxbuqxmdmjpzqj.supabase.co wss://zulogtqxbuqxmdmjpzqj.supabase.co" />
+<title>مؤسسات خافِت</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23F5C518'/%3E%3Cpath d='M14 34 32 18l18 16v16H14z' fill='none' stroke='%2318181b' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" />
+<style>
+/* صفحة مدير التوسع (2026-11-19): المؤسسات وأماكنها وفرقها فقط. نفس نظام لوحة خافت الجديدة (admin.html). */
+:root{
+  --bg:#ffffff; --fg:#09090b; --card:#ffffff; --muted:#f4f4f5; --muted-fg:#71717a; --border:#e4e4e7; --input:#e4e4e7; --ring:#a1a1aa;
+  --primary:#18181b; --primary-fg:#fafafa; --brand:#F5C518; --radius:10px;
+  --sh:0 1px 2px rgba(9,9,11,.06); --sh-md:0 8px 24px -12px rgba(9,9,11,.18);
+  --green-bg:#ecfdf3; --green-bd:#bbf7d0; --yellow-bg:#fefce8; --yellow-bd:#fde68a; --red:#dc2626; --red-bg:#fef2f2; --red-bd:#fecaca; --gray-bg:#fafafa; --gray-bd:#e4e4e7;
+  --c-green:#2A9D8F; --c-yellow:#E9C46A; --c-red:#E76F51; --c-gray:#a1a1aa;
+  --fh:"Cairo","Segoe UI",Tahoma,sans-serif; --fb:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.6 var(--fb);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea,select{font:inherit;color:inherit}
+a{color:inherit}
+h1,h2,h3{font-family:var(--fh);margin:0;letter-spacing:-.01em}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.top{position:sticky;top:0;z-index:40;height:56px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 14px}
+.brand{display:flex;align-items:center;gap:9px;font:800 17px/1 var(--fh)}
+.brand .mk{width:30px;height:30px;border-radius:9px;background:var(--brand);display:grid;place-items:center}
+.sp{flex:1}
+.wrap{max-width:860px;margin:0 auto;padding:16px 14px 80px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--sh)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);font:600 13.5px/1 var(--fb);color:var(--fg);box-shadow:var(--sh);white-space:nowrap}
+.btn:hover{background:var(--muted)} .btn:disabled{opacity:.5;cursor:default}
+.btn.pri{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)} .btn.pri:hover{background:#27272a}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px}
+.btn.ghost{border-color:transparent;box-shadow:none}
+.btn.danger{color:var(--red)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{height:30px;padding:0 11px;border-radius:999px;border:1px solid var(--border);background:var(--card);font:600 12.5px/1 var(--fb);color:#3f3f46;display:inline-flex;align-items:center;gap:6px}
+.chip:hover{background:var(--muted)} .chip.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.chip i{font-style:normal;font-size:11px;opacity:.8;font-variant-numeric:tabular-nums}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;font:700 11.5px/1 var(--fh);border:1px solid transparent}
+.badge.g{background:var(--green-bg);color:#15803d;border-color:var(--green-bd)} .badge.y{background:var(--yellow-bg);color:#a16207;border-color:var(--yellow-bd)}
+.badge.r{background:var(--red-bg);color:#b91c1c;border-color:var(--red-bd)} .badge.n{background:var(--gray-bg);color:#52525b;border-color:var(--gray-bd)}
+.in,select.in,textarea.in{width:100%;min-height:40px;padding:8px 12px;border:1px solid var(--input);border-radius:9px;background:var(--card)}
+textarea.in{min-height:72px;resize:vertical;line-height:1.6}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.bar .in{flex:1;min-width:160px} .bar select.in{flex:0 1 150px;min-width:120px}
+.list{display:grid;gap:10px;margin-top:12px}
+.org{padding:13px 14px;border-inline-start:4px solid var(--c-gray)}
+.org.approved{border-inline-start-color:var(--c-green)} .org.pending{border-inline-start-color:var(--c-yellow)} .org.suspended,.org.rejected{border-inline-start-color:var(--c-red)}
+.oh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.oh b{font:700 15.5px/1.4 var(--fh)} .oh .no{color:var(--muted-fg);font-size:12px;font-variant-numeric:tabular-nums}
+.oh .tel{margin-inline-start:auto;font-weight:600;text-decoration:none;border-bottom:2px solid var(--brand);direction:ltr}
+.ol{margin-top:5px;color:#3f3f46;overflow-wrap:anywhere}
+.om{margin-top:7px;display:flex;gap:6px 14px;flex-wrap:wrap;color:var(--muted-fg);font-size:12.5px;align-items:center}
+.om b{color:var(--fg);font-weight:600}
+.oa{margin-top:11px;display:flex;gap:6px;flex-wrap:wrap}
+.empty{padding:36px 14px;text-align:center;color:var(--muted-fg)}
+.login{max-width:380px;margin:12vh auto 0;display:grid;gap:12px;padding:22px}
+.login .mk{width:48px;height:48px;border-radius:14px;background:var(--brand);display:grid;place-items:center;margin:0 auto 6px}
+.login h1{font-size:20px;text-align:center}
+.login p{margin:0;color:var(--muted-fg);text-align:center;font-size:13.5px}
+.err{color:#b91c1c;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:8px 10px;font-size:13px}
+.ov{position:fixed;inset:0;z-index:60;background:rgba(9,9,11,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;box-shadow:var(--sh-md);padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+@media(min-width:640px){.ov{align-items:center}.sheet{border-radius:14px}}
+.sh-h{display:flex;align-items:center;gap:8px;margin-bottom:12px} .sh-h h2{font-size:17px;flex:1}
+.fld{display:grid;gap:5px;margin-bottom:12px} .fld>span{font:600 12.5px/1.4 var(--fb);color:#3f3f46}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sh-f{display:flex;gap:8px;margin-top:6px} .sh-f .btn{flex:1;height:42px}
+.rowi{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap}
+.rowi:first-child{border-top:0} .rowi .gi{flex:1;min-width:0} .rowi .gi b{display:block;font-weight:600} .rowi .gi small{color:var(--muted-fg)}
+.chk{display:flex;align-items:center;gap:8px;font-weight:500}
+.toast{position:fixed;bottom:22px;inset-inline:0;margin:auto;width:max-content;max-width:88vw;z-index:80;background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;box-shadow:var(--sh-md);font-weight:600}
+@media(max-width:480px){.row2{grid-template-columns:1fr}.oh .tel{margin-inline-start:0;width:100%}}
+@media(prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(14px);opacity:0}}}
+</style>
+<script src="vendor/supabase.min.js" defer></script>
+</head>
+<body>
+<div id="app"></div>
+<div id="ov"></div>
+<script>
+'use strict';
+const SUPABASE_URL='https://zulogtqxbuqxmdmjpzqj.supabase.co';
+const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
+const DEMO=/[?&]demo=1/.test(location.search) && (!location.hostname || /^(localhost|127[.]0[.]0[.]1)$/.test(location.hostname));   // معاينة التصميم بلا دخول على الجهاز المحلي فقط
+const CITIES=[['الخبر','Al Khobar'],['الدمام','Dammam'],['الظهران','Dhahran'],['القطيف','Qatif'],['الجبيل','Jubail'],['الأحساء','Al Ahsa'],['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة','Madinah'],['الطائف','Taif'],['القصيم','Qassim'],['أبها وخميس مشيط','Abha and Khamis'],['تبوك','Tabuk'],['حائل','Hail'],['جازان','Jazan'],['نجران','Najran'],['ينبع','Yanbu'],['الخرج','Al Kharj']];
+
+let sb=null, role=null, ORGS=[], CATS=[], loading=false, fSt='all', fQ='', fCity='all';
+let otpSent=false, otpPhone='', lgErr='', booting=true, S=null;   // S: الورقة المفتوحة
+let lang=(()=>{ try{ return localStorage.getItem('khafet_uilang')==='en'?'en':'ar'; }catch(e){ return 'ar'; } })();
+const LX=(a,e)=>lang==='en'?e:a;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=id=>document.getElementById(id);
+const cityL=c=>{ const x=CITIES.find(y=>y[0]===c); return lang==='en'&&x?x[1]:c; };
+const catL=n=>{ const x=CATS.find(c=>c.name===n||c.id===n); return x?(lang==='en'?x.en:x.name):n; };
+const ST={ pending:['بانتظار الاعتماد','Pending','y'], approved:['معتمدة','Approved','g'], suspended:['موقوفة','Suspended','r'], rejected:['مرفوضة','Rejected','r'] };
+const stL=s=>{ const x=ST[s]||ST.pending; return lang==='en'?x[1]:x[0]; };
+function toast(m){ const t=document.createElement('div'); t.className='toast'; t.setAttribute('role','status'); t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),2600); }
+function setLang(){ lang=lang==='en'?'ar':'en'; try{ localStorage.setItem('khafet_uilang',lang); }catch(e){} document.documentElement.lang=lang; document.documentElement.dir=lang==='en'?'ltr':'rtl'; render(); renderSheet(); }
+const ERR={ name:['اكتب اسم المؤسسة','Enter the organization name'], phone:['رقم الجوال غير صحيح','Invalid mobile number'], services:['اختر تخصصًا واحدًا على الأقل','Pick at least one service'],
+  cr:['السجل التجاري 10 أرقام','CR number must be 10 digits'], exists:['هذا الجوال مسجّل لمؤسسة','This number already belongs to an organization'], own_phone:['هذا الرقم لا يُسجّل كمؤسسة','This number cannot be registered as an organization'],
+  cities:['عدد المدن كبير','Too many cities'], is_org:['هذا الرقم مسجّل كمؤسسة','This number belongs to an organization'], limit:['وصلت الحد الأعلى للفروع','Branch limit reached'], not_found:['غير موجودة','Not found'] };
+const errL=k=>{ const x=ERR[k]; return x?LX(x[0],x[1]):LX('ما انحفظ، حاول مرة ثانية','Not saved, try again'); };
+
+/* ── الخادم ── */
+async function rpc(fn,args){ if(DEMO) return demoRpc(fn,args||{}); const { data, error }=await sb.rpc(fn,args||{}); if(error) throw error; return data; }
+async function load(){ loading=true; render(); try{ const [o,c]=await Promise.all([rpc('growth_orgs'), CATS.length?CATS:rpc('growth_cats')]); ORGS=o||[]; CATS=c||[]; }catch(e){ if(/FORBIDDEN/.test(String(e&&e.message))){ await signOut(true); return; } toast(LX('تعذّر التحميل','Could not load')); } loading=false; render(); }
+
+/* ── الدخول ── */
+function normPhone(v){ let d=String(v||'').replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/\D+/g,''); if(d.startsWith('00')) d=d.slice(2); if(d.startsWith('05')) d='966'+d.slice(1); else if(d.startsWith('5')&&d.length===9) d='966'+d; return d; }
+function lgFail(m){ lgErr=m; render(); }
+async function sendOtp(){
+  const d=normPhone(($('au')||{}).value||''); if(d.length<12){ lgFail(LX('رقم الجوال غير صحيح','Invalid number')); return; }
+  const b=$('lgbtn'); if(b) b.disabled=true;
+  try{ const { error }=await sb.auth.signInWithOtp({ phone:'+'+d, options:{ channel:'sms' } }); if(error) throw error; otpPhone='+'+d; otpSent=true; lgErr=''; render(); }
+  catch(e){ lgFail(LX('تعذّر إرسال الرمز، تأكد من الرقم','Could not send the code')); }
+}
+async function verifyOtp(){
+  const code=(($('ac')||{}).value||'').trim(); if(code.length<4){ lgFail(LX('أدخل الرمز','Enter the code')); return; }
+  const b=$('lgbtn'); if(b) b.disabled=true;
+  try{ const { error }=await sb.auth.verifyOtp({ phone:otpPhone, token:code, type:'sms' }); if(error) throw error; }
+  catch(e){ lgFail(LX('الرمز غير صحيح','Wrong code')); return; }
+  await enter(true);
+}
+async function enter(fromLogin){
+  let me=null; try{ me=await rpc('growth_me'); }catch(e){ if(fromLogin) lgFail(LX('تعذّر الاتصال بالخادم','Could not reach the server')); booting=false; render(); return; }
+  if(!me||!me.ok){ try{ await sb.auth.signOut(); }catch(e){} role=null; booting=false; otpSent=false; lgErr=fromLogin?LX('هذا الرقم ليس له صلاحية','This number has no access'):''; render(); return; }
+  role=me.role; booting=false; otpSent=false; lgErr=''; await load();
+}
+async function signOut(silent){ if(!silent && !confirm(LX('تسجيل الخروج؟','Sign out?'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} role=null; ORGS=[]; S=null; renderSheet(); render(); }
+
+/* ── الشاشة ── */
+const MK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1b16" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/></svg>';
+function loginHTML(){
+  return '<div class="card login"><div class="mk">'+MK.replace('18" height="18"','26" height="26"')+'</div><h1>'+LX('مؤسسات خافت','Khafet organizations')+'</h1>'
+    +'<p>'+(otpSent?LX('أدخل الرمز المُرسل إلى ','Enter the code sent to ')+'<span dir="ltr">'+esc(otpPhone)+'</span>':LX('ادخل برقم جوالك','Sign in with your mobile number'))+'</p>'
+    +(otpSent?'<input class="in" id="ac" inputmode="numeric" maxlength="6" aria-label="'+LX('رمز التحقق','Code')+'" placeholder="'+LX('رمز التحقق','Code')+'" style="letter-spacing:.4em;text-align:center;font-weight:700" /><button class="btn pri" id="lgbtn" data-a="verify">'+LX('دخول','Sign in')+'</button><button class="btn ghost" data-a="chnum">'+LX('تغيير الرقم','Change number')+'</button>'
+      :'<input class="in" id="au" inputmode="tel" aria-label="'+LX('رقم الجوال','Mobile number')+'" placeholder="05xxxxxxxx" autocomplete="tel" dir="ltr" /><button class="btn pri" id="lgbtn" data-a="send">'+LX('أرسل الرمز','Send code')+'</button>')
+    +(lgErr?'<div class="err" role="alert">'+esc(lgErr)+'</div>':'')+'</div>';
+}
+function orgCities(o){ return (o.cities&&o.cities.length?o.cities:[o.city]).filter(Boolean); }
+function orgCard(o){
+  const st=ST[o.status]?o.status:'pending', cs=orgCities(o), acts=[];
+  acts.push('<button class="btn sm" data-a="edit" data-id="'+esc(o.id)+'">'+LX('تعديل','Edit')+'</button>');
+  acts.push('<button class="btn sm" data-a="branches" data-id="'+esc(o.id)+'">'+LX('الفروع','Branches')+' <i>'+(o.branches||0)+'</i></button>');
+  if(o.code) acts.push('<button class="btn sm" data-a="team" data-id="'+esc(o.id)+'">'+LX('الفريق','Team')+' <i>'+(o.team||0)+'</i></button>');
+  if(st==='pending'){ acts.push('<button class="btn sm pri" data-a="st" data-to="approved" data-id="'+esc(o.id)+'">'+LX('اعتماد','Approve')+'</button>'); acts.push('<button class="btn sm danger" data-a="st" data-to="rejected" data-id="'+esc(o.id)+'">'+LX('رفض','Reject')+'</button>'); }
+  else if(st==='approved') acts.push('<button class="btn sm danger" data-a="st" data-to="suspended" data-id="'+esc(o.id)+'">'+LX('إيقاف','Suspend')+'</button>');
+  else acts.push('<button class="btn sm pri" data-a="st" data-to="approved" data-id="'+esc(o.id)+'">'+LX('تفعيل','Activate')+'</button>');
+  return '<div class="card org '+st+'"><div class="oh"><b>'+esc(o.name)+'</b><span class="badge '+ST[st][2]+'">'+stL(st)+'</span>'+(o.org_no?'<span class="no">#'+esc(o.org_no)+'</span>':'')
+    +'<a class="tel" href="tel:'+esc(o.phone)+'">'+esc(o.phone)+'</a></div>'
+    +'<div class="ol">'+(cs.length?cs.map(c=>esc(cityL(c))).join(LX('، ',', ')):LX('كل المدن','All cities'))+(o.areas?' · '+esc(o.areas):'')+'</div>'
+    +'<div class="ol">'+(o.services||[]).map(s=>esc(catL(s))).join(LX('، ',', '))+'</div>'
+    +(o.note?'<div class="ol">'+esc(o.note)+'</div>':'')
+    +'<div class="om"><span>'+LX('السجل التجاري','CR')+': <b dir="ltr">'+(o.cr_number?esc(o.cr_number):LX('غير مرفق','missing'))+'</b></span>'
+    +(o.cr_doc?'<button class="btn sm" data-a="doc" data-id="'+esc(o.id)+'">'+LX('عرض السجل','View CR')+'</button>':'')
+    +(o.code?'<span>'+LX('رمز الانضمام','Join code')+': <b dir="ltr">'+esc(o.code)+'</b></span>':'')
+    +'<span>'+esc(o.created||'')+'</span></div>'
+    +'<div class="oa">'+acts.join('')+'</div></div>';
+}
+function mainHTML(){
+  const cnt=s=>ORGS.filter(o=>(ST[o.status]?o.status:'pending')===s).length;
+  const allC=[...new Set(ORGS.flatMap(orgCities))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const q=fQ.trim().toLowerCase();
+  const list=ORGS.filter(o=>{ const st=ST[o.status]?o.status:'pending'; if(fSt!=='all'&&st!==fSt) return false; if(fCity!=='all'&&!orgCities(o).includes(fCity)) return false;
+    if(q&&!(String(o.name||'').toLowerCase().includes(q)||String(o.phone||'').includes(q)||String(o.org_no||'')===q)) return false; return true; });
+  const chips=[['all',LX('الكل','All'),ORGS.length],['pending',stL('pending'),cnt('pending')],['approved',stL('approved'),cnt('approved')],['suspended',stL('suspended'),cnt('suspended')],['rejected',stL('rejected'),cnt('rejected')]];
+  return '<div class="bar"><input class="in" id="q" type="search" value="'+esc(fQ)+'" aria-label="'+LX('بحث','Search')+'" placeholder="'+LX('بحث بالاسم أو الجوال','Search by name or mobile')+'" />'
+    +'<select class="in" id="fc" aria-label="'+LX('المدينة','City')+'"><option value="all">'+LX('كل المدن','All cities')+'</option>'+allC.map(c=>'<option value="'+esc(c)+'"'+(fCity===c?' selected':'')+'>'+esc(cityL(c))+'</option>').join('')+'</select>'
+    +'<button class="btn pri" data-a="add">'+LX('إضافة مؤسسة','Add organization')+'</button></div>'
+    +'<div class="chips">'+chips.map(c=>'<button class="chip'+(fSt===c[0]?' on':'')+'" data-a="fst" data-to="'+c[0]+'">'+c[1]+' <i>'+c[2]+'</i></button>').join('')+'</div>'
+    +'<div class="list" id="list">'+(loading&&!ORGS.length?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':list.length?list.map(orgCard).join(''):'<div class="empty">'+LX('لا توجد مؤسسات','No organizations')+'</div>')+'</div>';
+}
+function render(){
+  const top='<div class="top"><div class="brand"><span class="mk">'+MK+'</span>'+LX('المؤسسات','Organizations')+'</div><span class="sp"></span>'
+    +(role==='admin'?'<button class="btn sm" data-a="mgrs">'+LX('المديرون','Managers')+'</button>':'')
+    +'<button class="btn sm" data-a="lang" aria-label="Language">'+(lang==='en'?'عربي':'EN')+'</button>'
+    +(role?'<button class="btn sm ghost" data-a="out">'+LX('خروج','Sign out')+'</button>':'')+'</div>';
+  const keep=document.activeElement&&document.activeElement.id==='q';
+  $('app').innerHTML=top+'<div class="wrap">'+(booting?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':role?mainHTML():loginHTML())+'</div>';
+  if(keep){ const i=$('q'); if(i){ i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} } }
+  if(!role&&!booting){ const f=$(otpSent?'ac':'au'); if(f) f.focus(); }
+}
+
+/* ── الأوراق: مؤسسة، فروع، فريق، مديرون ── */
+function chipsHTML(items,sel,grp){ return '<div class="chips">'+items.map(x=>'<button type="button" class="chip'+(sel.includes(x[0])?' on':'')+'" aria-pressed="'+(sel.includes(x[0])?'true':'false')+'" data-a="pick" data-g="'+grp+'" data-v="'+esc(x[0])+'">'+esc(x[1])+'</button>').join('')+'</div>'; }
+function renderSheet(){
+  const ov=$('ov'); if(!S){ ov.innerHTML=''; return; }
+  let h='', title='';
+  if(S.t==='org'){
+    const f=S.f; title=f.id?LX('تعديل المؤسسة','Edit organization'):LX('إضافة مؤسسة','Add organization');
+    const known=CITIES.map(c=>c[0]), extra=f.cities.filter(c=>!known.includes(c));
+    h='<label class="fld"><span>'+LX('اسم المؤسسة','Organization name')+'</span><input class="in" id="o_name" maxlength="80" value="'+esc(f.name)+'" /></label>'
+     +(f.id?'':'<label class="fld"><span>'+LX('جوال المالك','Owner mobile')+'</span><input class="in" id="o_phone" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" value="'+esc(f.phone)+'" /></label>')
+     +'<div class="fld"><span>'+LX('المدن','Cities')+'</span>'+chipsHTML(CITIES.map(c=>[c[0],lang==='en'?c[1]:c[0]]).concat(extra.map(c=>[c,c])),f.cities,'cities')
+     +'<input class="in" id="o_city2" maxlength="40" aria-label="'+LX('مدينة أخرى','Another city')+'" placeholder="'+LX('مدينة أخرى','Another city')+'" /></div>'
+     +'<label class="fld"><span>'+LX('الأحياء','Districts')+'</span><input class="in" id="o_areas" maxlength="300" value="'+esc(f.areas)+'" /></label>'
+     +'<div class="fld"><span>'+LX('التخصصات','Services')+'</span>'+chipsHTML(CATS.map(c=>[c.name,lang==='en'?c.en:c.name]),f.services,'services')+'</div>'
+     +'<div class="row2"><label class="fld"><span>'+LX('السجل التجاري','CR number')+'</span><input class="in" id="o_cr" inputmode="numeric" maxlength="10" dir="ltr" value="'+esc(f.cr_number)+'" /></label>'
+     +'<label class="fld"><span>'+LX('الخبرة','Experience')+'</span><input class="in" id="o_exp" maxlength="200" value="'+esc(f.experience)+'" /></label></div>'
+     +'<label class="fld"><span>'+LX('ملاحظة','Note')+'</span><textarea class="in" id="o_note" maxlength="500">'+esc(f.note)+'</textarea></label>'
+     +(f.id?'':'<label class="chk fld"><input type="checkbox" id="o_ok"'+(f.approved?' checked':'')+' /> '+LX('معتمدة مباشرة','Approve now')+'</label>')
+     +(S.err?'<div class="err" role="alert">'+esc(S.err)+'</div>':'')
+     +'<div class="sh-f"><button class="btn pri" data-a="saveorg"'+(S.busy?' disabled':'')+'>'+LX('حفظ','Save')+'</button><button class="btn" data-a="close">'+LX('إلغاء','Cancel')+'</button></div>';
+  } else if(S.t==='team'){
+    title=LX('فريق ','Team: ')+S.name;
+    h=S.rows==null?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':S.rows.length?S.rows.map(x=>'<div class="rowi"><div class="gi"><b>'+esc(x.name||LX('فني','Technician'))+'</b><small>'+(x.trades||[]).map(t=>esc(catL(t))).join(LX('، ',', '))+'</small></div>'
+      +(x.phone?'<a href="tel:'+esc(x.phone)+'" dir="ltr">'+esc(x.phone)+'</a>':'')+'<span class="badge '+(x.active?'g':'n')+'">'+(x.active?LX('فعّال','Active'):LX('موقوف','Off'))+'</span></div>').join(''):'<div class="empty">'+LX('لا يوجد فنيون','No technicians')+'</div>';
+  } else if(S.t==='branches'){
+    title=LX('فروع ','Branches: ')+S.name;
+    if(S.f){ const f=S.f;
+      h='<label class="fld"><span>'+LX('اسم الفرع','Branch name')+'</span><input class="in" id="b_name" maxlength="80" value="'+esc(f.name)+'" /></label>'
+       +'<div class="row2"><label class="fld"><span>'+LX('المدينة','City')+'</span><input class="in" id="b_city" maxlength="60" list="dl_city" value="'+esc(f.city)+'" /><datalist id="dl_city">'+CITIES.map(c=>'<option value="'+esc(c[0])+'">').join('')+'</datalist></label>'
+       +'<label class="fld"><span>'+LX('الحي','District')+'</span><input class="in" id="b_district" maxlength="80" value="'+esc(f.district)+'" /></label></div>'
+       +'<div class="row2"><label class="fld"><span>'+LX('جوال الفرع','Branch mobile')+'</span><input class="in" id="b_phone" inputmode="tel" dir="ltr" value="'+esc(f.phone)+'" /></label>'
+       +'<label class="fld"><span>'+LX('العنوان','Address')+'</span><input class="in" id="b_address" maxlength="200" value="'+esc(f.address)+'" /></label></div>'
+       +'<label class="chk fld"><input type="checkbox" id="b_main"'+(f.is_main?' checked':'')+' /> '+LX('الفرع الرئيسي','Main branch')+'</label>'
+       +'<label class="chk fld"><input type="checkbox" id="b_active"'+(f.active?' checked':'')+' /> '+LX('فعّال','Active')+'</label>'
+       +(S.err?'<div class="err" role="alert">'+esc(S.err)+'</div>':'')
+       +'<div class="sh-f"><button class="btn pri" data-a="savebr"'+(S.busy?' disabled':'')+'>'+LX('حفظ','Save')+'</button><button class="btn" data-a="brback">'+LX('رجوع','Back')+'</button></div>';
+    } else {
+      h=(S.rows==null?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':S.rows.length?S.rows.map(b=>'<div class="rowi"><div class="gi"><b>'+esc(b.name)+'</b><small>'+esc([cityL(b.city),b.district,b.address].filter(Boolean).join(LX('، ',', ')))+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div>'
+        +(b.is_main?'<span class="badge y">'+LX('رئيسي','Main')+'</span>':'')+(b.active?'':'<span class="badge n">'+LX('موقوف','Off')+'</span>')
+        +'<button class="btn sm" data-a="bredit" data-id="'+esc(b.id)+'">'+LX('تعديل','Edit')+'</button></div>').join(''):'<div class="empty">'+LX('لا توجد فروع','No branches')+'</div>')
+       +'<div class="sh-f"><button class="btn pri" data-a="bradd">'+LX('إضافة فرع','Add branch')+'</button></div>';
+    }
+  } else if(S.t==='mgrs'){
+    title=LX('مديرو التوسع','Growth managers');
+    h=(S.rows==null?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':S.rows.length?S.rows.map(m=>'<div class="rowi"><div class="gi"><b>'+esc(m.name||LX('بدون اسم','No name'))+'</b><small dir="ltr">'+esc(m.phone)+'</small></div>'
+      +'<span class="badge '+(m.active?'g':'n')+'">'+(m.active?LX('فعّال','Active'):LX('موقوف','Off'))+'</span>'
+      +'<button class="btn sm" data-a="mgrtog" data-p="'+esc(m.phone)+'" data-on="'+(m.active?'0':'1')+'">'+(m.active?LX('إيقاف','Disable'):LX('تفعيل','Enable'))+'</button>'
+      +'<button class="btn sm danger" data-a="mgrdel" data-p="'+esc(m.phone)+'">'+LX('حذف','Remove')+'</button></div>').join(''):'<div class="empty">'+LX('لا يوجد مديرون','No managers')+'</div>')
+     +'<div class="row2" style="margin-top:12px"><label class="fld"><span>'+LX('الاسم','Name')+'</span><input class="in" id="m_name" maxlength="60" /></label>'
+     +'<label class="fld"><span>'+LX('الجوال','Mobile')+'</span><input class="in" id="m_phone" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" /></label></div>'
+     +(S.err?'<div class="err" role="alert">'+esc(S.err)+'</div>':'')
+     +'<div class="sh-f"><button class="btn pri" data-a="mgradd"'+(S.busy?' disabled':'')+'>'+LX('إضافة مدير','Add manager')+'</button></div>';
+  }
+  ov.innerHTML='<div class="ov" data-a="ovclose"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="sh-h"><h2>'+esc(title)+'</h2><button class="btn sm ghost" data-a="close" aria-label="'+LX('إغلاق','Close')+'">✕</button></div>'+h+'</div></div>';
+}
+function readOrg(){ const f=S.f, v=id=>(($(id)||{}).value||'').trim(); f.name=v('o_name'); if(!f.id){ f.phone=v('o_phone'); f.approved=!!(($('o_ok')||{}).checked); } f.areas=v('o_areas'); f.cr_number=v('o_cr'); f.experience=v('o_exp'); f.note=v('o_note'); const c2=v('o_city2'); if(c2&&!f.cities.includes(c2)) f.cities.push(c2); }
+function readBr(){ const f=S.f, v=id=>(($(id)||{}).value||'').trim(); f.name=v('b_name'); f.city=v('b_city'); f.district=v('b_district'); f.phone=v('b_phone'); f.address=v('b_address'); f.is_main=!!(($('b_main')||{}).checked); f.active=!!(($('b_active')||{}).checked); }
+function openOrg(o){ S={ t:'org', f:o?{ id:o.id, name:o.name||'', phone:o.phone||'', cities:orgCities(o).slice(), areas:o.areas||'', services:(o.services||[]).slice(), cr_number:o.cr_number||'', experience:o.experience||'', note:o.note||'' }
+  :{ id:null, name:'', phone:'', cities:[], areas:'', services:[], cr_number:'', experience:'', note:'', approved:true } }; renderSheet(); const i=$('o_name'); if(i&&!o) i.focus(); }
+async function saveOrg(){
+  readOrg(); const f=S.f; S.err='';
+  if(!f.name){ S.err=errL('name'); renderSheet(); return; }
+  if(!f.id&&normPhone(f.phone).length!==12){ S.err=errL('phone'); renderSheet(); return; }
+  if(!f.services.length){ S.err=errL('services'); renderSheet(); return; }
+  S.busy=true; renderSheet();
+  try{ const r=await rpc('growth_org_save',{ p:{ id:f.id||'', name:f.name, phone:f.phone, cities:f.cities, areas:f.areas, services:f.services, cr_number:f.cr_number, experience:f.experience, note:f.note, status:f.approved?'approved':'pending' } });
+    if(!r||!r.ok){ S.busy=false; S.err=errL(r&&r.error); renderSheet(); return; }
+    S=null; renderSheet(); toast(LX('انحفظت','Saved')); load();
+  }catch(e){ S.busy=false; S.err=errL(''); renderSheet(); }
+}
+async function setStatus(id,to){
+  const o=ORGS.find(x=>x.id===id); if(!o) return;
+  if(to==='suspended'&&!confirm(LX('إيقاف «'+o.name+'»؟','Suspend "'+o.name+'"?'))) return;
+  if(to==='rejected'&&!confirm(LX('رفض «'+o.name+'»؟','Reject "'+o.name+'"?'))) return;
+  try{ const r=await rpc('growth_org_status',{ p_id:id, p_status:to }); if(!r||!r.ok) throw 0; o.status=to; toast(stL(to)); load(); }catch(e){ toast(errL('')); }
+}
+async function openDoc(id){ const o=ORGS.find(x=>x.id===id); if(!o||!o.cr_doc||DEMO) return; try{ const r=await sb.storage.from('khafet-docs').createSignedUrl(o.cr_doc,300); if(r.error||!r.data) throw 0; window.open(r.data.signedUrl,'_blank','noopener'); }catch(e){ toast(LX('تعذّر فتح الملف','Could not open the file')); } }
+async function openTeam(id){ const o=ORGS.find(x=>x.id===id); if(!o) return; S={ t:'team', id, name:o.name, rows:null }; renderSheet(); try{ S.rows=await rpc('growth_org_team',{ p_id:id })||[]; }catch(e){ S.rows=[]; } if(S&&S.t==='team') renderSheet(); }
+async function openBranches(id){ const o=ORGS.find(x=>x.id===id); if(!o) return; S={ t:'branches', id, name:o.name, rows:null, f:null }; renderSheet(); await loadBranches(); }
+async function loadBranches(){ try{ S.rows=await rpc('growth_org_branches',{ p_id:S.id })||[]; }catch(e){ S.rows=[]; } if(S&&S.t==='branches') renderSheet(); }
+async function saveBranch(){
+  readBr(); const f=S.f; S.err=''; if(!f.name){ S.err=LX('اكتب اسم الفرع','Enter the branch name'); renderSheet(); return; }
+  S.busy=true; renderSheet();
+  try{ const r=await rpc('growth_branch_save',{ p:{ id:f.id||'', provider_id:S.id, name:f.name, city:f.city, district:f.district, phone:f.phone, address:f.address, is_main:f.is_main, active:f.active } });
+    S.busy=false; if(!r||!r.ok){ S.err=errL(r&&r.error); renderSheet(); return; }
+    S.f=null; S.rows=null; renderSheet(); toast(LX('انحفظ','Saved')); await loadBranches(); load();
+  }catch(e){ S.busy=false; S.err=errL(''); renderSheet(); }
+}
+async function openMgrs(){ S={ t:'mgrs', rows:null }; renderSheet(); await loadMgrs(); }
+async function loadMgrs(){ try{ S.rows=await rpc('growth_staff_list')||[]; }catch(e){ S.rows=[]; } if(S&&S.t==='mgrs') renderSheet(); }
+async function addMgr(){
+  const name=(($('m_name')||{}).value||'').trim(), phone=(($('m_phone')||{}).value||'').trim(); S.err='';
+  if(normPhone(phone).length!==12){ S.err=errL('phone'); renderSheet(); return; }
+  S.busy=true; renderSheet();
+  try{ const r=await rpc('growth_staff_set',{ p_phone:phone, p_name:name, p_active:true }); S.busy=false; if(!r||!r.ok){ S.err=errL(r&&r.error); renderSheet(); return; } toast(LX('انضاف','Added')); await loadMgrs(); }
+  catch(e){ S.busy=false; S.err=errL(''); renderSheet(); }
+}
+
+/* ── الأحداث ── */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]'); if(!el) return; const a=el.dataset.a, id=el.dataset.id;
+  if(a==='ovclose'){ if(e.target===el){ S=null; renderSheet(); } return; }
+  if(a==='send') sendOtp(); else if(a==='verify') verifyOtp(); else if(a==='chnum'){ otpSent=false; otpPhone=''; lgErr=''; render(); }
+  else if(a==='lang') setLang(); else if(a==='out') signOut();
+  else if(a==='fst'){ fSt=el.dataset.to; render(); }
+  else if(a==='add') openOrg(null); else if(a==='edit') openOrg(ORGS.find(x=>x.id===id));
+  else if(a==='st') setStatus(id,el.dataset.to); else if(a==='doc') openDoc(id);
+  else if(a==='team') openTeam(id); else if(a==='branches') openBranches(id);
+  else if(a==='close'){ S=null; renderSheet(); }
+  else if(a==='pick'){ const arr=S.f[el.dataset.g], v=el.dataset.v, i=arr.indexOf(v); if(i<0) arr.push(v); else arr.splice(i,1); el.classList.toggle('on',i<0); el.setAttribute('aria-pressed',i<0?'true':'false'); }
+  else if(a==='saveorg') saveOrg();
+  else if(a==='bradd'){ S.f={ id:null, name:'', city:'', district:'', phone:'', address:'', is_main:false, active:true }; S.err=''; renderSheet(); }
+  else if(a==='bredit'){ const b=(S.rows||[]).find(x=>x.id===id); if(b){ S.f=Object.assign({},b); S.err=''; renderSheet(); } }
+  else if(a==='brback'){ S.f=null; S.err=''; renderSheet(); } else if(a==='savebr') saveBranch();
+  else if(a==='mgrs') openMgrs(); else if(a==='mgradd') addMgr();
+  else if(a==='mgrtog'){ const m=(S.rows||[]).find(x=>x.phone===el.dataset.p); rpc('growth_staff_set',{ p_phone:el.dataset.p, p_name:m?m.name:'', p_active:el.dataset.on==='1' }).then(loadMgrs).catch(()=>toast(errL(''))); }
+  else if(a==='mgrdel'){ if(confirm(LX('حذف المدير؟','Remove this manager?'))) rpc('growth_staff_remove',{ p_phone:el.dataset.p }).then(loadMgrs).catch(()=>toast(errL(''))); }
+});
+document.addEventListener('input',e=>{ if(e.target.id==='q'){ fQ=e.target.value; const l=$('list'); if(l){ const tmp=document.createElement('div'); tmp.innerHTML=mainHTML(); l.innerHTML=tmp.querySelector('#list').innerHTML; } } });
+document.addEventListener('change',e=>{ if(e.target.id==='fc'){ fCity=e.target.value; render(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&S){ S=null; renderSheet(); } if(e.key==='Enter'&&!role){ if(e.target.id==='au') sendOtp(); else if(e.target.id==='ac') verifyOtp(); } });
+
+/* ── معاينة محلية ── */
+const DEMO_ORGS=[{id:'1',org_no:167,name:'مؤسسة شدا سيا',phone:'0551234567',status:'approved',city:'الخبر',cities:['الخبر','الدمام'],areas:'العقربية، الراكة',services:['سباكة','كهرباء'],experience:'',note:'',cr_number:'1010101010',cr_doc:'x/cr.jpg',code:'H7WMZ',created:'2026-11-02',team:3,branches:1},
+  {id:'2',org_no:11,name:'شركة نبل البناء للمقاولات',phone:'0559876543',status:'pending',city:'الدمام',cities:['الدمام'],areas:'',services:['سباكة','كهرباء','تكييف وتبريد','دهان'],experience:'',note:'يحتاج رفع صورة السجل',cr_number:'',cr_doc:null,code:'',created:'2026-10-20',team:0,branches:0},
+  {id:'3',org_no:190,name:'ركن الصيانة السريعة',phone:'0540001122',status:'suspended',city:'الجبيل',cities:['الجبيل'],areas:'',services:['تكييف وتبريد'],experience:'',note:'',cr_number:'2050123456',cr_doc:null,code:'QK2RT',created:'2026-09-14',team:1,branches:2}];
+function demoRpc(fn){ const R={ growth_me:{ok:true,role:/[?&]role=admin/.test(location.search)?'admin':'growth',name:''}, growth_orgs:DEMO_ORGS, growth_cats:[{id:'plumb',name:'سباكة',en:'Plumbing'},{id:'elec',name:'كهرباء',en:'Electrical'},{id:'ac',name:'تكييف وتبريد',en:'AC & Cooling'},{id:'carp',name:'أبواب',en:'Doors'},{id:'gen',name:'أعمال عامة',en:'General'},{id:'paint',name:'دهان',en:'Painting'},{id:'clean',name:'تنظيف',en:'Cleaning'}],
+  growth_org_team:[{name:'Jaya',phone:'0509648589',trades:['plumb','elec'],active:true},{name:'Ravi',phone:'0501112223',trades:['ac'],active:false}], growth_org_branches:[{id:'b1',name:'الفرع الرئيسي',city:'الخبر',district:'العقربية',phone:'0551234567',address:'شارع الأمير تركي',active:true,is_main:true}],
+  growth_staff_list:[{phone:'0500000777',name:'سعد',active:true}] }; return Promise.resolve(R[fn]!==undefined?R[fn]:{ok:true}); }
+
+/* ── البدء ── */
+window.addEventListener('DOMContentLoaded',async()=>{
+  document.documentElement.lang=lang; document.documentElement.dir=lang==='en'?'ltr':'rtl'; render();
+  if(DEMO){ await enter(false); const m=/[?&]sheet=(\w+)/.exec(location.search); if(m){ if(m[1]==='add') openOrg(null); else if(m[1]==='edit') openOrg(ORGS[0]); else if(m[1]==='branches') openBranches('1'); else if(m[1]==='team') openTeam('1'); else if(m[1]==='mgrs') openMgrs(); } return; }
+  try{ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON,{ auth:{ persistSession:true, autoRefreshToken:true, detectSessionInUrl:false }, global:{ headers:{ 'X-Client-Info':'khafet-orgs/1' } } }); }
+  catch(e){ booting=false; lgErr=LX('لا يوجد اتصال بالخادم','No connection'); render(); return; }
+  try{ const { data:{ session } }=await sb.auth.getSession(); if(session){ await enter(false); return; } }catch(e){}
+  booting=false; render();
+});
+</script>
+</body>
+</html>
