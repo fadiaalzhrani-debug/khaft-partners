@@ -76,6 +76,7 @@ textarea.in{min-height:72px;resize:vertical;line-height:1.6}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sh-f{display:flex;gap:8px;margin-top:6px} .sh-f .btn{flex:1;height:42px}
 .rowi{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap}
+.card.me{padding:12px 14px;margin-bottom:12px;display:grid;gap:8px} .me-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .me-h b{font:700 15px/1.3 var(--fh);flex:1} .me-l{display:flex;gap:8px} .me-l .in{flex:1;min-width:0;font-size:12.5px} .rowi .gi small{display:block;line-height:1.6} .rowi .gi b.n{display:inline;color:var(--fg)} .rowi .gi small.lk{word-break:break-all;font-size:11.5px}
 .rowi:first-child{border-top:0} .rowi .gi{flex:1;min-width:0} .rowi .gi b{display:block;font-weight:600} .rowi .gi small{color:var(--muted-fg)}
 .chk{display:flex;align-items:center;gap:8px;font-weight:500}
 .toast{position:fixed;bottom:22px;inset-inline:0;margin:auto;width:max-content;max-width:88vw;z-index:80;background:var(--primary);color:var(--primary-fg);padding:10px 16px;border-radius:10px;box-shadow:var(--sh-md);font-weight:600}
@@ -94,7 +95,7 @@ const SUPABASE_ANON='sb_publishable_ssggqTzT4GG4sreXV1LObQ_C3yiYhaG';
 const DEMO=/[?&]demo=1/.test(location.search) && (!location.hostname || /^(localhost|127[.]0[.]0[.]1)$/.test(location.hostname));   // معاينة التصميم بلا دخول على الجهاز المحلي فقط
 const CITIES=[['الخبر','Al Khobar'],['الدمام','Dammam'],['الظهران','Dhahran'],['القطيف','Qatif'],['الجبيل','Jubail'],['الأحساء','Al Ahsa'],['الرياض','Riyadh'],['جدة','Jeddah'],['مكة','Makkah'],['المدينة','Madinah'],['الطائف','Taif'],['القصيم','Qassim'],['أبها وخميس مشيط','Abha and Khamis'],['تبوك','Tabuk'],['حائل','Hail'],['جازان','Jazan'],['نجران','Najran'],['ينبع','Yanbu'],['الخرج','Al Kharj']];
 
-let sb=null, role=null, ORGS=[], CATS=[], loading=false, fSt='all', fQ='', fCity='all';
+let sb=null, role=null, ME={}, ORGS=[], CATS=[], loading=false, fSt='all', fQ='', fCity='all';
 let otpSent=false, otpPhone='', lgErr='', booting=true, S=null;   // S: الورقة المفتوحة
 let lang=(()=>{ try{ return localStorage.getItem('khafet_uilang')==='en'?'en':'ar'; }catch(e){ return 'ar'; } })();
 const LX=(a,e)=>lang==='en'?e:a;
@@ -109,6 +110,8 @@ function setLang(){ lang=lang==='en'?'ar':'en'; try{ localStorage.setItem('khafe
 const ERR={ name:['اكتب اسم المؤسسة','Enter the organization name'], phone:['رقم الجوال غير صحيح','Invalid mobile number'], services:['اختر تخصصًا واحدًا على الأقل','Pick at least one service'],
   cr:['السجل التجاري 10 أرقام','CR number must be 10 digits'], exists:['هذا الجوال مسجّل لمؤسسة','This number already belongs to an organization'], own_phone:['هذا الرقم لا يُسجّل كمؤسسة','This number cannot be registered as an organization'],
   cities:['عدد المدن كبير','Too many cities'], is_org:['هذا الرقم مسجّل كمؤسسة','This number belongs to an organization'], limit:['وصلت الحد الأعلى للفروع','Branch limit reached'], not_found:['غير موجودة','Not found'] };
+const joinLink=code=>(location.protocol==='file:'?'https://partners.khafet.com/www/':location.href.replace(/[^/]*$/,''))+'join.html?ref='+encodeURIComponent(code||'');
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); toast(LX('انسخ الرابط','Link copied')); }catch(e){ prompt(LX('انسخ الرابط','Copy the link'),t); } }
 const errL=k=>{ const x=ERR[k]; return x?LX(x[0],x[1]):LX('ما انحفظ، حاول مرة ثانية','Not saved, try again'); };
 
 /* ── الخادم ── */
@@ -134,9 +137,9 @@ async function verifyOtp(){
 async function enter(fromLogin){
   let me=null; try{ me=await rpc('growth_me'); }catch(e){ if(fromLogin) lgFail(LX('تعذّر الاتصال بالخادم','Could not reach the server')); booting=false; render(); return; }
   if(!me||!me.ok){ try{ await sb.auth.signOut(); }catch(e){} role=null; booting=false; otpSent=false; lgErr=fromLogin?LX('هذا الرقم ليس له صلاحية','This number has no access'):''; render(); return; }
-  role=me.role; booting=false; otpSent=false; lgErr=''; await load();
+  role=me.role; ME=me; booting=false; otpSent=false; lgErr=''; await load();
 }
-async function signOut(silent){ if(!silent && !confirm(LX('تسجيل الخروج؟','Sign out?'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} role=null; ORGS=[]; S=null; renderSheet(); render(); }
+async function signOut(silent){ if(!silent && !confirm(LX('تسجيل الخروج؟','Sign out?'))) return; try{ if(sb) await sb.auth.signOut(); }catch(e){} role=null; ME={}; ORGS=[]; S=null; renderSheet(); render(); }
 
 /* ── الشاشة ── */
 const MK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1f1b16" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/></svg>';
@@ -156,7 +159,7 @@ function orgCard(o){
   if(st==='pending'){ acts.push('<button class="btn sm pri" data-a="st" data-to="approved" data-id="'+esc(o.id)+'">'+LX('اعتماد','Approve')+'</button>'); acts.push('<button class="btn sm danger" data-a="st" data-to="rejected" data-id="'+esc(o.id)+'">'+LX('رفض','Reject')+'</button>'); }
   else if(st==='approved') acts.push('<button class="btn sm danger" data-a="st" data-to="suspended" data-id="'+esc(o.id)+'">'+LX('إيقاف','Suspend')+'</button>');
   else acts.push('<button class="btn sm pri" data-a="st" data-to="approved" data-id="'+esc(o.id)+'">'+LX('تفعيل','Activate')+'</button>');
-  return '<div class="card org '+st+'"><div class="oh"><b>'+esc(o.name)+'</b><span class="badge '+ST[st][2]+'">'+stL(st)+'</span>'+(o.org_no?'<span class="no">#'+esc(o.org_no)+'</span>':'')
+  return '<div class="card org '+st+'"><div class="oh"><b>'+esc(o.name)+'</b><span class="badge '+ST[st][2]+'">'+stL(st)+'</span>'+(o.org_no?'<span class="no">#'+esc(o.org_no)+'</span>':'')+(role==='admin'&&o.partner?'<span class="badge n">'+esc(o.partner)+(o.via_link?' · '+LX('من الرابط','via link'):'')+'</span>':'')
     +'<a class="tel" href="tel:'+esc(o.phone)+'">'+esc(o.phone)+'</a></div>'
     +'<div class="ol">'+(cs.length?cs.map(c=>esc(cityL(c))).join(LX('، ',', ')):LX('كل المدن','All cities'))+(o.areas?' · '+esc(o.areas):'')+'</div>'
     +'<div class="ol">'+(o.services||[]).map(s=>esc(catL(s))).join(LX('، ',', '))+'</div>'
@@ -174,7 +177,9 @@ function mainHTML(){
   const list=ORGS.filter(o=>{ const st=ST[o.status]?o.status:'pending'; if(fSt!=='all'&&st!==fSt) return false; if(fCity!=='all'&&!orgCities(o).includes(fCity)) return false;
     if(q&&!(String(o.name||'').toLowerCase().includes(q)||String(o.phone||'').includes(q)||String(o.org_no||'')===q)) return false; return true; });
   const chips=[['all',LX('الكل','All'),ORGS.length],['pending',stL('pending'),cnt('pending')],['approved',stL('approved'),cnt('approved')],['suspended',stL('suspended'),cnt('suspended')],['rejected',stL('rejected'),cnt('rejected')]];
-  return '<div class="bar"><input class="in" id="q" type="search" value="'+esc(fQ)+'" aria-label="'+LX('بحث','Search')+'" placeholder="'+LX('بحث بالاسم أو الجوال','Search by name or mobile')+'" />'
+  const me=role==='growth'&&ME.code?'<div class="card me"><div class="me-h"><b>'+esc(ME.name||LX('شريك التوسع','Growth partner'))+'</b><span class="badge g">'+LX('مؤسساتك','Your organizations')+' '+(ME.orgs||0)+'</span><span class="badge n">'+LX('معتمدة','Approved')+' '+(ME.approved||0)+'</span></div>'
+    +'<div class="me-l"><input class="in" readonly dir="ltr" value="'+esc(joinLink(ME.code))+'" aria-label="'+LX('رابطك','Your link')+'" /><button class="btn sm" data-a="copylink" data-c="'+esc(ME.code)+'">'+LX('نسخ','Copy')+'</button></div></div>':'';
+  return me+'<div class="bar"><input class="in" id="q" type="search" value="'+esc(fQ)+'" aria-label="'+LX('بحث','Search')+'" placeholder="'+LX('بحث بالاسم أو الجوال','Search by name or mobile')+'" />'
     +'<select class="in" id="fc" aria-label="'+LX('المدينة','City')+'"><option value="all">'+LX('كل المدن','All cities')+'</option>'+allC.map(c=>'<option value="'+esc(c)+'"'+(fCity===c?' selected':'')+'>'+esc(cityL(c))+'</option>').join('')+'</select>'
     +'<button class="btn pri" data-a="add">'+LX('إضافة مؤسسة','Add organization')+'</button></div>'
     +'<div class="chips">'+chips.map(c=>'<button class="chip'+(fSt===c[0]?' on':'')+'" data-a="fst" data-to="'+c[0]+'">'+c[1]+' <i>'+c[2]+'</i></button>').join('')+'</div>'
@@ -182,7 +187,7 @@ function mainHTML(){
 }
 function render(){
   const top='<div class="top"><div class="brand"><span class="mk">'+MK+'</span>'+LX('المؤسسات','Organizations')+'</div><span class="sp"></span>'
-    +(role==='admin'?'<button class="btn sm" data-a="mgrs">'+LX('المديرون','Managers')+'</button>':'')
+    +(role==='admin'?'<button class="btn sm" data-a="mgrs">'+LX('الشركاء','Partners')+'</button>':'')
     +'<button class="btn sm" data-a="lang" aria-label="Language">'+(lang==='en'?'عربي':'EN')+'</button>'
     +(role?'<button class="btn sm ghost" data-a="out">'+LX('خروج','Sign out')+'</button>':'')+'</div>';
   const keep=document.activeElement&&document.activeElement.id==='q';
@@ -234,15 +239,18 @@ function renderSheet(){
        +'<div class="sh-f"><button class="btn pri" data-a="bradd">'+LX('إضافة فرع','Add branch')+'</button></div>';
     }
   } else if(S.t==='mgrs'){
-    title=LX('مديرو التوسع','Growth managers');
-    h=(S.rows==null?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':S.rows.length?S.rows.map(m=>'<div class="rowi"><div class="gi"><b>'+esc(m.name||LX('بدون اسم','No name'))+'</b><small dir="ltr">'+esc(m.phone)+'</small></div>'
+    title=LX('شركاء التوسع','Growth partners');
+    h=(S.rows==null?'<div class="empty">'+LX('جارٍ التحميل','Loading')+'</div>':S.rows.length?S.rows.map(m=>'<div class="rowi"><div class="gi"><b>'+esc(m.name||LX('بدون اسم','No name'))+'</b><small dir="ltr">'+esc(m.phone)+'</small>'
+      +'<small>'+LX('المؤسسات','Organizations')+' <b class="n">'+(m.orgs||0)+'</b> · '+LX('معتمدة','Approved')+' <b class="n">'+(m.approved||0)+'</b> · '+LX('من الرابط','via link')+' <b class="n">'+(m.via_link||0)+'</b>'+(m.last?' · '+LX('آخر إضافة','Last')+' '+esc(m.last):'')+'</small>'
+      +(m.code?'<small dir="ltr" class="lk">'+esc(joinLink(m.code))+'</small>':'')+'</div>'
+      +(m.code?'<button class="btn sm" data-a="copylink" data-c="'+esc(m.code)+'">'+LX('نسخ الرابط','Copy link')+'</button>':'')
       +'<span class="badge '+(m.active?'g':'n')+'">'+(m.active?LX('فعّال','Active'):LX('موقوف','Off'))+'</span>'
       +'<button class="btn sm" data-a="mgrtog" data-p="'+esc(m.phone)+'" data-on="'+(m.active?'0':'1')+'">'+(m.active?LX('إيقاف','Disable'):LX('تفعيل','Enable'))+'</button>'
-      +'<button class="btn sm danger" data-a="mgrdel" data-p="'+esc(m.phone)+'">'+LX('حذف','Remove')+'</button></div>').join(''):'<div class="empty">'+LX('لا يوجد مديرون','No managers')+'</div>')
+      +'<button class="btn sm danger" data-a="mgrdel" data-p="'+esc(m.phone)+'">'+LX('حذف','Remove')+'</button></div>').join(''):'<div class="empty">'+LX('لا يوجد شركاء','No partners')+'</div>')
      +'<div class="row2" style="margin-top:12px"><label class="fld"><span>'+LX('الاسم','Name')+'</span><input class="in" id="m_name" maxlength="60" /></label>'
      +'<label class="fld"><span>'+LX('الجوال','Mobile')+'</span><input class="in" id="m_phone" inputmode="tel" dir="ltr" placeholder="05xxxxxxxx" /></label></div>'
      +(S.err?'<div class="err" role="alert">'+esc(S.err)+'</div>':'')
-     +'<div class="sh-f"><button class="btn pri" data-a="mgradd"'+(S.busy?' disabled':'')+'>'+LX('إضافة مدير','Add manager')+'</button></div>';
+     +'<div class="sh-f"><button class="btn pri" data-a="mgradd"'+(S.busy?' disabled':'')+'>'+LX('إضافة شريك','Add partner')+'</button></div>';
   }
   ov.innerHTML='<div class="ov" data-a="ovclose"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="sh-h"><h2>'+esc(title)+'</h2><button class="btn sm ghost" data-a="close" aria-label="'+LX('إغلاق','Close')+'">✕</button></div>'+h+'</div></div>';
 }
@@ -305,21 +313,21 @@ document.addEventListener('click',e=>{
   else if(a==='bradd'){ S.f={ id:null, name:'', city:'', district:'', phone:'', address:'', is_main:false, active:true }; S.err=''; renderSheet(); }
   else if(a==='bredit'){ const b=(S.rows||[]).find(x=>x.id===id); if(b){ S.f=Object.assign({},b); S.err=''; renderSheet(); } }
   else if(a==='brback'){ S.f=null; S.err=''; renderSheet(); } else if(a==='savebr') saveBranch();
-  else if(a==='mgrs') openMgrs(); else if(a==='mgradd') addMgr();
+  else if(a==='mgrs') openMgrs(); else if(a==='mgradd') addMgr(); else if(a==='copylink') copyText(joinLink(el.dataset.c));
   else if(a==='mgrtog'){ const m=(S.rows||[]).find(x=>x.phone===el.dataset.p); rpc('growth_staff_set',{ p_phone:el.dataset.p, p_name:m?m.name:'', p_active:el.dataset.on==='1' }).then(loadMgrs).catch(()=>toast(errL(''))); }
-  else if(a==='mgrdel'){ if(confirm(LX('حذف المدير؟','Remove this manager?'))) rpc('growth_staff_remove',{ p_phone:el.dataset.p }).then(loadMgrs).catch(()=>toast(errL(''))); }
+  else if(a==='mgrdel'){ if(confirm(LX('حذف الشريك؟','Remove this partner?'))) rpc('growth_staff_remove',{ p_phone:el.dataset.p }).then(loadMgrs).catch(()=>toast(errL(''))); }
 });
 document.addEventListener('input',e=>{ if(e.target.id==='q'){ fQ=e.target.value; const l=$('list'); if(l){ const tmp=document.createElement('div'); tmp.innerHTML=mainHTML(); l.innerHTML=tmp.querySelector('#list').innerHTML; } } });
 document.addEventListener('change',e=>{ if(e.target.id==='fc'){ fCity=e.target.value; render(); } });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&S){ S=null; renderSheet(); } if(e.key==='Enter'&&!role){ if(e.target.id==='au') sendOtp(); else if(e.target.id==='ac') verifyOtp(); } });
 
 /* ── معاينة محلية ── */
-const DEMO_ORGS=[{id:'1',org_no:167,name:'مؤسسة شدا سيا',phone:'0551234567',status:'approved',city:'الخبر',cities:['الخبر','الدمام'],areas:'العقربية، الراكة',services:['سباكة','كهرباء'],experience:'',note:'',cr_number:'1010101010',cr_doc:'x/cr.jpg',code:'H7WMZ',created:'2026-11-02',team:3,branches:1},
+const DEMO_ORGS=[{id:'1',org_no:167,name:'مؤسسة شدا سيا',phone:'0551234567',status:'approved',partner:'سعد',via_link:true,city:'الخبر',cities:['الخبر','الدمام'],areas:'العقربية، الراكة',services:['سباكة','كهرباء'],experience:'',note:'',cr_number:'1010101010',cr_doc:'x/cr.jpg',code:'H7WMZ',created:'2026-11-02',team:3,branches:1},
   {id:'2',org_no:11,name:'شركة نبل البناء للمقاولات',phone:'0559876543',status:'pending',city:'الدمام',cities:['الدمام'],areas:'',services:['سباكة','كهرباء','تكييف وتبريد','دهان'],experience:'',note:'يحتاج رفع صورة السجل',cr_number:'',cr_doc:null,code:'',created:'2026-10-20',team:0,branches:0},
   {id:'3',org_no:190,name:'ركن الصيانة السريعة',phone:'0540001122',status:'suspended',city:'الجبيل',cities:['الجبيل'],areas:'',services:['تكييف وتبريد'],experience:'',note:'',cr_number:'2050123456',cr_doc:null,code:'QK2RT',created:'2026-09-14',team:1,branches:2}];
-function demoRpc(fn){ const R={ growth_me:{ok:true,role:/[?&]role=admin/.test(location.search)?'admin':'growth',name:''}, growth_orgs:DEMO_ORGS, growth_cats:[{id:'plumb',name:'سباكة',en:'Plumbing'},{id:'elec',name:'كهرباء',en:'Electrical'},{id:'ac',name:'تكييف وتبريد',en:'AC & Cooling'},{id:'carp',name:'أبواب',en:'Doors'},{id:'gen',name:'أعمال عامة',en:'General'},{id:'paint',name:'دهان',en:'Painting'},{id:'clean',name:'تنظيف',en:'Cleaning'}],
+function demoRpc(fn){ const R={ growth_me:{ok:true,role:/[?&]role=admin/.test(location.search)?'admin':'growth',name:'سعد',code:'K7WQ2M',orgs:2,approved:1}, growth_orgs:DEMO_ORGS, growth_cats:[{id:'plumb',name:'سباكة',en:'Plumbing'},{id:'elec',name:'كهرباء',en:'Electrical'},{id:'ac',name:'تكييف وتبريد',en:'AC & Cooling'},{id:'carp',name:'أبواب',en:'Doors'},{id:'gen',name:'أعمال عامة',en:'General'},{id:'paint',name:'دهان',en:'Painting'},{id:'clean',name:'تنظيف',en:'Cleaning'}],
   growth_org_team:[{name:'Jaya',phone:'0509648589',trades:['plumb','elec'],active:true},{name:'Ravi',phone:'0501112223',trades:['ac'],active:false}], growth_org_branches:[{id:'b1',name:'الفرع الرئيسي',city:'الخبر',district:'العقربية',phone:'0551234567',address:'شارع الأمير تركي',active:true,is_main:true}],
-  growth_staff_list:[{phone:'0500000777',name:'سعد',active:true}] }; return Promise.resolve(R[fn]!==undefined?R[fn]:{ok:true}); }
+  growth_staff_list:[{phone:'0500000777',name:'سعد',active:true,code:'K7WQ2M',orgs:2,approved:1,via_link:1,last:'2026-11-20',since:'2026-11-19'},{phone:'0500000778',name:'ناصر',active:true,code:'P3ZX9A',orgs:0,approved:0,via_link:0,last:null,since:'2026-11-22'}] }; return Promise.resolve(R[fn]!==undefined?R[fn]:{ok:true}); }
 
 /* ── البدء ── */
 window.addEventListener('DOMContentLoaded',async()=>{

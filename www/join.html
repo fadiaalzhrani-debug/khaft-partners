@@ -833,6 +833,8 @@ function send(){
 }
 /* ── الحساب: رمز على الجوال ثم كلمة المرور وصف المزوّد «قيد المراجعة» (يدخل خافت شركاء على طول، والتفعيل لطلبات مدنه) ── */
 var ACC={ref:0,p:null,phone:''};
+/* رابط شريك توسع: join.html?ref=CODE يُنسب التسجيل له (الخادم يتحقق من الرمز) */
+var GREF=(function(){ try{ var x=/[?&]ref=([A-Za-z0-9]{4,12})(?:&|$)/.exec(location.search); return x?x[1].toUpperCase():''; }catch(e){ return ''; } })();
 function e164(p){return '+966'+normPhone(p).slice(1);}
 function hideForm(){for(var i=1;i<=3;i++)$('p'+i).classList.remove('on'); $('nav').hidden=true; $('fh').hidden=true;}
 function sendOtp(){ return fetch(SB+'/auth/v1/otp',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({phone:ACC.phone,create_user:true})}).then(function(r){ if(!r.ok) throw new Error('otp '+r.status); }); }
@@ -851,7 +853,7 @@ function confirmOtp(){
   .then(function(){ return fetch(SB+'/auth/v1/user',{method:'PUT',headers:{apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({password:$('pass').value})}); })
   .then(function(){ var p=ACC.p;
       /* الموافقة على الاتفاقية تنرسل بنسختها، ووقتها يختمه الخادم نفسه (khafet_prov_terms_stamp) */
-      var row={name:(p.company||p.name),phone:normPhone(p.phone),city:(p.cities[0]||''),cities:p.cities,services:p.categories.map(function(c){return c.name;}).filter(Boolean),cr_number:p.cr_number||null,terms_version:($('terms').checked?TERMS_VER:null)};
+      var row={name:(p.company||p.name),phone:normPhone(p.phone),city:(p.cities[0]||''),cities:p.cities,services:p.categories.map(function(c){return c.name;}).filter(Boolean),cr_number:p.cr_number||null,terms_version:($('terms').checked?TERMS_VER:null)}; if(GREF) row.growth_ref=GREF;
       var hdr={apikey:KEY,Authorization:'Bearer '+tok,'Content-Type':'application/json',Prefer:'return=minimal'};
       function ins(body){ return fetch(SB+'/rest/v1/khafet_providers',{method:'POST',headers:hdr,body:JSON.stringify(body)}); }
       /* مؤسسة مسجّلة من قبل بنفس الجوال: نسجّل موافقتها بالـRPC (محاولة، وإلا تطلع لها شاشة الموافقة بعد الدخول) */
@@ -859,6 +861,7 @@ function confirmOtp(){
       function check(r,retry){ if(r.ok) return; return r.text().then(function(x){
         if(/KHAFET_PROVIDER_EXISTS/.test(x)) return acceptOld();
         /* الخادم قبل تحديث الاتفاقية (العمود مو موجود): نسجّل بدونه وتطلع شاشة الموافقة لاحقًا */
+        if(retry && /growth_ref/.test(x)){ delete row.growth_ref; return ins(row).then(function(r2){ return check(r2,true); }); }
         if(retry && /terms_version/.test(x)){ delete row.terms_version; return ins(row).then(function(r2){ return check(r2,false); }); }
         throw new Error('prov'); }); }
       return ins(row).then(function(r){ return check(r,true); }); })
